@@ -17,14 +17,17 @@ sys.path.insert(0, str(PATH_TO_TSFPGA))
 PATH_TO_VUNIT = hdl_modules_tools_env.REPO_ROOT.parent / "vunit"
 sys.path.insert(0, str(PATH_TO_VUNIT))
 
-from vunit import VUnitCLI, VUnit
+from vunit import VUnitCLI
 
-from tsfpga.git_simulation_subset import GitSimulationSubset
 from tsfpga.module import get_modules
+
+import examples.simulate
 
 
 def main():
     args = arguments()
+
+    modules = get_modules([hdl_modules_tools_env.HDL_MODULES_MODULES_DIRECTORY])
 
     if args.git_minimal:
         if args.test_patterns != "*":
@@ -33,7 +36,9 @@ def main():
                 f" Got {args.test_patterns}",
             )
 
-        git_test_filters = find_git_test_filters(args)
+        git_test_filters = examples.simulate.find_git_test_filters(
+            args=args, modules=modules, repo_root=hdl_modules_tools_env.REPO_ROOT
+        )
         if not git_test_filters:
             print("Nothing to run. Appears to be no VHDL-related git diff.")
             return
@@ -45,51 +50,8 @@ def main():
         # Enable minimal compilation in VUnit
         args.minimal = True
 
-    vunit_proj, _ = setup_vunit_project(args)
+    vunit_proj, _ = examples.simulate.setup_vunit_project(args=args, modules=modules)
     vunit_proj.main()
-
-
-def find_git_test_filters(args):
-    # Set up a dummy VUnit project that will be used for depency scanning. Note that sources are
-    # added identically to the "real" VUnit project.
-    vunit_proj, modules = setup_vunit_project(args)
-
-    testbenches_to_run = GitSimulationSubset(
-        repo_root=hdl_modules_tools_env.REPO_ROOT,
-        reference_branch="origin/master",
-        vunit_proj=vunit_proj,
-        # We use VUnit preprocessing, so these arguments have to be supplied
-        vunit_preprocessed_path=args.output_path / "preprocessed",
-        modules=modules,
-    ).find_subset()
-
-    test_filters = []
-    for testbench_file_name, library_name in testbenches_to_run:
-        test_filters.append(f"{library_name}.{testbench_file_name}.*")
-
-    return test_filters
-
-
-def setup_vunit_project(args):
-    vunit_proj = VUnit.from_args(args=args)
-    vunit_proj.add_verification_components()
-    vunit_proj.add_random()
-    vunit_proj.enable_location_preprocessing()
-    vunit_proj.enable_check_preprocessing()
-
-    modules = get_modules([hdl_modules_tools_env.HDL_MODULES_MODULES_DIRECTORY])
-
-    for module in modules:
-        vunit_library = vunit_proj.add_library(module.library_name)
-        for hdl_file in module.get_simulation_files():
-            if hdl_file.is_vhdl or hdl_file.is_verilog_source:
-                vunit_library.add_source_file(hdl_file.path)
-            else:
-                assert False, f"Can not handle this file: {hdl_file}"
-
-        module.setup_vunit(vunit_proj)
-
-    return vunit_proj, modules
 
 
 def arguments():
@@ -108,6 +70,10 @@ def arguments():
 
     args = cli.parse_args()
     args.output_path = args.temp_dir / "vunit_out"
+
+    # Modules in this repo have no dependency on Vivado simlib or IP cores
+    args.vivado_skip = True
+
     return args
 
 
