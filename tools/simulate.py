@@ -45,13 +45,14 @@ def main():
         # Enable minimal compilation in VUnit
         args.minimal = True
 
-    setup_vunit_project(args)
+    vunit_proj, _ = setup_vunit_project(args)
+    vunit_proj.main()
 
 
 def find_git_test_filters(args):
     # Set up a dummy VUnit project that will be used for depency scanning. Note that sources are
     # added identically to the "real" VUnit project.
-    vunit_proj, modules, _ = setup_vunit_project(args)
+    vunit_proj, modules = setup_vunit_project(args)
 
     testbenches_to_run = GitSimulationSubset(
         repo_root=hdl_modules_tools_env.REPO_ROOT,
@@ -76,7 +77,9 @@ def setup_vunit_project(args):
     vunit_proj.enable_location_preprocessing()
     vunit_proj.enable_check_preprocessing()
 
-    for module in get_modules([hdl_modules_tools_env.HDL_MODULES_MODULES_DIRECTORY]):
+    modules = get_modules([hdl_modules_tools_env.HDL_MODULES_MODULES_DIRECTORY])
+
+    for module in modules:
         vunit_library = vunit_proj.add_library(module.library_name)
         for hdl_file in module.get_simulation_files():
             if hdl_file.is_vhdl or hdl_file.is_verilog_source:
@@ -86,7 +89,7 @@ def setup_vunit_project(args):
 
         module.setup_vunit(vunit_proj)
 
-    vunit_proj.main()
+    return vunit_proj, modules
 
 
 def arguments():
