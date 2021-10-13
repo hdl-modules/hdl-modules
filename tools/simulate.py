@@ -21,15 +21,12 @@ from vunit import VUnitCLI
 
 from tsfpga.module import get_modules
 
-from examples.simulate import find_git_test_filters, get_arguments_cli, setup_vunit_project
+from examples.simulate import find_git_test_filters, get_arguments_cli, SimulationProject
 
 
 def main():
     cli = get_arguments_cli(default_output_path=hdl_modules_tools_env.HDL_MODULES_TEMP_DIR)
     args = cli.parse_args()
-
-    # Modules in this repo have no dependency on Vivado simlib or IP cores
-    args.vivado_skip = True
 
     modules = get_modules([hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
 
@@ -54,8 +51,10 @@ def main():
         # Enable minimal compilation in VUnit
         args.minimal = True
 
-    vunit_proj, _ = setup_vunit_project(args=args, modules=modules)
-    vunit_proj.main()
+    simulation_project = SimulationProject(args=args)
+    simulation_project.add_modules(args=args, modules=modules)
+
+    simulation_project.vunit_proj.main()
 
 
 if __name__ == "__main__":
