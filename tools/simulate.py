@@ -10,9 +10,8 @@ import sys
 
 import hdl_modules_tools_env
 
+from tsfpga.examples.simulate import find_git_test_filters, get_arguments_cli, SimulationProject
 from tsfpga.module import get_modules
-
-from examples.simulate import find_git_test_filters, get_arguments_cli, SimulationProject
 
 
 def main():
