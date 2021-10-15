@@ -57,6 +57,8 @@ package bfm_pkg is
     stall_config : stall_config_t
   ) return axi_stream_slave_vec_t;
 
+  type bus_master_vec_t is array (integer range <>) of bus_master_t;
+
 end package;
 
 package body bfm_pkg is

@@ -8,7 +8,14 @@
 
 from tsfpga.module import BaseModule
 from tsfpga.vivado.project import VivadoNetlistProject
-from tsfpga.vivado.build_result_checker import EqualTo, Ffs, Ramb18, Ramb36, TotalLuts
+from tsfpga.vivado.build_result_checker import (
+    EqualTo,
+    Ffs,
+    MaximumLogicLevel,
+    Ramb18,
+    Ramb36,
+    TotalLuts,
+)
 from examples.tsfpga_example_env import get_tsfpga_modules
 
 
@@ -45,6 +52,15 @@ class Module(BaseModule):
 
         if "drop_packet" in test_name:
             generics.update(enable_last=True, enable_packet_mode=True, enable_drop_packet=True)
+
+        if "peek_mode" in test_name:
+            generics.update(
+                enable_last=True,
+                enable_packet_mode=True,
+                enable_peek_mode=True,
+                read_stall_probability_percent=20,
+                write_stall_probability_percent=20,
+            )
 
         if "init_state" in test_name or "almost" in test_name:
             # Note that
@@ -126,6 +142,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(24)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -145,6 +162,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(35)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -163,6 +181,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(35)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -182,12 +201,13 @@ class Module(BaseModule):
                     Ffs(EqualTo(46)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
 
-        # Enabling drop packet support increases utilization further, since an extra counter
-        # and some further logic is introduced.
+        # Enabling drop packet support increases utilization compared to only packet mode,
+        # since an extra counter and some further logic is introduced.
         generics.update(enable_drop_packet=True)
         projects.append(
             VivadoNetlistProject(
@@ -201,6 +221,27 @@ class Module(BaseModule):
                     Ffs(EqualTo(57)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
+                ],
+            )
+        )
+
+        # Enabling peek mode support increases utilization compared to only packet mode,
+        # since an extra address pointer and some further muxing is introduced.
+        generics.update(enable_drop_packet=False, enable_peek_mode=True)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name("fifo_with_peek_mode_support", generics),
+                modules=modules,
+                part=part,
+                top="fifo_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(59)),
+                    Ffs(EqualTo(57)),
+                    Ramb36(EqualTo(1)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -222,6 +263,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(90)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -241,6 +283,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(112)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -259,6 +302,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(112)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -278,6 +322,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(167)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -298,6 +343,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(134)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
                 ],
             )
         )
@@ -318,6 +364,7 @@ class Module(BaseModule):
                     Ffs(EqualTo(50)),
                     Ramb36(EqualTo(0)),
                     Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(4)),
                 ],
             )
         )

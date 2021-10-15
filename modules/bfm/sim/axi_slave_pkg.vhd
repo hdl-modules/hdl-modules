@@ -7,7 +7,9 @@
 -- -------------------------------------------------------------------------------------------------
 
 library vunit_lib;
-context vunit_lib.vc_context;
+use vunit_lib.axi_slave_pkg.all;
+use vunit_lib.memory_pkg.all;
+context vunit_lib.com_context;
 context vunit_lib.vunit_context;
 
 

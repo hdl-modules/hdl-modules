@@ -19,6 +19,7 @@ package addr_pkg is
   constant addr_width : integer := 32;
   subtype addr_t is unsigned(addr_width - 1 downto 0);
   type addr_vec_t is array (integer range <>) of addr_t;
+  function to_addr(value : natural) return addr_t;
 
   type addr_and_mask_t is record
     addr : addr_t;
@@ -35,6 +36,12 @@ package addr_pkg is
 end package;
 
 package body addr_pkg is
+
+  function to_addr(value : natural) return addr_t is
+    constant result : addr_t := to_unsigned(value, addr_width);
+  begin
+    return result;
+  end function;
 
   function addr_bits_needed(addrs : addr_and_mask_vec_t) return positive is
     variable result : positive := 1;

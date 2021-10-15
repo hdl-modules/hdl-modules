@@ -37,6 +37,7 @@ entity asynchronous_fifo is
     -- Set to true in order to use the drop_packet port. Must set enable_packet_mode as
     -- well to use this.
     enable_drop_packet : boolean := false;
+    -- Select what FPGA primitives will be used to implement the FIFO memory.
     ram_type : ram_style_t := ram_style_auto
   );
   port (

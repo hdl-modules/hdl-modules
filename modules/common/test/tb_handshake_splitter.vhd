@@ -16,6 +16,8 @@ context vunit_lib.vc_context;
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library common;
+
 use work.types_pkg.all;
 
 
@@ -100,16 +102,17 @@ begin
 
 
   ------------------------------------------------------------------------------
-  output0_axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+  output0_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      protocol_checker => new_axi_stream_protocol_checker(
-        logger => get_logger("output0"), data_length => input_data'length)
+      data_width => input_data'length,
+      logger_name_suffix => "_output0"
     )
     port map (
-      aclk => clk,
-      tvalid => output0_valid,
-      tready => output0_ready,
-      tdata => input_data
+      clk => clk,
+      --
+      ready => output0_ready,
+      valid => output0_valid,
+      data => input_data
     );
 
 
@@ -137,17 +140,19 @@ begin
 
 
   ------------------------------------------------------------------------------
-  output1_axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+  output1_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      protocol_checker => new_axi_stream_protocol_checker(
-        logger => get_logger("output1"), data_length => input_data'length)
+      data_width => input_data'length,
+      logger_name_suffix => "_output1"
     )
     port map (
-      aclk => clk,
-      tvalid => output1_valid,
-      tready => output1_ready,
-      tdata => input_data
+      clk => clk,
+      --
+      ready => output1_ready,
+      valid => output1_valid,
+      data => input_data
     );
+
 
   ------------------------------------------------------------------------------
   axi_stream_master_inst : entity vunit_lib.axi_stream_master

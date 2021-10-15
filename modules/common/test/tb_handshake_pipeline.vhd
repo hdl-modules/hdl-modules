@@ -18,6 +18,8 @@ context vunit_lib.vc_context;
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library bfm;
+
 use work.types_pkg.all;
 
 
@@ -35,13 +37,17 @@ architecture tb of tb_handshake_pipeline is
   signal clk : std_logic := '0';
   constant clk_period : time := 10 ns;
 
-  constant data_width : integer := 16;
+  constant data_width : positive := 16;
+  constant bytes_per_beat : positive := data_width / 8;
 
   signal input_ready, input_valid, input_last : std_logic := '0';
   signal output_ready, output_valid, output_last : std_logic := '0';
-  signal input_data, output_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
 
-  constant num_words : integer := 1024;
+  signal input_data, output_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
+  signal input_strobe, output_strobe : std_logic_vector(data_width / 8 - 1 downto 0) :=
+    (others => '0');
+
+  constant input_data_queue, output_data_queue : queue_t := new_queue;
 
   constant stall_config : stall_config_t := (
     stall_probability => 0.5 * real(to_int(data_jitter)),
@@ -49,25 +55,9 @@ architecture tb of tb_handshake_pipeline is
     max_stall_cycles => 2
   );
 
-  constant input_master : axi_stream_master_t := new_axi_stream_master(
-    data_length => input_data'length,
-    protocol_checker => new_axi_stream_protocol_checker(
-      logger => get_logger("input_master"),
-      data_length => input_data'length
-    ),
-    stall_config => stall_config
-  );
+  signal num_output_bursts_checked : natural := 0;
 
-  constant output_slave : axi_stream_slave_t := new_axi_stream_slave(
-    data_length => input_data'length,
-    protocol_checker => new_axi_stream_protocol_checker(
-      logger => get_logger("output_slave"),
-      data_length => output_data'length
-    ),
-    stall_config => stall_config
-  );
-
-  signal start, stimuli_done, data_check_done : boolean := false;
+  constant full_throughput_num_beats : positive := 1024;
 
 begin
 
@@ -78,49 +68,43 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
+    variable num_output_bursts_expected : natural := 0;
 
-    procedure run_test is
-      variable data : integer_array_t := null_integer_array;
-
-      variable reference_data, got_data : std_logic_vector(input_data'range) := (others => '0');
-      variable got_last : std_logic := '0';
-
-      variable axi_stream_pop_reference : axi_stream_reference_t;
-      variable axi_stream_pop_reference_queue : queue_t := new_queue;
+    procedure run_test(fixed_length_beats : natural := 0) is
+      variable burst_length_bytes : positive := 1;
+      variable data_in, data_out : integer_array_t := null_integer_array;
     begin
-      report "Starting test";
-      data := random_integer_array(width=>num_words, bits_per_word=>data_width, is_signed=>false);
+      if fixed_length_beats /= 0 then
+        burst_length_bytes := fixed_length_beats * bytes_per_beat;
 
-      for word_idx in 0 to length(data) - 1 loop
-        reference_data := std_logic_vector(to_unsigned(get(data, word_idx), reference_data'length));
-        push_axi_stream(
-          net,
-          input_master,
-          tdata=>reference_data,
-          tlast=>to_sl(word_idx=length(data) - 1)
-        );
-      end loop;
+      else
+        -- Set a random length, up to a number of words
+        burst_length_bytes := rnd.RandInt(1, 5 * bytes_per_beat);
+      end if;
 
-      -- Queue up reads in order to get full throughput. We need to keep track of
-      -- the pop_reference when we read the reply later. Hence it is pushed to a queue.
-      for word_idx in 0 to length(data) - 1 loop
-        pop_axi_stream(net, output_slave, axi_stream_pop_reference);
-        push(axi_stream_pop_reference_queue, axi_stream_pop_reference);
-      end loop;
+      random_integer_array(
+        rnd => rnd,
+        integer_array => data_in,
+        width => burst_length_bytes,
+        bits_per_word => 8,
+        is_signed => false
+      );
+      data_out := copy(data_in);
 
-      for word_idx in 0 to length(data) - 1 loop
-        axi_stream_pop_reference := pop(axi_stream_pop_reference_queue);
-        await_pop_axi_stream_reply(
-          net,
-          axi_stream_pop_reference,
-          tdata=>got_data,
-          tlast=>got_last
-        );
+      push_ref(input_data_queue, data_in);
+      push_ref(output_data_queue, data_out);
 
-        reference_data := std_logic_vector(to_unsigned(get(data, word_idx), reference_data'length));
-        check_equal(got_data, reference_data, "word_idx=" & to_string(word_idx));
-        check_equal(got_last, word_idx = num_words - 1);
-      end loop;
+      num_output_bursts_expected := num_output_bursts_expected + 1;
+    end procedure;
+
+    procedure wait_until_done is
+    begin
+      wait until
+        is_empty(input_data_queue)
+        and is_empty(output_data_queue)
+        and num_output_bursts_checked = num_output_bursts_expected
+        and rising_edge(clk);
+      wait until rising_edge(clk);
     end procedure;
 
     variable start_time, time_diff : time;
@@ -134,17 +118,20 @@ begin
     disable(get_logger("output_slave:rule 4"), warning);
 
     if run("test_random_data") then
-      run_test;
-      run_test;
-      run_test;
-      run_test;
+      for idx in 0 to 300 loop
+        run_test;
+      end loop;
+
+      wait_until_done;
 
     elsif run("test_full_throughput") then
       start_time := now;
-      run_test;
-      time_diff := now - start_time;
 
-      check_relation(time_diff < (num_words + 3) * clk_period);
+      run_test(fixed_length_beats=>full_throughput_num_beats);
+      wait_until_done;
+
+      time_diff := now - start_time;
+      check_relation(time_diff < (full_throughput_num_beats + 4) * clk_period);
     end if;
 
     test_runner_cleanup(runner);
@@ -152,30 +139,43 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_stream_master_inst : entity vunit_lib.axi_stream_master
-    generic map(
-      master => input_master
+  axi_stream_master_inst : entity bfm.axi_stream_master
+    generic map (
+      data_width_bits => input_data'length,
+      data_queue => input_data_queue,
+      stall_config => stall_config,
+      logger_name_suffix => "_input",
+      strobe_unit_width_bits => input_data'length / input_strobe'length
     )
-    port map(
-      aclk => clk,
-      tvalid => input_valid,
-      tready => input_ready,
-      tdata => input_data,
-      tlast => input_last
+    port map (
+      clk => clk,
+      --
+      ready => input_ready,
+      valid => input_valid,
+      last => input_last,
+      data => input_data,
+      strobe => input_strobe
     );
 
 
   ------------------------------------------------------------------------------
-  axi_stream_slave_inst : entity vunit_lib.axi_stream_slave
-    generic map(
-      slave => output_slave
+  axi_stream_slave_inst : entity bfm.axi_stream_slave
+    generic map (
+      data_width_bits => output_data'length,
+      reference_data_queue => output_data_queue,
+      stall_config => stall_config,
+      logger_name_suffix => "_output"
     )
-    port map(
-      aclk => clk,
-      tvalid => output_valid,
-      tready => output_ready,
-      tdata => output_data,
-      tlast => output_last
+    port map (
+      clk => clk,
+      --
+      ready => output_ready,
+      valid => output_valid,
+      last => output_last,
+      data => output_data,
+      strobe => output_strobe,
+      --
+      num_bursts_checked => num_output_bursts_checked
     );
 
 
@@ -184,7 +184,8 @@ begin
     generic map (
       data_width => data_width,
       full_throughput => full_throughput,
-      allow_poor_input_ready_timing => allow_poor_input_ready_timing
+      allow_poor_input_ready_timing => allow_poor_input_ready_timing,
+      strobe_unit_width => input_data'length / input_strobe'length
     )
     port map (
       clk => clk,
@@ -193,11 +194,13 @@ begin
       input_valid => input_valid,
       input_last => input_last,
       input_data => input_data,
+      input_strobe => input_strobe,
       --
       output_ready => output_ready,
       output_valid => output_valid,
       output_last => output_last,
-      output_data => output_data
+      output_data => output_data,
+      output_strobe => output_strobe
     );
 
 end architecture;

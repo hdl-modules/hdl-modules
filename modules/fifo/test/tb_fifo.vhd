@@ -35,6 +35,7 @@ entity tb_fifo is
     enable_last : boolean := false;
     enable_packet_mode : boolean := false;
     enable_drop_packet : boolean := false;
+    enable_peek_mode : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -46,7 +47,7 @@ architecture tb of tb_fifo is
   signal clk : std_logic := '0';
   signal level : integer;
 
-  signal read_ready, read_valid, read_last, almost_empty : std_logic := '0';
+  signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_logic := '0';
   signal write_ready, write_valid, write_last, almost_full : std_logic := '0';
   signal read_data, write_data : std_logic_vector(width - 1 downto 0) := (others => '0');
   signal drop_packet : std_logic := '0';
@@ -56,13 +57,13 @@ architecture tb of tb_fifo is
   constant read_stall_config : stall_config_t := new_stall_config(
     stall_probability => real(read_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
-    max_stall_cycles => 4
+    max_stall_cycles => 3
   );
   constant write_stall_config : stall_config_t := new_stall_config(
     stall_probability => real(write_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
-    max_stall_cycles => 4)
-  ;
+    max_stall_cycles => 3
+  );
 
   constant write_data_queue, write_last_queue, read_data_queue, read_last_queue : queue_t :=
     new_queue;
@@ -80,7 +81,7 @@ begin
 
     variable rnd : RandomPType;
 
-    procedure run_read(count : natural) is
+    procedure run_read(count : natural; wait_for_status_to_update : boolean := true) is
       variable last_expected : std_logic := '0';
     begin
       for read_idx in 0 to count - 1 loop
@@ -88,6 +89,7 @@ begin
         wait until (read_ready and read_valid) = '1' and rising_edge(clk);
 
         check_equal(read_data, pop_std_ulogic_vector(read_data_queue), "read_idx=" & to_string(read_idx));
+
         last_expected := pop(read_last_queue);
         if enable_last then
           check_equal(read_last, last_expected, "read_idx=" & to_string(read_idx));
@@ -95,8 +97,10 @@ begin
       end loop;
       read_is_ready <= '0';
 
-      -- Wait one cycle for status to update
-      wait until rising_edge(clk);
+      if wait_for_status_to_update then
+        -- Wait one cycle for read_valid to fall and counters to update
+        wait until rising_edge(clk);
+      end if;
     end procedure;
 
     procedure run_write(
@@ -119,7 +123,8 @@ begin
       end loop;
 
       if wait_until_done then
-        wait until is_empty(write_data_queue) and stimuli_inactive = '1' and rising_edge(clk);
+        wait until is_empty(write_data_queue) and rising_edge(clk);
+        wait until stimuli_inactive = '1' and rising_edge(clk);
       end if;
     end procedure;
 
@@ -147,6 +152,13 @@ begin
     constant null_data : std_logic_vector(width - 1 downto 0) := (others => '0');
     constant one : std_logic := '1';
     constant zero : std_logic := '0';
+
+    -- For peek mode test, which is handled differently than the other tests
+    constant num_packets : positive := 12;
+    variable num_peek_iterations : positive := 1;
+    variable num_words : positive := 1;
+    variable data : std_logic_vector(write_data'range);
+    variable last : std_logic := '0';
 
   begin
     test_runner_setup(runner, runner_cfg);
@@ -217,6 +229,9 @@ begin
       -- Takes one cycle extra to propagate in packet mode.
       wait until rising_edge(clk);
       check_equal(read_valid, True);
+
+      -- Read the last word to finish test
+      run_read(4);
 
     elsif run("test_packet_mode_deep") then
       -- Show that the FIFO can be filled with lasts
@@ -338,6 +353,52 @@ begin
 
       run_read(1);
       check_equal(almost_empty, '1');
+
+    elsif run("test_peek_mode") then
+      for packet_idx in 0 to num_packets - 1 loop
+        num_words := depth / 4 + packet_idx;
+
+        -- Push stimuli data to write queue.
+        rnd.InitSeed(rnd'instance_name & to_string(packet_idx));
+
+        for write_idx in 0 to num_words - 1 loop
+          data := rnd.RandSLV(data'length);
+          last := to_sl(write_idx = num_words - 1);
+
+          push(write_data_queue, data);
+          push(write_last_queue, last);
+        end loop;
+
+        -- Push the same data to read reference queue a couple of times. One time extra for each
+        -- time we will read the packet with peek mode.
+        num_peek_iterations := 1 + (packet_idx mod 3);
+        for peek_iteration in 0 to num_peek_iterations - 1 loop
+          -- Set known seed to get same data as is pushed to write queue.
+          rnd.InitSeed(rnd'instance_name & to_string(packet_idx));
+
+          for write_idx in 0 to num_words - 1 loop
+            data := rnd.RandSlv(data'length);
+            last := to_sl(write_idx = num_words - 1);
+
+            push(read_data_queue, data);
+            push(read_last_queue, last);
+          end loop;
+        end loop;
+      end loop;
+
+      -- Read out all the data
+      for packet_idx in 0 to num_packets - 1 loop
+        num_words := depth / 4 + packet_idx;
+
+        -- Read each packet a number of times. But actually pop data only on the last iteration.
+        num_peek_iterations := 1 + (packet_idx mod 3);
+        for peek_iteration in 0 to num_peek_iterations - 1 loop
+          report "peek_iteration=" & to_string(peek_iteration) ;
+          read_peek_mode <= to_sl(peek_iteration /= num_peek_iterations - 1);
+          run_read(num_words, wait_for_status_to_update=>rnd.RandInt(1) = 0);
+        end loop;
+      end loop;
+
     end if;
 
     test_runner_cleanup(runner, allow_disabled_errors=>true);
@@ -435,7 +496,8 @@ begin
       almost_empty_level => almost_empty_level,
       enable_last => enable_last,
       enable_packet_mode => enable_packet_mode,
-      enable_drop_packet => enable_drop_packet
+      enable_drop_packet => enable_drop_packet,
+      enable_peek_mode => enable_peek_mode
     )
     port map (
       clk => clk,
@@ -445,6 +507,7 @@ begin
       read_valid => read_valid,
       read_data => read_data,
       read_last => read_last,
+      read_peek_mode => read_peek_mode,
       almost_empty => almost_empty,
 
       write_ready => write_ready,

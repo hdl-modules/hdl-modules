@@ -6,6 +6,14 @@
 -- https://gitlab.com/tsfpga/tsfpga
 -- -------------------------------------------------------------------------------------------------
 -- Synchronous FIFO.
+--
+-- This FIFO implementation has an optional "peek read" mode that is enabled by setting the
+-- enable_peek_mode generic. It makes it possible to read a packet multiple times.
+-- If the read_peek_mode signal is asserted when read_ready is asserted, the current packet will
+-- not be popped from the FIFO, but can instead be read again. Once the readout encounters
+-- read_last, the readout will return again to the first word of the packet.
+-- Note that the read_peek_mode value may not be changed during the readout of a packet.
+-- It must be static for all words in a packet, but may be updated after read_last.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -35,6 +43,10 @@ entity fifo is
     -- Set to true in order to use the drop_packet port. Must set enable_packet_mode as
     -- well to use this.
     enable_drop_packet : boolean := false;
+    -- Set to true in order to read words without popping from FIFO using the read_peek_mode port.
+    -- Must set enable_packet_mode as well to use this.
+    enable_peek_mode : boolean := false;
+    -- Select what FPGA primitives will be used to implement the FIFO memory.
     ram_type : ram_style_t := ram_style_auto
   );
   port (
@@ -50,6 +62,9 @@ entity fifo is
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
     -- Must set enable_last generic in order to use this
     read_last : out std_logic := '0';
+    -- When this is asserted, packets can be read multiple times from the FIFO.
+    -- Must set enable_peek_mode generic in order to use this.
+    read_peek_mode : in std_logic := '0';
     -- '1' if there are almost_empty_level or fewer words available to read
     almost_empty : out std_logic := '1';
 
@@ -72,7 +87,7 @@ architecture a of fifo is
   -- Need one extra bit in the addresses to be able to make the distinction if the FIFO
   -- is full or empty (where the addresses would otherwise be equal).
   subtype fifo_addr_t is unsigned(num_bits_needed(2 * depth - 1) - 1 downto 0);
-  signal read_addr_next, read_addr : fifo_addr_t := (others => '0');
+  signal read_addr_next, read_addr, read_addr_peek : fifo_addr_t := (others => '0');
   signal write_addr_next, write_addr, write_addr_next_if_not_drop, write_addr_start_of_packet :
     fifo_addr_t := (others => '0');
 
@@ -81,7 +96,7 @@ architecture a of fifo is
 
   signal num_lasts_in_fifo : integer range 0 to depth := 0;
 
-  signal should_drop_packet : std_logic := '0';
+  signal should_drop_packet, should_peek_read : std_logic := '0';
 
 begin
 
@@ -91,6 +106,9 @@ begin
     report "Must set enable_last for packet mode" severity failure;
   assert enable_packet_mode or (not enable_drop_packet)
     report "Must set enable_packet_mode for drop packet support" severity failure;
+  assert enable_packet_mode or (not enable_peek_mode)
+    report "Must set enable_packet_mode for peek mode support" severity failure;
+
 
   -- These flags will update one cycle after the write/read that puts them over/below the line.
   -- Except for the fringe cases:
@@ -113,6 +131,9 @@ begin
     almost_empty <= to_sl(level < almost_empty_level + 1);
   end generate;
 
+  should_drop_packet <= to_sl(enable_drop_packet) and drop_packet;
+  should_peek_read <= to_sl(enable_peek_mode) and read_peek_mode;
+
 
   ------------------------------------------------------------------------------
   status : process
@@ -123,7 +144,7 @@ begin
     if enable_packet_mode then
       num_lasts_in_fifo_next := num_lasts_in_fifo
         + to_int(write_ready and write_valid and write_last and not should_drop_packet)
-        - to_int(read_ready and read_valid and read_last);
+        - to_int(read_ready and read_valid and read_last and not should_peek_read);
 
       -- We look at num_lasts_in_fifo_next since we need to update read_valid the same cycle when
       -- the read happens.
@@ -160,7 +181,24 @@ begin
 
     -- These signals however must have the updated values to be valid for the next cycle.
     write_addr <= write_addr_next;
-    read_addr <= read_addr_next;
+
+    if enable_peek_mode then
+      -- In peek mode we maintain two addresses for read. The 'read_addr' points to where the
+      -- current packet starts. This is the address that affects 'write_ready', so that data that
+      -- is not yet popped may not be overwritten.
+      -- The read_addr_peek is the address that controls where we read in the memory.
+      -- This one can be ahead of 'read_addr' and will revert back to 'read_addr' once the whole
+      -- packet has been read out.
+      read_addr_peek <= read_addr_next;
+
+      if not read_peek_mode then
+        -- If not peek reading, the read address shall be updated as normal.
+        read_addr <= read_addr_next;
+      end if;
+    else
+      read_addr <= read_addr_next;
+    end if;
+
     -- The level count shall always be correct, and hence uses the updated values. Note that this
     -- can create some wonky situations, e.g. when level read as 1023 for a 1024 deep FIFO
     -- but write_ready is false.
@@ -168,12 +206,35 @@ begin
     level <= to_integer(write_addr_next - read_addr_next) mod (2 * depth);
   end process;
 
-  should_drop_packet <= to_sl(enable_drop_packet) and drop_packet;
 
   write_addr_next_if_not_drop <= write_addr + to_int(write_ready and write_valid);
   write_addr_next <=
     write_addr_start_of_packet when should_drop_packet else write_addr_next_if_not_drop;
-  read_addr_next <= read_addr + to_int(read_ready and read_valid);
+
+
+  ------------------------------------------------------------------------------
+  read_addr_calc : if enable_peek_mode generate
+
+    ------------------------------------------------------------------------------
+    calc_peek_addr : process(all)
+    begin
+      if read_ready and read_valid then
+        if read_last and read_peek_mode then
+          -- Go back to where the packet we just read out started, so it can be read again
+          read_addr_next <= read_addr;
+        else
+          read_addr_next <= read_addr_peek + 1;
+        end if;
+      else
+        read_addr_next <= read_addr_peek;
+      end if;
+    end process;
+
+  else generate
+
+    read_addr_next <= read_addr + to_int(read_ready and read_valid);
+
+  end generate;
 
 
   ------------------------------------------------------------------------------

@@ -11,10 +11,14 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library vunit_lib;
+use vunit_lib.random_pkg.all;
+context vunit_lib.vc_context;
 context vunit_lib.vunit_context;
 
 library osvvm;
 use osvvm.RandomPkg.all;
+
+library bfm;
 
 use work.types_pkg.all;
 
@@ -24,8 +28,9 @@ entity tb_width_conversion is
     input_width : positive;
     output_width : positive;
     enable_strobe : boolean;
+    enable_last : boolean;
     support_unaligned_burst_length : boolean := false;
-    data_jitter : boolean := true;
+    enable_jitter : boolean := true;
     runner_cfg : string
   );
 end entity;
@@ -34,6 +39,11 @@ architecture tb of tb_width_conversion is
 
   constant input_bytes_per_beat : positive := input_width / 8;
   constant output_bytes_per_beat : positive := output_width / 8;
+  constant minimum_width_bytes : positive := minimum(input_bytes_per_beat, output_bytes_per_beat);
+  constant maximum_width_bytes : positive := maximum(input_bytes_per_beat, output_bytes_per_beat);
+
+  constant is_upconversion : boolean := output_width > input_width;
+  constant is_downconversion : boolean := output_width < input_width;
 
   signal clk : std_logic := '0';
   constant clk_period : time := 10 ns;
@@ -50,62 +60,115 @@ architecture tb of tb_width_conversion is
   signal output_strobe : std_logic_vector(output_width / strobe_unit_width - 1 downto 0) :=
     (others => '0');
 
-  -- If there is strobing, there will be more words, but the amount of enabled bytes will be
-  -- the same in the end.
-  constant num_bytes_per_test : positive := 64;
-  constant num_test_loops : positive := 100;
+  constant input_data_queue, output_data_queue : queue_t := new_queue;
 
-  signal num_stimuli_done, num_data_check_done : natural := 0;
+  constant stall_config : stall_config_t := (
+    stall_probability => 0.2 * to_real(enable_jitter),
+    min_stall_cycles => 1,
+    max_stall_cycles => 4
+  );
 
-  procedure random_slv(rnd : inout RandomPType; data : out std_logic_vector) is
-    variable random_sl : std_logic_vector(0 downto 0);
-  begin
-    -- Build up a word from LSB to MSB, which corresponds to little endian when
-    -- comparing wide words with packed thin words.
-    for i in 0 to data'length - 1 loop
-      random_sl := rnd.RandSlv(1);
-      data(i) := random_sl(0);
-    end loop;
-  end procedure;
+  signal num_output_bursts_checked : natural := 0;
 
 begin
 
-  test_runner_watchdog(runner, 2 ms);
+  test_runner_watchdog(runner, 200 us);
   clk <= not clk after clk_period / 2;
 
 
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
+    variable num_output_bursts_expected : natural := 0;
+
+    procedure run_test(fixed_length_bytes : natural := 0) is
+      variable burst_length_bytes : positive := 1;
+      variable num_input_bytes_to_remove : natural := 0;
+
+      variable data_in, data_out : integer_array_t := null_integer_array;
+    begin
+      if fixed_length_bytes /= 0 then
+        burst_length_bytes := fixed_length_bytes;
+
+      else
+        -- Set a random length that will fill up whole input and output words
+        burst_length_bytes := rnd.RandInt(1, 5) * maximum_width_bytes;
+
+        if support_unaligned_burst_length then
+          -- In this case we can unstrobe/remove more than a whole word.
+          -- If upconverting, and we remove more than one whole input word, the entity will pad.
+          -- If downconverting, and we remove more than one whole output word, the entity
+          -- will strip.
+          num_input_bytes_to_remove := rnd.RandInt(0, maximum_width_bytes - 1);
+
+        elsif enable_strobe then
+          -- Unstrobe a number of byte lanes on the last input beat.
+          -- We must still be aligned in terms of number of output beats.
+          num_input_bytes_to_remove := rnd.RandInt(0, minimum_width_bytes - 1);
+        end if;
+
+        burst_length_bytes := maximum(1, burst_length_bytes - num_input_bytes_to_remove);
+      end if;
+
+      random_integer_array(
+        rnd => rnd,
+        integer_array => data_in,
+        width => burst_length_bytes,
+        bits_per_word => 8,
+        is_signed => false
+      );
+      data_out := copy(data_in);
+
+      push_ref(input_data_queue, data_in);
+      push_ref(output_data_queue, data_out);
+
+      num_output_bursts_expected := num_output_bursts_expected + 1;
+    end procedure;
 
     variable start_time, time_diff : time;
 
-  constant num_input_words_when_no_strobing : positive := num_bytes_per_test / (input_width / 8);
-  constant num_output_words_when_no_strobing : integer :=
-    num_input_words_when_no_strobing * input_width / output_width;
-  constant num_cycles_when_no_stall_and_no_strobing : integer :=
-    maximum(num_input_words_when_no_strobing, num_output_words_when_no_strobing);
+    constant full_throughput_num_bytes : positive := maximum_width_bytes * 100 * 10;
+
+    constant full_throughput_num_input_beats : positive :=
+      full_throughput_num_bytes / input_bytes_per_beat;
+    constant full_throughput_num_output_beats : positive :=
+      full_throughput_num_bytes / output_bytes_per_beat;
+
+    constant full_throughput_num_cycles : positive :=
+      maximum(full_throughput_num_input_beats, full_throughput_num_output_beats);
+
+    procedure wait_until_done is
+    begin
+      wait until
+        is_empty(input_data_queue)
+        and is_empty(output_data_queue)
+        and num_output_bursts_checked = num_output_bursts_expected
+        and rising_edge(clk);
+      wait until rising_edge(clk);
+    end procedure;
 
   begin
     test_runner_setup(runner, runner_cfg);
     rnd.InitSeed(rnd'instance_name);
 
     if run("test_data") then
-      wait until
-        num_stimuli_done = num_test_loops
-        and num_data_check_done = num_test_loops
-        and rising_edge(clk);
+      for idx in 0 to 200 loop
+        run_test;
+      end loop;
+
+      wait_until_done;
 
     elsif run("test_full_throughput") then
       start_time := now;
-      wait until
-        num_stimuli_done = num_test_loops
-        and num_data_check_done = num_test_loops
-        and rising_edge(clk);
-      time_diff := now - start_time;
 
+      for idx in 0 to 10 - 1 loop
+        run_test(fixed_length_bytes=>full_throughput_num_bytes / 10);
+      end loop;
+      wait_until_done;
+
+      time_diff := now - start_time;
       check_relation(
-        time_diff < (num_test_loops * num_cycles_when_no_stall_and_no_strobing + 2) * clk_period
+        time_diff < (full_throughput_num_cycles + 4) * clk_period
       );
     end if;
 
@@ -114,124 +177,55 @@ begin
 
 
   ------------------------------------------------------------------------------
-  stimuli : process
-    variable rnd_jitter, rnd_data : RandomPType;
-    variable input_data_v : std_logic_vector(input_data'range);
-
-    variable num_strobes_in_word : positive := input_bytes_per_beat;
-    variable num_bytes_remaining : natural := 0;
-
-    variable num_input_words_sent, num_padding_words : natural := 0;
-  begin
-    rnd_jitter.InitSeed("stimuli" & rnd_jitter'instance_name);
-    rnd_data.InitSeed("rnd_data");
-
-    while num_stimuli_done < num_test_loops loop
-      num_bytes_remaining := num_bytes_per_test;
-      num_input_words_sent := 0;
-
-      while num_bytes_remaining > 0 loop
-        if enable_strobe then
-          num_strobes_in_word :=
-            minimum(rnd_jitter.RandInt(1, input_bytes_per_beat), num_bytes_remaining);
-
-          input_strobe <= (others => '0');
-          input_strobe(num_strobes_in_word - 1 downto 0) <= (others => '1');
-
-          -- Reset the data word to zero. Only the appropriate bytes will be assigned below.
-          input_data_v := (others => '0');
-        end if;
-
-        random_slv(rnd_data, input_data_v(num_strobes_in_word * 8 - 1 downto 0));
-
-        input_valid <= '1';
-
-        input_data <= input_data_v;
-        num_bytes_remaining := num_bytes_remaining - num_strobes_in_word;
-
-        input_last <= to_sl(num_bytes_remaining = 0);
-        wait until (input_ready and input_valid) = '1' and rising_edge(clk);
-        num_input_words_sent := num_input_words_sent + 1;
-
-        if data_jitter then
-          input_valid <= '0';
-          for wait_cycle in 1 to rnd_jitter.FavorSmall(0, 2) loop
-            wait until rising_edge(clk);
-          end loop;
-        end if;
-      end loop;
-
-      if output_width > input_width and not support_unaligned_burst_length then
-        -- Pad so that we send the input burst length is a multiple of the output data width.
-        num_padding_words := num_input_words_sent mod (output_width / input_width);
-
-        for padding_word_idx in 1 to num_padding_words loop
-          input_valid <= '1';
-          input_last <= '0';
-          input_data <= (others => '0');
-          input_strobe <= (others => '0');
-          wait until (input_ready and input_valid) = '1' and rising_edge(clk);
-        end loop;
-      end if;
-
-      input_valid <= '0';
-      num_stimuli_done <= num_stimuli_done + 1;
-    end loop;
-  end process;
+  axi_stream_master_inst : entity bfm.axi_stream_master
+    generic map (
+      data_width_bits => input_data'length,
+      data_queue => input_data_queue,
+      stall_config => stall_config,
+      logger_name_suffix => "_input",
+      strobe_unit_width_bits => input_data'length / input_strobe'length
+    )
+    port map (
+      clk => clk,
+      --
+      ready => input_ready,
+      valid => input_valid,
+      last => input_last,
+      data => input_data,
+      strobe => input_strobe
+    );
 
 
   ------------------------------------------------------------------------------
-  data_check : process
-    variable rnd_jitter, rnd_data : RandomPType;
-
-    variable num_bytes_remaining : natural := 0;
-
-    variable expected_byte : std_logic_vector(8 - 1 downto 0) := (others => '0');
+  output_block : block
+    signal strobe : std_logic_vector(output_strobe'range) := (others => '0');
   begin
-    rnd_jitter.InitSeed("data_check" & rnd_jitter'instance_name);
-    rnd_data.InitSeed("rnd_data");
 
-    while num_data_check_done < num_test_loops loop
-      num_bytes_remaining := num_bytes_per_test;
+    strobe <= output_strobe when enable_strobe else (others => '1');
 
-      while num_bytes_remaining > 0 loop
-        output_ready <= '1';
-        wait until (output_ready and output_valid) = '1' and rising_edge(clk);
 
-        for byte_lane_idx in 0 to output_bytes_per_beat - 1 loop
-          if (not enable_strobe) or output_strobe(byte_lane_idx) = '1' then
-            -- Build up the expected output data vector in same way that input data
-            -- is generated above. Note that the same random seed is used.
-            random_slv(rnd_data, expected_byte);
-            check_equal(
-              output_data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8),
-              expected_byte,
-              "byte_lane_idx=" & to_string(byte_lane_idx)
-              & ",num_bytes_remaining=" & to_string(num_bytes_remaining)
-            );
+    ------------------------------------------------------------------------------
+    axi_stream_slave_inst : entity bfm.axi_stream_slave
+      generic map (
+        data_width_bits => output_data'length,
+        reference_data_queue => output_data_queue,
+        stall_config => stall_config,
+        logger_name_suffix => "_output",
+        disable_last_check => not enable_last
+      )
+      port map (
+        clk => clk,
+        --
+        ready => output_ready,
+        valid => output_valid,
+        last => output_last,
+        data => output_data,
+        strobe => strobe,
+        --
+        num_bursts_checked => num_output_bursts_checked
+      );
 
-            num_bytes_remaining := num_bytes_remaining - 1;
-          end if;
-        end loop;
-
-        check_equal(
-          output_last,
-          to_sl(num_bytes_remaining = 0),
-          "num_bytes_remaining=" & to_string(num_bytes_remaining)
-        );
-
-        if data_jitter then
-          output_ready <= '0';
-          for wait_cycle in 1 to rnd_jitter.FavorSmall(0, 2) loop
-            wait until rising_edge(clk);
-          end loop;
-        end if;
-      end loop;
-
-      output_ready <= '0';
-      num_data_check_done <= num_data_check_done + 1;
-    end loop;
-  end process;
+  end block;
 
 
   ------------------------------------------------------------------------------
@@ -241,6 +235,7 @@ begin
       output_width => output_width,
       enable_strobe => enable_strobe,
       strobe_unit_width => strobe_unit_width,
+      enable_last => enable_last,
       support_unaligned_burst_length => support_unaligned_burst_length
     )
     port map (

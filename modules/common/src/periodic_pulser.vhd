@@ -136,6 +136,7 @@ begin
     pulse <= count_enable when tick_count = period - 1 else '0';
   end generate;
 
+
   ------------------------------------------------------------------------------
   -- Create one or more shift registers
   -- This generate is "else generate" with gen_counter, but "else generate"
@@ -145,7 +146,8 @@ begin
     gen_mutual_prime_srls : for idx in factors.this_stage'range generate
       gen_only_if_not_0 : if factors.this_stage(idx) /= 0 generate
         -- Create a shift register of the length of the current factor factor
-        signal shift_reg : std_logic_vector(0 to factors.this_stage(idx) - 1) := (0 => '1', others => '0');
+        signal shift_reg : std_logic_vector(0 to factors.this_stage(idx) - 1) :=
+          (0 => '1', others => '0');
       begin
         shift : process
         begin

@@ -48,9 +48,9 @@ class Module(BaseModule):
                 part=part,
                 top="axi_lite_reg_file_wrapper",
                 build_result_checkers=[
-                    TotalLuts(EqualTo(199)),
-                    LogicLuts(EqualTo(199)),
-                    Ffs(EqualTo(456)),
+                    TotalLuts(EqualTo(197)),
+                    LogicLuts(EqualTo(197)),
+                    Ffs(EqualTo(447)),
                     Ramb36(EqualTo(0)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(4)),

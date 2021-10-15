@@ -29,6 +29,7 @@ entity fifo_wrapper is
     enable_last : boolean := false;
     enable_packet_mode : boolean := false;
     enable_drop_packet : boolean := false;
+    enable_peek_mode : boolean := false;
     ram_type : ram_style_t := ram_style_auto
   );
   port (
@@ -42,6 +43,7 @@ entity fifo_wrapper is
     read_valid : out std_logic := '0';
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
     read_last : out std_logic := '0';
+    read_peek_mode : in std_logic := '0';
 
     -- Note that this is the same as write_level for a synchronous FIFO.
     read_level : out integer range 0 to depth := 0;
@@ -78,6 +80,9 @@ begin
     read_last <= write_last;
 
   elsif use_asynchronous_fifo generate
+
+    assert not enable_peek_mode report "Only available for synchronous FIFO" severity failure;
+
 
     ------------------------------------------------------------------------------
     asynchronous_fifo_inst : entity work.asynchronous_fifo
@@ -125,6 +130,7 @@ begin
         enable_last => enable_last,
         enable_packet_mode => enable_packet_mode,
         enable_drop_packet => enable_drop_packet,
+        enable_peek_mode => enable_peek_mode,
         ram_type => ram_type
       )
       port map (
@@ -135,6 +141,7 @@ begin
         read_valid => read_valid,
         read_data => read_data,
         read_last => read_last,
+        read_peek_mode => read_peek_mode,
         almost_empty => almost_empty,
         --
         write_ready => write_ready,

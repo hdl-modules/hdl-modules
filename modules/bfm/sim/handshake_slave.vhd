@@ -29,14 +29,15 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+context ieee.ieee_std_context;
 
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+
+library common;
 
 use work.bfm_pkg.all;
 
@@ -44,17 +45,32 @@ use work.bfm_pkg.all;
 entity handshake_slave is
   generic (
     stall_config : in stall_config_t;
-    -- Is also used for the random seed
+    -- Is also used for the random seed.
     -- Set to something unique in order to vary the random sequence.
     logger_name_suffix : string := "";
-    -- Assign a non-zero value in order to use the 'data' port for protocol checking
+    -- Assign a non-zero value in order to use the 'id' port for protocol checking.
+    id_width : natural := 0;
+    -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking.
     data_width : natural := 0;
+    -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
+    -- handhshake has happended). Note that according to the AXI-Stream standard 'ready' may fall
+    -- at any time (regardless of 'valid'). However, many modules are developed with this
+    -- well-behavedness as a way of saving resources.
+    well_behaved_stall : boolean := false;
     -- This can be used to essentially disable the
     --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
     -- warning by setting a very high value for the limit.
     -- This warning is considered noise in most testbenches that exercise backpressure.
     -- Set to a lower value in order the enable the warning.
-    rule_4_performance_check_max_waits : natural := natural'high
+    rule_4_performance_check_max_waits : natural := natural'high;
+    -- For protocol checking of the 'data' port.
+    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be '-' (don't care)
+    -- when tvalid is asserted. Even when that bit is strobed out by tstrb/tkeep.
+    -- This often becomes a problem, since many implementations assign don't care to strobed out
+    -- byte lanes as a way of minimizing LUT consumption.
+    -- Assigning 'true' to this generic will workaround the check by assigning '0' to all bits that
+    -- have the value '-' and are in strobed out byte lanes.
+    remove_strobed_out_dont_care : boolean := false
   );
   port (
     clk : in std_logic;
@@ -63,10 +79,16 @@ entity handshake_slave is
     data_is_ready : in std_logic := '1';
     --
     ready : out std_logic := '0';
-    -- Only for protocol checking
+    -- Must be connected if 'well_behaved_stall' is true. Otherwise it is optional and
+    -- only for protocol checking.
     valid : in std_logic := '0';
+    -- Optional to connect. Only for protocol checking
     last : in std_logic := '1';
-    -- Must set 'data_width' generic in order to use these ports for protocol checking
+    -- Optional to connect. Only for protocol checking
+    -- Must set 'id_width' generic in order to use this.
+    id : in unsigned(id_width - 1 downto 0) := (others => '0');
+    -- Optional to connect. Only for protocol checking
+    -- Must set 'data_width' generic in order to use these.
     data : in std_logic_vector(data_width - 1 downto 0) := (others => '0');
     strobe : in std_logic_vector(data_width / 8 - 1 downto 0) := (others => '1')
   );
@@ -75,6 +97,8 @@ end entity;
 architecture a of handshake_slave is
 
   signal stall_data : std_logic := '1';
+
+  signal data_without_dont_care : std_logic_vector(data'range) := (others => '0');
 
 begin
 
@@ -92,28 +116,47 @@ begin
       random_stall(stall_config, rnd, clk);
       stall_data <= '0';
 
-      wait until rising_edge(clk);
+      wait until (valid = '1' or not well_behaved_stall) and rising_edge(clk);
     end loop;
   end process;
 
 
   ------------------------------------------------------------------------------
-  axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+  axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      protocol_checker => new_axi_stream_protocol_checker(
-        logger => get_logger("handshake_slave" & logger_name_suffix),
-        data_length => data'length,
-        max_waits => rule_4_performance_check_max_waits
-      )
+      data_width => data'length,
+      id_width => id'length,
+      logger_name_suffix => "_handshake_slave" & logger_name_suffix,
+      rule_4_performance_check_max_waits => rule_4_performance_check_max_waits
     )
     port map (
-      aclk => clk,
-      tvalid => valid,
-      tready => ready,
-      tdata => data,
-      tlast => last,
-      tstrb => strobe,
-      tkeep => strobe
+      clk => clk,
+      --
+      ready => ready,
+      valid => valid,
+      last => last,
+      id => std_logic_vector(id),
+      data => data_without_dont_care,
+      strobe => strobe
     );
+
+
+  ------------------------------------------------------------------------------
+  assign_data_without_dont_care : process(all)
+    begin
+      data_without_dont_care <= data;
+
+      if remove_strobed_out_dont_care then
+        for byte_idx in strobe'range loop
+          if not strobe(byte_idx) then
+            for bit_idx in (byte_idx + 1) * 8 - 1 downto byte_idx * 8 loop
+              if data(bit_idx) = '-' then
+                data_without_dont_care(bit_idx) <= '0';
+              end if;
+            end loop;
+          end if;
+        end loop;
+      end if;
+    end process;
 
 end architecture;

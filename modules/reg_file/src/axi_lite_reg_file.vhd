@@ -43,7 +43,10 @@ entity axi_lite_reg_file is
     -- Register values
     regs_up : in reg_vec_t(regs'range) := default_values;
     regs_down : out reg_vec_t(regs'range) := default_values;
-    -- Each bit is pulsed for one cycle when the corresponding register is read/written
+    -- Each bit is pulsed for one cycle when the corresponding register is read/written.
+    -- For read, the bit is asserted the exact same cycle as the AXI-Lite R transaction occurs.
+    -- For write, the bit is asserted the cycle after the AXI-Lite W transaction occurs, so that
+    -- 'regs_down' is updated with the new value.
     reg_was_read : out std_logic_vector(regs'range) := (others => '0');
     reg_was_written : out std_logic_vector(regs'range) := (others => '0')
   );
@@ -74,13 +77,24 @@ begin
     -- An address transaction has occured and the address points to a valid read register
     valid_read_address <= read_idx /= invalid_addr and is_read_type(regs(read_idx).reg_type);
 
+
+    ------------------------------------------------------------------------------
+    set_status : process(all)
+    begin
+      reg_was_read <= (others => '0');
+
+      if valid_read_address then
+        reg_was_read(read_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
+      end if;
+    end process;
+
+
+    ------------------------------------------------------------------------------
     read_process : process
     begin
       wait until rising_edge(clk);
 
       axi_lite_s2m.read.r.valid <= '0';
-
-      reg_was_read <= (others => '0');
 
       if valid_read_address then
         axi_lite_s2m.read.r.resp <= axi_resp_okay;
@@ -110,10 +124,6 @@ begin
             axi_lite_s2m.read.r.valid <= '0';
             axi_lite_s2m.read.ar.ready <= '1';
 
-            if valid_read_address then
-              reg_was_read(read_idx) <= '1';
-            end if;
-
             read_state <= ar;
           end if;
       end case;
@@ -137,6 +147,8 @@ begin
     -- An address transaction has occured and the address points to a valid write register
     valid_write_address <= write_idx /= invalid_addr and is_write_type(regs(write_idx).reg_type);
 
+
+    ------------------------------------------------------------------------------
     write_process : process
     begin
       wait until rising_edge(clk);
@@ -204,10 +216,10 @@ begin
     --   {reg_was_read /= reg_was_accessed_zero} |=> (reg_was_read = reg_was_accessed_zero);
     --
     -- Asserting reg_was_read typically prompts something in the PL that changes the register value.
-    -- Hence it is important that reg_was_read is asserted after the actual read (R) transaction
-    -- has occured, and not e.g. after the AR transaction.
+    -- Hence it is important that reg_was_read is asserted at the actual read (R) transaction
+    -- has occured, and not e.g. at the AR transaction.
     -- psl reg_was_read_should_pulse_when_read_transaction_occurs : assert always
-    --   (reg_was_read /= reg_was_accessed_zero) -> prev(axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid);
+    --   (reg_was_read /= reg_was_accessed_zero) -> axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
   end block;
 
 end architecture;
