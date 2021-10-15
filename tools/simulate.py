@@ -1,23 +1,14 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the tsfpga project.
-# https://tsfpga.com
-# https://gitlab.com/tsfpga/tsfpga
+# This file is part of the hdl_modules project.
+# https://hdl-modules.com
+# https://gitlab.com/tsfpga/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from pathlib import Path
 import sys
 
 import hdl_modules_tools_env
-
-# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
-PATH_TO_TSFPGA = hdl_modules_tools_env.REPO_ROOT.parent / "tsfpga"
-sys.path.insert(0, str(PATH_TO_TSFPGA))
-PATH_TO_VUNIT = hdl_modules_tools_env.REPO_ROOT.parent / "vunit"
-sys.path.insert(0, str(PATH_TO_VUNIT))
-
-from vunit import VUnitCLI
 
 from tsfpga.module import get_modules
 
