@@ -16,5 +16,5 @@ HDL_MODULES_DIRECTORY = REPO_ROOT / "modules"
 # Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
 PATH_TO_TSFPGA = REPO_ROOT.parent / "tsfpga"
 sys.path.insert(0, str(PATH_TO_TSFPGA))
-PATH_TO_VUNIT = REPO_ROOT.parent / "vunit"
+PATH_TO_VUNIT = REPO_ROOT.parent.parent / "vunit" / "vunit"
 sys.path.insert(0, str(PATH_TO_VUNIT))

@@ -28,25 +28,27 @@ default:
   # Note that the mcode image is much smaller than the gcc image.
   image: ghdl/vunit:mcode-master
   before_script:
+    - apt-get update -qq > /dev/null
+    - apt-get install -y -qq git > /dev/null
     - export PYTHONPATH=$(pwd)/hdl_modules
     - echo $CI_COMMIT_TAG
     - echo $CI_COMMIT_BRANCH
     - echo $CI_PIPELINE_SOURCE
     - echo $CI_COMMIT_REF_NAME
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
 
 
 pytest:
   stage: test
   script:
-    - python3 -m pip install black flake8 pylint pytest > /dev/null
+    - python3 -m pip install black flake8 pylint pytest GitPython > /dev/null
     - python3 -m pytest -v test
 
 
 simulate:
   stage: test
   script:
-    - python3 -m pip install tomlkit > /dev/null
-    - ghdl --version
+    - python3 -m pip install tomlkit GitPython > /dev/null
     # Run minimal simulation subset for merge requests
     - if [ $CI_PIPELINE_SOURCE == "merge_request_event" ]; then export SIMULATE_FLAGS="--vcs-minimal"; fi;
-    - python3 examples/simulate.py --num-threads 4 --vivado-skip $SIMULATE_FLAGS
+    - python3 tools/simulate.py --num-threads 4 --vivado-skip $SIMULATE_FLAGS

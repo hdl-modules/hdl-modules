@@ -13,11 +13,11 @@ import hdl_modules_tools_env
 from tsfpga.build_project_list import BuildProjectList
 from tsfpga.module import get_modules
 
-import examples.build
+from tsfpga.examples.build import arguments, setup_and_run
 
 
 def main():
-    args = examples.build.arguments(default_temp_dir=hdl_modules_tools_env.HDL_MODULES_TEMP_DIR)
+    args = arguments(default_temp_dir=hdl_modules_tools_env.HDL_MODULES_TEMP_DIR)
     modules = get_modules([hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
     projects = BuildProjectList(
         modules=modules,
@@ -26,7 +26,7 @@ def main():
         no_color=args.no_color,
     )
 
-    sys.exit(examples.build.setup_and_run(modules, projects, args))
+    sys.exit(setup_and_run(modules, projects, args))
 
 
 if __name__ == "__main__":

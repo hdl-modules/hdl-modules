@@ -10,7 +10,7 @@ from tsfpga.module import BaseModule
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):
+    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_bfm")
 
         test = tb.get_tests("test_full_master_throughput")[0]

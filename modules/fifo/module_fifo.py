@@ -6,7 +6,7 @@
 # https://gitlab.com/tsfpga/tsfpga
 # --------------------------------------------------------------------------------------------------
 
-from tsfpga.module import BaseModule
+from tsfpga.module import BaseModule, get_tsfpga_modules
 from tsfpga.vivado.project import VivadoNetlistProject
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
@@ -16,11 +16,10 @@ from tsfpga.vivado.build_result_checker import (
     Ramb36,
     TotalLuts,
 )
-from examples.tsfpga_example_env import get_tsfpga_modules
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):
+    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         for test in (
             vunit_proj.library(self.library_name).test_bench("tb_asynchronous_fifo").get_tests()
         ):
@@ -93,7 +92,7 @@ class Module(BaseModule):
 
                 yield generics
 
-    def setup_formal(self, formal_proj, **kwargs):
+    def setup_formal(self, formal_proj, **kwargs):  # pylint: disable=unused-argument,no-self-use
         depth = 4
         base_generics = dict(
             width=3,

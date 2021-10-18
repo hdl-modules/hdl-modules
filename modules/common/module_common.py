@@ -8,7 +8,7 @@
 
 import itertools
 
-from tsfpga.module import BaseModule
+from tsfpga.module import BaseModule, get_tsfpga_modules
 from tsfpga.vivado.project import VivadoNetlistProject
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
@@ -18,11 +18,10 @@ from tsfpga.vivado.build_result_checker import (
     Srls,
     TotalLuts,
 )
-from examples.tsfpga_example_env import get_tsfpga_modules
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):
+    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
         self.add_vunit_config(
             tb, generics=dict(reference_clock_rate_mhz=250, target_clock_rate_mhz=50)
