@@ -80,6 +80,8 @@ pages:
   image: alpine
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
+  # Do none of the default things
+  before_script:
   script:
     - mv generated/sphinx_html public
   artifacts:
