@@ -63,10 +63,5 @@ ___________________
 
     git push origin --tag vX.Y.Z HEAD:release_branch
 
-TBC...
-
-
-Merge
-_____
-
+Open a new merge request and wait for the CI pipeline to pass.
 If everything went well then you can merge your release commit to master via the gitlab merge request GUI.
