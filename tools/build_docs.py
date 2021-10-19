@@ -10,6 +10,8 @@ from pybadges import badge
 
 import hdl_modules_tools_env
 
+from tsfpga.module import get_modules
+from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, delete, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
@@ -29,12 +31,22 @@ def main():
     )
     create_file(GENERATED_SPHINX / "release_notes.rst", rst)
 
+    generate_module_documentation()
+
     generate_sphinx_index()
 
     build_sphinx(build_path=SPHINX_DOC, output_path=GENERATED_SPHINX_HTML)
 
-    badges_path = create_directory(GENERATED_SPHINX_HTML / "badges")
-    build_information_badges(badges_path)
+    build_information_badges()
+
+
+def generate_module_documentation():
+    modules = get_modules(modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
+    for module in modules:
+        module_documentation = ModuleDocumentation(module)
+        rst = module_documentation.get_rst_document()
+
+        create_file(GENERATED_SPHINX / "modules" / f"{module.name}.rst", rst)
 
 
 def get_readme_rst():
@@ -106,7 +118,9 @@ def generate_sphinx_index():
     create_file(GENERATED_SPHINX / "index.rst", rst)
 
 
-def build_information_badges(output_path):
+def build_information_badges():
+    output_path = create_directory(GENERATED_SPHINX_HTML / "badges")
+
     badge_svg = badge(left_text="license", right_text="BSD 3-Clause", right_color="blue")
     create_file(output_path / "license.svg", badge_svg)
 

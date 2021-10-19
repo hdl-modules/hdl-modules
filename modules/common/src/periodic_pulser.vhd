@@ -16,25 +16,30 @@
 -- on each count enable, a fixed period is created.
 -- The remaining period is sent to a new instance of period_pulser.
 --
--- Step 1:
+-- **Step 1**:
 -- As far as possible and-gate multiple shift registers together. The output of this stage
 -- is then sent to the next instance of period_pulser
 -- This method only works if the lengths are mutual primes.
 -- One or more shift registers may be created.
 --
--- Step 2:
+-- **Step 2**:
 -- If the factor cannot be further broken down, add a simple counter.
 --
--- -------------------------------------------------------------------------------------------------
--- Example:
+-- Example
+-- _______
+--
 -- Let's say that the maximum shift register length is 16.
 -- A period of 12*37 can then be achieved using two shift registers of length 4 and 3,
--- and then instantiating a new period_pulser:
--- [0][0][0][1]
---             \
---               [and] -> pulse -> [period_pulser of period 37]
---             /
---    [0][0][1]
+-- and then instantiating a new period_pulser
+--
+-- .. code-block:: none
+--
+--    [0][0][0][1]
+--                \
+--                  [and] -> pulse -> [period_pulser of period 37]
+--                /
+--       [0][0][1]
+--
 -- The next stage will create a counter, because 37 is a prime larger than the maximum shift
 -- register length.
 -- -------------------------------------------------------------------------------------------------

@@ -38,7 +38,7 @@ pytest:
   stage: test
   script:
     - apt-get update -qq > /dev/null
-    - apt-get install -y -qq git > /dev/null
+    - apt-get install --yes -qq --no-install-recommends git > /dev/null
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 -m pip install black flake8 pylint pytest GitPython > /dev/null
     - python3 -m pytest -v test
@@ -48,7 +48,7 @@ simulate:
   stage: test
   script:
     - apt-get update -qq > /dev/null
-    - apt-get install -y -qq git > /dev/null
+    - apt-get install --yes -qq --no-install-recommends git > /dev/null
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 -m pip install tomlkit GitPython > /dev/null
     # We seem to need this for some reason. Without it, the "simulate.py --vcs-minimal" call can not
@@ -66,9 +66,15 @@ build_pages:
   stage: test
   script:
     - apt-get update -qq > /dev/null
-    - apt-get install -y -qq git graphviz > /dev/null
+    # Needed by sphinx/symbolator/wavedrom
+    - apt-get install --yes -qq --no-install-recommends git pkg-config build-essential python3-dev libcairo2-dev gir1.2-gtk-3.0 libgirepository1.0-dev graphviz > /dev/null
+    # Older version since there is an issue with symbolator setup.py:
+    # https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
+    - python3 -m pip install "setuptools<58" > /dev/null
+    # Older version of sphinx since symbolator_sphinx does not work with newer:
+    # "exception: cannot import name 'ENOENT'"
+    - python3 -m pip install GitPython pybadges sphinx==3.5.4 sphinx-rtd-theme sphinx_sitemap symbolator sphinxcontrib-wavedrom pycairo PyGObject pytest tomlkit > /dev/null
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
-    - python3 -m pip install GitPython pybadges sphinx sphinx-rtd-theme sphinx_sitemap > /dev/null
     - python3 tools/build_docs.py
   artifacts:
     paths:
