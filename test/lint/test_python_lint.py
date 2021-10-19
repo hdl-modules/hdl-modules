@@ -6,7 +6,7 @@
 # https://gitlab.com/tsfpga/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from tools.hdl_modules_tools_env import REPO_ROOT
+from tools.hdl_modules_tools_env import REPO_ROOT, HDL_MODULES_DOC
 
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
@@ -14,7 +14,15 @@ from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_py
 
 
 def _files_to_test():
-    return list(find_git_files(file_endings_include="py", directory=REPO_ROOT))
+    # Exclude doc folder, since conf.py used by sphinx does not conform
+    return [
+        str(path)
+        for path in find_git_files(
+            directory=REPO_ROOT,
+            exclude_directories=[HDL_MODULES_DOC],
+            file_endings_include="py",
+        )
+    ]
 
 
 def test_pylint():

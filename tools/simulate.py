@@ -15,7 +15,7 @@ from tsfpga.module import get_modules
 
 
 def main():
-    cli = get_arguments_cli(default_output_path=hdl_modules_tools_env.HDL_MODULES_TEMP_DIRECTORY)
+    cli = get_arguments_cli(default_output_path=hdl_modules_tools_env.HDL_MODULES_GENERATED)
     args = cli.parse_args()
 
     modules = get_modules([hdl_modules_tools_env.HDL_MODULES_DIRECTORY])

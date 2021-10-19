@@ -13,9 +13,9 @@ import hdl_modules_tools_env
 from tsfpga.system_utils import create_directory, create_file, delete, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
-GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_TEMP_DIRECTORY / "sphinx"
-GENERATED_SPHINX_HTML = hdl_modules_tools_env.HDL_MODULES_TEMP_DIRECTORY / "sphinx_html"
-SPHINX_DOC = hdl_modules_tools_env.HDL_MODULES_DOC_DIRECTORY / "sphinx"
+GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx"
+GENERATED_SPHINX_HTML = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx_html"
+SPHINX_DOC = hdl_modules_tools_env.HDL_MODULES_DOC / "sphinx"
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
 
     rst = generate_release_notes(
         repo_root=hdl_modules_tools_env.REPO_ROOT,
-        release_notes_directory=hdl_modules_tools_env.HDL_MODULES_DOC_DIRECTORY / "release_notes",
+        release_notes_directory=hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes",
         project_name="hdl_modules",
     )
     create_file(GENERATED_SPHINX / "release_notes.rst", rst)

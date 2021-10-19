@@ -17,7 +17,7 @@ from tsfpga.examples.build import arguments, setup_and_run
 
 
 def main():
-    args = arguments(default_temp_dir=hdl_modules_tools_env.HDL_MODULES_TEMP_DIRECTORY)
+    args = arguments(default_temp_dir=hdl_modules_tools_env.HDL_MODULES_GENERATED)
     modules = get_modules([hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
     projects = BuildProjectList(
         modules=modules,
