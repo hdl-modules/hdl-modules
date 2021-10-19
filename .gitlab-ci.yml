@@ -27,19 +27,19 @@ default:
   # Note that the mcode image is much smaller than the gcc image.
   image: ghdl/vunit:mcode-master
   before_script:
-    - apt-get update -qq > /dev/null
-    - apt-get install -y -qq git > /dev/null
-    - export PYTHONPATH=$(pwd)/hdl_modules
     - echo $CI_COMMIT_TAG
     - echo $CI_COMMIT_BRANCH
     - echo $CI_PIPELINE_SOURCE
     - echo $CI_COMMIT_REF_NAME
-    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
+    - export PYTHONPATH=$(pwd)/hdl_modules
 
 
 pytest:
   stage: test
   script:
+    - apt-get update -qq > /dev/null
+    - apt-get install -y -qq git > /dev/null
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 -m pip install black flake8 pylint pytest GitPython > /dev/null
     - python3 -m pytest -v test
 
@@ -64,6 +64,7 @@ build_pages:
   script:
     - apt-get update -qq > /dev/null
     - apt-get install -y -qq git graphviz > /dev/null
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 -m pip install GitPython pybadges sphinx sphinx-rtd-theme sphinx_sitemap > /dev/null
     - python3 tools/build_docs.py
   artifacts:
@@ -80,8 +81,6 @@ pages:
   image: alpine
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
-  # Do none of the default things
-  before_script:
   script:
     - mv generated/sphinx_html public
   artifacts:
