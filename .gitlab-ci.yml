@@ -1,5 +1,7 @@
 # Instructions here: https://docs.gitlab.com/ee/ci/yaml/
 # Linter here: https://gitlab.com/tsfpga/hdl_modules/-/ci/lint
+# We mainly use a docker images that are built for tsfpga CI.
+# See the "docker" folder in the tsfpga repo for details.
 
 stages:
   - test
@@ -21,11 +23,6 @@ workflow:
 default:
   # A running job should be canceled if made redundant by a newer pipeline run.
   interruptible: true
-  # Use docker image from ghdl project
-  # Available at https://hub.docker.com/r/ghdl/vunit/
-  # Configured at https://github.com/ghdl/docker/
-  # Note that the mcode image is much smaller than the gcc image.
-  image: ghdl/vunit:mcode-master
   before_script:
     - echo $CI_COMMIT_TAG
     - echo $CI_COMMIT_BRANCH
@@ -36,27 +33,24 @@ default:
 
 pytest:
   stage: test
+  image: tsfpga/ci_py_sim
   script:
-    - apt-get update -qq > /dev/null
-    - apt-get install --yes -qq --no-install-recommends git > /dev/null
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
-    - python3 -m pip install black flake8 pylint pytest GitPython > /dev/null
     - python3 -m pytest -v test
 
 
 simulate:
   stage: test
+  image: tsfpga/ci_py_sim
   script:
-    - apt-get update -qq > /dev/null
-    - apt-get install --yes -qq --no-install-recommends git > /dev/null
-    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
-    - python3 -m pip install tomlkit GitPython > /dev/null
-    # We seem to need this for some reason. Without it, the "simulate.py --vcs-minimal" call can not
+    # We seem to need "git fetch" for some reason.
+    # Without it, the "simulate.py --vcs-minimal" call can not
     # resolve "origin/master" (and running "git branch -a" comes out empty). The tsfpga repo, which
     # has pretty much identical settings, does not have this issue.
     # Might have something to do with a shallow clone strategy, or a gitlab bug related to the
     # project being private and then made public. For now this workaround works, so it is fine.
     - git fetch
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     # Run minimal simulation subset for merge requests
     - if [ $CI_PIPELINE_SOURCE == "merge_request_event" ]; then export SIMULATE_FLAGS="--vcs-minimal"; fi;
     - python3 tools/simulate.py --num-threads 4 --vivado-skip $SIMULATE_FLAGS
@@ -64,16 +58,8 @@ simulate:
 
 build_pages:
   stage: test
+  image: tsfpga/ci_py_sim_sphinx
   script:
-    - apt-get update -qq > /dev/null
-    # Needed by sphinx/symbolator/wavedrom
-    - apt-get install --yes -qq --no-install-recommends git pkg-config build-essential python3-dev libcairo2-dev gir1.2-gtk-3.0 libgirepository1.0-dev graphviz > /dev/null
-    # Older version since there is an issue with symbolator setup.py:
-    # https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
-    - python3 -m pip install "setuptools<58" > /dev/null
-    # Older version of sphinx since symbolator_sphinx does not work with newer:
-    # "exception: cannot import name 'ENOENT'"
-    - python3 -m pip install GitPython pybadges sphinx==3.5.4 sphinx-rtd-theme sphinx_sitemap symbolator sphinxcontrib-wavedrom pycairo PyGObject pytest tomlkit > /dev/null
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 tools/build_docs.py
   artifacts:
