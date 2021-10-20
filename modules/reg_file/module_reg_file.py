@@ -6,7 +6,7 @@
 # https://gitlab.com/tsfpga/tsfpga
 # --------------------------------------------------------------------------------------------------
 
-from tsfpga.module import BaseModule, get_tsfpga_modules
+from tsfpga.module import BaseModule, get_hdl_modules
 from tsfpga.vivado.project import VivadoNetlistProject
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
@@ -37,7 +37,7 @@ class Module(BaseModule):
 
     def get_build_projects(self):  # pylint: disable=no-self-use
         projects = []
-        all_modules = get_tsfpga_modules()
+        all_modules = get_hdl_modules()
         part = "xc7z020clg400-1"
 
         projects.append(
