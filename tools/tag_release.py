@@ -47,11 +47,13 @@ def verify_new_version_number(repo, new_version):
 
     new_git_tag = "v" + new_version
     for existing_tag in repo.tags:
-        if new_git_tag == existing_tag:
+        existing_tag_str = str(existing_tag)
+
+        if new_git_tag == existing_tag_str:
             sys.exit(f"Git release tag already exists: {new_git_tag}")
 
         # Split e.g. "v1.0.0" -> "1.0.0"
-        existing_version = existing_tag.split("v")[1]
+        existing_version = existing_tag_str.split("v")[1]
         if parse(new_version) <= parse(existing_version):
             sys.exit(f"New version {new_version} is not greater than existing tag {existing_tag}")
 
