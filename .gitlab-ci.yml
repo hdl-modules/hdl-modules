@@ -50,6 +50,7 @@ simulate:
     # Might have something to do with a shallow clone strategy, or a gitlab bug related to the
     # project being private and then made public. For now this workaround works, so it is fine.
     - git fetch
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/hdl_registers.git ../hdl_registers
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     # Run minimal simulation subset for merge requests
     - if [ $CI_PIPELINE_SOURCE == "merge_request_event" ]; then export SIMULATE_FLAGS="--vcs-minimal"; fi;
@@ -60,6 +61,7 @@ build_pages:
   stage: test
   image: tsfpga/ci_py_sim_sphinx
   script:
+    - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/hdl_registers.git ../hdl_registers
     - git clone --depth 1 --single-branch --branch master https://gitlab.com/tsfpga/tsfpga.git ../tsfpga
     - python3 tools/build_docs.py
   artifacts:
