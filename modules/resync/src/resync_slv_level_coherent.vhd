@@ -1,9 +1,9 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the tsfpga project.
--- https://tsfpga.com
--- https://gitlab.com/tsfpga/tsfpga
+-- This file is part of the hdl_modules project.
+-- https://hdl-modules.com
+-- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Resynchronize a data vector from one clock domain to another. Unlike e.g. resync_slv_level, this
 -- entity contains a mechanism that guarantees bit coherency. An asynchronous FIFO can also be used

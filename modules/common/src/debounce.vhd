@@ -1,9 +1,9 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the tsfpga project.
--- https://tsfpga.com
--- https://gitlab.com/tsfpga/tsfpga
+-- This file is part of the hdl_modules project.
+-- https://hdl-modules.com
+-- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Simple debounce mechanism to be used with e.g. the signal from a button or
 -- dip switch. It eliminates noise by requiring the input to have a stable

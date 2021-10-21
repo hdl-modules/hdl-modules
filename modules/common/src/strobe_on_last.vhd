@@ -1,9 +1,9 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the tsfpga project.
--- https://tsfpga.com
--- https://gitlab.com/tsfpga/tsfpga
+-- This file is part of the hdl_modules project.
+-- https://hdl-modules.com
+-- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- The goal of this entity is to process an AXI-Stream so that bursts where 'last' is asserted on
 -- a word that is completely strobed out are modified so that 'last' is instead asserted on the last

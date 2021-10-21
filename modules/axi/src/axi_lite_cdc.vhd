@@ -1,9 +1,9 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the tsfpga project.
--- https://tsfpga.com
--- https://gitlab.com/tsfpga/tsfpga
+-- This file is part of the hdl_modules project.
+-- https://hdl-modules.com
+-- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Clock crossing of an AXI-Lite bus
 -- -------------------------------------------------------------------------------------------------

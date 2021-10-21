@@ -1,9 +1,9 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the tsfpga project.
--- https://tsfpga.com
--- https://gitlab.com/tsfpga/tsfpga
+-- This file is part of the hdl_modules project.
+-- https://hdl-modules.com
+-- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Test AXI clock domain crossing by running transactions through a
 -- axi_read/write_cdc -> axi_read/write_throttle chain. The tests run are not very exhaustive,
