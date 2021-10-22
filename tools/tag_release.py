@@ -16,10 +16,10 @@ from git import Repo
 import hdl_modules_tools_env
 
 from tsfpga.system_utils import create_file, read_file
+from tsfpga.tools.version_number_handler import commit_and_tag_release, UNRELEASED_EMPTY
 
 
 RELEASE_NOTES = hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes"
-UNRELEASED_EMPTY = "Nothing here yet.\n"
 
 
 def main():
@@ -75,20 +75,6 @@ def move_release_notes(repo, version):
     # Add files so that the changes get included in the commit
     repo.index.add(str(unreleased_rst.resolve()))
     repo.index.add(str(version_rst.resolve()))
-
-
-def commit_and_tag_release(repo, version, git_tag):
-    make_commit(repo=repo, commit_message=f"Release version {version}")
-
-    repo.create_tag(git_tag)
-    if git_tag not in repo.tags:
-        sys.exit("Git tag failed")
-
-
-def make_commit(repo, commit_message):
-    repo.index.commit(commit_message)
-    if repo.is_dirty():
-        sys.exit("Git commit failed")
 
 
 if __name__ == "__main__":
