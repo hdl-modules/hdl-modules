@@ -26,7 +26,8 @@ use work.types_pkg.all;
 entity tb_handshake_pipeline is
   generic (
     full_throughput : boolean;
-    allow_poor_input_ready_timing : boolean;
+    pipeline_control_signals : boolean;
+    pipeline_data_signals : boolean;
     data_jitter : boolean := false;
     runner_cfg : string
   );
@@ -184,7 +185,8 @@ begin
     generic map (
       data_width => data_width,
       full_throughput => full_throughput,
-      allow_poor_input_ready_timing => allow_poor_input_ready_timing,
+      pipeline_control_signals => pipeline_control_signals,
+      pipeline_data_signals => pipeline_data_signals,
       strobe_unit_width => input_data'length / input_strobe'length
     )
     port map (

@@ -105,8 +105,8 @@ begin
         -- Choosable by user, since it affects footprint.
         full_throughput => full_aw_throughput,
         -- The goal of this pipeline is to improve timing of the control bits, so this one must
-        -- be false, even though it will increase footprint.
-        allow_poor_input_ready_timing => false
+        -- be true, even though it will increase footprint.
+        pipeline_control_signals => true
       )
       port map (
         clk => clk,

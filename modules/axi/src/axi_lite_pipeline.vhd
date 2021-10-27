@@ -57,7 +57,7 @@ begin
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
-        allow_poor_input_ready_timing => allow_poor_input_ready_timing
+        pipeline_control_signals => not allow_poor_input_ready_timing
       )
       port map(
         clk => clk,
@@ -87,7 +87,7 @@ begin
       generic map (
         data_width => w_width,
         full_throughput => full_throughput,
-        allow_poor_input_ready_timing => allow_poor_input_ready_timing
+        pipeline_control_signals => not allow_poor_input_ready_timing
       )
       port map(
         clk => clk,
@@ -108,7 +108,7 @@ begin
     generic map (
       data_width => axi_lite_s2m_b_sz,
       full_throughput => full_throughput,
-      allow_poor_input_ready_timing => allow_poor_input_ready_timing
+      pipeline_control_signals => not allow_poor_input_ready_timing
     )
     port map(
       clk => clk,
@@ -135,7 +135,7 @@ begin
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
-        allow_poor_input_ready_timing => allow_poor_input_ready_timing
+        pipeline_control_signals => not allow_poor_input_ready_timing
       )
       port map(
         clk => clk,
@@ -165,7 +165,7 @@ begin
       generic map (
         data_width => r_width,
         full_throughput => full_throughput,
-        allow_poor_input_ready_timing => allow_poor_input_ready_timing
+        pipeline_control_signals => not allow_poor_input_ready_timing
       )
       port map(
         clk => clk,

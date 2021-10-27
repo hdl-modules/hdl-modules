@@ -21,9 +21,12 @@ entity handshake_pipeline is
     data_width : integer;
     -- Setting to false can save logic footprint, at the cost of lower throughput
     full_throughput : boolean := true;
-    -- Can result in smaller logic footprint and higher througphput, at the cost of worse timing
-    -- on the input_ready signal.
-    allow_poor_input_ready_timing : boolean := false;
+    -- Ensures that there is no combinatorial path between valid and ready on input and output.
+    -- Will result in higher logic footprint.
+    pipeline_control_signals : boolean := true;
+    -- Ensures that there is no combinatorial path from data, strobe and last on input to output.
+    -- Will result in higher logic footprint.
+    pipeline_data_signals : boolean := true;
     -- In the typical use case where we want a "byte strobe", this would be eight.
     -- In other cases, for example when the data is packed, we migh use a higher value.
     -- Must assign a valid value if input/output strobe is to be used.
@@ -55,35 +58,7 @@ architecture a of handshake_pipeline is
 begin
 
   ------------------------------------------------------------------------------
-  choose_mode : if full_throughput and allow_poor_input_ready_timing generate
-
-    -- In this mode, the data and control signals are driven by registers, except for input_ready
-    -- which will have an increased critical path. It still maintaints full throughput,
-    -- and has a much smaller footprint than the full skid-aside buffer.
-    --
-    -- It is suitable in situtations where there is a complex net driving the data, which needs to
-    -- be pipelined in order to achieve timing closure, but the timing of the control signals is
-    -- not critical.
-
-    input_ready <= output_ready or not output_valid;
-
-
-    ------------------------------------------------------------------------------
-    main : process
-    begin
-      wait until rising_edge(clk);
-
-      if input_ready then
-        output_valid <= input_valid;
-        output_last <= input_last;
-        output_data <= input_data;
-        output_strobe <= input_strobe;
-      end if;
-    end process;
-
-
-  ------------------------------------------------------------------------------
-  elsif full_throughput and not allow_poor_input_ready_timing generate
+  choose_mode : if full_throughput and pipeline_data_signals and pipeline_control_signals generate
 
     -- This mode is a full skid-aside buffer, aka skid buffer.
     --
@@ -167,12 +142,63 @@ begin
 
 
   ------------------------------------------------------------------------------
-  elsif (not full_throughput) and allow_poor_input_ready_timing generate
+  elsif full_throughput and pipeline_data_signals and (not pipeline_control_signals) generate
+
+    -- In this mode, the data and control signals are driven by registers, except for input_ready
+    -- which will have an increased critical path. It still maintaints full throughput,
+    -- and has a much smaller footprint than the full skid-aside buffer.
+    --
+    -- It is suitable in situtations where there is a complex net driving the data, which needs to
+    -- be pipelined in order to achieve timing closure, but the timing of the control signals is
+    -- not critical.
+
+    input_ready <= output_ready or not output_valid;
+
+
+    ------------------------------------------------------------------------------
+    main : process
+    begin
+      wait until rising_edge(clk);
+
+      if input_ready then
+        output_valid <= input_valid;
+        output_last <= input_last;
+        output_data <= input_data;
+        output_strobe <= input_strobe;
+      end if;
+    end process;
+
+
+  ------------------------------------------------------------------------------
+  elsif (not full_throughput) and pipeline_data_signals and pipeline_control_signals generate
+
+    -- All signals are driven by registers, which results in the best timing but also the lowest
+    -- throughput. This mode will be able to maintain a one third throughput.
+
+    ------------------------------------------------------------------------------
+    main : process
+    begin
+      wait until rising_edge(clk);
+
+      input_ready <= output_ready and output_valid;
+      -- Since there is a one cycle latency on output_valid, and a one cycle latency on input_ready,
+      -- we have to stall for two cycles after a transaction, to allow the "input" master to update
+      -- data and valid.
+      output_valid <= input_valid and not (output_valid and output_ready) and not input_ready;
+      output_last <= input_last;
+      output_data <= input_data;
+      output_strobe <= input_strobe;
+    end process;
+
+
+  ------------------------------------------------------------------------------
+  elsif (not full_throughput) and pipeline_data_signals and (not pipeline_control_signals) generate
 
     -- All signals are driven by registers, except input_ready which will have an increased
     -- critical path. This mode will be able to maintain a one half throughput.
     --
-    -- Compared to the first mode in this file, this one has a lower load on the input_ready.
+    -- Compared to the "full_throughput and pipeline_data_signals and not pipeline_control_signals"
+    -- above, this one has a lower load on the input_ready.
     -- This results in somewhat better timing on the input_ready signal, at the cost of
     -- lower throughput.
 
@@ -194,12 +220,20 @@ begin
 
 
   ------------------------------------------------------------------------------
-  elsif (not full_throughput) and (not allow_poor_input_ready_timing) generate
+  elsif (not pipeline_data_signals) and pipeline_control_signals generate
 
-    -- All signals are driven by registers, which results in the best timing but also the lowest
-    -- throughput. This mode will be able to maintain a one third throughput.
+    -- Control signals are pipelined while data, last and strobe signals
+    -- are driven directly from input to output.
+    -- This mode will be able to maintain a third throughput.
+
+    type state_t is (wait_for_input_valid, wait_for_output_ready);
+      signal state : state_t := wait_for_input_valid;
 
   begin
+
+    assert not full_throughput
+      report "Does not support full throughput when only pipelining control signals"
+      severity failure;
 
 
     ------------------------------------------------------------------------------
@@ -207,15 +241,49 @@ begin
     begin
       wait until rising_edge(clk);
 
-      input_ready <= output_ready and output_valid;
-      -- Since there is a one cycle latency on output_valid, and a one cycle latency on input_ready,
-      -- we have to stall for two cycles after a transaction, to allow the "input" master to update
-      -- data and valid.
-      output_valid <= input_valid and not (output_valid and output_ready) and not input_ready;
-      output_last <= input_last;
-      output_data <= input_data;
-      output_strobe <= input_strobe;
+      case state is
+        when wait_for_input_valid =>
+          input_ready <= '0';
+
+          -- Proceed to output the input data, but only if we are not waiting for a pop
+          -- of the previous input
+          if input_valid and not input_ready then
+            -- Input is valid, so signal that it can be used for output.
+            -- We don't pop it from the input yet, because we don't want an extra register stage
+            -- for data in this mode.
+            output_valid <= '1';
+            state <= wait_for_output_ready;
+          end if;
+
+        when wait_for_output_ready =>
+          assert output_valid report "Should not be able to get here without valid output";
+          assert input_valid report "Should not be able to get here without valid input";
+
+          -- Wait for output ready and then pop the input
+          if output_ready then
+            -- Pop the input word next cycle
+            input_ready <= '1';
+            output_valid <= '0';
+            state <= wait_for_input_valid;
+          end if;
+
+      end case;
     end process;
+
+    output_data <= input_data;
+    output_strobe <= input_strobe;
+    output_last <= input_last;
+
+  elsif (not pipeline_data_signals) and (not pipeline_control_signals) generate
+
+    -- This mode will simply create a passthrough.
+    -- This may be handy if you want to see how removing a pipeline stage affects timing.
+
+    input_ready <= output_ready;
+    output_valid <= input_valid;
+    output_data <= input_data;
+    output_strobe <= input_strobe;
+    output_last <= input_last;
 
   end generate;
 

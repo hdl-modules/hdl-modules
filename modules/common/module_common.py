@@ -55,36 +55,48 @@ class Module(BaseModule):
     def _setup_handshake_pipeline_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_pipeline")
         for test in tb.get_tests():
-            for allow_poor_input_ready_timing in [False, True]:
-                if "full_throughput" in test.name:
-                    generics = dict(
-                        full_throughput=True,
-                        allow_poor_input_ready_timing=allow_poor_input_ready_timing,
-                    )
-                    self.add_vunit_config(test=test, generics=generics)
+            for (
+                pipeline_control_signals,
+                pipeline_data_signals,
+                full_throughput,
+            ) in itertools.product([False, True], [False, True], [False, True]):
+                # Implementation does not support full throughput
+                # when only pipelining control signals
+                if full_throughput and pipeline_control_signals and (not pipeline_data_signals):
+                    continue
 
-                if "random_data" in test.name:
-                    for full_throughput in [False, True]:
-                        generics = dict(
-                            data_jitter=True,
-                            full_throughput=full_throughput,
-                            allow_poor_input_ready_timing=allow_poor_input_ready_timing,
-                        )
-                        self.add_vunit_config(test=test, generics=generics)
+                # The full throughput test case should only run  with the full_throughput
+                # generic set
+                if "full_throughput" in test.name and (not full_throughput):
+                    continue
+
+                data_jitter = "full_throughput" not in test.name
+
+                generics = dict(
+                    data_jitter=data_jitter,
+                    full_throughput=full_throughput,
+                    pipeline_control_signals=pipeline_control_signals,
+                    pipeline_data_signals=pipeline_data_signals,
+                )
+                self.add_vunit_config(test=test, generics=generics)
 
     def _get_handshake_pipeline_build_projects(self, part, projects):
-        full_throughput = [True, True, False, False]
-        allow_poor_input_ready_timing = [True, False, True, False]
+        # All sets of generics are supported except full throughput with pipeline of
+        # control signals but not data signals
+        full_throughput = [True, True, True, False, False, False, False]
+        pipeline_control_signals = [True, False, False, True, True, False, False]
+        pipeline_data_signals = [True, True, False, True, False, True, False]
 
-        total_luts = [1, 41, 2, 1]
-        ffs = [38, 78, 38, 39]
-        maximum_logic_level = [2, 2, 2, 2]
+        total_luts = [41, 1, 0, 1, 2, 2, 0]
+        ffs = [78, 38, 0, 39, 3, 38, 0]
+        maximum_logic_level = [2, 2, 0, 2, 2, 2, 0]
 
         for idx in range(len(total_luts)):  # pylint: disable=consider-using-enumerate
             generics = dict(
                 data_width=32,
                 full_throughput=full_throughput[idx],
-                allow_poor_input_ready_timing=allow_poor_input_ready_timing[idx],
+                pipeline_control_signals=pipeline_control_signals[idx],
+                pipeline_data_signals=pipeline_data_signals[idx],
             )
 
             projects.append(
