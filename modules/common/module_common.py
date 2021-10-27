@@ -217,7 +217,7 @@ class Module(BaseModule):
             dict(data_width=64, strobe_unit_width=8),
             dict(data_width=16 * 8, strobe_unit_width=4 * 8),
         ]
-        total_luts = [98, 407, 415]
+        total_luts = [88, 410, 414]
         ffs = [79, 175, 282]
         maximum_logic_level = [3, 6, 5]
 

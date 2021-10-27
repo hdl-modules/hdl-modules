@@ -26,7 +26,7 @@
 -- The handling of input_last presents a corner case.
 -- Lets assume that data_width is 16 and strobe_unit_width is 8.
 -- Furthermore, there is one atom of data available in the buffer, and input stream has both lanes
--- strobed. In this case, one input word shall result in two output words. The output word
+-- strobed. In this case, one input word shall result in two output words. The first output word
 -- comes from a whole word being filled in the buffer. The second word comes from a half filled word
 -- in the buffer, but input_last being asserted.
 -- This is solved by having a small state machine that pads input data with an extra word when
@@ -320,8 +320,7 @@ begin
         - num_atoms_to_read;
     end process;
 
-    padded_input_ready <=
-      to_sl(num_atoms_in_buffer <= (max_num_atoms_in_buffer - num_atoms_per_word));
+    padded_input_ready <= output_ready or not output_valid;
 
     output_valid <= to_sl(num_atoms_in_buffer >= num_atoms_per_word);
 

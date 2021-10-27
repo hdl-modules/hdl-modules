@@ -70,17 +70,13 @@ begin
 
     variable num_output_bursts_expected : natural := 0;
 
-    procedure run_test_burst(fixed_length_words : natural := 0) is
+    procedure run_test_burst is
       variable burst_length_atoms, burst_length_bytes : positive := 1;
       variable data_in, reference_data_out : integer_array_t := null_integer_array;
     begin
-      if fixed_length_words /= 0 then
-        burst_length_atoms := fixed_length_words * atoms_per_word;
-      else
-        -- Random length. We want to run just a few words, since we want to exercies
-        -- the 'last' behavior a lot.
-        burst_length_atoms := rnd.RandInt(1, 3 * atoms_per_word);
-      end if;
+      -- Random length. We want to run just a few words, since we want to exercise
+      -- the 'last' behavior a lot.
+      burst_length_atoms := rnd.RandInt(1, 3 * atoms_per_word);
 
       -- Number of bytes must be a whole number of atoms for strobing to make sense
       burst_length_bytes := burst_length_atoms * bytes_per_atom;
@@ -109,8 +105,6 @@ begin
         and rising_edge(clk);
     end procedure;
 
-    variable start_time, time_diff : time;
-
   begin
     test_runner_setup(runner, runner_cfg);
     rnd.InitSeed(rnd'instance_name);
@@ -120,22 +114,16 @@ begin
         run_test_burst;
       end loop;
 
-      wait_until_done;
-
     elsif run("test_full_throughput") then
-      start_time := now;
-
-      for burst_idx in 0 to 100 loop
-        run_test_burst(fixed_length_words=>10);
+      -- This test will have no jitter/stall in the AXI-Stream master/slave, but random input
+      -- strobe. A checker process asserts that 'input_ready' is always one.
+      for burst_idx in 0 to 500 loop
+        run_test_burst;
       end loop;
-      wait_until_done;
-
-      time_diff := now - start_time;
-
-      -- Latency in the input queue, through the module, and the output queue. Hence the margin.
-      check_relation(time_diff < (100 * 10 + 13) * clk_period);
 
     end if;
+
+    wait_until_done;
 
     test_runner_cleanup(runner);
   end process;
@@ -161,13 +149,18 @@ begin
         variable num_bytes_left : natural := 0;
         variable result : natural range 0 to bytes_per_word := 0;
       begin
-        if enabled("test_full_throughput") then
-          -- Only full words
-          num_atoms_this_word := atoms_per_word;
-        else
-          -- Random number of atoms per word, which result in strobing
-          num_atoms_this_word := rnd.RandInt(0, atoms_per_word);
+        -- Random number of atoms per word, which result in strobing
+        num_atoms_this_word := rnd.RandInt(0, atoms_per_word);
+
+        if enabled("test_full_throughput") and num_bytes_left <= bytes_per_word then
+          -- The corner case which results in 'last' input padding does not achieve full
+          -- throughput (see keep_remover header). So we try to not trigger that case when
+          -- we are testing for full throughput.
+          -- Send the last beats so that the very last beat does not fill a non-empty buffer
+          -- over the line to contain more than one output beat.
+          num_atoms_this_word := minimum(atoms_per_word / 2, num_atoms_this_word);
         end if;
+
         result := num_atoms_this_word * bytes_per_atom;
 
         num_bytes_left := num_input_bytes - array_byte_idx;
@@ -243,6 +236,17 @@ begin
       );
 
   end block;
+
+
+  ------------------------------------------------------------------------------
+  check_full_throughput : process
+  begin
+    wait until rising_edge(clk);
+
+    if enabled("test_full_throughput")  then
+      check_equal(input_ready, '1', "Should always be ready to accept a new input word");
+    end if;
+  end process;
 
 
   ------------------------------------------------------------------------------
