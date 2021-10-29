@@ -45,9 +45,11 @@ use work.bfm_pkg.all;
 entity handshake_slave is
   generic (
     stall_config : in stall_config_t;
-    -- Is also used for the random seed.
-    -- Set to something unique in order to vary the random sequence.
+    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
+    -- Random seed for handshaking stall/jitter.
+    -- Set to something unique in order to vary the random sequence.
+    seed : natural := 0;
     -- Assign a non-zero value in order to use the 'id' port for protocol checking.
     id_width : natural := 0;
     -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking.
@@ -109,7 +111,7 @@ begin
   toggle_stall : process
     variable rnd : RandomPType;
   begin
-    rnd.InitSeed(rnd'instance_name & logger_name_suffix);
+    rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
 
     loop
       stall_data <= '1';

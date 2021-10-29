@@ -39,9 +39,11 @@ entity axi_stream_slave is
     -- this queue.
     reference_id_queue : queue_t := null_queue;
     stall_config : stall_config_t := null_stall_config;
-    -- Is also used for the random seed for handshaking stall.
-    -- Set to something unique in order to vary the random sequence.
+    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
+    -- Random seed for handshaking stall/jitter.
+    -- Set to something unique in order to vary the random sequence.
+    seed : natural := 0;
     -- For protocol checking of the 'data' port.
     -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be '-' (don't care)
     -- when tvalid is asserted. Even when that bit is strobed out by tstrobe/tkeep.
@@ -216,6 +218,7 @@ begin
       generic map(
         stall_config => stall_config,
         logger_name_suffix => logger_name_suffix,
+        seed => seed,
         well_behaved_stall => well_behaved_stall,
         data_width => data'length,
         id_width => id'length,
