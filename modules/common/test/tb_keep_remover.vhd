@@ -25,8 +25,10 @@ use common.types_pkg.all;
 
 entity tb_keep_remover is
   generic (
+    seed : natural;
     data_width : positive;
     strobe_unit_width : positive;
+    -- Will be set false when testing for full throughput, but should be enabled for other tests
     enable_jitter : boolean := true;
     runner_cfg : string
   );
@@ -107,7 +109,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(rnd'instance_name & to_string(seed));
 
     if run("test_data") then
       for burst_idx in 0 to 500 loop
@@ -222,6 +224,7 @@ begin
       generic map (
         stall_config => stall_config,
         logger_name_suffix => "_input",
+        seed => seed,
         data_width => input_data'length
       )
       port map (
@@ -256,6 +259,7 @@ begin
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
       logger_name_suffix => "_output",
+      seed => seed,
       remove_strobed_out_dont_care => true,
       strobe_unit_width_bits => output_data'length / output_strobe'length
     )

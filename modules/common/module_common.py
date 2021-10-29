@@ -198,17 +198,18 @@ class Module(BaseModule):
         test = tb.test("test_data")
         for data_width in [8, 16, 32]:
             for strobe_unit_width in [8, 16]:
-                if strobe_unit_width <= data_width:
-                    generics = dict(data_width=data_width, strobe_unit_width=strobe_unit_width)
-                    self.add_vunit_config(test=test, generics=generics)
+                if strobe_unit_width > data_width:
+                    continue
+
+                generics = dict(data_width=data_width, strobe_unit_width=strobe_unit_width)
+                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
         test = tb.test("test_full_throughput")
-        self.add_vunit_config(
-            test=test, generics=dict(data_width=16, strobe_unit_width=8, enable_jitter=False)
-        )
-        self.add_vunit_config(
-            test=test, generics=dict(data_width=32, strobe_unit_width=16, enable_jitter=False)
-        )
+        for data_width, strobe_unit_width in [(16, 8), (32, 16)]:
+            generics = dict(
+                data_width=data_width, strobe_unit_width=strobe_unit_width, enable_jitter=False
+            )
+            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
     def _get_keep_remover_build_projects(self, part, projects):
         modules = [self]
