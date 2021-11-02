@@ -5,15 +5,35 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Synchronous FIFO.
+-- Synchronous FIFO implementation that is very versatile in terms of features that can be enabled.
+-- Despite this it is very optimized when used in its barebone configuration, and will result in a
+-- very small logic footprint.
 --
--- This FIFO implementation has an optional "peek read" mode that is enabled by setting the
--- enable_peek_mode generic. It makes it possible to read a packet multiple times.
--- If the read_peek_mode signal is asserted when read_ready is asserted, the current packet will
--- not be popped from the FIFO, but can instead be read again. Once the readout encounters
--- read_last, the readout will return again to the first word of the packet.
--- Note that the read_peek_mode value may not be changed during the readout of a packet.
--- It must be static for all words in a packet, but may be updated after read_last.
+-- Features that can be enabled:
+--
+-- * If ``enable_last`` is set to ``true``, the ``write_last`` signal will be concatenated with
+--   ``write_data`` and stored in RAM, and then passed on to ``read_last``. Without this,
+--   ``read_last`` will have an undefined value and ``write_last`` will not be used.
+--
+-- * FIFO packet mode is enabled by setting the generic ``enable_packet_mode`` to ``true``.
+--   When this mode is enabled, ``read_valid`` will not be asserted until the whole "packet"
+--   has been written to FIFO, as indicated by ``write_valid and write_last``.
+--
+-- * The FIFO supports dropping packets that are in the progress of being written.
+--   If the ``enable_drop_packet_support`` generic is set to ``true``, the ``drop_packet`` port
+--   can be used to drop the current packet, i.e. all words written since the last
+--   ``write_valid and write_last`` happened.
+--
+--   The port can be asserted at any time, regardless of e.g. ``write_ready`` or ``write_valid``.
+--
+-- * Additionally there is a "peek read" mode available that is enabled by setting the
+--   ``enable_peek_mode`` generic to ``true``. It makes it possible to read a packet multiple times.
+--   If the ``read_peek_mode`` signal is asserted when ``read_ready`` is asserted, the current
+--   packet will not be popped from the FIFO, but can instead be read again.
+--   Once the readout encounters ``read_last``, the readout will return again to the first word of
+--   the packet.
+--   Note that the ``read_peek_mode`` value may not be changed during the readout of a packet.
+--   It must be static for all words in a packet, but may be updated after ``read_last``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -35,49 +55,52 @@ entity fifo is
     -- Changing these levels from default value will increase logic footprint
     almost_full_level : integer range 0 to depth := depth;
     almost_empty_level : integer range 0 to depth := 0;
-    -- Set to true in order to use read_last and write_last
+    -- Set to true in order to use 'read_last' and 'write_last'
     enable_last : boolean := false;
-    -- If enabled, read_valid will not be asserted until a full packet is available in
-    -- FIFO. I.e. when write_last has been received. Must set enable_last as well to use this.
+    -- If enabled, 'read_valid' will not be asserted until a full packet is available in
+    -- FIFO. I.e. when 'write_last' has been received. Must set 'enable_last' as well to use this.
     enable_packet_mode : boolean := false;
-    -- Set to true in order to use the drop_packet port. Must set enable_packet_mode as
+    -- Set to true in order to use the 'drop_packet' port. Must set 'enable_packet_mode' as
     -- well to use this.
     enable_drop_packet : boolean := false;
-    -- Set to true in order to read words without popping from FIFO using the read_peek_mode port.
-    -- Must set enable_packet_mode as well to use this.
+    -- Set to true in order to read words without popping from FIFO using the 'read_peek_mode' port.
+    -- Must set 'enable_packet_mode' as well to use this.
     enable_peek_mode : boolean := false;
     -- Select what FPGA primitives will be used to implement the FIFO memory.
     ram_type : ram_style_t := ram_style_auto
   );
   port (
     clk : in std_logic;
-    -- When packet_mode is enabled, this value will still reflect the number of words that are in
+    --# {{}}
+    -- When 'packet_mode' is enabled, this value will still reflect the number of words that are in
     -- the FIFO RAM. This is not necessarily the same as the number of words that can be read, in
     -- this mode.
     level : out integer range 0 to depth := 0;
 
+    --# {{}}
     read_ready : in std_logic;
     -- '1' if FIFO is not empty
     read_valid : out std_logic := '0';
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
-    -- Must set enable_last generic in order to use this
+    -- Must set 'enable_last' generic in order to use this
     read_last : out std_logic := '0';
     -- When this is asserted, packets can be read multiple times from the FIFO.
-    -- Must set enable_peek_mode generic in order to use this.
+    -- Must set 'enable_peek_mode' generic in order to use this.
     read_peek_mode : in std_logic := '0';
-    -- '1' if there are almost_empty_level or fewer words available to read
+    -- '1' if there are 'almost_empty_level' or fewer words available to read
     almost_empty : out std_logic := '1';
 
+    --# {{}}
     -- '1' if FIFO is not full
     write_ready : out std_logic := '1';
     write_valid : in std_logic;
     write_data : in std_logic_vector(width - 1 downto 0);
-    -- Must set enable_last generic in order to use this
+    -- Must set 'enable_last' generic in order to use this
     write_last : in std_logic := '-';
-    -- '1' if there are almost_full_level or more words available in the FIFO
+    -- '1' if there are 'almost_full_level' or more words available in the FIFO
     almost_full : out std_logic := '0';
     -- Drop the current packet (all words that have been writen since the previous write_last).
-    -- Must set enable_drop_packet generic in order to use this.
+    -- Must set 'enable_drop_packet' generic in order to use this.
     drop_packet : in std_logic := '0'
   );
 end entity;
