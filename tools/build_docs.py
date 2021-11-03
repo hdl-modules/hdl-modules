@@ -12,7 +12,7 @@ import hdl_modules_tools_env
 
 from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
-from tsfpga.system_utils import create_directory, create_file, delete, read_file
+from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
 GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx"
@@ -21,9 +21,6 @@ SPHINX_DOC = hdl_modules_tools_env.HDL_MODULES_DOC / "sphinx"
 
 
 def main():
-    delete(GENERATED_SPHINX)
-    delete(GENERATED_SPHINX_HTML)
-
     rst = generate_release_notes(
         repo_root=hdl_modules_tools_env.REPO_ROOT,
         release_notes_directory=hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes",
