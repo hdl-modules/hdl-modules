@@ -5,7 +5,15 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Asynchronous FIFO.
+-- Asynchronous (two clocks) First In First Out (FIFO) data buffering stage with AXI-Stream-like
+-- handshaking interface.
+-- Supports ``last``, packet mode and ``drop_packet`` just like the
+-- :ref:`synchronous FIFO <fifo.fifo>`.
+-- The implementation is quite opitmized with very low resource utilization when extra features
+-- are not enabled.
+--
+-- Note that this entity has a scoped constraint file that must be used, and that it instantiates
+-- :ref:`resync.resync_counter` which also has a constraint file.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,12 +37,12 @@ entity asynchronous_fifo is
     -- Changing these levels from default value will increase logic footprint
     almost_full_level : integer range 0 to depth := depth;
     almost_empty_level : integer range 0 to depth := 0;
-    -- Set to true in order to use read_last and write_last
+    -- Set to true in order to use 'read_last' and 'write_last'
     enable_last : boolean := false;
-    -- If enabled, read_valid will not be asserted until a full packet is available in
-    -- FIFO. I.e. when write_last has been received.
+    -- If enabled, 'read_valid' will not be asserted until a full packet is available in
+    -- FIFO. I.e. when 'write_last' has been received.
     enable_packet_mode : boolean := false;
-    -- Set to true in order to use the drop_packet port. Must set enable_packet_mode as
+    -- Set to true in order to use the 'drop_packet' port. Must set 'enable_packet_mode' as
     -- well to use this.
     enable_drop_packet : boolean := false;
     -- Select what FPGA primitives will be used to implement the FIFO memory.
@@ -47,43 +55,40 @@ entity asynchronous_fifo is
     -- '1' if FIFO is not empty
     read_valid : out std_logic := '0';
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
-    -- Must set enable_last generic in order to use this
+    -- Must set 'enable_last' generic in order to use this
     read_last : out std_logic := '0';
 
     -- Status signals on the read side. Updated one clock cycle after read transactions.
     -- Updated "a while" after write transactions (not deterministic).
     --
-    -- Note that this port will be CONSTANTLY ZERO if the enable_packet_mode generic is set
+    -- Note that this port will be CONSTANTLY ZERO if the 'enable_packet_mode' generic is set
     -- to true. This is since a glitch-free value can not be guaranteed in this mode.
-    --
-    -- When packet_mode is enabled, this value will still reflect the number of words that are in
-    -- the FIFO RAM. This is not necessarily the same as the number of words that can be read, in
-    -- this mode.
     read_level : out integer range 0 to depth := 0;
-    -- '1' if there are almost_empty_level or fewer words available to read
+    -- '1' if there are 'almost_empty_level' or fewer words available to read.
     --
-    -- Note that this port will be CONSTANTLY ONE if the enable_packet_mode generic is set
-    -- to true, and almost_empty_level has a non-default value.
-    -- This is since a glitch-free value of read_level can not be guaranteed in this mode.
+    -- Note that this port will be CONSTANTLY ONE if the 'enable_packet_mode' generic is set
+    -- to true, and 'almost_empty_level' has a non-default value.
+    -- This is since a glitch-free value of 'read_level' can not be guaranteed in this mode.
     read_almost_empty : out std_logic := '1';
 
+    --# {{}}
     -- Write data interface
     clk_write : in std_logic;
     -- '1' if FIFO is not full
     write_ready : out std_logic := '1';
     write_valid : in  std_logic;
     write_data  : in  std_logic_vector(width - 1 downto 0);
-    -- Must set enable_last generic in order to use this
+    -- Must set 'enable_last' generic in order to use this
     write_last : in std_logic := '0';
 
     -- Status signals on the write side. Updated one clock cycle after write transactions.
     -- Updated "a while" after read transactions (not deterministic).
     write_level : out integer range 0 to depth := 0;
-    -- '1' if there are almost_full_level or more words available in the FIFO
+    -- '1' if there are 'almost_full_level' or more words available in the FIFO
     write_almost_full : out std_logic := '0';
 
-    -- Drop the current packet (all words that have been writen since the previous write_last).
-    -- Must set enable_drop_packet generic in order to use this.
+    -- Drop the current packet (all words that have been writen since the previous 'write_last').
+    -- Must set 'enable_drop_packet' generic in order to use this.
     drop_packet : in std_logic := '0'
   );
 end entity;

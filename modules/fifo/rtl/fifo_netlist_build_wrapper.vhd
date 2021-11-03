@@ -24,11 +24,11 @@ entity fifo_netlist_build_wrapper is
     clk : in std_logic;
     clk_read : in std_logic;
     clk_write : in std_logic;
-    --
+    --# {{}}
     read_ready : in std_logic;
     read_valid : out std_logic := '0';
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
-    --
+    --# {{}}
     write_ready : out std_logic := '1';
     write_valid : in std_logic;
     write_data : in std_logic_vector(width - 1 downto 0)

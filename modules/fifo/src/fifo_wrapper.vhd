@@ -73,6 +73,7 @@ begin
 
     assert not enable_packet_mode report "Can not use packet mode without FIFO";
     assert not enable_drop_packet report "Can not use drop packet without FIFO";
+    assert not enable_peek_mode report "Can not use peek mode without FIFO";
 
     write_ready <= read_ready;
     read_valid <= write_valid;

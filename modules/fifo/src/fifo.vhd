@@ -5,7 +5,9 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Synchronous FIFO implementation that is very versatile in terms of features that can be enabled.
+-- Synchronous (one clock) First In First Out (FIFO) data buffering stage with AXI-Stream-like
+-- handshaking interface.
+-- This implementation is very versatile in terms of features that can be enabled.
 -- Despite this it is very optimized when used in its barebone configuration, and will result in a
 -- very small logic footprint.
 --
