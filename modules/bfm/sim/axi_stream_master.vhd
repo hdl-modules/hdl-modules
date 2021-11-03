@@ -33,11 +33,11 @@ entity axi_stream_master is
     -- The integer arrays will be deallocated after this BFM is done with them.
     data_queue : queue_t;
     stall_config : stall_config_t := null_stall_config;
-    -- Suffix for the VUnit logger name.
-    logger_name_suffix : string := "";
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
+    -- Suffix for the VUnit logger name.
+    logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
     strobe_unit_width_bits : positive := 8
@@ -119,8 +119,8 @@ begin
   handshake_master_int : entity bfm.handshake_master
     generic map(
       stall_config => stall_config,
-      logger_name_suffix => logger_name_suffix,
       seed => seed,
+      logger_name_suffix => logger_name_suffix,
       data_width => data'length
     )
     port map(
