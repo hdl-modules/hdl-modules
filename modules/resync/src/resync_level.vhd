@@ -5,27 +5,35 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Resync a single bit from one clock domain to another.
+-- Resync a single bit from one clock domain to another, using two ``async_reg`` registers.
 --
--- The two registers will be placed in the same slice, in order to minimize
--- MTBF. This guarantees proper resynchronization of semi static "level" type
+-- .. note::
+--   This entity has a scoped constraint file that must be used.
+--
+-- The two registers will be placed in the same slice, in order to minimize Mean Time between
+-- Failure (MTBF). This guarantees proper resynchronization of semi static "level" type
 -- signals without meta stability on rising/falling edges. It can not handle
 -- "pulse" type signals. Pulses can be missed and single-cycle pulse behaviour
 -- will not work.
 --
--- The clk_in port does not necessarily have to be set. But if you want to have
--- a deterministic latency through the resync block (via a set_max_delay
--- constraint) it has to be set. If not, a simple set_false_path constraint will
+-- The ``clk_in`` port does not necessarily have to be set. But if you want to have
+-- a deterministic latency through the resync block (via a ``set_max_delay``
+-- constraint) it has to be set. If not, a simple ``set_false_path`` constraint will
 -- be used and the latency can be arbitrary, depending on the placer/router.
 --
--- There is an option to include a register on the input side before the async_reg flip-flop chain.
+-- Input register
+-- ______________
+--
+-- There is an option to include a register on the input side before the ``async_reg`` flip-flop
+-- chain.
 -- This option is to prevent sampling of data when the input is in a transient "glitch" state, which
 -- can occur if it is driven by a LUT as opposed to a flip-flop. If the input is already driven by
--- a flip-flop, you can safely set the generic to 'false' in order to save resources.
--- Note that this is a separate issue from meta-stability.
--- When this option is enabled, the 'clk_in' port must be driven with the correct clock.
+-- a flip-flop, you can safely set the generic to ``false`` in order to save resources.
+-- Note that this is a separate issue from meta-stability; they can happen independently of
+-- each other.
+-- When this option is enabled, the ``clk_in`` port must be driven with the correct clock.
 --
--- Some motivation why this is needed:
+-- Some motivation why the input needs to be driven by a register:
 -- While LUTs are designed to be glitch-free in order to save switching power, this can only be
 -- achieved as long as only one LUT input value changes state. (See e.g. this thread:
 -- https://forums.xilinx.com/t5/Other-FPGA-Architecture/Interior-switching-of-LUT5-SRAM/td-p/835012)
@@ -34,13 +42,13 @@
 -- This is partly due to difference in propagation delay between the inputs, and partly due to
 -- the electrical structure of a LUT. In a regular synchronous design, the Vivado timing engine
 -- guarantees that all these glitches have been resolved and LUT output has reached its
--- steady state before the value is sampled by a FF. When the value is fed to our async_reg FF
+-- steady state before the value is sampled by a FF. When the value is fed to our ``async_reg`` FF
 -- chain however there is no control over this, and we may very well sample an erroneous
 -- glitch value.
--- So given this knowledge the rule of thumb is to always drive resync_level input by a FF.
+-- So given this knowledge the rule of thumb is to always drive ``resync_level`` input by a FF.
 -- However since LUTs are glitch-free in some scenarios, exceptions can be made if we are sure
 -- of what we are doing. For example if the value is inverted in a LUT before being fed to
--- resync_level, then that is a scenario where we do not actually need the extra FF.
+-- ``resync_level``, then that is a scenario where we do not actually need the extra FF.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -63,7 +71,7 @@ entity resync_level is
   port (
     clk_in : in std_logic := '-';
     data_in : in std_logic;
-
+    --# {{}}
     clk_out : in std_logic;
     data_out : out std_logic
   );

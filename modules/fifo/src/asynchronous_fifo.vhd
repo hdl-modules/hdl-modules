@@ -12,8 +12,9 @@
 -- The implementation is quite opitmized with very low resource utilization when extra features
 -- are not enabled.
 --
--- Note that this entity has a scoped constraint file that must be used, and that it instantiates
--- :ref:`resync.resync_counter` which also has a constraint file.
+-- .. note::
+--   This entity has a scoped constraint file that must be used, it further instantiates
+--   :ref:`resync.resync_counter` which also has a constraint file.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

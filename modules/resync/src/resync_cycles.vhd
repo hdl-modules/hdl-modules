@@ -8,14 +8,18 @@
 -- Resynchronizes a bit, so that the output bit is asserted as many
 -- clock cycles as the input bit.
 --
--- This module counts each clk_in cycle the input bit is asserted.
--- The counter is resynchronized to clk_out, and used as a reference to know
--- how many clk_out cycles the output bit should be asserted.
--- The module may fail when clk_out is slower than clk_in and the input is
+-- .. note::
+--   This entity instantiates :ref:`resync.resync_counter` which has a scoped constraint file
+--   that must be used.
+--
+-- This module counts each ``clk_in`` cycle the input bit is asserted.
+-- The counter is resynchronized to ``clk_out``, and used as a reference to know
+-- how many ``clk_out`` cycles the output bit should be asserted.
+-- The module may fail when ``clk_out`` is slower than ``clk_in`` and the input is
 -- asserted many cycles in a row. An assertion is made to check for this case.
 --
--- Note that unlike e.g. resync_level, it is safe to drive the input of this entity with LUTs
--- as well as FFs.
+-- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
+-- with LUTs as well as FFs.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -37,7 +41,7 @@ entity resync_cycles is
   port (
     clk_in : in std_logic;
     data_in : in std_logic;
-
+    --# {{}}
     clk_out : in std_logic;
     data_out : out std_logic := (not active_level)
   );

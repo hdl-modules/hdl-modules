@@ -5,13 +5,30 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Synchronize a counter value between two domains
+-- Synchronize a counter value between two domains, using Gray coded values.
 --
--- This module assumes that the input counter value only increments
--- and decrements in steps of one.
+-- .. note::
+--   This entity has a scoped constraint file that must be used.
 --
--- Note that unlike e.g. resync_level, it is safe to drive the input of this entity with LUTs
--- as well as FFs.
+-- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
+-- with LUTs as well as FFs.
+--
+-- .. warning::
+--   This entity assumes that the input counter value only increments and decrements in steps of one.
+--   Erroneous values can appear on the output if this is not followed.
+--
+-- This entity converts the linear input counter word to Gray code, resynchronizes it to the
+-- output clock domain with an ``async_reg`` chain, and converts it back to a linear number.
+--
+-- A ``set_bus_skew`` constraint is a applied to the Gray coded bits that are sampled in the
+-- output clock domain. That constraint imposes an upper limit for the difference in the
+-- inter-word routing delay. This in turn means that the bits are always sampled coherently with
+-- regards to changes on the input side. It is possible to sample while one bit is transitioning,
+-- but the meta-stability protection of an ``async_reg`` chain will resolve that to a "clean"
+-- ``'0'`` or ``'1'``.
+-- Since the value is Gray coded, there will never be more than one bit transitioning for each value
+-- change, which means that it does not matter if the transitioning value is resolved
+-- to ``'0'`` or ``'1'``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -37,7 +54,7 @@ entity resync_counter is
   port (
     clk_in     : in std_logic;
     counter_in : in unsigned(default_value'range);
-
+    --# {{}}
     clk_out     : in std_logic;
     counter_out : out unsigned(default_value'range) := default_value
   );

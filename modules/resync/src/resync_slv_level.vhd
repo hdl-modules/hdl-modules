@@ -5,10 +5,17 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Resync a vector from one clock domain to another. This simple vector resync mechanism does not
--- guarantee any coherency between the bits. There might be a large skew between different bits.
+-- Resync a vector from one clock domain to another.
 --
--- See resync_level header for details about constraining.
+-- .. note::
+--   This entity instantiates :ref:`resync.resync_level` which has a scoped constraint
+--   file that must be used.
+--
+-- This simple vector resync mechanism does not guarantee any coherency between the bits.
+-- There might be a large skew between different bits.
+-- It does however have meta-stability protection.
+-- See :ref:`resync.resync_level` for details about constraining and usage of
+-- the ``enable_input_register`` generic.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,7 +36,7 @@ entity resync_slv_level is
   port (
     clk_in : in std_logic := '-';
     data_in : in std_logic_vector(default_value'range);
-
+    --# {{}}
     clk_out : in std_logic;
     data_out : out std_logic_vector(default_value'range) := default_value
   );

@@ -7,13 +7,17 @@
 -- -------------------------------------------------------------------------------------------------
 -- A robust way of resyncing a pulse signal from one clock domain to another.
 --
+-- .. note::
+--   This entity instantiates :ref:`resync.resync_level` which has a scoped constraint file
+--   that must be used.
+--
 -- This modules features a feedback input gating which makes it robust in all configurations.
--- Without input gating, if multiple pulses arrive close to each other, pulse overload will occur and
--- some or even all of them can be missed and not arrive on the output.
+-- Without input gating, if multiple pulses arrive close to each other, pulse overload will occur
+-- and some, or even all of them, can be missed and not arrive on the output.
 -- With input gating, if multiple pulses arrive one and only one will arrive on the output.
 --
--- Note that unlike e.g. resync_level, it is safe to drive the input of this entity with LUTs
--- as well as FFs.
+-- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
+-- with LUTs as well as FFs.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,7 +34,7 @@ entity resync_pulse is
   port (
     clk_in : in std_logic;
     pulse_in : in std_logic;
-
+    --# {{}}
     clk_out : in std_logic;
     pulse_out : out std_logic := '0'
   );

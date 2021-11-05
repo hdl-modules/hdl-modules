@@ -7,11 +7,15 @@
 -- -------------------------------------------------------------------------------------------------
 -- Sample a vector from one clock domain to another.
 --
--- This modules does not utilize any meta stability protection.
--- It is up to the user to ensure that data_in is stable when sample_value is asserted.
+-- .. note::
+--   This entity instantiates :ref:`resync.resync_level_on_signal` which has a scoped constraint
+--   file that must be used.
 --
--- Note that unlike e.g. resync_level, it is safe to drive the input of this entity with LUTs
--- as well as FFs.
+-- This modules does not utilize any meta stability protection.
+-- It is up to the user to ensure that ``data_in`` is stable when ``sample_value`` is asserted.
+--
+-- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
+-- with LUTs as well as FFs.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -27,7 +31,7 @@ entity resync_slv_level_on_signal is
   );
   port (
    data_in : in std_logic_vector(default_value'range);
-
+   --# {{}}
    clk_out : in std_logic;
    sample_value : in std_logic;
    data_out : out std_logic_vector(default_value'range) := default_value

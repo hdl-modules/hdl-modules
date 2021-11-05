@@ -5,34 +5,42 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Resynchronize a data vector from one clock domain to another. Unlike e.g. resync_slv_level, this
--- entity contains a mechanism that guarantees bit coherency. An asynchronous FIFO can also be used
+-- Resynchronize a data vector from one clock domain to another.
+-- Unlike e.g. :ref:`resync.resync_slv_level`, this entity contains a mechanism that guarantees
+-- bit coherency.
+-- An :ref:`fifo.asynchronous_fifo` can also be used
 -- to achieve this task, but this entity results in a smaller logic footprint.
 --
--- Note that unlike e.g. resync_level, it is safe to drive the input of this entity with LUTs
--- as well as FFs.
+-- .. note::
+--   This entity has a scoped constraint file that must be used.
+--
+-- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
+-- with LUTs as well as FFs.
 --
 -- A level signal is rotated around between input and output side, with three registers in each
 -- direction. The level toggles for each roundtrip, and data is sampled on each side upon a level
 -- transition.
 -- This ensures that data is sample on the output side only when we know that the sampled
--- input data is stable. Conversely input data is only sampled when we know that data has been
+-- input data is stable. Conversely, input data is only sampled when we know that data has been
 -- sampled on the output in a stable fashion.
 --
 -- The latency is less than or equal to
+--
 --   3 * period(clk_in) + 3 * period(clk_out)
 --
 -- This is also the sampling period of the signal. As such this resync is not suitable for signals
 -- that change quickly. It is instead typically used for e.g. monotonic counters, slow moving status
 -- words, and other data where the different bits are correlated.
 --
--- The LUT utilization is always 3. The FF utilization increases linearly at a rate of 2 * width.
+-- The LUT utilization is always 3. The FF utilization increases linearly at a rate
+-- of ``2 * width``.
 --
--- Compared to resync_counter this entity has lower LUT and FF usage in all scenarios. It does
--- however have higher latency.
+-- Compared to :ref:`resync.resync_counter` this entity has lower LUT and FF usage in all scenarios.
+-- It does however have higher latency.
 --
--- Compared to asynchronous_fifo this entity has lower LUT usage. FF usage is lower up to around
--- width 32 where this entity will consume more FF. Latency is about the same for both.
+-- Compared to :ref:`fifo.asynchronous_fifo` this entity has lower LUT usage.
+-- FF usage is lower up to around width 32 where this entity will consume more FF.
+-- Latency is about the same for both.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -49,7 +57,7 @@ entity resync_slv_level_coherent is
   port (
     clk_in : in std_logic := '0';
     data_in : in std_logic_vector(default_value'range);
-
+    --# {{}}
     clk_out : in std_logic;
     data_out : out std_logic_vector(default_value'range) := default_value
   );
