@@ -5,10 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Calculates dividend / divisor = quotient + remainder / divisor
+-- Calculates
 --
--- This is a bit serial divider. Algorithm is the same as long division from elementary
--- school, but with number base 2. Latency scales linearly with dividend_width.
+--   dividend / divisor = quotient + remainder / divisor
+--
+-- This is a bit serial divider.
+-- Algorithm is the same as long division from elementary school, but with number base two.
+-- Latency scales linearly with ``dividend_width``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -28,12 +31,12 @@ entity unsigned_divider is
   );
   port (
     clk : in std_logic;
-
+    --# {{}}
     input_ready : out std_logic := '1';
     input_valid : in std_logic;
     dividend : in unsigned(dividend_width - 1 downto 0);
     divisor : in unsigned(divisor_width - 1 downto 0);
-
+    --# {{}}
     result_ready : in std_logic;
     result_valid : out std_logic := '0';
     quotient : out unsigned(dividend_width - 1 downto 0);
