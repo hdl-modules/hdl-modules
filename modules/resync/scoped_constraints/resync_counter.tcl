@@ -6,7 +6,7 @@
 # https://gitlab.com/tsfpga/hdl_modules
 # --------------------------------------------------------------------------------------------------
 # Xilinx User Guide UG903 provides a good example of this type of constraints
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 set stable_registers [get_cells counter_in_gray_reg*]
 set first_resync_registers [get_cells counter_in_gray_p1_reg*]
