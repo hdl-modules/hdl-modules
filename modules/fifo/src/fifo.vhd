@@ -68,6 +68,11 @@ entity fifo is
     -- Set to true in order to read words without popping from FIFO using the 'read_peek_mode' port.
     -- Must set 'enable_packet_mode' as well to use this.
     enable_peek_mode : boolean := false;
+    -- Use an extra output register. This will be integrated in the memory if block RAM is used.
+    -- Increases latency but improves timing on the data path.
+    -- When enabled, the output register is included in the 'depth',
+    -- meaning that the RAM depth is 'depth - 1'.
+    enable_output_register : boolean := false;
     -- Select what FPGA primitives will be used to implement the FIFO memory.
     ram_type : ram_style_t := ram_style_auto
   );
@@ -109,23 +114,30 @@ end entity;
 
 architecture a of fifo is
 
+  constant memory_depth : positive := depth - to_int(enable_output_register);
+
   -- Need one extra bit in the addresses to be able to make the distinction if the FIFO
   -- is full or empty (where the addresses would otherwise be equal).
-  subtype fifo_addr_t is unsigned(num_bits_needed(2 * depth - 1) - 1 downto 0);
+  subtype fifo_addr_t is unsigned(num_bits_needed(2 * memory_depth - 1) - 1 downto 0);
   signal read_addr_next, read_addr, read_addr_peek : fifo_addr_t := (others => '0');
   signal write_addr_next, write_addr, write_addr_next_if_not_drop, write_addr_start_of_packet :
     fifo_addr_t := (others => '0');
 
   -- The part of the address that actually goes to the BRAM address port
-  subtype bram_addr_range is integer range num_bits_needed(depth - 1) - 1 downto 0;
+  subtype bram_addr_range is integer range num_bits_needed(memory_depth - 1) - 1 downto 0;
 
   signal num_lasts_in_fifo : integer range 0 to depth := 0;
 
   signal should_drop_packet, should_peek_read : std_logic := '0';
 
+  signal read_ready_ram, read_valid_ram, read_last_ram : std_logic := '0';
+  signal read_data_ram : std_logic_vector(width - 1 downto 0) := (others => '0');
+  signal word_in_output_register : integer range 0 to 1 := 0;
+
 begin
 
-  assert is_power_of_two(depth) report "Depth must be a power of two" severity failure;
+  assert is_power_of_two(depth - to_int(enable_output_register))
+    report "RAM depth must be a power of two." severity failure;
 
   assert enable_last or (not enable_packet_mode)
     report "Must set enable_last for packet mode" severity failure;
@@ -133,6 +145,8 @@ begin
     report "Must set enable_packet_mode for drop packet support" severity failure;
   assert enable_packet_mode or (not enable_peek_mode)
     report "Must set enable_packet_mode for peek mode support" severity failure;
+  assert not (enable_output_register and enable_peek_mode)
+    report "Output register is not supported in peek mode" severity failure;
 
 
   -- These flags will update one cycle after the write/read that puts them over/below the line.
@@ -163,24 +177,25 @@ begin
   ------------------------------------------------------------------------------
   status : process
     variable num_lasts_in_fifo_next : integer range 0 to depth := 0;
+    variable word_in_output_register_next : integer range 0 to 1 := 0;
   begin
     wait until rising_edge(clk);
 
     if enable_packet_mode then
       num_lasts_in_fifo_next := num_lasts_in_fifo
         + to_int(write_ready and write_valid and write_last and not should_drop_packet)
-        - to_int(read_ready and read_valid and read_last and not should_peek_read);
+        - to_int(read_ready_ram and read_valid_ram and read_last_ram and not should_peek_read);
 
-      -- We look at num_lasts_in_fifo_next since we need to update read_valid the same cycle when
+      -- We look at num_lasts_in_fifo_next since we need to update read_valid_ram the same cycle when
       -- the read happens.
       -- We also look at num_lasts_in_fifo since a write needs an additional clock
       -- cycle to propagate into the RAM. This is really only needed when the FIFO is empty and
       -- a packet of length one is written. With this condition, there will be a two cycle latency
-      -- from write_last being written to read_valid being asserted.
-      read_valid <= to_sl(num_lasts_in_fifo /= 0 and num_lasts_in_fifo_next /= 0);
+      -- from write_last being written to read_valid_ram being asserted.
+      read_valid_ram <= to_sl(num_lasts_in_fifo /= 0 and num_lasts_in_fifo_next /= 0);
       num_lasts_in_fifo <= num_lasts_in_fifo_next;
     else
-      read_valid <= to_sl(read_addr_next /= write_addr);
+      read_valid_ram <= to_sl(read_addr_next /= write_addr);
     end if;
 
     -- Note that write_ready looks at the write_addr_next that will be used if there is
@@ -191,7 +206,7 @@ begin
     -- for one cycle and then go high the next.
     --
     -- Similarly write_ready looks at read_addr rather than read_addr_next, which eases the timing
-    -- of read_ready. There is a function difference when the FIFO is full and a read performed
+    -- of read_ready_ram. There is a function difference when the FIFO is full and a read performed
     -- makes the FIFO ready for another write. In this case, write_ready will be low
     -- for one extra cycle after the read occurs, and then go high the next.
     write_ready <= to_sl(
@@ -224,11 +239,25 @@ begin
       read_addr <= read_addr_next;
     end if;
 
+    -- Keep track of if there is a word in the output register, if it is included
+    if enable_output_register then
+      word_in_output_register_next :=
+        word_in_output_register
+        -- One word is added on handshake on the input
+        + to_int(read_ready_ram and read_valid_ram)
+        -- And one word is removed on handshake on the output
+        - to_int(read_ready and read_valid);
+        word_in_output_register <= word_in_output_register_next;
+    end if;
+
     -- The level count shall always be correct, and hence uses the updated values. Note that this
     -- can create some wonky situations, e.g. when level read as 1023 for a 1024 deep FIFO
     -- but write_ready is false.
     -- Also in packet_mode, the level is incremented for words that might be dropped later.
-    level <= to_integer(write_addr_next - read_addr_next) mod (2 * depth);
+    level <=
+      (to_integer(write_addr_next - read_addr_next) mod (2 * memory_depth)) +
+      word_in_output_register_next;
+
   end process;
 
 
@@ -243,8 +272,8 @@ begin
     ------------------------------------------------------------------------------
     calc_peek_addr : process(all)
     begin
-      if read_ready and read_valid then
-        if read_last and read_peek_mode then
+      if read_ready_ram and read_valid_ram then
+        if read_last_ram and read_peek_mode then
           -- Go back to where the packet we just read out started, so it can be read again
           read_addr_next <= read_addr;
         else
@@ -257,7 +286,7 @@ begin
 
   else generate
 
-    read_addr_next <= read_addr + to_int(read_ready and read_valid);
+    read_addr_next <= read_addr + to_int(read_ready_ram and read_valid_ram);
 
   end generate;
 
@@ -268,17 +297,17 @@ begin
     subtype word_t is std_logic_vector(memory_word_width - 1 downto 0);
     type mem_t is array (integer range <>) of word_t;
 
-    signal mem : mem_t(0 to depth - 1) := (others => (others => '0'));
+    signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));
     attribute ram_style of mem : signal is to_attribute(ram_type);
 
     signal memory_read_data, memory_write_data : word_t := (others => '0');
   begin
 
-    read_data <= memory_read_data(read_data'range);
+    read_data_ram <= memory_read_data(read_data_ram'range);
     memory_write_data(write_data'range) <= write_data;
 
     assign_data : if enable_last generate
-      read_last <= memory_read_data(memory_read_data'high);
+      read_last_ram <= memory_read_data(memory_read_data'high);
       memory_write_data(memory_write_data'high) <= write_last;
     end generate;
 
@@ -286,13 +315,38 @@ begin
     begin
       wait until rising_edge(clk);
 
-      memory_read_data <= mem(to_integer(read_addr_next) mod depth);
+      memory_read_data <= mem(to_integer(read_addr_next) mod memory_depth);
 
       if write_ready and write_valid then
-        mem(to_integer(write_addr) mod depth) <= memory_write_data;
+        mem(to_integer(write_addr) mod memory_depth) <= memory_write_data;
       end if;
     end process;
   end block;
+
+
+  ------------------------------------------------------------------------------
+  handshake_pipeline : entity common.handshake_pipeline
+    generic map (
+      data_width => width,
+      full_throughput => true,
+      pipeline_control_signals => false,
+      -- A pipeline stage will only be added if enable_output_register is true
+      -- otherwise this will be a simple route-through
+      pipeline_data_signals => enable_output_register
+    )
+    port map (
+      clk => clk,
+      --
+      input_ready => read_ready_ram,
+      input_valid => read_valid_ram,
+      input_last => read_last_ram,
+      input_data => read_data_ram,
+      --
+      output_ready => read_ready,
+      output_valid => read_valid,
+      output_last => read_last,
+      output_data => read_data
+    );
 
 
   ------------------------------------------------------------------------------

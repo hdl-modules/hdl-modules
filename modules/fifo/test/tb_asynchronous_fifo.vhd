@@ -34,6 +34,7 @@ entity tb_asynchronous_fifo is
     enable_packet_mode : boolean := false;
     enable_last : boolean := false;
     enable_drop_packet : boolean := false;
+    enable_output_register : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -154,6 +155,27 @@ begin
       wait until rising_edge(clk_read);
       wait until rising_edge(clk_read);
       wait until rising_edge(clk_read);
+
+      -- takes one extra cycle if output register is used
+      if enable_output_register then
+        wait until rising_edge(clk_read);
+      end if;
+    end procedure;
+
+    procedure wait_for_write_level_update_after_last_written_and_output_register_is_used is
+    begin
+      -- Wait for num_lasts_written to propagate to write side
+      wait until rising_edge(clk_write);
+      wait until rising_edge(clk_read);
+      wait until rising_edge(clk_read);
+      -- Wait for delay from num_lasts_written_resync to read_addr update
+      wait until rising_edge(clk_read);
+      wait until rising_edge(clk_read);
+      -- Wait for read_addr to propagate to read side
+      wait until rising_edge(clk_write);
+      wait until rising_edge(clk_write);
+      -- Lastly wait for it to propagate into write_level
+      wait until rising_edge(clk_write);
     end procedure;
 
     procedure clear_queue(queue : queue_t) is
@@ -284,6 +306,9 @@ begin
       -- Note that this will set write_last on the last write, and some data will be left unread.
       run_test(read_count=>depth / 2, write_count=>depth * 3 / 4);
       wait_for_read_to_propagate;
+      -- Note: If output register is used, one value will now have been be stored in it,
+      --       The level in the memory is now therefore be depth / 4 - 1, but when the output
+      --       register is used, we always add 1 to the write level to be sure that it is conservative
       check_equal(write_level, depth / 4);
 
       -- Write some data without setting last, simulating a packet in progress.
@@ -295,7 +320,8 @@ begin
 
       wait_for_read_to_propagate;
       check_equal(read_valid, '0');
-      check_equal(write_level, 0);
+      -- If output register is used, write_level is always 1 as the lowest
+      check_equal(write_level, to_int(enable_output_register));
 
       -- Clear the data in the reference queues. This will be the data that was written, and then
       -- cleared. Hence it was never read and therefore the data is left in the queues.
@@ -304,15 +330,23 @@ begin
 
       -- Write and verify a packet. Should be the only thing remaining in the FIFO.
       run_write(4);
+      if enable_output_register then
+        -- When using the output register, the level will first rise to 5, and then
+        -- go pack to to 4 after one value has been pushed into the output register
+        check_equal(write_level, 5);
+        wait_for_write_level_update_after_last_written_and_output_register_is_used;
+      end if;
       check_equal(write_level, 4);
 
       run_read(4);
       check_equal(read_valid, '0');
       wait_for_read_to_propagate;
-      check_equal(write_level, 0);
+      check_equal(write_level, to_int(enable_output_register));
 
     elsif run("test_drop_packet_in_same_cycle_as_write_last_should_drop_the_packet") then
-      check_equal(write_level, 0);
+      -- Check empty status
+      -- If output register is used, write_level is always 1 as the lowest
+      check_equal(write_level, to_int(enable_output_register));
 
       push_axi_stream(net, write_master, tdata=>x"00", tlast=>'0');
       push_axi_stream(net, write_master, tdata=>x"00", tlast=>'1');
@@ -327,18 +361,19 @@ begin
       drop_packet <= '1';
       wait until rising_edge(clk_write);
 
-      check_equal(write_level, 1);
+      check_equal(write_level, 1 + to_int(enable_output_register));
       check_equal(write_ready and write_valid and write_last and drop_packet, '1');
       wait until rising_edge(clk_write);
 
       -- Make sure the packet was dropped
-      check_equal(write_level, 0);
+      check_equal(write_level, to_int(enable_output_register));
       wait_for_write_to_propagate;
       check_equal(read_valid, '0');
 
     elsif run("test_levels_full_range") then
       -- Check empty status
-      check_equal(write_level, 0);
+      -- If output register is used, write_level is always 1 as the lowest
+      check_equal(write_level, to_int(enable_output_register));
       check_equal(read_level, 0);
 
       -- Fill the FIFO
@@ -355,7 +390,7 @@ begin
       -- Check empty status. Must wait a while before all reads have propagated to write side.
       check_equal(read_level, 0);
       wait_for_read_to_propagate;
-      check_equal(write_level, 0);
+      check_equal(write_level, to_int(enable_output_register));
 
     elsif run("test_write_almost_full") then
       check_equal(write_almost_full, '0');
@@ -452,9 +487,12 @@ begin
       depth => depth,
       almost_full_level => almost_full_level,
       almost_empty_level => almost_empty_level,
-      enable_packet_mode => enable_packet_mode,
+      -- Enable packet mode when we test drop_packet
+      -- This way, we don't need to include redundant information in the test name
+      enable_packet_mode => enable_packet_mode or enable_drop_packet,
       enable_last => enable_last,
-      enable_drop_packet => enable_drop_packet
+      enable_drop_packet => enable_drop_packet,
+      enable_output_register => enable_output_register
     )
     port map (
       clk_read => clk_read,

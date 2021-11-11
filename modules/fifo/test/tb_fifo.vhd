@@ -36,6 +36,7 @@ entity tb_fifo is
     enable_packet_mode : boolean := false;
     enable_drop_packet : boolean := false;
     enable_peek_mode : boolean := false;
+    enable_output_register : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -206,6 +207,10 @@ begin
       run_write(count=>1);
       -- Takes one cycle extra to propagate in packet mode.
       wait until rising_edge(clk);
+      -- .. and one extra cycle if output register is used
+      if enable_output_register then
+        wait until rising_edge(clk);
+      end if;
       check_equal(read_valid, True);
 
       -- Write further packets
@@ -228,6 +233,10 @@ begin
       run_write(count=>1);
       -- Takes one cycle extra to propagate in packet mode.
       wait until rising_edge(clk);
+      -- .. and one extra cycle if output register is used
+      if enable_output_register then
+        wait until rising_edge(clk);
+      end if;
       check_equal(read_valid, True);
 
       -- Read the last word to finish test
@@ -348,6 +357,12 @@ begin
         -- One cycle more latency in this configuration
         check_equal(almost_empty, '1');
         wait until rising_edge(clk);
+
+        if enable_output_register then
+          -- One cycle more latency in this configuration
+          check_equal(almost_empty, '1');
+          wait until rising_edge(clk);
+        end if;
       end if;
       check_equal(almost_empty, '0');
 
@@ -495,9 +510,12 @@ begin
       almost_full_level => almost_full_level,
       almost_empty_level => almost_empty_level,
       enable_last => enable_last,
-      enable_packet_mode => enable_packet_mode,
+      -- Enable packet mode when we test drop_packet and peek_mode
+      -- This way, we don't need to include redundant information in the test name
+      enable_packet_mode => enable_packet_mode or enable_drop_packet or enable_peek_mode,
       enable_drop_packet => enable_drop_packet,
-      enable_peek_mode => enable_peek_mode
+      enable_peek_mode => enable_peek_mode,
+      enable_output_register => enable_output_register
     )
     port map (
       clk => clk,

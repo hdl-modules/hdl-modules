@@ -30,6 +30,7 @@ entity fifo_wrapper is
     enable_packet_mode : boolean := false;
     enable_drop_packet : boolean := false;
     enable_peek_mode : boolean := false;
+    enable_output_register : boolean := false;
     ram_type : ram_style_t := ram_style_auto
   );
   port (
@@ -95,6 +96,7 @@ begin
         enable_last => enable_last,
         enable_packet_mode => enable_packet_mode,
         enable_drop_packet => enable_drop_packet,
+        enable_output_register => enable_output_register,
         ram_type => ram_type
       )
       port map (
@@ -132,6 +134,7 @@ begin
         enable_packet_mode => enable_packet_mode,
         enable_drop_packet => enable_drop_packet,
         enable_peek_mode => enable_peek_mode,
+        enable_output_register => enable_output_register,
         ram_type => ram_type
       )
       port map (

@@ -18,7 +18,8 @@ entity fifo_netlist_build_wrapper is
   generic (
     use_asynchronous_fifo : boolean;
     width : positive;
-    depth : positive
+    depth : positive;
+    enable_output_register : boolean
   );
   port (
     clk : in std_logic;
@@ -43,7 +44,8 @@ begin
     generic map (
       use_asynchronous_fifo => use_asynchronous_fifo,
       width => width,
-      depth => depth
+      depth => depth,
+      enable_output_register => enable_output_register
     )
     port map (
       clk => clk,

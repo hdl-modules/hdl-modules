@@ -23,17 +23,29 @@ class Module(BaseModule):
         for test in (
             vunit_proj.library(self.library_name).test_bench("tb_asynchronous_fifo").get_tests()
         ):
-            for read_clock_is_faster in [True, False]:
-                original_generics = dict(read_clock_is_faster=read_clock_is_faster)
+            for enable_output_register in [False, True]:
+                for read_clock_is_faster in [True, False]:
+                    original_generics = dict(
+                        read_clock_is_faster=read_clock_is_faster,
+                        enable_output_register=enable_output_register,
+                    )
 
+                    for generics in self.generate_common_fifo_test_generics(
+                        test.name, original_generics
+                    ):
+                        self.add_vunit_config(test, generics=generics)
+
+        for test in vunit_proj.library(self.library_name).test_bench("tb_fifo").get_tests():
+            for enable_output_register in [False, True]:
+                original_generics = dict(enable_output_register=enable_output_register)
                 for generics in self.generate_common_fifo_test_generics(
                     test.name, original_generics
                 ):
-                    self.add_vunit_config(test, generics=generics)
+                    # Output register is supported in all settings except for peek_mode
+                    if enable_output_register and "peek_mode" in test.name:
+                        continue
 
-        for test in vunit_proj.library(self.library_name).test_bench("tb_fifo").get_tests():
-            for generics in self.generate_common_fifo_test_generics(test.name):
-                self.add_vunit_config(test, generics=generics)
+                    self.add_vunit_config(test, generics=generics)
 
     @staticmethod
     def generate_common_fifo_test_generics(test_name, original_generics=None):
@@ -50,12 +62,11 @@ class Module(BaseModule):
             generics.update(enable_last=True, enable_packet_mode=True)
 
         if "drop_packet" in test_name:
-            generics.update(enable_last=True, enable_packet_mode=True, enable_drop_packet=True)
+            generics.update(enable_last=True, enable_drop_packet=True)
 
         if "peek_mode" in test_name:
             generics.update(
                 enable_last=True,
-                enable_packet_mode=True,
                 enable_peek_mode=True,
                 read_stall_probability_percent=20,
                 write_stall_probability_percent=20,
@@ -66,7 +77,7 @@ class Module(BaseModule):
             #   almost_full_level = depth, or
             #   almost_empty_level = 0
             # result in alternative ways of calculating almost full/empty.
-            depth = 32
+            depth = 32 + generics["enable_output_register"]
 
             for almost_full_level, almost_empty_level in [(depth, depth // 2), (depth // 2, 0)]:
                 generics.update(
@@ -82,12 +93,14 @@ class Module(BaseModule):
             or "drop_packet_in_same_cycle_as_write_last_should_drop_the_packet" in test_name
         ):
             # Do not need to test these in many configurations
-            generics.update(depth=16)
+            depth = 16 + generics["enable_output_register"]
+            generics.update(depth=depth)
             yield generics
 
         else:
             # For most test, generate configuration with two different depths
             for depth in [16, 512]:
+                depth = depth + generics["enable_output_register"]
                 generics.update(depth=depth)
 
                 yield generics
@@ -125,10 +138,11 @@ class Module(BaseModule):
         return projects
 
     def _setup_fifo_build_projects(self, projects, modules, part):
-        generics = dict(use_asynchronous_fifo=False, width=32, depth=1024)
-
         # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
         # a minimal FIFO.
+        generics = dict(
+            use_asynchronous_fifo=False, width=32, depth=1024, enable_output_register=False
+        )
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("fifo_minimal", generics),
@@ -146,9 +160,29 @@ class Module(BaseModule):
             )
         )
 
+        # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
+        # a minimal FIFO. This mode also adds an output register.
+        generics.update(depth=generics["depth"] + 1, enable_output_register=True)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name("fifo_with_output_register", generics),
+                modules=modules,
+                part=part,
+                top="fifo_netlist_build_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(15)),
+                    Ffs(EqualTo(25)),
+                    Ramb36(EqualTo(1)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
+                ],
+            )
+        )
+
         # A FIFO with level counter port and non-default almost_full_level, which
         # increases resource utilization.
-        generics.update(almost_full_level=800)
+        generics = dict(use_asynchronous_fifo=False, width=32, depth=1024, almost_full_level=800)
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("fifo", generics),
@@ -246,10 +280,11 @@ class Module(BaseModule):
         )
 
     def _setup_asynchronous_fifo_build_projects(self, projects, modules, part):
-        generics = dict(use_asynchronous_fifo=True, width=32, depth=1024)
-
         # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
         # a minimal FIFO.
+        generics = dict(
+            use_asynchronous_fifo=True, width=32, depth=1024, enable_output_register=False
+        )
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("asynchronous_fifo_minimal", generics),
@@ -267,9 +302,29 @@ class Module(BaseModule):
             )
         )
 
+        # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
+        # a minimal FIFO. This mode also adds an output register.
+        generics.update(depth=generics["depth"] + 1, enable_output_register=True)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name("asynchronous_fifo_with_output_register", generics),
+                modules=modules,
+                part=part,
+                top="fifo_netlist_build_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(45)),
+                    Ffs(EqualTo(91)),
+                    Ramb36(EqualTo(1)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
+                ],
+            )
+        )
+
         # A FIFO with level counter ports and non-default almost_full_level, which
         # increases resource utilization.
-        generics.update(almost_full_level=800)
+        generics = dict(use_asynchronous_fifo=True, width=32, depth=1024, almost_full_level=800)
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("asynchronous_fifo", generics),
@@ -350,7 +405,7 @@ class Module(BaseModule):
         # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
         # Note that this uses the minimal top level wrapper so that only the barebone features
         # are available.
-        generics = dict(use_asynchronous_fifo=True, width=16, depth=8)
+        generics = dict(use_asynchronous_fifo=True, width=16, depth=8, enable_output_register=False)
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("resync_fifo", generics),
