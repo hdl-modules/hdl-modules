@@ -18,7 +18,12 @@ def main():
     cli = get_arguments_cli(default_output_path=hdl_modules_tools_env.HDL_MODULES_GENERATED)
     args = cli.parse_args()
 
-    modules = get_modules([hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
+    # Avoid the module that depends on Xilinx unisim library
+    module_names_avoid = ["hard_fifo"] if args.vivado_skip else []
+    modules = get_modules(
+        modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY],
+        names_avoid=module_names_avoid,
+    )
 
     if args.vcs_minimal:
         if args.test_patterns != "*":
@@ -43,6 +48,7 @@ def main():
 
     simulation_project = SimulationProject(args=args)
     simulation_project.add_modules(args=args, modules=modules)
+    simulation_project.add_vivado_simlib_and_ip_cores(args=args, modules=modules)
 
     simulation_project.vunit_proj.main()
 

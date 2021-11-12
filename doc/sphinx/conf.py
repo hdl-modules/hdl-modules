@@ -16,11 +16,16 @@ author = "Lukas Vik"
 
 extensions = [
     "sphinx.ext.graphviz",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
     "sphinx_sitemap",
     "symbolator_sphinx",
 ]
+
+intersphinx_mapping = {
+    "tsfpga": ("https://tsfpga.com", None),
+}
 
 symbolator_output_format = "png"
 
