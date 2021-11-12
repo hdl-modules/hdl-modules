@@ -19,12 +19,17 @@ from tsfpga.test.lint.test_file_format import (
 )
 
 
+def files_to_test():
+    # Do not test binary image files
+    return find_git_files(directory=REPO_ROOT, file_endings_avoid="png")
+
+
 def test_all_checked_in_files_are_properly_encoded():
     """
     To avoid problems with different editors and different file encodings, all checked in files
     should contain only ASCII characters.
     """
-    for file in find_git_files(directory=REPO_ROOT):
+    for file in files_to_test():
         open_file_with_encoding(file)
 
 
@@ -34,7 +39,7 @@ def test_all_checked_in_files_end_with_newline():
     Otherwise UNIX doesn't consider them actual text files.
     """
     test_ok = True
-    for file in find_git_files(directory=REPO_ROOT):
+    for file in files_to_test():
         test_ok &= check_file_ends_with_newline(file)
     assert test_ok
 
@@ -45,7 +50,7 @@ def test_no_checked_in_files_contain_tabs():
     contain TAB characters.
     """
     test_ok = True
-    for file in find_git_files(directory=REPO_ROOT):
+    for file in files_to_test():
         test_ok &= check_file_for_tab_character(file)
     assert test_ok
 
@@ -56,7 +61,7 @@ def test_no_checked_in_files_contain_carriage_return():
     tools will display or interpret the \r as something other than a line break.
     """
     test_ok = True
-    for file in find_git_files(directory=REPO_ROOT):
+    for file in files_to_test():
         test_ok &= check_file_for_carriage_return(file)
     assert test_ok
 
@@ -67,6 +72,6 @@ def test_no_checked_in_files_contain_trailing_whitespace():
     https://softwareengineering.stackexchange.com/questions/121555
     """
     test_ok = True
-    for file in find_git_files(directory=REPO_ROOT):
+    for file in files_to_test():
         test_ok &= check_file_for_trailing_whitespace(file)
     assert test_ok

@@ -6,6 +6,8 @@
 # https://gitlab.com/tsfpga/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+import shutil
+
 from pybadges import badge
 
 import hdl_modules_tools_env
@@ -15,7 +17,7 @@ from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
-GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx"
+GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
 GENERATED_SPHINX_HTML = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx_html"
 SPHINX_DOC = hdl_modules_tools_env.HDL_MODULES_DOC / "sphinx"
 
@@ -26,24 +28,61 @@ def main():
         release_notes_directory=hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes",
         project_name="hdl_modules",
     )
-    create_file(GENERATED_SPHINX / "release_notes.rst", rst)
+    create_file(GENERATED_SPHINX / "generated_release_notes.rst", rst)
 
-    generate_module_documentation()
+    generate_documentation()
 
-    generate_sphinx_index()
+    # Copy files from documentation folder to build folder
+    for filename in [
+        "conf.py",
+        "contributing.rst",
+        "license_information.rst",
+        "release_notes.rst",
+        "robots.txt",
+    ]:
+        shutil.copyfile(SPHINX_DOC / filename, GENERATED_SPHINX / filename)
 
-    build_sphinx(build_path=SPHINX_DOC, output_path=GENERATED_SPHINX_HTML)
+    build_sphinx(build_path=GENERATED_SPHINX, output_path=GENERATED_SPHINX_HTML)
 
     build_information_badges()
 
 
-def generate_module_documentation():
+def generate_documentation():
+    index_rst = f"""
+{get_readme_rst()}
+
+.. toctree::
+  :caption: About
+  :hidden:
+
+  license_information
+  contributing
+  release_notes
+
+
+.. toctree::
+  :caption: HDL modules
+  :hidden:
+
+"""
+
     modules = get_modules(modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
     for module in modules:
-        module_documentation = ModuleDocumentation(module)
-        rst = module_documentation.get_rst_document()
+        index_rst += f"  modules/{module.name}/{module.name}\n"
 
-        create_file(GENERATED_SPHINX / "modules" / f"{module.name}.rst", rst)
+        output_path = GENERATED_SPHINX / "modules" / module.name
+        ModuleDocumentation(module).create_rst_document(output_path)
+
+        # Copy further files from the modules' "doc" folder that might be included.
+        # For example an image in the "doc" folder might be included in the document.
+        module_doc_folder = module.path / "doc"
+        module_doc_rst = module_doc_folder / f"{module.name}.rst"
+
+        for doc_file in module_doc_folder.glob("*"):
+            if doc_file.is_file() and doc_file != module_doc_rst:
+                shutil.copy(doc_file, output_path)
+
+    create_file(GENERATED_SPHINX / "index.rst", index_rst)
 
 
 def get_readme_rst():
@@ -102,17 +141,6 @@ TBC...
 
     # Link shall not be included in the text that goes on the website
     return get_rst(include_link=False)
-
-
-def generate_sphinx_index():
-    """
-    Generate index.rst for sphinx. Also verify that readme.rst in the project is identical.
-
-    Rst file inclusion in readme.rst does not work on gitlab unfortunately, hence this
-    cumbersome handling of syncing documentation.
-    """
-    rst = get_readme_rst()
-    create_file(GENERATED_SPHINX / "index.rst", rst)
 
 
 def build_information_badges():
