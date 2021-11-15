@@ -35,11 +35,3 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "prev_next_buttons_location": "both",
 }
-
-html_context = {
-    "display_gitlab": True,
-    "gitlab_user": "tsfpga",
-    "gitlab_repo": "hdl_modules",
-    "gitlab_version": "master",
-    "conf_py_path": "/doc/sphinx/",
-}
