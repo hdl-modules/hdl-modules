@@ -503,6 +503,29 @@ begin
 
 
   ------------------------------------------------------------------------------
+  check_no_bubble_cycles_in_packet_mode : if enable_packet_mode or enable_drop_packet or enable_peek_mode generate
+    signal start_event, end_event, en : std_logic := '0';
+  begin
+    -- These inputs must be signals (not constants), so assign them here instead of the port map directly
+    start_event <= read_valid and not read_last;
+    end_event <= (read_ready and read_valid and read_last);
+    en <= '1';
+
+    check_stable(
+      clock=>clk,
+      en=>en,
+      -- Start check when valid arrives
+      start_event=>read_valid,
+      -- End check when last arrives
+      end_event=>end_event,
+      -- Assert that valid is always asserted until last arrives
+      expr=>read_valid,
+      msg=>"There was a bubble in read_valid!"
+    );
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   dut : entity work.fifo
     generic map (
       width => width,

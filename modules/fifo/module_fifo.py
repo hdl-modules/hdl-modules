@@ -239,9 +239,31 @@ class Module(BaseModule):
             )
         )
 
+        # Enabling the output register increases logic, but the register itself
+        # should be packed into the RAM output register
+        generics.update(depth=generics["depth"] + 1, enable_output_register=True)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name("fifo_with_packet_mode_and_output_register", generics),
+                modules=modules,
+                part=part,
+                top="fifo_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(44)),
+                    Ffs(EqualTo(48)),
+                    Ramb36(EqualTo(1)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
+                ],
+            )
+        )
+
         # Enabling drop packet support increases utilization compared to only packet mode,
         # since an extra counter and some further logic is introduced.
-        generics.update(enable_drop_packet=True)
+        generics.update(
+            depth=generics["depth"] - 1, enable_output_register=False, enable_drop_packet=True
+        )
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("fifo_with_drop_packet_support", generics),
@@ -381,10 +403,34 @@ class Module(BaseModule):
             )
         )
 
+        # Enabling the output register increases logic, but the register itself
+        # should be packed into the RAM output register
+        generics.update(depth=generics["depth"] + 1, enable_output_register=True)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name(
+                    "asynchronous_fifo_with_packet_mode_and_output_register", generics
+                ),
+                modules=modules,
+                part=part,
+                top="fifo_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(92)),
+                    Ffs(EqualTo(169)),
+                    Ramb36(EqualTo(1)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(6)),
+                ],
+            )
+        )
+
         # Enabling drop_packet support actually decreases utilization. Some logic is added for
         # handling the drop_packet functionality, but one resync_counter instance is saved since
         # the read_level value is not used.
-        generics.update(enable_drop_packet=True)
+        generics.update(
+            depth=generics["depth"] - 1, enable_output_register=False, enable_drop_packet=True
+        )
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name("asynchronous_fifo_with_drop_packet_support", generics),

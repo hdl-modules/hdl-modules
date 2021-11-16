@@ -264,13 +264,28 @@ begin
       end if;
 
       if enable_packet_mode then
-        num_lasts_read_next := num_lasts_read + to_int(read_ready_ram and read_valid_ram and read_last_ram);
+        if enable_output_register and not enable_drop_packet then
+          -- When the output register is used, there is one extra cycle latency when reading.
+          -- That means that the last 'last' bit may be on its way to the output register right now,
+          -- and that there therefore isn't any 'last' bit left in the RAM.
+          -- Therefore we only read from RAM if it is not empty
+          -- We do _not_ want to look at the read_last_ram signal here, as it is part of the read data,
+          -- and using it would make it impossible to use the RAM output_register.
+          -- Note: the level counter is not present if enable_drop_packet is activated, so in that case
+          --       we take the "else" branch, which is functionally correct but will not utilize the
+          --       RAM output register.
+          num_lasts_read_next := num_lasts_read + to_int(read_ready and read_valid and read_last);
+          read_valid_ram <= to_sl(num_lasts_read /= num_lasts_written_resync and read_level_next /= 0);
+        else
+          num_lasts_read_next := num_lasts_read + to_int(read_ready_ram and read_valid_ram and read_last_ram);
+          read_valid_ram <= to_sl(num_lasts_read_next /= num_lasts_written_resync);
+        end if;
 
-        num_lasts_read <= num_lasts_read_next;
-        read_valid_ram <= to_sl(num_lasts_read_next /= num_lasts_written_resync);
       else
         read_valid_ram <= to_sl(read_level_next /= 0);
       end if;
+
+      num_lasts_read <= num_lasts_read_next;
     end process;
 
     read_addr_next <= read_addr + to_int(read_ready_ram and read_valid_ram);
