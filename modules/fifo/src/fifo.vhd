@@ -36,6 +36,17 @@
 --   the packet.
 --   Note that the ``read_peek_mode`` value may not be changed during the readout of a packet.
 --   It must be static for all words in a packet, but may be updated after ``read_last``.
+--
+-- * There is an option to enable an output register using the ``enable_output_register`` generic.
+--   This can be used to improve timing since the routing delay on the data output of a block RAM is
+--   usually quite high.
+--   Most block RAM primitives have a "hard" output register that can be used.
+--   It has been verified (with :ref:`tsfpga:netlist_build` in CI) that the implementation in this
+--   file will map to the hard output register in Xilinx 7-series devices,
+--   and hence not consume extra flip-flops.
+--
+--   .. note::
+--     The "peek read" mode can not be used when output register is enabled.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -67,11 +78,13 @@ entity fifo is
     enable_drop_packet : boolean := false;
     -- Set to true in order to read words without popping from FIFO using the 'read_peek_mode' port.
     -- Must set 'enable_packet_mode' as well to use this.
+    -- Can not be used in conjunction with 'enable_output_register'.
     enable_peek_mode : boolean := false;
     -- Use an extra output register. This will be integrated in the memory if block RAM is used.
     -- Increases latency but improves timing on the data path.
     -- When enabled, the output register is included in the 'depth',
     -- meaning that the RAM depth is 'depth - 1'.
+    -- The "peek read" mode can not be used when this is enabled.
     enable_output_register : boolean := false;
     -- Select what FPGA primitives will be used to implement the FIFO memory.
     ram_type : ram_style_t := ram_style_auto

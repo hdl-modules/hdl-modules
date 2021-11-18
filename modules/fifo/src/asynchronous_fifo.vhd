@@ -13,13 +13,14 @@
 -- are not enabled.
 --
 -- .. note::
---   This entity has a scoped constraint file that must be used, it further instantiates
+--   This entity has a scoped constraint file that must be used. It further instantiates
 --   :ref:`resync.resync_counter` which also has a constraint file.
 --
 -- .. warning::
---   In case ``enable_output_register`` is set, the implementation doesn't keep track of
+--   In case ``enable_output_register`` is set, the implementation does not keep track of
 --   the exact level on the write side. When there is no word in the output register,
---   e.g when the fifo is empty the write_level reported will be one higher than the real level.
+--   e.g when the FIFO is empty, the ``write_level`` reported will be one higher than the
+--   real level.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -128,7 +129,7 @@ architecture a of asynchronous_fifo is
 
 begin
 
-  assert is_power_of_two(depth - to_int(enable_output_register))
+  assert is_power_of_two(memory_depth)
     report "RAM depth must be a power of two." severity failure;
 
   assert enable_last or (not enable_packet_mode)
