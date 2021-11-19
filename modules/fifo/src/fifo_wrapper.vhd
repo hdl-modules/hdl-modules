@@ -23,9 +23,9 @@ entity fifo_wrapper is
     -- Note that the default values are carefully chosen. Must be exactly the same as in fifo.vhd
     -- and asynchronous_fifo.vhd.
     width : positive;
-    depth : natural;
-    almost_full_level : integer range 0 to depth := depth;
-    almost_empty_level : integer range 0 to depth := 0;
+    depth : positive;
+    almost_full_level : natural range 0 to depth := depth;
+    almost_empty_level : natural range 0 to depth := 0;
     enable_last : boolean := false;
     enable_packet_mode : boolean := false;
     enable_drop_packet : boolean := false;
@@ -40,6 +40,7 @@ entity fifo_wrapper is
     clk_read : in std_logic := '0';
     clk_write : in std_logic := '0';
 
+    --# {{}}
     read_ready : in  std_logic;
     read_valid : out std_logic := '0';
     read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
@@ -47,17 +48,18 @@ entity fifo_wrapper is
     read_peek_mode : in std_logic := '0';
 
     -- Note that this is the same as write_level for a synchronous FIFO.
-    read_level : out integer range 0 to depth := 0;
+    read_level : out natural range 0 to depth := 0;
     -- Note that for an asynchronous FIFO, this signal is in the "read" clock domain.
     almost_empty : out std_logic := '1';
 
+    --# {{}}
     write_ready : out std_logic := '1';
     write_valid : in  std_logic;
     write_data : in  std_logic_vector(width - 1 downto 0);
     write_last : in std_logic := '0';
 
     -- Note that this is the same as read_level for a synchronous FIFO.
-    write_level : out integer range 0 to depth := 0;
+    write_level : out natural range 0 to depth := 0;
     -- Note that for an asynchronous FIFO, this signal is in the "write" clock domain.
     almost_full : out std_logic := '0';
 
@@ -75,6 +77,7 @@ begin
     assert not enable_packet_mode report "Can not use packet mode without FIFO";
     assert not enable_drop_packet report "Can not use drop packet without FIFO";
     assert not enable_peek_mode report "Can not use peek mode without FIFO";
+    assert not enable_output_register report "Can not use output register without FIFO";
 
     write_ready <= read_ready;
     read_valid <= write_valid;

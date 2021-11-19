@@ -66,8 +66,8 @@ entity fifo is
     width : positive;
     depth : positive;
     -- Changing these levels from default value will increase logic footprint
-    almost_full_level : integer range 0 to depth := depth;
-    almost_empty_level : integer range 0 to depth := 0;
+    almost_full_level : natural range 0 to depth := depth;
+    almost_empty_level : natural range 0 to depth := 0;
     -- Set to true in order to use 'read_last' and 'write_last'
     enable_last : boolean := false;
     -- If enabled, 'read_valid' will not be asserted until a full packet is available in
@@ -95,7 +95,7 @@ entity fifo is
     -- When 'packet_mode' is enabled, this value will still reflect the number of words that are in
     -- the FIFO RAM. This is not necessarily the same as the number of words that can be read, in
     -- this mode.
-    level : out integer range 0 to depth := 0;
+    level : out natural range 0 to depth := 0;
 
     --# {{}}
     read_ready : in std_logic;
@@ -137,15 +137,15 @@ architecture a of fifo is
     fifo_addr_t := (others => '0');
 
   -- The part of the address that actually goes to the BRAM address port
-  subtype bram_addr_range is integer range num_bits_needed(memory_depth - 1) - 1 downto 0;
+  subtype bram_addr_range is natural range num_bits_needed(memory_depth - 1) - 1 downto 0;
 
-  signal num_lasts_in_fifo : integer range 0 to depth := 0;
+  signal num_lasts_in_fifo : natural range 0 to depth := 0;
 
   signal should_drop_packet, should_peek_read : std_logic := '0';
 
   signal read_ready_ram, read_valid_ram, read_last_ram : std_logic := '0';
   signal read_data_ram : std_logic_vector(width - 1 downto 0) := (others => '0');
-  signal word_in_output_register : integer range 0 to 1 := 0;
+  signal word_in_output_register : natural range 0 to 1 := 0;
 
 begin
 
@@ -189,8 +189,8 @@ begin
 
   ------------------------------------------------------------------------------
   status : process
-    variable num_lasts_in_fifo_next : integer range 0 to depth := 0;
-    variable word_in_output_register_next : integer range 0 to 1 := 0;
+    variable num_lasts_in_fifo_next : natural range 0 to depth := 0;
+    variable word_in_output_register_next : natural range 0 to 1 := 0;
   begin
     wait until rising_edge(clk);
 
@@ -318,9 +318,9 @@ begin
 
   ------------------------------------------------------------------------------
   memory_block : block
-    constant memory_word_width : integer := width + to_int(enable_last);
+    constant memory_word_width : positive := width + to_int(enable_last);
     subtype word_t is std_logic_vector(memory_word_width - 1 downto 0);
-    type mem_t is array (integer range <>) of word_t;
+    type mem_t is array (natural range <>) of word_t;
 
     signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));
     attribute ram_style of mem : signal is to_attribute(ram_type);

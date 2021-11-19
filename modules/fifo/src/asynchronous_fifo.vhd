@@ -42,8 +42,8 @@ entity asynchronous_fifo is
     width : positive;
     depth : positive;
     -- Changing these levels from default value will increase logic footprint
-    almost_full_level : integer range 0 to depth := depth;
-    almost_empty_level : integer range 0 to depth := 0;
+    almost_full_level : natural range 0 to depth := depth;
+    almost_empty_level : natural range 0 to depth := 0;
     -- Set to true in order to use 'read_last' and 'write_last'
     enable_last : boolean := false;
     -- If enabled, 'read_valid' will not be asserted until a full packet is available in
@@ -75,7 +75,7 @@ entity asynchronous_fifo is
     --
     -- Note that this port will be CONSTANTLY ZERO if the 'enable_packet_mode' generic is set
     -- to true. This is since a glitch-free value can not be guaranteed in this mode.
-    read_level : out integer range 0 to depth := 0;
+    read_level : out natural range 0 to depth := 0;
     -- '1' if there are 'almost_empty_level' or fewer words available to read.
     --
     -- Note that this port will be CONSTANTLY ONE if the 'enable_packet_mode' generic is set
@@ -96,7 +96,7 @@ entity asynchronous_fifo is
     -- Status signals on the write side. Updated one clock cycle after write transactions.
     -- Updated "a while" after read transactions (not deterministic).
     -- In case the enable_output_register is set, this value will never go below 1
-    write_level : out integer range 0 to depth := to_int(enable_output_register);
+    write_level : out natural range 0 to depth := to_int(enable_output_register);
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
     write_almost_full : out std_logic := '0';
 
@@ -121,11 +121,11 @@ architecture a of asynchronous_fifo is
   signal num_lasts_written : fifo_addr_t := (others => '0');
 
   -- The part of the address that actually goes to the BRAM address port
-  subtype bram_addr_range is integer range num_bits_needed(memory_depth - 1) - 1 downto 0;
+  subtype bram_addr_range is natural range num_bits_needed(memory_depth - 1) - 1 downto 0;
 
   signal read_ready_ram, read_valid_ram, read_last_ram : std_logic := '0';
   signal read_data_ram : std_logic_vector(width - 1 downto 0) := (others => '0');
-  signal word_in_output_register : integer range 0 to 1 := 0;
+  signal word_in_output_register : natural range 0 to 1 := 0;
 
 begin
 
@@ -230,9 +230,9 @@ begin
 
     ------------------------------------------------------------------------------
     read_status : process
-      variable read_level_next : integer range 0 to depth;
+      variable read_level_next : natural range 0 to depth;
       variable num_lasts_read_next : fifo_addr_t := (others => '0');
-      variable word_in_output_register_next : integer range 0 to 1 := 0;
+      variable word_in_output_register_next : natural range 0 to 1 := 0;
     begin
       wait until rising_edge(clk_read);
 
@@ -327,9 +327,9 @@ begin
 
   ------------------------------------------------------------------------------
   memory : block
-    constant memory_word_width : integer := width + to_int(enable_last);
+    constant memory_word_width : positive := width + to_int(enable_last);
     subtype word_t is std_logic_vector(memory_word_width - 1 downto 0);
-    type mem_t is array (integer range <>) of word_t;
+    type mem_t is array (natural range <>) of word_t;
 
     signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));
     attribute ram_style of mem : signal is to_attribute(ram_type);
