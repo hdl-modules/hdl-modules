@@ -5,6 +5,8 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Package with constants/types/functions for generic register file ecosystem.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -19,16 +21,22 @@ use math.math_pkg.all;
 
 package reg_file_pkg is
 
-  constant reg_width : integer := 32;
+  constant reg_width : positive := 32;
   subtype reg_t is std_logic_vector(reg_width - 1 downto 0);
   type reg_vec_t is array (integer range <>) of reg_t;
 
   type reg_type_t is (
-    r, -- Bus can read a value that fabric provides
-    w, -- Bus can write a value that is available for fabric usage
-    r_w, -- Bus can write a value and read it back. The written value is available for fabric usage
-    wpulse, -- Bus can write a value that is asserted for one cycle in fabric
-    r_wpulse -- Bus can read a value that fabric provides. Bus can write a value that is asserted for one cycle in fabric
+    -- Bus can read a value that fabric provides
+    r,
+    -- Bus can write a value that is available for fabric usage
+    w,
+    -- Bus can write a value and read it back. The written value is available for fabric usage
+    r_w,
+    -- Bus can write a value that is asserted for one cycle in fabric
+    wpulse,
+    -- Bus can read a value that fabric provides.
+    -- Bus can write a value that is asserted for one cycle in fabric.
+    r_wpulse
   );
 
   function is_read_type(reg_type : reg_type_t) return boolean;
@@ -37,12 +45,12 @@ package reg_file_pkg is
   function is_fabric_gives_value_type(reg_type : reg_type_t) return boolean;
 
   type reg_definition_t is record
-    idx : integer;
+    idx : natural;
     reg_type : reg_type_t;
   end record;
   type reg_definition_vec_t is array (natural range <>) of reg_definition_t;
 
-  function get_highest_idx(regs : reg_definition_vec_t) return integer;
+  function get_highest_idx(regs : reg_definition_vec_t) return natural;
   function get_addr_mask(regs : reg_definition_vec_t) return addr_t;
   function to_addr_and_mask_vec(regs : reg_definition_vec_t) return addr_and_mask_vec_t;
 
@@ -70,7 +78,7 @@ package body reg_file_pkg is
     return reg_type = r or reg_type = r_wpulse;
   end function;
 
-  function get_highest_idx(regs : reg_definition_vec_t) return integer is
+  function get_highest_idx(regs : reg_definition_vec_t) return natural is
   begin
     assert regs(0).idx = 0 severity failure;
     assert regs(regs'high).idx = regs'length - 1 severity failure;
@@ -78,7 +86,7 @@ package body reg_file_pkg is
   end function;
 
   function get_addr_mask(regs : reg_definition_vec_t) return addr_t is
-    constant num_bits : integer := num_bits_needed(get_highest_idx(regs));
+    constant num_bits : positive := num_bits_needed(get_highest_idx(regs));
     variable result : addr_t := (others => '0');
   begin
     -- Lowest bits are always zero since registers are 32-bits i.e. four-byte aligned.
