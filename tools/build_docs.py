@@ -77,7 +77,13 @@ def generate_documentation():
         index_rst += f"  modules/{module.name}/{module.name}\n"
 
         output_path = GENERATED_SPHINX / "modules" / module.name
-        ModuleDocumentation(module).create_rst_document(output_path)
+
+        # Exclude the "rtl/" folder within each module from documentation.
+        # With our chosen module structure we only place netlist build wrappers there, which we
+        # do not want included in the documentation.
+        ModuleDocumentation(module).create_rst_document(
+            output_path=output_path, exclude_module_folders=["rtl"]
+        )
 
         # Copy further files from the modules' "doc" folder that might be included.
         # For example an image in the "doc" folder might be included in the document.
