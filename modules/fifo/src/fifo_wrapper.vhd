@@ -23,7 +23,8 @@ entity fifo_wrapper is
     -- Note that the default values are carefully chosen. Must be exactly the same as in fifo.vhd
     -- and asynchronous_fifo.vhd.
     width : positive;
-    depth : positive;
+    -- Set depth to 0 to not include any fifo at all
+    depth : natural;
     almost_full_level : natural range 0 to depth := depth;
     almost_empty_level : natural range 0 to depth := 0;
     enable_last : boolean := false;

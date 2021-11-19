@@ -27,14 +27,6 @@ class Module(BaseModule):
         tb.test("write_to_non_existent_register").set_generic("use_axi_lite_bfm", False)
         tb.test("write_to_non_write_type_register").set_generic("use_axi_lite_bfm", False)
 
-    def setup_formal(self, formal_proj, **kwargs):  # pylint: disable=unused-argument,no-self-use
-        formal_proj.add_config(
-            top="axi_lite_reg_file_wrapper",
-            engine_command="smtbmc",
-            solver_command="z3",
-            mode="prove",
-        )
-
     def get_build_projects(self):  # pylint: disable=no-self-use
         projects = []
         all_modules = get_hdl_modules()

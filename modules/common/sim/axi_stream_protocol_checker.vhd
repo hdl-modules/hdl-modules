@@ -17,7 +17,7 @@
 --    end generate;
 --
 -- Without the generate guard, synthesis will fail. The file is placed in the "sim" folder,
--- so it will not be included in synthesis or formal projects.
+-- so it will not be included in synthesis projects.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

@@ -5,7 +5,7 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper, for netlist build and formal flow, that sets an appropriate generic.
+-- Wrapper for netlist build, that sets an appropriate generic.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -14,12 +14,6 @@ use ieee.std_logic_1164.all;
 library axi;
 use axi.axi_lite_pkg.all;
 
--- TODO there is some problem in our formal flow related to the work library.
--- Doing simply "use work.reg_file_pkg.all;" does not work here. The issue seems to be
--- isolated to the top level however, since axi_lite_reg_file.vhd uses "work" completely fine.
---
--- Appending "--work=reg_file" in the sby_writer.py ghdl elaborate call did not immediately solve
--- the issue.
 library reg_file;
 use reg_file.reg_file_pkg.all;
 

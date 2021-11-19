@@ -105,28 +105,6 @@ class Module(BaseModule):
 
                 yield generics
 
-    def setup_formal(self, formal_proj, **kwargs):  # pylint: disable=unused-argument,no-self-use
-        depth = 4
-        base_generics = dict(
-            width=3,
-            depth=depth,
-            enable_last=True,
-        )
-
-        for (almost_full_level, almost_empty_level) in [(depth - 1, 0), (depth, 1)]:
-            generics = dict(
-                base_generics,
-                almost_full_level=almost_full_level,
-                almost_empty_level=almost_empty_level,
-            )
-            formal_proj.add_config(
-                top="fifo",
-                generics=generics,
-                engine_command="smtbmc",
-                solver_command="z3",
-                mode="prove",
-            )
-
     def get_build_projects(self):
         projects = []
         modules = get_hdl_modules()

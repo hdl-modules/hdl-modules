@@ -155,11 +155,6 @@ begin
     signal valid_write_address : boolean := false;
   begin
 
-    -- Constrain initial state value to be valid enum. It seems the formal check will allow enums
-    -- to assume invalid (initial) values.
-    -- psl write_state_enum_should_be_valid : assert always
-    --   (write_state = aw or write_state = w or write_state = b) @ rising_edge(clk);
-
     -- An address transaction has occured and the address points to a valid write register
     valid_write_address <= write_idx /= invalid_addr and is_write_type(regs(write_idx).reg_type);
 
@@ -220,26 +215,6 @@ begin
           end if;
       end case;
     end process;
-  end block;
-
-
-  ------------------------------------------------------------------------------
-  psl_block : block
-    constant reg_was_accessed_zero : std_logic_vector(reg_was_read'range) := (others => '0');
-  begin
-    -- psl default clock is rising_edge(clk);
-    --
-    -- psl reg_was_written_should_pulse_only_one_clock_cycle : assert always
-    --   {reg_was_written /= reg_was_accessed_zero} |=> (reg_was_written = reg_was_accessed_zero);
-    --
-    -- psl reg_was_read_should_pulse_only_one_clock_cycle : assert always
-    --   {reg_was_read /= reg_was_accessed_zero} |=> (reg_was_read = reg_was_accessed_zero);
-    --
-    -- Asserting reg_was_read typically prompts something in the PL that changes the register value.
-    -- Hence it is important that reg_was_read is asserted at the actual read (R) transaction
-    -- has occured, and not e.g. at the AR transaction.
-    -- psl reg_was_read_should_pulse_when_read_transaction_occurs : assert always
-    --   (reg_was_read /= reg_was_accessed_zero) -> axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
   end block;
 
 end architecture;
