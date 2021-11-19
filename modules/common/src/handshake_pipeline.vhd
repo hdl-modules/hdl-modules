@@ -34,7 +34,7 @@ entity handshake_pipeline is
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     input_ready : out std_logic := '0';
     input_valid : in std_logic;
     -- Optional to connect.
@@ -43,7 +43,7 @@ entity handshake_pipeline is
     -- Optional to connect. Must set valid 'strobe_unit_width' generic value in order to use this.
     input_strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '-');
-    --
+    --# {{}}
     output_ready : in std_logic;
     output_valid : out std_logic := '0';
     output_last : out std_logic := '0';

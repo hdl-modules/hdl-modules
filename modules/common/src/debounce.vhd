@@ -6,11 +6,13 @@
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Simple debounce mechanism to be used with e.g. the signal from a button or
--- dip switch. It eliminates noise by requiring the input to have a stable
+-- dip switch. It eliminates noise and metastability by requiring the input to have a stable
 -- value for a specified number of clock cycles before propagating the value.
 --
--- Uses a resync_level block (async_reg chain) to make sure the input is not
--- metastable.
+-- .. note::
+--   This entity instantiates a :ref:`resync.resync_level` block (``async_reg`` chain) to make sure
+--   the input is not metastable. The :ref:`resync.resync_level` has a scoped constraint file that
+--   must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -27,7 +29,7 @@ entity debounce is
   port (
     -- Input value that may be metastable and noisy
     noisy_input : in std_logic := '0';
-    --
+    --# {{}}
     clk : in std_logic;
     stable_result : out std_logic := '0'
   );

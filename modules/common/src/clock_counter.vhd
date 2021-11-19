@@ -9,14 +9,15 @@
 -- known frequency.
 --
 -- The frequency of target_clock is given by
+--
 --   target_tick_count * reference_clock_frequency / 2 ** resolution_bits
 --
--- The target_tick_count value is updated every 2 ** resolution_bits cycles. It is invalid for
--- 2 * 2 ** resolution_bits cycles in the beginning as reference_clock starts switching,
--- but after that it is always valid.
+-- The ``target_tick_count`` value is updated every ``2 ** resolution_bits`` cycles.
+-- It is invalid for ``2 * 2 ** resolution_bits`` cycles in the beginning as ``reference_clock``
+-- starts switching, but after that it is always valid.
 --
--- For the calculation to work, target_clock must be no more than 2 ** (max_relation_bits - 1) times
--- faster than reference_clock.
+-- For the calculation to work, ``target_clock`` must be no more than
+-- ``2 ** (max_relation_bits - 1)`` times faster than reference_clock.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -39,7 +40,7 @@ entity clock_counter is
   );
   port (
     target_clock : in std_logic;
-    --
+    --# {{}}
     reference_clock : in std_logic;
     target_tick_count : out unsigned(resolution_bits + max_relation_bits - 1 downto 0) :=
       (others => '0')
