@@ -145,7 +145,7 @@ class Module(BaseModule):
         )
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_minimal", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.minimal", generics),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -165,7 +165,9 @@ class Module(BaseModule):
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_output_register", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.fifo.minimal_with_output_register", generics
+                ),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -182,16 +184,16 @@ class Module(BaseModule):
 
         # A FIFO with level counter port and non-default almost_full_level, which
         # increases resource utilization.
-        generics = dict(use_asynchronous_fifo=False, width=32, depth=1024, almost_full_level=800)
+        generics = dict(width=32, depth=1024, almost_full_level=800)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.with_levels", generics),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(26)),
+                    TotalLuts(EqualTo(27)),
                     Ffs(EqualTo(35)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -204,13 +206,13 @@ class Module(BaseModule):
         generics.update(enable_last=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_last", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.with_last", generics),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(26)),
+                    TotalLuts(EqualTo(27)),
                     Ffs(EqualTo(35)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -224,13 +226,13 @@ class Module(BaseModule):
         generics.update(enable_packet_mode=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_packet_mode", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.with_packet_mode", generics),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(41)),
+                    TotalLuts(EqualTo(42)),
                     Ffs(EqualTo(46)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -244,10 +246,12 @@ class Module(BaseModule):
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_packet_mode_and_output_register", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.fifo.with_packet_mode_and_output_register", generics
+                ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(44)),
@@ -266,13 +270,13 @@ class Module(BaseModule):
         )
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_drop_packet_support", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.with_drop_packet", generics),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(47)),
+                    TotalLuts(EqualTo(48)),
                     Ffs(EqualTo(57)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -286,13 +290,13 @@ class Module(BaseModule):
         generics.update(enable_drop_packet=False, enable_peek_mode=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("fifo_with_peek_mode_support", generics),
+                name=self.test_case_name(f"{self.library_name}.fifo.with_peek_mode", generics),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(59)),
+                    TotalLuts(EqualTo(60)),
                     Ffs(EqualTo(57)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -302,14 +306,39 @@ class Module(BaseModule):
         )
 
     def _setup_asynchronous_fifo_build_projects(self, projects, modules, part):
-        # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
-        # a minimal FIFO.
+        # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
+        # Note that this uses the minimal top level wrapper so that only the barebone features
+        # are available.
+        generics = dict(use_asynchronous_fifo=True, width=16, depth=8, enable_output_register=False)
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.resync_fifo", generics
+                ),
+                modules=modules,
+                part=part,
+                top="fifo_netlist_build_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(35)),
+                    Ffs(EqualTo(50)),
+                    Ramb36(EqualTo(0)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(4)),
+                ],
+            )
+        )
+
+        # Typical FIFO without levels. Use a wrapper as top level, which only routes the
+        # "barebone" ports, resulting in a minimal FIFO.
         generics = dict(
             use_asynchronous_fifo=True, width=32, depth=1024, enable_output_register=False
         )
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo_minimal", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.minimal", generics
+                ),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -326,10 +355,14 @@ class Module(BaseModule):
 
         # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
         # a minimal FIFO. This mode also adds an output register.
-        generics.update(depth=generics["depth"] + 1, enable_output_register=True)
+        generics.update(
+            use_asynchronous_fifo=True, depth=generics["depth"] + 1, enable_output_register=True
+        )
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo_with_output_register", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.minimal_with_output_register", generics
+                ),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -346,16 +379,18 @@ class Module(BaseModule):
 
         # A FIFO with level counter ports and non-default almost_full_level, which
         # increases resource utilization.
-        generics = dict(use_asynchronous_fifo=True, width=32, depth=1024, almost_full_level=800)
+        generics = dict(width=32, depth=1024, almost_full_level=800)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.with_levels", generics
+                ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(67)),
+                    TotalLuts(EqualTo(68)),
                     Ffs(EqualTo(112)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -368,13 +403,15 @@ class Module(BaseModule):
         generics.update(enable_last=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo_with_last", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.with_last", generics
+                ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(67)),
+                    TotalLuts(EqualTo(68)),
                     Ffs(EqualTo(112)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
@@ -388,10 +425,12 @@ class Module(BaseModule):
         generics.update(enable_packet_mode=True)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo_with_packet_mode", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.with_packet_mode", generics
+                ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(86)),
@@ -409,11 +448,12 @@ class Module(BaseModule):
         projects.append(
             VivadoNetlistProject(
                 name=self.test_case_name(
-                    "asynchronous_fifo_with_packet_mode_and_output_register", generics
+                    f"{self.library_name}.asynchronous_fifo.with_packet_mode_and_output_register",
+                    generics,
                 ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(92)),
@@ -433,10 +473,12 @@ class Module(BaseModule):
         )
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name("asynchronous_fifo_with_drop_packet_support", generics),
+                name=self.test_case_name(
+                    f"{self.library_name}.asynchronous_fifo.with_drop_packet", generics
+                ),
                 modules=modules,
                 part=part,
-                top="fifo_wrapper",
+                top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(66)),
@@ -444,27 +486,6 @@ class Module(BaseModule):
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(6)),
-                ],
-            )
-        )
-
-        # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
-        # Note that this uses the minimal top level wrapper so that only the barebone features
-        # are available.
-        generics = dict(use_asynchronous_fifo=True, width=16, depth=8, enable_output_register=False)
-        projects.append(
-            VivadoNetlistProject(
-                name=self.test_case_name("resync_fifo", generics),
-                modules=modules,
-                part=part,
-                top="fifo_netlist_build_wrapper",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(35)),
-                    Ffs(EqualTo(50)),
-                    Ramb36(EqualTo(0)),
-                    Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(4)),
                 ],
             )
         )

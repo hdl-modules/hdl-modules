@@ -60,7 +60,7 @@ class Module(BaseModule):
             for name in ["hard_fifo", "asynchronous_hard_fifo"]:
                 projects.append(
                     VivadoNetlistProject(
-                        name=self.test_case_name(name, generics),
+                        name=self.test_case_name(f"{self.library_name}.{name}", generics),
                         modules=[self],
                         part=part,
                         top=name,

@@ -21,7 +21,7 @@ entity asynchronous_hard_fifo is
   generic (
     data_width : positive;
     enable_output_register : boolean;
-    primitive_type : fifo_primitive_t
+    primitive_type : fifo_primitive_t := primitive_fifo36e2
   );
   port (
     clk_read : in std_logic;
