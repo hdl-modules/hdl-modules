@@ -41,3 +41,15 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "prev_next_buttons_location": "both",
 }
+
+# These folders are copied to the documentation's HTML output
+html_static_path = ["css"]
+
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = [
+    # A hack to get the table captions below the table.
+    # Per instructions at
+    # https://stackoverflow.com/questions/69845499/
+    "docutils_table_caption_below.css",
+]
