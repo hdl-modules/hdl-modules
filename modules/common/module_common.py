@@ -102,7 +102,7 @@ class Module(BaseModule):
             projects.append(
                 VivadoNetlistProject(
                     name=self.test_case_name(
-                        name=f"{self.name}.handshake_pipeline", generics=generics
+                        name=f"{self.library_name}.handshake_pipeline", generics=generics
                     ),
                     modules=[self],
                     part=part,
@@ -190,7 +190,7 @@ class Module(BaseModule):
             projects.append(
                 VivadoNetlistProject(
                     name=self.test_case_name(
-                        name=f"{self.name}.width_conversion", generics=generics
+                        name=f"{self.library_name}.width_conversion", generics=generics
                     ),
                     modules=modules,
                     part=part,
@@ -237,7 +237,9 @@ class Module(BaseModule):
         for idx, generics in enumerate(generic_configurations):
             projects.append(
                 VivadoNetlistProject(
-                    name=self.test_case_name(name=f"{self.name}.keep_remover", generics=generics),
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.keep_remover", generics=generics
+                    ),
                     modules=modules,
                     part=part,
                     top="keep_remover",
@@ -273,7 +275,9 @@ class Module(BaseModule):
         for idx, generics in enumerate(generic_configurations):
             projects.append(
                 VivadoNetlistProject(
-                    name=self.test_case_name(name=f"{self.name}.strobe_on_last", generics=generics),
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.strobe_on_last", generics=generics
+                    ),
                     modules=modules,
                     part=part,
                     top="strobe_on_last",
@@ -292,7 +296,9 @@ class Module(BaseModule):
         generics = dict(resolution_bits=24, max_relation_bits=6)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name(name=f"{self.name}.clock_counter", generics=generics),
+                name=self.test_case_name(
+                    name=f"{self.library_name}.clock_counter", generics=generics
+                ),
                 modules=modules,
                 part=part,
                 top="clock_counter",
@@ -308,7 +314,9 @@ class Module(BaseModule):
         generics = dict(resolution_bits=10, max_relation_bits=4)
         projects.append(
             VivadoNetlistProject(
-                name=self.test_case_name(name=f"{self.name}.clock_counter", generics=generics),
+                name=self.test_case_name(
+                    name=f"{self.library_name}.clock_counter", generics=generics
+                ),
                 modules=modules,
                 part=part,
                 top="clock_counter",
@@ -333,7 +341,7 @@ class Module(BaseModule):
             generics = dict(period=period, shift_register_length=32)
             projects.append(
                 VivadoNetlistProject(
-                    name=self.test_case_name(f"{self.name}.periodic_pulser", generics),
+                    name=self.test_case_name(f"{self.library_name}.periodic_pulser", generics),
                     modules=modules,
                     part=part,
                     top="periodic_pulser",
