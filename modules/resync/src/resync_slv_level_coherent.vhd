@@ -20,7 +20,7 @@
 -- A level signal is rotated around between input and output side, with three registers in each
 -- direction. The level toggles for each roundtrip, and data is sampled on each side upon a level
 -- transition.
--- This ensures that data is sample on the output side only when we know that the sampled
+-- This ensures that data is sampled on the output side only when we know that the sampled
 -- input data is stable. Conversely, input data is only sampled when we know that data has been
 -- sampled on the output in a stable fashion.
 --
