@@ -36,6 +36,7 @@ def main():
     for name in [
         "conf.py",
         "contributing.rst",
+        "getting_started.rst",
         "license_information.rst",
         "release_notes.rst",
         "robots.txt",
@@ -67,7 +68,14 @@ def generate_documentation():
 
 
 .. toctree::
-  :caption: HDL modules
+  :caption: User guide
+  :hidden:
+
+  getting_started
+
+
+.. toctree::
+  :caption: Modules
   :hidden:
 
 """
