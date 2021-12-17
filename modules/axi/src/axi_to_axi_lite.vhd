@@ -9,12 +9,12 @@
 --
 -- This module does not handle conversion of non-well behaved AXI transfers.
 -- Burst length has to be one and size must be the width of the bus. If these
--- conditions are not met, the read/write response will signal SLVERR.
+-- conditions are not met, the read/write response will signal ``SLVERR``.
 --
 -- This module will throttle the AXI bus so that there is never more that one
 -- outstanding transaction (read and write separate). While the AXI-Lite standard
--- does allow for outstanding bursts, some Xilinx cores, namely the PCIe DMA bridge
--- does not play well with it.
+-- does allow for outstanding bursts, some Xilinx cores (namely the PCIe DMA bridge)
+-- do not play well with it.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -33,14 +33,14 @@ use work.axi_lite_pkg.all;
 
 entity axi_to_axi_lite is
   generic (
-    data_width : integer
+    data_width : positive
   );
   port (
     clk : in std_logic;
-
+    --# {{}}
     axi_m2s : in axi_m2s_t := axi_m2s_init;
     axi_s2m : out axi_s2m_t := axi_s2m_init;
-
+    --# {{}}
     axi_lite_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     axi_lite_s2m : in axi_lite_s2m_t := axi_lite_s2m_init
   );
@@ -48,13 +48,13 @@ end entity;
 
 architecture a of axi_to_axi_lite is
 
-  constant len : integer := 0;
-  constant size : integer := log2(data_width / 8);
+  constant len : natural := 0;
+  constant size : natural := log2(data_width / 8);
 
   signal read_id, write_id : unsigned(axi_m2s.read.ar.id'range) := (others => '0');
 
-  subtype data_rng is integer range data_width - 1 downto 0;
-  subtype strb_rng is integer range data_width / 8 - 1 downto 0;
+  subtype data_rng is natural range data_width - 1 downto 0;
+  subtype strb_rng is natural range data_width / 8 - 1 downto 0;
 
   signal read_error, write_error : boolean := false;
 

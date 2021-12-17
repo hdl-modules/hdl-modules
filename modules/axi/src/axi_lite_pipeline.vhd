@@ -5,9 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Pipelining of an AXI-Lite bus. Full throughput and improved timing characteristics are achieved
--- through the use of skid buffers. However to generics to handshake_pipeline can be modified to
--- get a simpler handshake_pipeline implementation that results in lower resource utilizatoin.
+-- Pipelining of a full AXI-Lite bus (read and write), with the goal of improving timing on the data
+-- and/or control signals.
+--
+-- The default settings will result in full skid-aside buffers, which pipeline both the
+-- data and control signals.
+-- However the generics to :ref:`common.handshake_pipeline` can be modified to
+-- get a simpler implementation that results in lower resource utilization.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -28,14 +32,14 @@ entity axi_lite_pipeline is
     -- handshake_pipeline's defaults) give full throughput and the lowest logic depth.
     -- They can be changed from default in order to decrease logic utilization.
     full_throughput : boolean := true;
-    allow_poor_input_ready_timing : boolean := false
+    pipeline_control_signals : boolean := true
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     master_m2s : in axi_lite_m2s_t;
     master_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
-    --
+    --# {{}}
     slave_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     slave_s2m : in axi_lite_s2m_t
   );
@@ -57,7 +61,7 @@ begin
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
-        pipeline_control_signals => not allow_poor_input_ready_timing
+        pipeline_control_signals => pipeline_control_signals
       )
       port map(
         clk => clk,
@@ -87,7 +91,7 @@ begin
       generic map (
         data_width => w_width,
         full_throughput => full_throughput,
-        pipeline_control_signals => not allow_poor_input_ready_timing
+        pipeline_control_signals => pipeline_control_signals
       )
       port map(
         clk => clk,
@@ -108,7 +112,7 @@ begin
     generic map (
       data_width => axi_lite_s2m_b_sz,
       full_throughput => full_throughput,
-      pipeline_control_signals => not allow_poor_input_ready_timing
+      pipeline_control_signals => pipeline_control_signals
     )
     port map(
       clk => clk,
@@ -135,7 +139,7 @@ begin
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
-        pipeline_control_signals => not allow_poor_input_ready_timing
+        pipeline_control_signals => pipeline_control_signals
       )
       port map(
         clk => clk,
@@ -165,7 +169,7 @@ begin
       generic map (
         data_width => r_width,
         full_throughput => full_throughput,
-        pipeline_control_signals => not allow_poor_input_ready_timing
+        pipeline_control_signals => pipeline_control_signals
       )
       port map(
         clk => clk,

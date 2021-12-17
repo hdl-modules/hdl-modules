@@ -8,10 +8,10 @@
 -- Performs throttling of an AXI bus by limiting the number of outstanding
 -- transactions.
 --
--- This entity is to be used in conjuction with a data FIFO on the input.w side.
+-- This entity is to be used in conjuction with a data FIFO on the ``input.w`` side.
 -- Using the level from that FIFO, the throttling will make sure that an address
--- transactio is not done until all data for that transaction is available in
--- the FIFO. This avoids stalling on the throttled_m2s.w channel.
+-- transaction is not done until all data for that transaction is available in
+-- the FIFO. This avoids stalling on the ``throttled_m2s.w`` channel.
 --
 -- To achieve this it keeps track of the number of outstanding beats
 -- that have been negotiated but not yet sent.
@@ -46,12 +46,12 @@ entity axi_write_throttle is
   );
   port(
     clk : in std_logic;
-    --
+    --# {{}}
     data_fifo_level : in integer range 0 to data_fifo_depth;
-    --
+    --# {{}}
     input_m2s : in axi_write_m2s_t := axi_write_m2s_init;
     input_s2m : out axi_write_s2m_t := axi_write_s2m_init;
-    --
+    --# {{}}
     throttled_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     throttled_s2m : in axi_write_s2m_t := axi_write_s2m_init
   );

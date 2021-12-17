@@ -6,7 +6,12 @@
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- FIFO for AXI read response channel (R). Can be used as clock crossing by setting
--- the "asynchronous" generic.
+-- the ``asynchronous`` generic. By setting the width generics, the bus is packed
+-- optimally so that no unnecessary resources are consumed.
+--
+-- .. note::
+--   If asynchronous operation is enabled, the constraints of :ref:`fifo.asynchronous_fifo`
+--   must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -31,17 +36,16 @@ entity axi_r_fifo is
   );
   port (
     clk : in std_logic;
-    --
+    -- Only need to assign the clock if generic asynchronous is "True"
+    clk_input : in std_logic := '0';
+    --# {{}}
     input_m2s : in axi_m2s_r_t;
     input_s2m : out axi_s2m_r_t := axi_s2m_r_init;
-    --
+    --# {{}}
     output_m2s : out axi_m2s_r_t := axi_m2s_r_init;
     output_s2m : in axi_s2m_r_t;
     -- Level of the FIFO. If this is an asynchronous FIFO, this value is on the "output" side.
-    output_level : out integer range 0 to depth := 0;
-    --
-    -- Only need to assign the clock if generic asynchronous is "True"
-    clk_input : in std_logic := '0'
+    output_level : out integer range 0 to depth := 0
   );
 end entity;
 

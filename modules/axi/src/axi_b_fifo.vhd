@@ -5,8 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- FIFO for AXI write response channel (B). Can be used as clock crossing by setting
--- the "asynchronous" generic.
+-- FIFO for AXI write response channel (``B``). Can be used as clock crossing by setting
+-- the ``asynchronous`` generic. By setting the ``id_width`` generic, the bus is packed
+-- optimally so that no unnecessary resources are consumed.
+--
+-- .. note::
+--   If asynchronous operation is enabled, the constraints of :ref:`fifo.asynchronous_fifo`
+--   must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,14 +34,14 @@ entity axi_b_fifo is
   );
   port (
     clk : in std_logic;
-    --
+    -- Only need to assign the clock if generic asynchronous is "True"
+    clk_input : in std_logic := '0';
+    --# {{}}
     input_m2s : in axi_m2s_b_t;
     input_s2m : out axi_s2m_b_t := axi_s2m_b_init;
-    --
+    --# {{}}
     output_m2s : out axi_m2s_b_t := axi_m2s_b_init;
-    output_s2m : in axi_s2m_b_t;
-    -- Only need to assign the clock if generic asynchronous is "True"
-    clk_input : in std_logic := '0'
+    output_s2m : in axi_s2m_b_t
   );
 end entity;
 

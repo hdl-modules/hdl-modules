@@ -5,7 +5,12 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Convenience wrapper for splitting and CDC'ing a register bus.
+-- Convenience wrapper for converting a AXI bus to AXI-Lite, and then splitting and CDC'ing a
+-- register bus.
+-- The goal is to split a register bus, and have each resulting AXI-Lite bus in the same clock
+-- domain as the module that uses the registers. Typically used in chip top levels.
+--
+-- Instantiates :ref:`axi.axi_to_axi_lite`, :ref:`axi.axi_lite_mux` and :ref:`axi.axi_lite_cdc`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -31,7 +36,7 @@ entity axi_to_axi_lite_vec is
     clk_axi : in std_logic;
     axi_m2s : in axi_m2s_t;
     axi_s2m : out axi_s2m_t;
-
+    --# {{}}
     -- Only need to set if different from axi_clk
     clk_axi_lite_vec : in std_logic_vector(axi_lite_slaves'range) := (others => '0');
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);
@@ -66,6 +71,8 @@ begin
 
   ------------------------------------------------------------------------------
   pipeline_gen : if pipeline generate
+
+    ------------------------------------------------------------------------------
     axi_lite_pipeline_inst : entity work.axi_lite_pipeline
       generic map (
         data_width => data_width,
@@ -86,6 +93,7 @@ begin
     axi_lite_s2m <= axi_lite_pipelined_s2m;
 
   end generate;
+
 
   ------------------------------------------------------------------------------
   axi_lite_to_vec_inst : entity work.axi_lite_to_vec

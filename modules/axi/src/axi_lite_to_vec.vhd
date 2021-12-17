@@ -5,7 +5,11 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Convenience wrapper for splitting and CDC'ing a register bus.
+-- Convenience wrapper for splitting and CDC'ing a register bus based on generics.
+-- The goal is to split a register bus, and have each resulting AXI-Lite bus in the same clock
+-- domain as the module that uses the registers. Typically used in chip top levels.
+--
+-- Instantiates :ref:`axi.axi_lite_mux` and :ref:`axi.axi_lite_cdc`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,10 +34,11 @@ entity axi_lite_to_vec is
     cdc_ram_type : ram_style_t := ram_style_auto
   );
   port (
+    --# {{}}
     clk_axi_lite : in std_logic;
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
-
+    --# {{}}
     -- Only need to set if different from clk_axi_lite
     clk_axi_lite_vec : in std_logic_vector(axi_lite_slaves'range) := (others => '0');
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);

@@ -8,10 +8,10 @@
 -- Performs throttling of an AXI bus by limiting the number of outstanding
 -- transactions.
 --
--- This entity is to be used in conjuction with a data FIFO on the input.r side.
+-- This entity is to be used in conjuction with a data FIFO on the ``input.r`` side.
 -- Using the level from that FIFO, the throttling will make sure that address
 -- transactions are not made that would result in the FIFO becoming full. This
--- avoids stalling on the throttled_s2m.r channel.
+-- avoids stalling on the ``throttled_s2m.r`` channel.
 --
 -- To achieve this it keeps track of the number of outstanding beats
 -- that have been negotiated but not yet sent.
@@ -46,12 +46,12 @@ entity axi_read_throttle is
   );
   port(
     clk : in std_logic;
-    --
-    data_fifo_level : in integer range 0 to data_fifo_depth;
-    --
+    --# {{}}
+    data_fifo_level : in natural range 0 to data_fifo_depth;
+    --# {{}}
     input_m2s : in axi_read_m2s_t := axi_read_m2s_init;
     input_s2m : out axi_read_s2m_t := axi_read_s2m_init;
-    --
+    --# {{}}
     throttled_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     throttled_s2m : in axi_read_s2m_t := axi_read_s2m_init
   );
@@ -66,7 +66,7 @@ architecture a of axi_read_throttle is
 
   -- The bits of the ARLEN field that shall be taken into account
   constant len_width : positive := num_bits_needed(max_burst_length_beats - 1);
-  subtype len_range is integer range len_width - 1 downto 0;
+  subtype len_range is natural range len_width - 1 downto 0;
 
     -- +1 in range for sign bit
   signal minus_burst_length_beats : signed(len_width + 1 - 1 downto 0) :=
@@ -76,7 +76,7 @@ architecture a of axi_read_throttle is
   -- but have not yet been sent by the master. Aka outstanding beats.
   -- Note that according to the AXI standard, RVALID may never arrive before ARREADY.
   -- Hence this counter can never go negative.
-  subtype data_counter_t is integer range 0 to data_fifo_depth;
+  subtype data_counter_t is natural range 0 to data_fifo_depth;
   signal num_beats_negotiated_but_not_sent : data_counter_t := 0;
 
   -- Negation of:

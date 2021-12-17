@@ -5,7 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- FIFO for AXI Stream. Can be used as clock crossing by setting the "asynchronous" generic.
+-- FIFO for AXI Stream. Can be used as clock crossing by setting the ``asynchronous`` generic.
+-- By setting the width generics, the bus is packed optimally so that no unnecessary resources
+-- are consumed.
+--
+-- .. note::
+--   If asynchronous operation is enabled, the constraints of :ref:`fifo.asynchronous_fifo`
+--   must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,14 +35,14 @@ entity axi_stream_fifo is
   );
   port (
     clk : in std_logic;
-    --
+    -- Only need to assign the clock if generic asynchronous is "True"
+    clk_output : in std_logic := '0';
+    --# {{}}
     input_m2s : in axi_stream_m2s_t;
     input_s2m : out axi_stream_s2m_t := axi_stream_s2m_init;
-    --
+    --# {{}}
     output_m2s : out axi_stream_m2s_t := axi_stream_m2s_init;
-    output_s2m : in axi_stream_s2m_t;
-    -- Only need to assign the clock if generic asynchronous is "True"
-    clk_output : in std_logic := '0'
+    output_s2m : in axi_stream_s2m_t
   );
 end entity;
 

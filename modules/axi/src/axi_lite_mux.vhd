@@ -7,7 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- AXI-Lite mux, aka simple 1-to-N crossbar.
 --
--- The slave_addrs generic is a list of base address configurations for the
+-- The ``slave_addrs`` generic is a list of base address configurations for the
 -- N slaves. Eeach entry consists of a base address, along with a mask that
 -- will be used to match the master address with a slave. Only the bits that
 -- are asserted in the mask are taken into account when matching.
@@ -37,10 +37,10 @@ entity axi_lite_mux is
   );
   port (
     clk : in std_logic;
-
+    --# {{}}
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
-
+    --# {{}}
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(slave_addrs'range) := (others => axi_lite_m2s_init);
     axi_lite_s2m_vec : in axi_lite_s2m_vec_t(slave_addrs'range)
   );

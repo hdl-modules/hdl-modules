@@ -5,8 +5,8 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Simple N-to-1 crossbar for connecting multiple AXI-Lite masters to one port.
--- This is a wrapper around the simple AXI read crossbar. See that entity for details.
+-- Simple N-to-1 crossbar for connecting multiple AXI-Lite read masters to one port.
+-- This is a wrapper around :ref:`axi.axi_simple_read_crossbar`. See that entity for details.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -19,16 +19,16 @@ use axi.axi_lite_pkg.all;
 
 entity axi_lite_simple_read_crossbar is
   generic(
-    num_inputs : integer
+    num_inputs : positive
   );
   port(
     clk : in std_logic;
-    --
+    --# {{}}
     input_ports_m2s : in axi_lite_read_m2s_vec_t(0 to num_inputs - 1) :=
       (others => axi_lite_read_m2s_init);
     input_ports_s2m : out axi_lite_read_s2m_vec_t(0 to num_inputs - 1) :=
       (others => axi_lite_read_s2m_init);
-    --
+    --# {{}}
     output_m2s : out axi_lite_read_m2s_t := axi_lite_read_m2s_init;
     output_s2m : in axi_lite_read_s2m_t := axi_lite_read_s2m_init
   );

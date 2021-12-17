@@ -5,8 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- FIFO for AXI write data channel (W). Can be used as clock crossing by setting
--- the "asynchronous" generic.
+-- FIFO for AXI write data channel (``W``). Can be used as clock crossing by setting
+-- the ``asynchronous`` generic. By setting the ``data_width`` generic, the bus is packed
+-- optimally so that no unnecessary resources are consumed.
+--
+-- .. note::
+--   If asynchronous operation is enabled, the constraints of :ref:`fifo.asynchronous_fifo`
+--   must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,17 +35,16 @@ entity axi_w_fifo is
   );
   port (
     clk : in std_logic;
-    --
+    -- Only needs to assign the clock if generic asynchronous is "True"
+    clk_input : in std_logic := '0';
+    --# {{}}
     input_m2s : in axi_m2s_w_t;
     input_s2m : out axi_s2m_w_t := axi_s2m_w_init;
-    --
+    --# {{}}
     output_m2s : out axi_m2s_w_t := axi_m2s_w_init;
     output_s2m : in axi_s2m_w_t;
     -- Level of the FIFO. If this is an asynchronous FIFO, this value is on the "output" side.
-    output_level : out integer range 0 to depth := 0;
-
-    -- Only needs to assign the clock if generic asynchronous is "True"
-    clk_input : in std_logic := '0'
+    output_level : out natural range 0 to depth := 0
   );
 end entity;
 
@@ -48,13 +52,15 @@ architecture a of axi_w_fifo is
 
 begin
 
+  ------------------------------------------------------------------------------
   passthrough_or_fifo : if depth = 0 generate
+
     output_m2s <= input_m2s;
     input_s2m <= output_s2m;
 
   else generate
 
-    constant w_width : integer := axi_m2s_w_sz(data_width);
+    constant w_width : natural := axi_m2s_w_sz(data_width);
 
     signal read_valid : std_logic := '0';
     signal read_data, write_data : std_logic_vector(w_width - 1 downto 0);

@@ -5,7 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Clock domain crossing for an AXI read bus.
+-- Clock domain crossing of a full AXI read bus using asynchronous FIFOs for the ``AR`` and ``R``
+-- channels.
+-- By setting the width generics, the bus is packed
+-- optimally so that no unnecessary resources are consumed.
+--
+-- .. note::
+--   The constraints of :ref:`fifo.asynchronous_fifo` must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -34,7 +40,7 @@ entity axi_read_cdc is
     clk_input : in std_logic;
     input_m2s : in axi_read_m2s_t;
     input_s2m : out axi_read_s2m_t := axi_read_s2m_init;
-    --
+    --# {{}}
     clk_output : in std_logic;
     output_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     output_s2m : in axi_read_s2m_t;

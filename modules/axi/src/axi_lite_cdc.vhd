@@ -5,7 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Clock crossing of an AXI-Lite bus
+-- Clock domain crossing of a full AXI-Lite bus (read and write) using asynchronous FIFOs for the
+-- different channels.
+-- By setting the width generics, the bus is packed optimally so that no unnecessary resources
+-- are consumed.
+--
+-- .. note::
+--   The constraints of :ref:`fifo.asynchronous_fifo` must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -32,7 +38,7 @@ entity axi_lite_cdc is
     clk_master : in std_logic;
     master_m2s : in axi_lite_m2s_t;
     master_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
-    --
+    --# {{}}
     clk_slave : in std_logic;
     slave_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     slave_s2m : in axi_lite_s2m_t
@@ -51,6 +57,8 @@ begin
     slave_m2s.write.aw.addr(read_data'range) <= unsigned(read_data);
     write_data <= std_logic_vector(master_m2s.write.aw.addr(write_data'range));
 
+
+    ------------------------------------------------------------------------------
     aw_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
         width => axi_lite_m2s_a_sz(addr_width),
@@ -81,6 +89,8 @@ begin
     slave_m2s.write.w.strb <= to_axi_lite_m2s_w(read_data, data_width).strb;
     write_data <= to_slv(master_m2s.write.w, data_width);
 
+
+    ------------------------------------------------------------------------------
     w_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
         width => w_width,
@@ -129,6 +139,8 @@ begin
     slave_m2s.read.ar.addr(read_data'range) <= unsigned(read_data);
     write_data <= std_logic_vector(master_m2s.read.ar.addr(write_data'range));
 
+
+    ------------------------------------------------------------------------------
     ar_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
         width => axi_lite_m2s_a_sz(addr_width),
@@ -159,6 +171,8 @@ begin
     master_s2m.read.r.resp <= to_axi_lite_s2m_r(read_data, data_width).resp;
     write_data <= to_slv(slave_s2m.read.r, data_width);
 
+
+    ------------------------------------------------------------------------------
     r_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
         width => r_width,

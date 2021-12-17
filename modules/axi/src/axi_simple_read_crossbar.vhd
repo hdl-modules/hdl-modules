@@ -7,12 +7,12 @@
 -- -------------------------------------------------------------------------------------------------
 -- Simple N-to-1 crossbar for connecting multiple AXI read masters to one port.
 --
--- Uses round-robin scheduling for the inputs. It is simple in the sense that
--- there is no separation of AXI AR and R channels with separate queues.
--- After a channel has been selected for address transaction, the crossbar is
--- locked on that channel until it has finished it's read response transactions.
+-- Uses round-robin scheduling for the ``input`` s. It is simple in the sense that
+-- there is no separation of AXI ``AR`` and ``R`` channels with separate queues.
+-- After a port has been selected for address transaction, the crossbar is
+-- locked on that port until it has finished it's read response transactions.
 -- After that the crossbar moves on to do a new address transaction on, possibly,
--- another channel.
+-- another port.
 --
 -- Due to this it has a very small logic footprint but will never reach full
 -- utilization of the data channels. In order to get higher throughput, further address transactions
@@ -31,14 +31,14 @@ use common.types_pkg.all;
 
 entity axi_simple_read_crossbar is
   generic(
-    num_inputs : integer
+    num_inputs : positive
   );
   port(
     clk : in std_logic;
-    --
+    --# {{}}
     input_ports_m2s : in axi_read_m2s_vec_t(0 to num_inputs - 1) := (others => axi_read_m2s_init);
     input_ports_s2m : out axi_read_s2m_vec_t(0 to num_inputs - 1) := (others => axi_read_s2m_init);
-    --
+    --# {{}}
     output_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     output_s2m : in axi_read_s2m_t := axi_read_s2m_init
   );
@@ -46,13 +46,13 @@ end entity;
 
 architecture a of axi_simple_read_crossbar is
 
-  constant no_input_selected : integer := input_ports_m2s'high + 1;
+  constant no_input_selected : positive := input_ports_m2s'high + 1;
 
   -- Max num outstanding address transactions
-  constant max_addr_fifo_depth : integer := 128;
+  constant max_addr_fifo_depth : positive := 128;
 
-  signal input_select : integer range 0 to no_input_selected := no_input_selected;
-  signal input_select_turn_counter : integer range input_ports_m2s'range := 0;
+  signal input_select : natural range 0 to no_input_selected := no_input_selected;
+  signal input_select_turn_counter : natural range input_ports_m2s'range := 0;
 
   type state_t is (wait_for_ar_valid, wait_for_ar_done, wait_for_r_done);
   signal state : state_t := wait_for_ar_valid;
@@ -62,7 +62,7 @@ begin
   ----------------------------------------------------------------------------
   select_input : process
     variable ar_done, r_done : std_logic;
-    variable num_outstanding_addr_transactions : integer range 0 to max_addr_fifo_depth := 0;
+    variable num_outstanding_addr_transactions : natural range 0 to max_addr_fifo_depth := 0;
   begin
     wait until rising_edge(clk);
 
