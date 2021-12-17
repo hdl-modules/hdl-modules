@@ -141,7 +141,7 @@ About ``hdl_modules``
   :alt: License
   :target: https://hdl-modules.com/license_information.html
 
-The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
+The hdl_modules project is a collection of reusable, high-quality, peer reviewed VHDL
 building blocks.
 
 {extra_rst}
