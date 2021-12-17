@@ -5,6 +5,9 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Some basic types that make it easier to work with VHDL.
+-- Also some basic functions operating on these types.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.numeric_std.all;

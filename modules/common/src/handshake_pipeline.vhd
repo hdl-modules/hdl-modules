@@ -6,10 +6,12 @@
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Handshake pipeline. Is used to ease the timing of a streaming data interface by inserting
--- register stages on the data and, in some modes, the control signals.
+-- register stages on the data and/or control signals.
 --
--- There are many modes available, with different characteristics.
--- See the descriptions within the code.
+-- There are many modes available, with different characteristics, that are enabled
+-- with different combinations of ``full_throughput``, ``pipeline_control_signals``
+-- and ``pipeline_data_signals``.
+-- See the descriptions within the code for more details about throughput and fanout.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -18,7 +20,7 @@ use ieee.std_logic_1164.all;
 
 entity handshake_pipeline is
   generic (
-    data_width : integer;
+    data_width : natural;
     -- Setting to false can save logic footprint, at the cost of lower throughput
     full_throughput : boolean := true;
     -- Ensures that there is no combinatorial path between valid and ready on input and output.

@@ -5,10 +5,11 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Commonly used attributes for Xilinx Vivado, with description and their valid values.
+-- Information gathered from documents UG901 and UG912.
+-- -------------------------------------------------------------------------------------------------
 
 package attribute_pkg is
-
-  -- Commonly used attributes. Descriptions from UG901 and UG912.
 
   -- Prevent optimizations where signals are either optimized or absorbed into logic
   -- blocks. Works in the same way as KEEP or KEEP_HIERARCHY attributes; However unlike

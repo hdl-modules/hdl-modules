@@ -5,6 +5,9 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Package with common features that do not fit in anywhere else, and are not significant enough
+-- to warrant their own package.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;

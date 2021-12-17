@@ -5,9 +5,9 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- The goal of this entity is to process an AXI-Stream so that bursts where 'last' is asserted on
--- a word that is completely strobed out are modified so that 'last' is instead asserted on the last
--- word which does have a strobe.
+-- The goal of this entity is to process an AXI-Stream so that bursts where ``last`` is asserted on
+-- a word that is completely strobed out are modified so that ``last`` is instead asserted on the
+-- last word which does have a strobe.
 --
 -- As a consequence of this, all words in the stream that are completely strobed out are dropped
 -- by this entity.
@@ -26,13 +26,13 @@ entity strobe_on_last is
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     input_ready : out std_logic := '0';
     input_valid : in std_logic;
     input_last : in std_logic;
     input_data : in std_logic_vector(data_width - 1 downto 0);
     input_strobe : in std_logic_vector(data_width / 8 - 1 downto 0);
-    --
+    --# {{}}
     output_ready : in std_logic;
     output_valid : out std_logic := '0';
     output_last : out std_logic := '0';

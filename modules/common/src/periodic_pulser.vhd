@@ -5,20 +5,20 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Outputs a one cycle pulse after a generic number of assertions of count_enable.
+-- Outputs a one cycle ``pulse`` after a generic number of assertions of ``count_enable``.
 --
 -- In the worst case, this module simply creates a counter, but before that it tries to
 -- use shift registers as far as possible. This makes the implementation resource efficient
--- on devices with cheap shift registers.
+-- on devices with cheap shift registers (such as SRLs in Xilinx devices).
 --
 -- The period is broken down into factors that are represented using shift
 -- registers, with the shift register length being the factor value. By rotating the shift register
--- on each count enable, a fixed period is created.
--- The remaining period is sent to a new instance of period_pulser.
+-- on each ``count_enable``, a fixed period is created.
+-- The remaining period is sent to a new instance of :ref:`common.periodic_pulser`.
 --
 -- **Step 1**:
--- As far as possible and-gate multiple shift registers together. The output of this stage
--- is then sent to the next instance of period_pulser
+-- As far as possible, AND-gate multiple shift registers together. The output of this stage
+-- is then sent to the next instance of :ref:`common.periodic_pulser`
 -- This method only works if the lengths are mutual primes.
 -- One or more shift registers may be created.
 --
@@ -29,14 +29,14 @@
 -- _______
 --
 -- Let's say that the maximum shift register length is 16.
--- A period of 12*37 can then be achieved using two shift registers of length 4 and 3,
--- and then instantiating a new period_pulser
+-- A period of 444 = 12*37 can then be achieved using two shift registers of length 4 and 3,
+-- and then instantiating a new :ref:`common.periodic_pulser`
 --
 -- .. code-block:: none
 --
 --    [0][0][0][1]
 --                \
---                  [and] -> pulse -> [period_pulser of period 37]
+--                 [AND] -> pulse -> [periodic_pulser of period 37]
 --                /
 --       [0][0][1]
 --
@@ -55,14 +55,14 @@ use math.math_pkg.all;
 entity periodic_pulser is
   generic (
     -- The period between pulses
-    period : integer range 2 to integer'high;
+    period : positive range 2 to integer'high;
     -- The shift register length is device specific.
-    -- For Xilinx ultrascale and 7 series devices, it should be set to 32
-    shift_register_length : integer
+    -- For Xilinx UltraScale and 7 series devices, it should be set to 32.
+    shift_register_length : positive
   );
   port (
     clk : in std_logic := '0';
-    --
+    --# {{}}
     count_enable : in std_logic := '1';
     pulse : out std_logic := '0'
   );

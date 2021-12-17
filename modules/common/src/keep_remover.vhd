@@ -14,17 +14,17 @@
 -- that are strobed will be saved to the buffer. Note that input words may have all their lanes
 -- strobed out (except for the last beat, see below).
 -- When enough lanes are saved to fill a whole word, data is passed to the output by asserting
--- output_valid. When input_last is asserted for an input
--- word, an output word will be sent out, with output_last asserted, even if a whole strobed word
--- is not currently filled in the buffer.
+-- ``output_valid``. When ``input_last`` is asserted for an input
+-- word, an output word will be sent out, with ``output_last`` asserted, even if a whole strobed
+-- word is not currently filled in the buffer.
 --
 -- The strobe unit data width is configurable via a generic. Most of the time it would be eight,
 -- i.e. a byte strobe. But in some cases the strobe represents a wider quanta, in which case the
 -- generic can be increased. Increasing the generic will drastically decrease the
 -- resourse utilization, since that is the "atom" of data that is handled internally.
 --
--- The handling of input_last presents a corner case.
--- Lets assume that data_width is 16 and strobe_unit_width is 8.
+-- The handling of ``input_last`` presents a corner case.
+-- Lets assume that ``data_width`` is 16 and ``strobe_unit_width`` is 8.
 -- Furthermore, there is one atom of data available in the buffer, and input stream has both lanes
 -- strobed. In this case, one input word shall result in two output words. The first output word
 -- comes from a whole word being filled in the buffer. The second word comes from a half filled word
@@ -33,12 +33,18 @@
 -- this corner case arises. The padding stage makes it possible to have a very simple data buffer
 -- stage, with low resource utilization.
 --
+--
+-- Throughput
+-- __________
+--
 -- The entity achieves full throughput, except for the corner case mentioned above, where it might
 -- stall one cycle on the input.
 --
--- Limitations:
 --
--- * 'input_last' may not be asserted on an input word that has all lanes strobed out.
+-- Limitations
+-- ___________
+--
+-- * ``input_last`` may not be asserted on an input word that has all lanes strobed out.
 -- * There may never be a '1' above a '0' in the input strobe. E.g. "0111" is allowed,
 --   but "1100" is not.
 -- -------------------------------------------------------------------------------------------------
@@ -57,13 +63,13 @@ entity keep_remover is
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     input_ready : out std_logic := '0';
     input_valid : in std_logic;
     input_last : in std_logic;
     input_data : in std_logic_vector(data_width - 1 downto 0);
     input_keep : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0);
-    --
+    --# {{}}
     output_ready : in std_logic;
     output_valid : out std_logic := '0';
     output_last : out std_logic := '0';

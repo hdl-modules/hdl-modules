@@ -8,6 +8,10 @@
 -- Measure the switching rate of an unknown clock by using a freerunning reference clock of
 -- known frequency.
 --
+-- .. note::
+--   This entity instantiates a :ref:`resync.resync_counter` block. See documentation of that entity
+--   for constraining details.
+--
 -- The frequency of target_clock is given by
 --
 --   target_tick_count * reference_clock_frequency / 2 ** resolution_bits
