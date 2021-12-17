@@ -5,6 +5,18 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
+--
+-- Instantiates the VUnit ``axi_lite_master`` verifcation component, which creates AXI-Lite
+-- read/write transactions.
+-- The AXI-Lite interface are then connected to the "full" AXI interface of this module.
+-- The fact that the BFM uses AXI-Lite means that there is no burst support.
+-- This wrapper is typically only used for register read/write operations on the chip top level,
+-- where the register bus is still AXI.
+--
+-- It is used by performing VUnit VC calls, such as ``read_bus``,
+-- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -27,10 +39,10 @@ entity axi_master is
   );
   port (
     clk : in std_logic;
-
+    --# {{}}
     axi_read_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : in axi_read_s2m_t := axi_read_s2m_init;
-
+    --# {{}}
     axi_write_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     axi_write_s2m : in axi_write_s2m_t := axi_write_s2m_init
   );
@@ -69,33 +81,33 @@ begin
 
   ------------------------------------------------------------------------------
   axi_lite_master_inst : entity vunit_lib.axi_lite_master
-  generic map (
-    bus_handle => bus_handle
-  )
-  port map (
-    aclk => clk,
+    generic map (
+      bus_handle => bus_handle
+    )
+    port map (
+      aclk => clk,
 
-    arready => axi_read_s2m.ar.ready,
-    arvalid => axi_read_m2s.ar.valid,
-    araddr => araddr,
+      arready => axi_read_s2m.ar.ready,
+      arvalid => axi_read_m2s.ar.valid,
+      araddr => araddr,
 
-    rready => axi_read_m2s.r.ready,
-    rvalid => axi_read_s2m.r.valid,
-    rdata => rdata,
-    rresp => axi_read_s2m.r.resp,
+      rready => axi_read_m2s.r.ready,
+      rvalid => axi_read_s2m.r.valid,
+      rdata => rdata,
+      rresp => axi_read_s2m.r.resp,
 
-    awready => axi_write_s2m.aw.ready,
-    awvalid => axi_write_m2s.aw.valid,
-    awaddr => awaddr,
+      awready => axi_write_s2m.aw.ready,
+      awvalid => axi_write_m2s.aw.valid,
+      awaddr => awaddr,
 
-    wready => axi_write_s2m.w.ready,
-    wvalid => axi_write_m2s.w.valid,
-    wdata => wdata,
-    wstrb => wstrb,
+      wready => axi_write_s2m.w.ready,
+      wvalid => axi_write_m2s.w.valid,
+      wdata => wdata,
+      wstrb => wstrb,
 
-    bready => axi_write_m2s.b.ready,
-    bvalid => axi_write_s2m.b.valid,
-    bresp => axi_write_s2m.b.resp
-  );
+      bready => axi_write_m2s.b.ready,
+      bvalid => axi_write_s2m.b.valid,
+      bresp => axi_write_s2m.b.resp
+    );
 
 end architecture;

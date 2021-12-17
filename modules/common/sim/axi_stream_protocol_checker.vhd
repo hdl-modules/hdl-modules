@@ -8,16 +8,19 @@
 -- A wrapper around the VUnit AXI-Stream protocol checker. Has simpler interface, and can hence
 -- be included in synthesizable code with a generate guard:
 --
+-- .. code-block:: vhdl
+--
 --    if in_simulation generate
 --
 --      axi_stream_protocol_checker_inst : comon.axi_stream_protocol_checker
 --        generic map (
 --          ...
+--        );
 --
 --    end generate;
 --
 -- Without the generate guard, synthesis will fail. The file is placed in the "sim" folder,
--- so it will not be included in synthesis projects.
+-- so it will not be included in synthesis projects by default when using tsfpga.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

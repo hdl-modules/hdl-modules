@@ -73,6 +73,13 @@ def generate_documentation():
 """
 
     modules = get_modules(modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
+
+    # Sort by module name
+    def sort_key(module):
+        return module.name
+
+    modules = sorted(modules, key=sort_key)
+
     for module in modules:
         index_rst += f"  modules/{module.name}/{module.name}\n"
 

@@ -5,6 +5,13 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Wrapper around VUnit BFM that uses convenient record types for the AXI-Lite signals.
+--
+-- Instantiates the VUnit ``axi_lite_master`` verifcation component, which creates AXI-Lite
+-- read/write transactions.
+-- Is used by performing VUnit VC calls, such as ``read_bus``,
+-- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -27,7 +34,7 @@ entity axi_lite_master is
   );
   port (
     clk : in std_logic;
-
+    --# {{}}
     axi_lite_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     axi_lite_s2m : in axi_lite_s2m_t := axi_lite_s2m_init
   );
@@ -53,33 +60,33 @@ begin
 
   ------------------------------------------------------------------------------
   axi_lite_master_inst : entity vunit_lib.axi_lite_master
-  generic map (
-    bus_handle => bus_handle
-  )
-  port map (
-    aclk => clk,
-
-    arready => axi_lite_s2m.read.ar.ready,
-    arvalid => axi_lite_m2s.read.ar.valid,
-    araddr => araddr,
-
-    rready => axi_lite_m2s.read.r.ready,
-    rvalid => axi_lite_s2m.read.r.valid,
-    rdata => rdata,
-    rresp => axi_lite_s2m.read.r.resp,
-
-    awready => axi_lite_s2m.write.aw.ready,
-    awvalid => axi_lite_m2s.write.aw.valid,
-    awaddr => awaddr,
-
-    wready => axi_lite_s2m.write.w.ready,
-    wvalid => axi_lite_m2s.write.w.valid,
-    wdata => wdata,
-    wstrb => wstrb,
-
-    bready => axi_lite_m2s.write.b.ready,
-    bvalid => axi_lite_s2m.write.b.valid,
-    bresp => axi_lite_s2m.write.b.resp
-  );
+    generic map (
+      bus_handle => bus_handle
+    )
+    port map (
+      aclk => clk,
+      --
+      arready => axi_lite_s2m.read.ar.ready,
+      arvalid => axi_lite_m2s.read.ar.valid,
+      araddr => araddr,
+      --
+      rready => axi_lite_m2s.read.r.ready,
+      rvalid => axi_lite_s2m.read.r.valid,
+      rdata => rdata,
+      rresp => axi_lite_s2m.read.r.resp,
+      --
+      awready => axi_lite_s2m.write.aw.ready,
+      awvalid => axi_lite_m2s.write.aw.valid,
+      awaddr => awaddr,
+      --
+      wready => axi_lite_s2m.write.w.ready,
+      wvalid => axi_lite_m2s.write.w.valid,
+      wdata => wdata,
+      wstrb => wstrb,
+      --
+      bready => axi_lite_m2s.write.b.ready,
+      bvalid => axi_lite_s2m.write.b.valid,
+      bresp => axi_lite_s2m.write.b.resp
+    );
 
 end architecture;

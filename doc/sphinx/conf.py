@@ -24,8 +24,9 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "tsfpga": ("https://tsfpga.com", None),
     "hdl_registers": ("https://hdl-registers.com", None),
+    "tsfpga": ("https://tsfpga.com", None),
+    "vunit": ("https://vunit.github.io/", None),
 }
 
 symbolator_output_format = "png"

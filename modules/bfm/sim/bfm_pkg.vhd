@@ -5,6 +5,8 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Types and convenience methods used to implement the BFMs.
+-- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.numeric_std.all;

@@ -6,6 +6,9 @@
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
+--
+-- Instantiates the VUnit ``axi_read_slave`` verifcation component, which acts as an AXI slave
+-- and reads data from the :ref:`VUnit memory model <vunit:memory_model>`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,6 +32,7 @@ entity axi_read_slave is
   );
   port (
     clk : in std_logic;
+    --# {{}}
     axi_read_m2s : in axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : out axi_read_s2m_t := axi_read_s2m_init
   );

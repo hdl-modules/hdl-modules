@@ -6,11 +6,17 @@
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Verify data on an AXI stream interface.
--- Reference data and expected ID (optional) is pushed to a queue by the user.
 --
--- The byte length of the bursts (as indicated by the length of the reference_data_queue arrays)
--- does not need to be aligned with the data width of the bus.
--- If unaligned, the last data beat will not have all byte lanes checked against reference data.
+-- Reference data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
+-- :doc:`VUnit queue <vunit:data_types/queue>`.
+-- Each element in the ``integer_array`` should be an unsigned byte.
+-- Little endian byte order is assumed.
+--
+-- An optional expected ID is pushed as a ``natural`` to another ``queue`` by the user.
+--
+-- The byte length of the bursts (as indicated by the length of the ``reference_data_queue`` arrays)
+-- does not need to be aligned with the ``data`` width of the bus.
+-- If unaligned, the last beat will not have all ``data`` byte lanes checked against reference data.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,7 +36,6 @@ entity axi_stream_slave is
     id_width_bits : natural := 0;
     data_width_bits : positive;
     -- Push reference data (integer_array_t with push_ref()) to this queue.
-    -- Each element should be an unsigned byte. Little endian byte order is assumed.
     -- The integer arrays will be deallocated after this BFM is done with them.
     reference_data_queue : queue_t;
     -- Push reference 'id' for each data burst to this queue. All data beats in a burst must have

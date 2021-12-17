@@ -5,11 +5,17 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- BFM for sending data on an AXI stream interface. Data is pushed as an integer array to a queue.
+-- BFM for sending data on an AXI stream interface.
 --
--- The byte length of the bursts (as indicated by the length of the data_queue arrays)
--- does not need to be aligned with the data width of the bus.
--- If unaligned, the last data beat will not have all byte lanes set to valid data and strobe.
+-- Data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
+-- :doc:`VUnit queue <vunit:data_types/queue>`.
+-- Each element in the ``integer_array`` should be an unsigned byte.
+-- Little endian byte order is assumed.
+--
+-- The byte length of the bursts (as indicated by the length of the ``data_queue`` arrays)
+-- does not need to be aligned with the ``data`` width of the bus.
+-- If unaligned, the last data beat will not have all byte lanes set to valid
+-- ``data`` and ``strobe``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -29,7 +35,6 @@ entity axi_stream_master is
   generic (
     data_width_bits : positive;
     -- Push data (integer_array_t with push_ref()) to this queue.
-    -- Each element should be an unsigned byte. Little endian byte order is assumed.
     -- The integer arrays will be deallocated after this BFM is done with them.
     data_queue : queue_t;
     stall_config : stall_config_t := null_stall_config;
@@ -44,7 +49,7 @@ entity axi_stream_master is
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     ready : in std_logic;
     valid : out std_logic := '0';
     last : out std_logic := '0';

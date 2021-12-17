@@ -5,22 +5,25 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Toggle the 'valid' signal based on probabilities set via generics.
+-- Toggle the ``valid`` signal based on probabilities set via generics.
 -- This realizes a handshake master with jitter that is compliant with the AXI-Stream standard.
--- According to the standard, 'valid' may be lowered only after a transaction.
+-- According to the standard, ``valid`` may be lowered only after a transaction.
 --
--- This BFM can be more convenient to use than the VUnit 'axi_stream_master' BFM in some cases.
--- Specifically when the data is not an SLV, but instead a record. When using VUnit BFMs we would need
--- to have conversion functions to and from SLV. When using this BFM instead for the handshaking,
+-- This BFM can be more convenient to use than the VUnit ``axi_stream_master`` BFM in some cases.
+-- Specifically when the data is not an SLV, but instead a record.
+-- When using VUnit BFMs we would need to have conversion functions to and from SLV.
+-- When using this BFM instead for the handshaking,
 -- the data can be handled as records in the testbench with no conversion necessary.
 -- Using this simple BFM is also significantly faster.
 -- A drawback of this BFM is that the tesbench code becomes more "RTL"-like compared to the VUnit
 -- BFM, which results in more "high level" code.
--- See the testbench 'tb_handshake_bfm' for example usage.
+--
+-- See the testbench ``tb_handshake_bfm`` for example usage.
 --
 -- This entity can also optionally perform protocol checking on the handshaking data interface.
 -- This will verify that the AXI-Stream standard is followed.
--- Assign the last/data/strobe ports and set the correct 'data_width' generic in order to use this.
+-- Assign the ``last``/``data``/``strobe`` ports and set the correct ``data_width`` generic in
+-- order to use this.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -39,7 +42,7 @@ use work.bfm_pkg.all;
 
 entity handshake_master is
   generic (
-    stall_config : in stall_config_t;
+    stall_config : stall_config_t;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
@@ -56,15 +59,15 @@ entity handshake_master is
   );
   port (
     clk : in std_logic;
-    --
+    --# {{}}
     -- Set by testbench when there is data available to push
     data_is_valid : in std_logic;
-    --
+    --# {{}}
     ready : in std_logic;
     valid : out std_logic := '0';
-    -- Optional to connect. Only for protocol checking
+    --# {{}}
+    -- The signals below are optional to connect. Only used for protocol checking.
     last : in std_logic := '1';
-    -- Optional to connect. Only for protocol checking
     -- Must set 'data_width' generic in order to use these ports.
     data : in std_logic_vector(data_width - 1 downto 0) := (others => '0');
     strobe : in std_logic_vector(data_width / 8 - 1 downto 0) := (others => '1')

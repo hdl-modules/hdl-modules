@@ -5,6 +5,8 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
+-- Package with an init value for the ``axi_slave_t`` type.
+-- -------------------------------------------------------------------------------------------------
 
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;

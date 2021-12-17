@@ -7,19 +7,22 @@
 -- -------------------------------------------------------------------------------------------------
 -- Various helper functions for reading/writing/checking registers.
 --
--- There is an intentional asymmetry in the default value for 'other_bits_value' between
--- 'check_reg_equal_bit(s)' and 'wait_until_reg_equals_bit(s)'.
--- For the former it is '0' while it is '-' for the latter.
+-- There is an intentional asymmetry in the default value for ``other_bits_value`` between
+-- ``check_reg_equal_bit(s)`` and ``wait_until_reg_equals_bit(s)``.
+-- For the former it is ``'0'`` while it is ``'-'`` for the latter.
 -- This is based on the philosophy that a false positive is better than a hidden error.
 -- False positives, when discovered, can be worked around by e.g. changing the default value.
 --
--- Consider the example of reading an error status register. When we want to check that the expected
--- error bit has been set, we would like to be informed if any other error has occured. This would
--- not occur unless 'other_bits_value' value to 'check_reg_equal_bit(s)' is '0'.
--- Consider the situation where we are 'waiting' for a certain error bit to be asserted in a test,
--- but ten other errors occur. In this scenario we would like the 'wait' to end, and for the
--- errors to have consequences. This would not occur unless 'other_bits_value' value to
--- 'wait_until_reg_equals_bit(s)' is '-'
+-- Consider the example of ``check`` ing an error status register.
+-- When we want to check that the expected error bit has been set, we would like to be informed if
+-- any further errors have also occured.
+-- This would not happen unless ``other_bits_value`` value to ``check_reg_equal_bit(s)`` is ``'0'``.
+--
+-- Consider furthermore the situation where we are ``wait`` ing for a certain error bit to be
+-- asserted in a test, but ten other errors occur.
+-- In this scenario we would like the wait to end, and for the errors to have consequences.
+-- This would not occur unless ``other_bits_value`` value to
+-- ``wait_until_reg_equals_bit(s)`` is ``'-'``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
