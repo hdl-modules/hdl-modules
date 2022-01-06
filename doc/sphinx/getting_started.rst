@@ -31,8 +31,8 @@ All files must be handled as VHDL-2008.
 Scoped constraints
 ------------------
 
-Many entities in this project have corresponding constraint files that must be used for
-proper operation.
+Many entities in this project have corresponding constraint files that must be used in build projects
+for proper operation.
 These are found in the ``scoped_constraints`` directory of the module, which contains ``.tcl`` files
 that have the same file name as the corresponding entity.
 
@@ -45,7 +45,7 @@ Using this we do not have to search through the whole design hierarchically to f
 we are interested in in our constraint file.
 
 .. note::
-  When using tsfpga, this is done automatically for simulation and build projects, since
+  When using tsfpga, this is done automatically for build projects, since
   hdl_modules uses the recommended module structure.
 
 

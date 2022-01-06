@@ -11,7 +11,7 @@
 --   This entity instantiates :ref:`resync.resync_level` which has a scoped constraint file
 --   that must be used.
 --
--- This modules features a feedback input gating which makes it robust in all configurations.
+-- This entity features a feedback input gating which makes it robust in all configurations.
 -- Without input gating, if multiple pulses arrive close to each other, pulse overload will occur
 -- and some, or even all of them, can be missed and not arrive on the output.
 -- With input gating, if multiple pulses arrive one and only one will arrive on the output.

@@ -171,7 +171,7 @@ The following things can be found, at a glance, in the different modules:
 
 * Crossbars, FIFOs, CDCs, etc., for AXI/AXI-Lite/AXI-Stream in the :ref:`axi module <module_axi>`.
 
-* Many BFMs for AXI/AXI-Lite/AXI-Stream in the :ref:`bfm module <module_bfm>`.
+* Many BFMs for simulating AXI/AXI-Lite/AXI-Stream in the :ref:`bfm module <module_bfm>`.
 
 * Some miscellaneous, but useful, things that do not fit anywhere else in the
   :ref:`common module <module_common>`.
