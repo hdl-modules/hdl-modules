@@ -10,7 +10,7 @@
 -- .. note::
 --   This entity has a scoped constraint file that must be used.
 --
--- The two registers will be placed in the same slice, in order to minimize Mean Time between
+-- The two registers will be placed in the same slice, in order to minimize Mean Time Between
 -- Failure (MTBF). This guarantees proper resynchronization of semi static "level" type
 -- signals without meta stability on rising/falling edges. It can not handle
 -- "pulse" type signals. Pulses can be missed and single-cycle pulse behaviour
@@ -35,8 +35,7 @@
 --
 -- Some motivation why the input needs to be driven by a register:
 -- While LUTs are designed to be glitch-free in order to save switching power, this can only be
--- achieved as long as only one LUT input value changes state. (See e.g. this thread:
--- https://forums.xilinx.com/t5/Other-FPGA-Architecture/Interior-switching-of-LUT5-SRAM/td-p/835012)
+-- achieved as long as only one LUT input value changes state.
 -- When more than one input changes state per clock cycle, glitches will almost ceratinly appear on
 -- the LUT output before reaching its steady state.
 -- This is partly due to difference in propagation delay between the inputs, and partly due to
