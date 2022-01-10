@@ -7,40 +7,40 @@
 -- -------------------------------------------------------------------------------------------------
 -- Outputs a one cycle ``pulse`` after a generic number of assertions of ``count_enable``.
 --
--- In the worst case, this module simply creates a counter, but before that it tries to
--- use shift registers as far as possible. This makes the implementation resource efficient
--- on devices with cheap shift registers (such as SRLs in Xilinx devices).
+-- Shift registers are used as far as possible to create the pulse. This makes the
+-- implementation resource efficient on devices with cheap shift registers
+-- (such as SRLs in Xilinx devices). In the worst case a single counter is created.
 --
--- The period is broken down into factors that are represented using shift
+-- The ``period`` is broken down into factors that are represented using shift
 -- registers, with the shift register length being the factor value. By rotating the shift register
 -- on each ``count_enable``, a fixed period is created.
--- The remaining period is sent to a new instance of :ref:`common.periodic_pulser`.
+-- When possible, multiple shift registers are AND-gated to create a longer
+-- period. For example a period of 30 can be achieved by gating two registers of length 10
+-- and 3. This method only works if the lengths are mutual primes (i.e. the greatest common
+-- divisor is 1).
 --
--- **Step 1**:
--- As far as possible, AND-gate multiple shift registers together. The output of this stage
--- is then sent to the next instance of :ref:`common.periodic_pulser`
--- This method only works if the lengths are mutual primes.
--- One or more shift registers may be created.
+-- If the remaining factor is not 1 after the shift registers have been added, a new instance of
+-- this module is added through recursion.
 --
--- **Step 2**:
--- If the factor cannot be further broken down, add a simple counter.
+-- If ``period`` cannot be factorized into one or more shift registers, a simple counter is
+-- added and recursion ends.
 --
 -- Example
 -- _______
 --
 -- Let's say that the maximum shift register length is 16.
--- A period of 444 = 12*37 can then be achieved using two shift registers of length 4 and 3,
--- and then instantiating a new :ref:`common.periodic_pulser`
+-- A period of 510 = 10 * 3 * 17 can then be achieved using two shift registers of length
+-- 10 and 3, and then instantiating a new :ref:`common.periodic_pulser`
 --
 -- .. code-block:: none
 --
---    [0][0][0][1]
---                \
---                 [AND] -> pulse -> [periodic_pulser of period 37]
---                /
---       [0][0][1]
+--    [0][0][0][0][0][0][0][0][0][1]
+--                                  \
+--                                   [AND] -> pulse -> [periodic_pulser with period 17]
+--                                  /
+--                         [0][0][1]
 --
--- The next stage will create a counter, because 37 is a prime larger than the maximum shift
+-- The next stage will create a counter, because 17 is a prime larger than the maximum shift
 -- register length.
 -- -------------------------------------------------------------------------------------------------
 
