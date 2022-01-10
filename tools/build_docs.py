@@ -159,8 +159,9 @@ Resource utilization is always critical in FPGA projects, so these modules are w
 efficient as possible.
 Using generics to enable/disable different features and modes means that resources can be saved when
 not all features are used.
-Some entities are very deliberately area optimized, such as the :ref:`FIFOs <module_fifo>`, since
-they are used very frequently in FPGA projects.
+Some entities are very deliberately area optimized, such as the
+`FIFOs <https://hdl-modules.com/modules/fifo/fifo.html>`__, since they are used very frequently in
+FPGA projects.
 
 More important than anything, however, is the quality.
 Everything in this project is peer reviewed, has good unit test coverage, and is proven in use in
@@ -169,26 +170,29 @@ All the code is written with readability and maintainability in mind.
 
 The following things can be found, at a glance, in the different modules:
 
-* Crossbars, FIFOs, CDCs, etc., for AXI/AXI-Lite/AXI-Stream in the :ref:`axi module <module_axi>`.
+* Crossbars, FIFOs, CDCs, etc., for AXI/AXI-Lite/AXI-Stream in the
+  `axi module <https://hdl-modules.com/modules/axi/axi.html>`__.
 
-* Many BFMs for simulating AXI/AXI-Lite/AXI-Stream in the :ref:`bfm module <module_bfm>`.
+* Many BFMs for simulating AXI/AXI-Lite/AXI-Stream in the
+  `bfm module <https://hdl-modules.com/modules/bfm/bfm.html>`__.
 
 * Some miscellaneous, but useful, things that do not fit anywhere else in the
-  :ref:`common module <module_common>`.
+  `common module <https://hdl-modules.com/modules/common/common.html>`__.
 
 * Synchronous and asynchronous FIFOs with AXI-stream-like handshake interface in the
-  :ref:`fifo module <module_fifo>`.
+  `fifo module <https://hdl-modules.com/modules/fifo/fifo.html>`__.
 
 * Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives in the
-  :ref:`hard_fifo module <module_hard_fifo>`.
+  `hard_fifo module <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`__.
 
-* Some common math function implementations in the :ref:`math module <module_math>`.
+* Some common math function implementations in the
+  `math module <https://hdl-modules.com/modules/math/math.html>`__.
 
-* A general register file, as well as a simulation package with register BFM operations,
-  in the :ref:`reg_file module <module_reg_file>`.
+* A general register file, as well as a simulation package with register BFM operations, in the
+  `reg_file module <https://hdl-modules.com/modules/reg_file/reg_file.html>`__.
 
 * Resynchronization implementations for different signals and buses, along with proper constraints,
-  in the :ref:`resync module <module_resync>`.
+  in the `resync module <https://hdl-modules.com/modules/resync/resync.html>`__.
 """
 
         return readme_rst
