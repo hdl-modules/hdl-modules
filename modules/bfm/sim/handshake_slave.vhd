@@ -26,8 +26,8 @@
 --
 -- This entity can also optionally perform protocol checking on the handshaking data interface.
 -- This will verify that the AXI-Stream standard is followed.
--- Assign the valid/last/data/strobe ports and set the correct 'data_width' generic in order to
--- use this.
+-- Assign the ``valid``/``last``/``data``/``strobe`` ports and set the correct ``data_width``
+-- generic in order to use this.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

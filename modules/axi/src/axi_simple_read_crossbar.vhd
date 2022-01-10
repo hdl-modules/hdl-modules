@@ -7,7 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Simple N-to-1 crossbar for connecting multiple AXI read masters to one port.
 --
--- Uses round-robin scheduling for the ``input`` s. It is simple in the sense that
+-- Uses round-robin scheduling for the ``input_ports``. It is simple in the sense that
 -- there is no separation of AXI ``AR`` and ``R`` channels with separate queues.
 -- After a port has been selected for address transaction, the crossbar is
 -- locked on that port until it has finished it's read response transactions.
