@@ -12,7 +12,7 @@
 -- Note that this block does NOT follow the AXI-Stream protocol in all cases. If one of the outputs
 -- lowers ``ready``, that will lower ``valid`` for the other output. Use only in situations
 -- that can handle this. I.e. with modules that can handle ``valid`` falling without a transaction,
--- or with modules that do not lower ``ready`` without a transaction having occured.
+-- or with modules that do not lower ``ready`` without a transaction having occurred.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

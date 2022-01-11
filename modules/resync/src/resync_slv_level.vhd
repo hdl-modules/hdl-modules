@@ -29,7 +29,7 @@ entity resync_slv_level is
     -- Must be used if the input can contain glitches. See resync_slv header for more details.
     -- The 'clk_in' port must be assigned if this generic is set to 'true'.
     enable_input_register : boolean;
-    -- Initial value for the ouput that will be set for a few cycles before the first input
+    -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
     default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
   );

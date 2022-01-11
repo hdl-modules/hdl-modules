@@ -30,7 +30,7 @@ entity handshake_pipeline is
     -- Will result in higher logic footprint.
     pipeline_data_signals : boolean := true;
     -- In the typical use case where we want a "byte strobe", this would be eight.
-    -- In other cases, for example when the data is packed, we migh use a higher value.
+    -- In other cases, for example when the data is packed, we might use a higher value.
     -- Must assign a valid value if input/output strobe is to be used.
     strobe_unit_width : positive := 8
   );
@@ -90,7 +90,7 @@ begin
       case state is
         when wait_for_input_valid =>
           if input_valid then
-            -- input_ready is '1', so if we get here an input transaction has occured
+            -- input_ready is '1', so if we get here an input transaction has occurred
             output_valid <= '1';
             output_last <= input_last;
             output_data <= input_data;
@@ -103,20 +103,21 @@ begin
           -- input_ready and output_valid are always '1' in this state
 
           if input_valid and output_ready then
-            -- Input and output transactions have occured. Update data register.
+            -- Input and output transactions have occurred. Update data register.
             output_last <= input_last;
             output_data <= input_data;
             output_strobe <= input_strobe;
 
           elsif output_ready then
-            -- Output transaction has occured, but no input transaction
+            -- Output transaction has occurred, but no input transaction
             output_valid <= '0';
 
             state <= wait_for_input_valid;
 
           elsif input_valid then
-            -- Input transaction has occured, but no output transaction
-            -- Values from input transaction will be saved in the skid-aside buffer while we wait for output_ready.
+            -- Input transaction has occurred, but no output transaction
+            -- Values from input transaction will be saved in the skid-aside buffer while we wait
+            -- for output_ready.
             input_ready_int <= '0';
 
             state <= wait_for_output_ready;
@@ -124,7 +125,7 @@ begin
 
         when wait_for_output_ready =>
           if output_ready then
-            -- output_valid is '1', so if we get here an output transaction has occured
+            -- output_valid is '1', so if we get here an output transaction has occurred
             input_ready_int <= '1';
 
             output_last <= input_last_skid;
@@ -147,10 +148,10 @@ begin
   elsif full_throughput and pipeline_data_signals and (not pipeline_control_signals) generate
 
     -- In this mode, the data and control signals are driven by registers, except for input_ready
-    -- which will have an increased critical path. It still maintaints full throughput,
+    -- which will have an increased critical path. It still maintains full throughput,
     -- and has a much smaller footprint than the full skid-aside buffer.
     --
-    -- It is suitable in situtations where there is a complex net driving the data, which needs to
+    -- It is suitable in situations where there is a complex net driving the data, which needs to
     -- be pipelined in order to achieve timing closure, but the timing of the control signals is
     -- not critical.
 

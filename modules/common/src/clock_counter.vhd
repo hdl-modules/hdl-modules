@@ -5,7 +5,7 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Measure the switching rate of an unknown clock by using a freerunning reference clock of
+-- Measure the switching rate of an unknown clock by using a free-running reference clock of
 -- known frequency.
 --
 -- .. note::
@@ -39,7 +39,7 @@ entity clock_counter is
     resolution_bits : positive;
     max_relation_bits : positive;
     -- The shift register length is device specific.
-    -- For Xilinx ultrascale and 7 series devices, it should be set to 32
+    -- For Xilinx Ultrascale and 7 series devices, it should be set to 32
     shift_register_length : integer := 32
   );
   port (

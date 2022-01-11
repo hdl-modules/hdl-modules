@@ -308,7 +308,7 @@ package body axi_pkg is
 
   function axi_m2s_a_sz(id_width : natural; addr_width : positive) return positive is
   begin
-    -- Exluded member: valid
+    -- Excluded member: valid
     return id_width + addr_width + axi_a_len_sz + axi_a_size_sz + axi_a_burst_sz;
   end function;
 
@@ -381,7 +381,7 @@ package body axi_pkg is
 
   function axi_m2s_w_sz(data_width : positive; id_width : natural := 0) return positive is
   begin
-    -- Exluded member: valid.
+    -- Excluded member: valid.
     -- The 1 is "last".
     return data_width + axi_w_strb_width(data_width) + 1 + id_width;
   end function;
@@ -443,7 +443,7 @@ package body axi_pkg is
 
   function axi_s2m_b_sz(id_width : natural) return positive is
   begin
-    -- Exluded member: valid
+    -- Excluded member: valid
     return id_width + axi_resp_sz;
   end function;
 
@@ -482,7 +482,7 @@ package body axi_pkg is
 
   function axi_s2m_r_sz(data_width : positive; id_width : natural) return positive is
   begin
-    -- Exluded member: valid.
+    -- Excluded member: valid.
     -- The 1 is "last".
     return data_width + id_width + axi_resp_sz + 1;
   end function;

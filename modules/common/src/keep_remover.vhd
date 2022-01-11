@@ -10,9 +10,9 @@
 -- considered as the TKEEP signal in AXI-Stream terminology, and the output strobe would be
 -- TKEEP/TSTRB.
 --
--- The entity works by continously filling up a data buffer with data from the input. Only the lanes
--- that are strobed will be saved to the buffer. Note that input words may have all their lanes
--- strobed out (except for the last beat, see below).
+-- The entity works by continuously filling up a data buffer with data from the input.
+-- Only the lanes that are strobed will be saved to the buffer.
+-- Note that input words may have all their lanes strobed out (except for the last beat, see below).
 -- When enough lanes are saved to fill a whole word, data is passed to the output by asserting
 -- ``output_valid``. When ``input_last`` is asserted for an input
 -- word, an output word will be sent out, with ``output_last`` asserted, even if a whole strobed
@@ -21,7 +21,7 @@
 -- The strobe unit data width is configurable via a generic. Most of the time it would be eight,
 -- i.e. a byte strobe. But in some cases the strobe represents a wider quanta, in which case the
 -- generic can be increased. Increasing the generic will drastically decrease the
--- resourse utilization, since that is the "atom" of data that is handled internally.
+-- resource utilization, since that is the "atom" of data that is handled internally.
 --
 -- The handling of ``input_last`` presents a corner case.
 -- Lets assume that ``data_width`` is 16 and ``strobe_unit_width`` is 8.

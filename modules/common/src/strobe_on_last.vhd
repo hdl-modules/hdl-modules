@@ -122,7 +122,7 @@ begin
         when send_output_last =>
           if output_ready and output_valid then
             -- The input word is dropped instantly, but we have to wait for the output transaction
-            -- before procedding.
+            -- before proceeding.
             state <= let_data_pass;
           end if;
       end case;

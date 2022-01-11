@@ -33,7 +33,7 @@ package bfm_pkg is
   --   constant my_masters : axi_stream_master_vec_t(0 to 1) :=
   --     (others => new_axi_stream_master(...));
   -- works well in some simulators (GHDL), meaning that the function is evaluated once for each
-  -- element of the vector. In e.g. modelsim the function is only evaluated once, and all elements
+  -- element of the vector. In e.g. Modelsim the function is only evaluated once, and all elements
   -- get the same value. Hence the need for this function.
 
   impure function get_new_queues(count : positive) return queue_vec_t;

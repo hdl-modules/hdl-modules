@@ -61,7 +61,7 @@ entity axi_stream_slave is
     -- when the strobe lanes are wider than bytes.
     strobe_unit_width_bits : positive := 8;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
-    -- handhshake has happended). Note that according to the AXI-Stream standard 'ready' may fall
+    -- handshake has happened). Note that according to the AXI-Stream standard 'ready' may fall
     -- at any time (regardless of 'valid'). However, many modules are developed with this
     -- well-behavedness as a way of saving resources.
     well_behaved_stall : boolean := false;

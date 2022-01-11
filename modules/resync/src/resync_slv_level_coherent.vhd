@@ -50,7 +50,7 @@ use ieee.std_logic_1164.all;
 entity resync_slv_level_coherent is
   generic (
     width : positive;
-    -- Initial value for the ouput that will be set for a few cycles before the first input
+    -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
     default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
   );

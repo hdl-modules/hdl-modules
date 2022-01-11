@@ -25,7 +25,7 @@ use ieee.std_logic_1164.all;
 entity resync_slv_level_on_signal is
   generic (
     width : positive;
-    -- Initial value for the ouput that will be set until the first input
+    -- Initial value for the output that will be set until the first input
     -- value has propagated and been sampled.
     default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
   );

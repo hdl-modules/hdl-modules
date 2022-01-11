@@ -8,7 +8,7 @@
 -- Performs throttling of an AXI bus by limiting the number of outstanding
 -- transactions.
 --
--- This entity is to be used in conjuction with a data FIFO on the ``input.w`` side.
+-- This entity is to be used in conjunction with a data FIFO on the ``input.w`` side.
 -- Using the level from that FIFO, the throttling will make sure that an address
 -- transaction is not done until all data for that transaction is available in
 -- the FIFO. This avoids stalling on the ``throttled_m2s.w`` channel.
@@ -183,7 +183,7 @@ begin
   begin
     wait until rising_edge(clk);
 
-    -- This muxing results in a shorter critical path than doing
+    -- This MUXing results in a shorter critical path than doing
     -- e.g. minus_burst_length_beats * to_int(address_transaction).
     -- LUT usage stayed the same.
     if address_transaction then

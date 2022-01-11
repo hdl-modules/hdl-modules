@@ -167,7 +167,7 @@ begin
     end generate;
 
     -- Gate all shift register results.
-    -- Because they are mutual primes, the total period will be the product of their lengthes
+    -- Because they are mutual primes, the total period will be the product of their lengths
     pulse_this_stage <= and(shift_reg_outputs) and count_enable;
 
 

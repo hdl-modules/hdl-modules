@@ -20,7 +20,7 @@
 --    This is a lot of boilerplate code that is hard to read.
 --
 -- Using this simple BFM is also significantly faster.
--- A drawback of this BFM is that the tesbench code becomes more "RTL"-like compared to the VUnit
+-- A drawback of this BFM is that the testbench code becomes more "RTL"-like compared to the VUnit
 -- BFM, which results in more "high level" code.
 -- See the testbench 'tb_handshake_bfm' for example usage.
 --
@@ -57,7 +57,7 @@ entity handshake_slave is
     -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking.
     data_width : natural := 0;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
-    -- handhshake has happended). Note that according to the AXI-Stream standard 'ready' may fall
+    -- handshake has happened). Note that according to the AXI-Stream standard 'ready' may fall
     -- at any time (regardless of 'valid'). However, many modules are developed with this
     -- well-behavedness as a way of saving resources.
     well_behaved_stall : boolean := false;

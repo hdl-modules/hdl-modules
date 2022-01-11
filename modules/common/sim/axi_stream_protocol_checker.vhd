@@ -12,7 +12,7 @@
 --
 --    if in_simulation generate
 --
---      axi_stream_protocol_checker_inst : comon.axi_stream_protocol_checker
+--      axi_stream_protocol_checker_inst : common.axi_stream_protocol_checker
 --        generic map (
 --          ...
 --        );

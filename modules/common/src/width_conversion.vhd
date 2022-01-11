@@ -80,7 +80,7 @@ entity width_conversion is
     -- Will increase the logic footprint.
     enable_strobe : boolean := false;
     -- In the typical use case where we want a "byte strobe", this would be eight.
-    -- In other cases, for example when the data is packed, we migh use a higher value.
+    -- In other cases, for example when the data is packed, we might use a higher value.
     -- Must assign a valid value if 'enable_strobe' is true.
     strobe_unit_width : positive := 8;
     -- Enable if 'input' burst lengths are not a multiple of the 'output' width.

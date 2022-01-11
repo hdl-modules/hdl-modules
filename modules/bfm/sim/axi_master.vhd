@@ -7,7 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
 --
--- Instantiates the VUnit ``axi_lite_master`` verifcation component, which creates AXI-Lite
+-- Instantiates the VUnit ``axi_lite_master`` verification component, which creates AXI-Lite
 -- read/write transactions.
 -- The AXI-Lite interface are then connected to the "full" AXI interface of this module.
 -- The fact that the BFM uses AXI-Lite means that there is no burst support.
@@ -86,25 +86,25 @@ begin
     )
     port map (
       aclk => clk,
-
+      --
       arready => axi_read_s2m.ar.ready,
       arvalid => axi_read_m2s.ar.valid,
       araddr => araddr,
-
+      --
       rready => axi_read_m2s.r.ready,
       rvalid => axi_read_s2m.r.valid,
       rdata => rdata,
       rresp => axi_read_s2m.r.resp,
-
+      --
       awready => axi_write_s2m.aw.ready,
       awvalid => axi_write_m2s.aw.valid,
       awaddr => awaddr,
-
+      --
       wready => axi_write_s2m.w.ready,
       wvalid => axi_write_m2s.w.valid,
       wdata => wdata,
       wstrb => wstrb,
-
+      --
       bready => axi_write_m2s.b.ready,
       bvalid => axi_write_s2m.b.valid,
       bresp => axi_write_s2m.b.resp

@@ -7,7 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit BFM that uses convenient record types for the AXI-Lite signals.
 --
--- Instantiates the VUnit ``axi_lite_master`` verifcation component, which creates AXI-Lite
+-- Instantiates the VUnit ``axi_lite_master`` verification component, which creates AXI-Lite
 -- read/write transactions.
 -- Is used by performing VUnit VC calls, such as ``read_bus``,
 -- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.

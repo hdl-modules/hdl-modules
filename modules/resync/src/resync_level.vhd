@@ -13,7 +13,7 @@
 -- The two registers will be placed in the same slice, in order to minimize Mean Time Between
 -- Failure (MTBF). This guarantees proper resynchronization of semi static "level" type
 -- signals without meta stability on rising/falling edges. It can not handle
--- "pulse" type signals. Pulses can be missed and single-cycle pulse behaviour
+-- "pulse" type signals. Pulses can be missed and single-cycle pulse behavior
 -- will not work.
 --
 -- The ``clk_in`` port does not necessarily have to be set. But if you want to have
@@ -36,7 +36,7 @@
 -- Some motivation why the input needs to be driven by a register:
 -- While LUTs are designed to be glitch-free in order to save switching power, this can only be
 -- achieved as long as only one LUT input value changes state.
--- When more than one input changes state per clock cycle, glitches will almost ceratinly appear on
+-- When more than one input changes state per clock cycle, glitches will almost certainly appear on
 -- the LUT output before reaching its steady state.
 -- This is partly due to difference in propagation delay between the inputs, and partly due to
 -- the electrical structure of a LUT. In a regular synchronous design, the Vivado timing engine
@@ -63,7 +63,7 @@ entity resync_level is
     -- Must be used if the input can contain glitches. See header for more details.
     -- The 'clk_in' port must be assigned if this generic is set to 'true'.
     enable_input_register : boolean;
-    -- Initial value for the ouput that will be set for a few cycles before the first input
+    -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
     default_value : std_logic := '0'
   );

@@ -9,7 +9,7 @@
 -- handshaking interface.
 -- Supports ``last``, packet mode and ``drop_packet`` just like the
 -- :ref:`synchronous FIFO <fifo.fifo>`.
--- The implementation is quite opitmized with very low resource utilization when extra features
+-- The implementation is quite optimized with very low resource utilization when extra features
 -- are not enabled.
 --
 -- .. note::
@@ -100,7 +100,7 @@ entity asynchronous_fifo is
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
     write_almost_full : out std_logic := '0';
 
-    -- Drop the current packet (all words that have been writen since the previous 'write_last').
+    -- Drop the current packet (all words that have been written since the previous 'write_last').
     -- Must set 'enable_drop_packet' generic in order to use this.
     drop_packet : in std_logic := '0'
   );

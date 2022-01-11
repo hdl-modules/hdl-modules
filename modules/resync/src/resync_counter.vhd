@@ -45,7 +45,7 @@ use math.math_pkg.all;
 entity resync_counter is
   generic (
     width : positive;
-    -- Initial value for the ouput that will be set for a few cycles before the first input
+    -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
     default_value   : unsigned(width - 1 downto 0) := (others => '0');
     -- Optional pipeline step on the output after Gray conversion

@@ -87,7 +87,7 @@ begin
     signal valid_read_address : boolean := false;
   begin
 
-    -- An address transaction has occured and the address points to a valid read register
+    -- An address transaction has occurred and the address points to a valid read register
     valid_read_address <= read_idx /= invalid_addr and is_read_type(regs(read_idx).reg_type);
 
 
@@ -155,7 +155,7 @@ begin
     signal valid_write_address : boolean := false;
   begin
 
-    -- An address transaction has occured and the address points to a valid write register
+    -- An address transaction has occurred and the address points to a valid write register
     valid_write_address <= write_idx /= invalid_addr and is_write_type(regs(write_idx).reg_type);
 
 

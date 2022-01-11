@@ -15,7 +15,7 @@
 -- When using this BFM instead for the handshaking,
 -- the data can be handled as records in the testbench with no conversion necessary.
 -- Using this simple BFM is also significantly faster.
--- A drawback of this BFM is that the tesbench code becomes more "RTL"-like compared to the VUnit
+-- A drawback of this BFM is that the testbench code becomes more "RTL"-like compared to the VUnit
 -- BFM, which results in more "high level" code.
 --
 -- See the testbench ``tb_handshake_bfm`` for example usage.

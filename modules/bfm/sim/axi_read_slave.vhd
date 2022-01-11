@@ -7,7 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
 --
--- Instantiates the VUnit ``axi_read_slave`` verifcation component, which acts as an AXI slave
+-- Instantiates the VUnit ``axi_read_slave`` verification component, which acts as an AXI slave
 -- and reads data from the :ref:`VUnit memory model <vunit:memory_model>`.
 -- -------------------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ begin
     )
     port map (
       aclk => clk,
-
+      --
       arvalid => axi_read_m2s.ar.valid,
       arready => axi_read_s2m.ar.ready,
       arid => arid,
@@ -62,7 +62,7 @@ begin
       arlen => arlen,
       arsize => arsize,
       arburst => axi_read_m2s.ar.burst,
-
+      --
       rvalid => axi_read_s2m.r.valid,
       rready => axi_read_m2s.r.ready,
       rid => rid,

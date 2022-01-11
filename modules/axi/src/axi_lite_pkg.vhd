@@ -85,7 +85,7 @@ package axi_lite_pkg is
   end record;
 
   constant axi_lite_s2m_b_init : axi_lite_s2m_b_t := (valid => '0', others => (others => '0'));
-  -- Exluded member: valid
+  -- Excluded member: valid
   constant axi_lite_s2m_b_sz : positive := axi_resp_sz;
 
 
@@ -191,7 +191,7 @@ package body axi_lite_pkg is
 
   function axi_lite_m2s_a_sz(addr_width : positive) return positive is
   begin
-    -- Excluded membed: valid.
+    -- Excluded member: valid.
     return addr_width;
   end function;
 
@@ -199,7 +199,7 @@ package body axi_lite_pkg is
   begin
     assert data_width = 32 or data_width = 64
       report "AXI4-Lite protocol only supports data width 32 or 64" severity failure;
-    -- Exluded member: valid
+    -- Excluded member: valid
     return data_width + axi_w_strb_width(data_width);
   end function;
 
@@ -243,7 +243,7 @@ package body axi_lite_pkg is
 
   function axi_lite_s2m_r_sz(data_width : positive)  return positive is
   begin
-    -- Exluded member: valid
+    -- Excluded member: valid
     return data_width + axi_resp_sz;
   end function;
 

@@ -8,7 +8,7 @@
 -- Performs throttling of an AXI bus by limiting the number of outstanding
 -- transactions.
 --
--- This entity is to be used in conjuction with a data FIFO on the ``input.r`` side.
+-- This entity is to be used in conjunction with a data FIFO on the ``input.r`` side.
 -- Using the level from that FIFO, the throttling will make sure that address
 -- transactions are not made that would result in the FIFO becoming full. This
 -- avoids stalling on the ``throttled_s2m.r`` channel.

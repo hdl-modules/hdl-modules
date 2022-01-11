@@ -119,7 +119,7 @@ entity fifo is
     write_last : in std_logic := '-';
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
     almost_full : out std_logic := '0';
-    -- Drop the current packet (all words that have been writen since the previous write_last).
+    -- Drop the current packet (all words that have been written since the previous write_last).
     -- Must set 'enable_drop_packet' generic in order to use this.
     drop_packet : in std_logic := '0'
   );

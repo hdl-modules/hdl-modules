@@ -26,7 +26,7 @@ use common.attribute_pkg.all;
 
 entity resync_level_on_signal is
   generic (
-    -- Initial value for the ouput that will be set until the first input value has propagated
+    -- Initial value for the output that will be set until the first input value has propagated
     -- and been sampled.
     default_value : std_logic := '0'
   );

@@ -8,7 +8,7 @@
 -- AXI-Lite mux, aka simple 1-to-N crossbar.
 --
 -- The ``slave_addrs`` generic is a list of base address configurations for the
--- N slaves. Eeach entry consists of a base address, along with a mask that
+-- N slaves. Each entry consists of a base address, along with a mask that
 -- will be used to match the master address with a slave. Only the bits that
 -- are asserted in the mask are taken into account when matching.
 --
