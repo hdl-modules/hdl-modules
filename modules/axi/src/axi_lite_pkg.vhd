@@ -60,7 +60,10 @@ package axi_lite_pkg is
 
   function axi_lite_m2s_w_sz(data_width : positive) return positive;
   function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_logic_vector;
-  function to_axi_lite_m2s_w(data : std_logic_vector; data_width : positive) return axi_lite_m2s_w_t;
+  function to_axi_lite_m2s_w(
+    data : std_logic_vector;
+    data_width : positive
+  ) return axi_lite_m2s_w_t;
 
   type axi_lite_s2m_w_t is record
     ready : std_logic;
@@ -108,7 +111,10 @@ package axi_lite_pkg is
   constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (valid => '0', others => (others => '0'));
   function axi_lite_s2m_r_sz(data_width : positive) return positive;
   function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_logic_vector;
-  function to_axi_lite_s2m_r(data : std_logic_vector; data_width : positive) return axi_lite_s2m_r_t;
+  function to_axi_lite_s2m_r(
+    data : std_logic_vector;
+    data_width : positive
+  ) return axi_lite_s2m_r_t;
 
 
   ------------------------------------------------------------------------------

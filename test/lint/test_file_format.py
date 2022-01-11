@@ -6,22 +6,26 @@
 # https://gitlab.com/tsfpga/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from tools.hdl_modules_tools_env import REPO_ROOT
+from tools.hdl_modules_tools_env import HDL_MODULES_DIRECTORY, HDL_MODULES_DOC, REPO_ROOT
 
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.test_file_format import (
-    open_file_with_encoding,
     check_file_ends_with_newline,
-    check_file_for_tab_character,
     check_file_for_carriage_return,
+    check_file_for_line_length,
+    check_file_for_tab_character,
     check_file_for_trailing_whitespace,
+    open_file_with_encoding,
 )
 
 
-def files_to_test():
+def files_to_test(excludes=None):
+    excludes = [] if excludes is None else excludes
     # Do not test binary image files
-    return find_git_files(directory=REPO_ROOT, file_endings_avoid="png")
+    return find_git_files(
+        directory=REPO_ROOT, exclude_directories=excludes, file_endings_avoid="png"
+    )
 
 
 def test_all_checked_in_files_are_properly_encoded():
@@ -74,4 +78,24 @@ def test_no_checked_in_files_contain_trailing_whitespace():
     test_ok = True
     for file in files_to_test():
         test_ok &= check_file_for_trailing_whitespace(file)
+    assert test_ok
+
+
+def test_no_checked_in_files_have_too_long_lines():
+    test_ok = True
+    excludes = [
+        # YAML format seems hard to break lines in
+        REPO_ROOT / ".gitlab-ci.yml",
+        # We list the license text exactly as the original, with no line breaks
+        REPO_ROOT / "license.rst",
+        # Impossible to break RST syntax
+        HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
+        # Impossible to break TCL syntax
+        HDL_MODULES_DIRECTORY / "fifo" / "scoped_constraints" / "asynchronous_fifo.tcl",
+        HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_counter.tcl",
+        HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_slv_level_coherent.tcl",
+    ]
+    for file_path in files_to_test(excludes=excludes):
+        test_ok &= check_file_for_line_length(file_path=file_path)
+
     assert test_ok

@@ -132,11 +132,15 @@ begin
 
   ------------------------------------------------------------------------------
   bfm_generate : if test_axi_lite generate
-    signal inputs_read_m2s : axi_lite_read_m2s_vec_t(0 to num_inputs - 1) := (others => axi_lite_read_m2s_init);
-    signal inputs_read_s2m : axi_lite_read_s2m_vec_t(inputs_read_m2s'range) := (others => axi_lite_read_s2m_init);
+    signal inputs_read_m2s : axi_lite_read_m2s_vec_t(0 to num_inputs - 1)
+      := (others => axi_lite_read_m2s_init);
+    signal inputs_read_s2m : axi_lite_read_s2m_vec_t(inputs_read_m2s'range)
+      := (others => axi_lite_read_s2m_init);
 
-    signal inputs_write_m2s : axi_lite_write_m2s_vec_t(0 to num_inputs - 1) := (others => axi_lite_write_m2s_init);
-    signal inputs_write_s2m : axi_lite_write_s2m_vec_t(inputs_read_m2s'range) := (others => axi_lite_write_s2m_init);
+    signal inputs_write_m2s : axi_lite_write_m2s_vec_t(0 to num_inputs - 1)
+      := (others => axi_lite_write_m2s_init);
+    signal inputs_write_s2m : axi_lite_write_s2m_vec_t(inputs_read_m2s'range)
+      := (others => axi_lite_write_s2m_init);
 
     signal output_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
     signal output_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
@@ -209,11 +213,15 @@ begin
       );
 
   else generate
-    signal inputs_read_m2s : axi_read_m2s_vec_t(0 to num_inputs - 1) := (others => axi_read_m2s_init);
-    signal inputs_read_s2m : axi_read_s2m_vec_t(inputs_read_m2s'range) := (others => axi_read_s2m_init);
+    signal inputs_read_m2s : axi_read_m2s_vec_t(0 to num_inputs - 1)
+      := (others => axi_read_m2s_init);
+    signal inputs_read_s2m : axi_read_s2m_vec_t(inputs_read_m2s'range)
+      := (others => axi_read_s2m_init);
 
-    signal inputs_write_m2s : axi_write_m2s_vec_t(0 to num_inputs - 1) := (others => axi_write_m2s_init);
-    signal inputs_write_s2m : axi_write_s2m_vec_t(inputs_read_m2s'range) := (others => axi_write_s2m_init);
+    signal inputs_write_m2s : axi_write_m2s_vec_t(0 to num_inputs - 1)
+      := (others => axi_write_m2s_init);
+    signal inputs_write_s2m : axi_write_s2m_vec_t(inputs_read_m2s'range)
+      := (others => axi_write_s2m_init);
 
     signal output_m2s : axi_m2s_t := axi_m2s_init;
     signal output_s2m : axi_s2m_t := axi_s2m_init;

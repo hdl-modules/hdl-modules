@@ -49,12 +49,13 @@ end entity;
 architecture a of axi_lite_mux is
 
   -- Decode function will return upper index + 1 if no slave matched
-  constant decode_failed : integer := axi_lite_m2s_vec'length;
+  constant decode_failed : positive := axi_lite_m2s_vec'length;
 
-  constant slave_decode_error_idx : integer := decode_failed;
-  constant slave_not_selected_idx : integer := decode_failed + 1;
+  constant slave_decode_error_idx : positive := decode_failed;
+  constant slave_not_selected_idx : positive := decode_failed + 1;
 
-  signal read_slave_select, write_slave_select : integer range 0 to slave_not_selected_idx := slave_not_selected_idx;
+  signal read_slave_select, write_slave_select : natural range 0 to slave_not_selected_idx
+    := slave_not_selected_idx;
 
   signal read_decode_error_s2m : axi_lite_read_s2m_t := axi_lite_read_s2m_init;
   signal write_decode_error_s2m : axi_lite_write_s2m_t := axi_lite_write_s2m_init;
@@ -134,7 +135,7 @@ begin
     signal state : state_t := waiting;
   begin
     select_read_slave : process
-      variable decoded_idx : integer range 0 to decode_failed;
+      variable decoded_idx : natural range 0 to decode_failed;
     begin
       wait until rising_edge(clk);
 
@@ -192,7 +193,7 @@ begin
     signal state : state_t := waiting;
   begin
     select_write_slave : process
-      variable decoded_idx : integer range 0 to decode_failed;
+      variable decoded_idx : natural range 0 to decode_failed;
     begin
       wait until rising_edge(clk);
 

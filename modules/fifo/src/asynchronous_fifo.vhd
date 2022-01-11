@@ -179,7 +179,11 @@ begin
       -- for one cycle and then go high the next.
       write_ready <= to_sl(
         read_addr_resync(bram_addr_range) /= write_addr_next_if_not_drop(bram_addr_range)
-        or read_addr_resync(read_addr_resync'high) =  write_addr_next_if_not_drop(write_addr_next'high));
+        or (
+          read_addr_resync(read_addr_resync'high)
+          = write_addr_next_if_not_drop(write_addr_next'high)
+        )
+      );
 
       -- Note that this potential update of write_addr_next does not affect write_ready,
       -- assigned above. This is done to save logic and ease the timing of write_ready which is
@@ -198,7 +202,9 @@ begin
       -- as that could cause the user to write too many words.
       -- In case the output register is used, it is hard to keep track of the exact level in a
       -- safe way, so instead we always add one to the write_level in that case.
-      write_level <= to_integer(write_addr_next - read_addr_resync) mod (2 * memory_depth) + to_int(enable_output_register);
+      write_level <=
+        to_integer(write_addr_next - read_addr_resync)
+        mod (2 * memory_depth) + to_int(enable_output_register);
     end process;
 
     write_addr_next_if_not_drop <= write_addr + to_int(write_ready and write_valid);
@@ -270,15 +276,17 @@ begin
           -- That means that the last 'last' bit may be on its way to the output register right now,
           -- and that there therefore isn't any 'last' bit left in the RAM.
           -- Therefore we only read from RAM if it is not empty
-          -- We do _not_ want to look at the read_last_ram signal here, as it is part of the read data,
-          -- and using it would make it impossible to use the RAM output_register.
-          -- Note: the level counter is not present if enable_drop_packet is activated, so in that case
-          --       we take the "else" branch, which is functionally correct but will not utilize the
-          --       RAM output register.
+          -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
+          -- read data, and using it would make it impossible to use the RAM output_register.
+          -- Note: the level counter is not present if enable_drop_packet is activated, so in
+          --       that case we take the "else" branch, which is functionally correct but will not
+          --       utilize the RAM output register.
           num_lasts_read_next := num_lasts_read + to_int(read_ready and read_valid and read_last);
-          read_valid_ram <= to_sl(num_lasts_read /= num_lasts_written_resync and read_level_next /= 0);
+          read_valid_ram <=
+            to_sl(num_lasts_read /= num_lasts_written_resync and read_level_next /= 0);
         else
-          num_lasts_read_next := num_lasts_read + to_int(read_ready_ram and read_valid_ram and read_last_ram);
+          num_lasts_read_next :=
+            num_lasts_read + to_int(read_ready_ram and read_valid_ram and read_last_ram);
           read_valid_ram <= to_sl(num_lasts_read_next /= num_lasts_written_resync);
         end if;
 

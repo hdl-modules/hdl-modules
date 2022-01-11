@@ -278,7 +278,8 @@ begin
       for atom_idx in 0 to num_atoms_per_word - 1 loop
         atom_write_idx := (write_pointer + atom_idx) mod max_num_atoms_in_buffer;
 
-        data_to_write := padded_input_data((atom_idx + 1) * atom_width - 1 downto atom_idx * atom_width);
+        data_to_write :=
+          padded_input_data((atom_idx + 1) * atom_width - 1 downto atom_idx * atom_width);
         strobe_to_write := padded_input_keep(atom_idx);
         last_to_write := padded_input_last;
 

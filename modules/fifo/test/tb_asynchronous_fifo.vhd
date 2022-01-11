@@ -208,7 +208,12 @@ begin
       check_equal(write_ready, '1');
       check_equal(write_almost_full, '0');
       check_equal(read_almost_empty, '1');
-      wait until read_valid'event or write_ready'event or write_almost_full'event or read_almost_empty'event for 1 us;
+      wait until
+        read_valid'event
+        or write_ready'event
+        or write_almost_full'event
+        or read_almost_empty'event
+        for 1 us;
       check_equal(read_valid, '0');
       check_equal(write_ready, '1');
       check_equal(write_almost_full, '0');
@@ -308,7 +313,8 @@ begin
       wait_for_read_to_propagate;
       -- Note: If output register is used, one value will now have been be stored in it,
       --       The level in the memory is now therefore be depth / 4 - 1, but when the output
-      --       register is used, we always add 1 to the write level to be sure that it is conservative
+      --       register is used, we always add 1 to the write level to be sure that it
+      --       is conservative
       check_equal(write_level, depth / 4);
 
       -- Write some data without setting last, simulating a packet in progress.
@@ -429,7 +435,8 @@ begin
   begin
     wait until rising_edge(clk_read);
 
-    -- If there was a read transaction last clock cycle, and we now want to read but there is no data available.
+    -- If there was a read transaction last clock cycle, and we now want to read but there is no
+    -- data available.
     if read_transaction and read_ready and not read_valid then
       has_gone_empty_times <= has_gone_empty_times + 1;
     end if;
@@ -444,7 +451,8 @@ begin
   begin
     wait until rising_edge(clk_write);
 
-    -- If there was a write transaction last clock cycle, and we now want to write but the fifo is full.
+    -- If there was a write transaction last clock cycle, and we now want to write but the fifo
+    -- is full.
     if write_transaction and write_valid and not write_ready then
       has_gone_full_times <= has_gone_full_times + 1;
     end if;
@@ -484,7 +492,8 @@ begin
   check_no_bubble_cycles_in_packet_mode : if enable_packet_mode or enable_drop_packet generate
     signal start_event, end_event, en : std_logic := '0';
   begin
-    -- These inputs must be signals (not constants), so assign them here instead of the port map directly
+    -- These inputs must be signals (not constants), so assign them here instead of the port
+    -- map directly
     start_event <= read_valid and not read_last;
     end_event <= (read_ready and read_valid and read_last);
     en <= '1';

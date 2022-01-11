@@ -39,7 +39,8 @@ entity axi_simple_write_crossbar is
     clk : in std_logic;
     --# {{}}
     input_ports_m2s : in axi_write_m2s_vec_t(0 to num_inputs - 1) := (others => axi_write_m2s_init);
-    input_ports_s2m : out axi_write_s2m_vec_t(0 to num_inputs - 1) := (others => axi_write_s2m_init);
+    input_ports_s2m : out axi_write_s2m_vec_t(0 to num_inputs - 1)
+      := (others => axi_write_s2m_init);
     --# {{}}
     output_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     output_s2m : in axi_write_s2m_t := axi_write_s2m_init

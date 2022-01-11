@@ -48,7 +48,8 @@ entity resync_cycles is
 end entity;
 
 architecture a of resync_cycles is
-  signal counter_in, counter_in_resync, counter_out : unsigned(counter_width - 1 downto 0) := (others => '0');
+  signal counter_in, counter_in_resync, counter_out : unsigned(counter_width - 1 downto 0)
+    := (others => '0');
 begin
 
   ------------------------------------------------------------------------------

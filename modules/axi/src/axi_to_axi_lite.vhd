@@ -139,7 +139,10 @@ begin
     -- upcoming transactions, if the SW can handle it.
 
     if axi_m2s.write.aw.valid and axi_s2m.write.aw.ready then
-      if to_integer(unsigned(axi_m2s.write.aw.len)) /= len or to_integer(unsigned(axi_m2s.write.aw.size)) /= size then
+      if (
+        to_integer(unsigned(axi_m2s.write.aw.len)) /= len
+        or to_integer(unsigned(axi_m2s.write.aw.size)) /= size
+      ) then
         write_error <= true;
       else
         write_error <= false;
@@ -147,7 +150,10 @@ begin
     end if;
 
     if axi_m2s.read.ar.valid and axi_s2m.read.ar.ready then
-      if to_integer(unsigned(axi_m2s.read.ar.len)) /= len or to_integer(unsigned(axi_m2s.read.ar.size)) /= size then
+      if (
+        to_integer(unsigned(axi_m2s.read.ar.len)) /= len
+        or to_integer(unsigned(axi_m2s.read.ar.size)) /= size
+      ) then
         read_error <= true;
       else
         read_error <= false;

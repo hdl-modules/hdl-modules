@@ -70,15 +70,24 @@ begin
       for dividend_tb in 0 to 2**dividend_width - 1 loop
         for divisor_tb in 1 to 2**divisor_width - 1 loop
           run_test(dividend_tb, divisor_tb);
-          check_equal(quotient, dividend_tb / divisor_tb, to_string(dividend_tb) & "/" & to_string(divisor_tb));
-          check_equal(remainder, dividend_tb rem divisor_tb, to_string(dividend_tb) & "/" & to_string(divisor_tb));
+          check_equal(
+            quotient,
+            dividend_tb / divisor_tb,
+            to_string(dividend_tb) & "/" & to_string(divisor_tb)
+          );
+          check_equal(
+            remainder,
+            dividend_tb rem divisor_tb,
+            to_string(dividend_tb) & "/" & to_string(divisor_tb)
+          );
         end loop;
       end loop;
 
     elsif run("divide_by_zero") then
       for dividend_tb in 0 to 2**dividend_width - 1 loop
         run_test(dividend_tb, 0);
-        check_equal(quotient, 2 ** quotient'length - 1, to_string(dividend_tb) & "/0"); -- Max value (all 1's)
+        -- Max value (all 1's)
+        check_equal(quotient, 2 ** quotient'length - 1, to_string(dividend_tb) & "/0");
         -- Remainder is undefined
       end loop;
     end if;

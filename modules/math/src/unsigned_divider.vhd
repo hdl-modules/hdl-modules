@@ -26,8 +26,8 @@ use work.math_pkg.all;
 
 entity unsigned_divider is
   generic (
-    dividend_width : integer;
-    divisor_width : integer
+    dividend_width : positive;
+    divisor_width : positive
   );
   port (
     clk : in std_logic;
@@ -49,7 +49,7 @@ architecture a of unsigned_divider is
   type state_t is (ready, busy, done);
   signal state : state_t := ready;
 
-  signal current_bit : integer range 0 to dividend_width - 1;
+  signal current_bit : natural range 0 to dividend_width - 1;
   signal remainder_int : unsigned(dividend'range);
   signal divisor_int : unsigned((dividend_width - 1) + divisor_width - 1 downto 0);
 
@@ -73,7 +73,8 @@ begin
   remainder <= resize(remainder_int, remainder'length);
 
   main : process
-    variable sub_result : signed(maximum(remainder_int'length, divisor_int'length) + 1 - 1 downto 0);
+    variable sub_result :
+      signed(maximum(remainder_int'length, divisor_int'length) + 1 - 1 downto 0) := (others => '0');
   begin
     wait until rising_edge(clk);
 

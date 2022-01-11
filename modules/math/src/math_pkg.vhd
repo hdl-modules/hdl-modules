@@ -55,7 +55,9 @@ package body math_pkg is
   function log2(value : positive) return natural is
   begin
     -- 2-base logarithm where argument must be a power of two
-    assert is_power_of_two(value) report "Must be power of two: " & to_string(value) severity failure;
+    assert is_power_of_two(value)
+      report "Must be power of two: " & to_string(value)
+      severity failure;
     return floor_log2(value);
   end function;
 
@@ -84,7 +86,9 @@ package body math_pkg is
     constant result : positive := num_bits_needed(value_vector);
   begin
     -- The number of bits needed to express the given value in an unsigned vector.
-    assert value <= 2**result - 1 report "Calculated value not correct: " & to_string(value) & " " & to_string(result) severity failure;
+    assert value <= 2**result - 1
+      report "Calculated value not correct: " & to_string(value) & " " & to_string(result)
+      severity failure;
     return result;
   end function;
 

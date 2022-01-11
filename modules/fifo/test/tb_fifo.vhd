@@ -89,7 +89,11 @@ begin
         read_is_ready <= '1';
         wait until (read_ready and read_valid) = '1' and rising_edge(clk);
 
-        check_equal(read_data, pop_std_ulogic_vector(read_data_queue), "read_idx=" & to_string(read_idx));
+        check_equal(
+          read_data,
+          pop_std_ulogic_vector(read_data_queue),
+          "read_idx=" & to_string(read_idx)
+        );
 
         last_expected := pop(read_last_queue);
         if enable_last then
@@ -503,10 +507,13 @@ begin
 
 
   ------------------------------------------------------------------------------
-  check_no_bubble_cycles_in_packet_mode : if enable_packet_mode or enable_drop_packet or enable_peek_mode generate
+  check_no_bubble_cycles_in_packet_mode : if (
+    enable_packet_mode or enable_drop_packet or enable_peek_mode
+  ) generate
     signal start_event, end_event, en : std_logic := '0';
   begin
-    -- These inputs must be signals (not constants), so assign them here instead of the port map directly
+    -- These inputs must be signals (not constants), so assign them here instead of the port
+    -- map directly
     start_event <= read_valid and not read_last;
     end_event <= (read_ready and read_valid and read_last);
     en <= '1';

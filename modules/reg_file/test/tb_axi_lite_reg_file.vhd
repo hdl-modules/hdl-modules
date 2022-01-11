@@ -67,7 +67,10 @@ architecture tb of tb_axi_lite_reg_file is
   signal regs_down : reg_vec_t(regs'range);
   signal reg_was_read, reg_was_written : std_logic_vector(regs'range);
 
-  constant axi_master : bus_master_t := new_bus(data_length => reg_width, address_length => axi_lite_m2s.read.ar.addr'length);
+  constant axi_master : bus_master_t := new_bus(
+    data_length => reg_width,
+    address_length => axi_lite_m2s.read.ar.addr'length
+  );
 
   constant reg_zero : reg_t := (others => '0');
   constant reg_was_accessed_zero : std_logic_vector(reg_was_written'range) := (others => '0');
@@ -95,7 +98,8 @@ begin
     end procedure;
 
     procedure reg_data_check(reg : reg_definition_t) is
-      variable reg_was_accessed_expected : std_logic_vector(reg_was_written'range) := (others => '0');
+      variable reg_was_accessed_expected : std_logic_vector(reg_was_written'range)
+        := (others => '0');
       variable read_bus_reference : bus_reference_t;
       variable read_bus_data : reg_t;
     begin
@@ -104,7 +108,8 @@ begin
       if is_write_type(reg.reg_type) then
         wait_for_write_to_go_through : while true loop
           if is_write_pulse_type(reg.reg_type) then
-            -- The value that fabric gets should be zero all cycles except the one where the write happens
+            -- The value that fabric gets should be zero all cycles except the one where the
+            -- write happens
             check_equal(regs_down(reg.idx), reg_zero);
           end if;
 
@@ -120,7 +125,8 @@ begin
 
       if is_write_pulse_type(reg.reg_type) then
         wait until rising_edge(clk);
-        -- The value that fabric gets should be zero all cycles except the one where the write happens
+        -- The value that fabric gets should be zero all cycles except the one where the
+        -- write happens
         check_equal(regs_down(reg.idx), reg_zero);
       end if;
 
@@ -145,11 +151,15 @@ begin
     begin
       hardcoded_m2s.read.ar.addr <= to_unsigned(4 * reg_index, hardcoded_m2s.read.ar.addr'length);
       hardcoded_m2s.read.ar.valid <= '1';
-      wait until (axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) = '1'
+        and rising_edge(clk);
       hardcoded_m2s.read.ar.valid <= '0';
 
       hardcoded_m2s.read.r.ready <= '1';
-      wait until (axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) = '1'
+        and rising_edge(clk);
       hardcoded_m2s.read.r.ready <= '0';
     end procedure;
 
@@ -157,15 +167,21 @@ begin
     begin
       hardcoded_m2s.write.aw.addr <= to_unsigned(4 * reg_index, hardcoded_m2s.write.aw.addr'length);
       hardcoded_m2s.write.aw.valid <= '1';
-      wait until (axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) = '1'
+        and rising_edge(clk);
       hardcoded_m2s.write.aw.valid <= '0';
 
       hardcoded_m2s.write.w.valid <= '1';
-      wait until (axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) = '1'
+        and rising_edge(clk);
       hardcoded_m2s.write.w.valid <= '0';
 
       hardcoded_m2s.write.b.ready <= '1';
-      wait until (axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) = '1'
+        and rising_edge(clk);
       hardcoded_m2s.write.b.ready <= '0';
     end procedure;
 

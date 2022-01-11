@@ -60,7 +60,10 @@ architecture tb of tb_axi_lite_mux is
   signal axi_lite_m2s_vec : axi_lite_m2s_vec_t(slaves_rng);
   signal axi_lite_s2m_vec : axi_lite_s2m_vec_t(slaves_rng);
 
-  constant axi_master : bus_master_t := new_bus(data_length => data_width, address_length => axi_lite_m2s.read.ar.addr'length);
+  constant axi_master : bus_master_t := new_bus(
+    data_length => data_width,
+    address_length => axi_lite_m2s.read.ar.addr'length
+  );
 
   constant memory : memory_vec_t(slaves_rng) := get_new_memories(num_slaves);
 
@@ -89,11 +92,15 @@ begin
     begin
       hard_coded_m2s.read.ar.valid <= '1';
       hard_coded_m2s.read.ar.addr <= x"0000_0000" & addr;
-      wait until (axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) = '1'
+        and rising_edge(clk);
       hard_coded_m2s.read.ar.valid <= '0';
 
       hard_coded_m2s.read.r.ready <= '1';
-      wait until (axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) = '1'
+        and rising_edge(clk);
       hard_coded_m2s.read.r.ready <= '0';
     end procedure;
 
@@ -102,17 +109,23 @@ begin
     begin
       hard_coded_m2s.write.aw.valid <= '1';
       hard_coded_m2s.write.aw.addr <= x"0000_0000" & addr;
-      wait until (axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) = '1'
+        and rising_edge(clk);
       hard_coded_m2s.write.aw.valid <= '0';
 
       hard_coded_m2s.write.w.valid <= '1';
       hard_coded_m2s.write.w.data <= x"0000_0000" & data;
       hard_coded_m2s.write.w.strb <= x"0f";
-      wait until (axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) = '1'
+        and rising_edge(clk);
       hard_coded_m2s.write.w.valid <= '0';
 
       hard_coded_m2s.write.b.ready <= '1';
-      wait until (axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) = '1' and rising_edge(clk);
+      wait until
+        (axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) = '1'
+        and rising_edge(clk);
       hard_coded_m2s.write.b.ready <= '0';
     end procedure;
 

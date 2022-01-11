@@ -14,7 +14,7 @@ set clk_out [get_clocks -of_objects [get_ports clk_out]]
 if {${clk_in} != {} && ${clk_out} != {}} {
   set clk_out_period [get_property -min PERIOD ${clk_out}]
   set clk_in_period [get_property -min PERIOD ${clk_in}]
-  set min_period [expr {((${clk_in_period} < ${clk_out_period}) ? ${clk_in_period} : ${clk_out_period})} ]
+  set min_period [expr {((${clk_in_period} < ${clk_out_period}) ? ${clk_in_period} : ${clk_out_period})}]
   puts "INFO tsfpga resync_slv_level_coherent.tcl: Using min period ${min_period}"
 } else {
   # In some cases the clock might not be created yet, most likely during synthesis.

@@ -14,7 +14,8 @@
 -- with LUTs as well as FFs.
 --
 -- .. warning::
---   This entity assumes that the input counter value only increments and decrements in steps of one.
+--   This entity assumes that the input counter value only increments and decrements in steps
+--   of one.
 --   Erroneous values can appear on the output if this is not followed.
 --
 -- This entity converts the linear input counter word to Gray code, resynchronizes it to the

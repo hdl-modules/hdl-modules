@@ -40,8 +40,9 @@ entity resync_level_on_signal is
 end entity;
 
 architecture a of resync_level_on_signal is
+  -- Keep net so that we can apply constraint
   signal data_in_int : std_logic;
-  attribute dont_touch of data_in_int : signal is "true"; -- Keep net so that we can apply constraint
+  attribute dont_touch of data_in_int : signal is "true";
 begin
 
   data_in_int <= data_in;

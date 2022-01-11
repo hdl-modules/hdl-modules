@@ -121,7 +121,11 @@ begin
       read_is_ready <= '1';
       for read_idx in 0 to count - 1 loop
         wait until (read_ready and read_valid) = '1' and rising_edge(clk_read);
-        check_equal(read_data, pop_std_ulogic_vector(read_data_queue), "read_idx=" & to_string(read_idx));
+        check_equal(
+          read_data,
+          pop_std_ulogic_vector(read_data_queue),
+          "read_idx=" & to_string(read_idx)
+        );
       end loop;
       read_is_ready <= '0';
     end procedure;

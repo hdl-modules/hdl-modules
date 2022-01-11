@@ -74,8 +74,10 @@ begin
     test_runner_setup(runner, runner_cfg);
 
     for i in 1 to 100 loop
-      -- In the case of input_pulse_overload we will send more than one input pulse per call to test_pulse().
-      -- But the input gating will make sure that only one pulse arrives on the output, so expected_num_pulses is still i.
+      -- In the case of input_pulse_overload we will send more than one input pulse per call
+      -- to test_pulse().
+      -- But the input gating will make sure that only one pulse arrives on the output,
+      -- so expected_num_pulses is still i.
       test_pulse(i);
     end loop;
 

@@ -197,8 +197,8 @@ begin
     if enable_packet_mode then
       num_lasts_in_fifo_next := num_lasts_in_fifo
         + to_int(write_ready and write_valid and write_last and not should_drop_packet)
-        -- We do _not_ want to look at the read_last_ram signal here, as it is part of the read data,
-        -- and using it would make it impossible to use the RAM output_register.
+        -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
+        -- read data, and using it would make it impossible to use the RAM output_register.
         -- If enable_output_register is not set, read_* and the read_*_ram signals are the same.
         - to_int(read_ready and read_valid and read_last and not should_peek_read);
 
@@ -209,8 +209,8 @@ begin
         -- Therefore we only read from RAM if it is not empty
         read_valid_ram <= to_sl(num_lasts_in_fifo /= 0 and read_addr_next /= write_addr);
       else
-        -- We look at num_lasts_in_fifo_next since we need to update read_valid_ram the same cycle when
-        -- the read happens.
+        -- We look at num_lasts_in_fifo_next since we need to update read_valid_ram the same cycle
+        -- when the read happens.
         -- We also look at num_lasts_in_fifo since a write needs an additional clock
         -- cycle to propagate into the RAM. This is really only needed when the FIFO is empty and
         -- a packet of length one is written. With this condition, there will be a two cycle latency

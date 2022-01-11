@@ -491,7 +491,13 @@ package body reg_operations_pkg is
   begin
     -- Note that this call is non-blocking.
 
-    write_reg(net, reg_index, std_logic_vector(to_signed(value, reg_width)), base_address, bus_handle);
+    write_reg(
+      net,
+      reg_index,
+      std_logic_vector(to_signed(value, reg_width)),
+      base_address,
+      bus_handle
+    );
   end procedure;
 
   procedure write_reg(

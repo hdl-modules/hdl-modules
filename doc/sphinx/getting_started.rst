@@ -31,10 +31,10 @@ All files must be handled as VHDL-2008.
 Scoped constraints
 ------------------
 
-Many entities in this project have corresponding constraint files that must be used in build projects
-for proper operation.
-These are found in the ``scoped_constraints`` directory of the module, which contains ``.tcl`` files
-that have the same file name as the corresponding entity.
+Many entities in this project have corresponding constraint files that must be used in
+build projects for proper operation.
+These are found in the ``scoped_constraints`` directory of the module, which contains
+``.tcl`` files that have the same file name as the corresponding entity.
 
 These must be loaded in Vivado with e.g.
 

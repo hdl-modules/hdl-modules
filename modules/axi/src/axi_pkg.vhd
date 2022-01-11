@@ -55,20 +55,33 @@ package axi_pkg is
   constant axi3_a_lock_locked : std_logic_vector(2 - 1 downto 0) := "10";
 
   constant axi_a_cache_sz : positive := 4;
-  constant axi_a_cache_device_non_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0000";
+  constant axi_a_cache_device_non_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "0000";
   constant axi_a_cache_device_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0001";
-  constant axi_a_cache_normal_non_cacheable_non_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0010";
-  constant axi_a_cache_normal_non_cacheable_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0011";
-  constant axi_ar_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1010";
-  constant axi_aw_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0110";
-  constant axi_a_cache_write_through_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0110";
-  constant axi_a_cache_write_through_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1010";
-  constant axi_a_cache_write_through_read_and_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1110";
-  constant axi_ar_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1011";
-  constant axi_aw_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0111";
-  constant axi_a_cache_write_back_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0111";
-  constant axi_a_cache_write_back_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1011";
-  constant axi_a_cache_write_back_read_and_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1111";
+  constant axi_a_cache_normal_non_cacheable_non_bufferable :
+    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0010";
+  constant axi_a_cache_normal_non_cacheable_bufferable :
+    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0011";
+  constant axi_ar_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "1010";
+  constant axi_aw_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "0110";
+  constant axi_a_cache_write_through_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "0110";
+  constant axi_a_cache_write_through_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "1010";
+  constant axi_a_cache_write_through_read_and_write_allocate :
+    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1110";
+  constant axi_ar_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "1011";
+  constant axi_aw_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "0111";
+  constant axi_a_cache_write_back_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "0111";
+  constant axi_a_cache_write_back_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    := "1011";
+  constant axi_a_cache_write_back_read_and_write_allocate :
+    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1111";
 
   constant axi_a_prot_sz : positive := 3;
   constant axi_a_prot_privileged : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "001";
@@ -226,8 +239,16 @@ package axi_pkg is
   function axi_s2m_r_sz(data_width : positive; id_width : natural)  return positive;
   type axi_s2m_r_vec_t is array (integer range <>) of axi_s2m_r_t;
 
-  function to_slv(data : axi_s2m_r_t; data_width : positive; id_width : natural) return std_logic_vector;
-  function to_axi_s2m_r(data : std_logic_vector; data_width : positive; id_width : natural) return axi_s2m_r_t;
+  function to_slv(
+    data : axi_s2m_r_t;
+    data_width : positive;
+    id_width : natural
+  ) return std_logic_vector;
+  function to_axi_s2m_r(
+    data : std_logic_vector;
+    data_width : positive;
+    id_width : natural
+  ) return axi_s2m_r_t;
 
 
   ------------------------------------------------------------------------------
@@ -257,7 +278,11 @@ package axi_pkg is
   end record;
   type axi_write_m2s_vec_t is array (integer range <>) of axi_write_m2s_t;
 
-  constant axi_write_m2s_init : axi_write_m2s_t := (aw => axi_m2s_a_init, w => axi_m2s_w_init, b => axi_m2s_b_init);
+  constant axi_write_m2s_init : axi_write_m2s_t := (
+    aw => axi_m2s_a_init,
+    w => axi_m2s_w_init,
+    b => axi_m2s_b_init
+  );
 
   type axi_write_s2m_t is record
     aw : axi_s2m_a_t;
@@ -266,7 +291,11 @@ package axi_pkg is
   end record;
   type axi_write_s2m_vec_t is array (integer range <>) of axi_write_s2m_t;
 
-  constant axi_write_s2m_init : axi_write_s2m_t := (aw => axi_s2m_a_init, w => axi_s2m_w_init, b => axi_s2m_b_init);
+  constant axi_write_s2m_init : axi_write_s2m_t := (
+    aw => axi_s2m_a_init,
+    w => axi_s2m_w_init,
+    b => axi_s2m_b_init
+  );
 
   type axi_m2s_t is record
     read : axi_read_m2s_t;
@@ -487,7 +516,11 @@ package body axi_pkg is
     return data_width + id_width + axi_resp_sz + 1;
   end function;
 
-  function to_slv(data : axi_s2m_r_t; data_width : positive; id_width : natural) return std_logic_vector is
+  function to_slv(
+    data : axi_s2m_r_t;
+    data_width : positive;
+    id_width : natural)
+  return std_logic_vector is
     variable result : std_logic_vector(axi_s2m_r_sz(data_width, id_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
@@ -509,7 +542,11 @@ package body axi_pkg is
     return result;
   end function;
 
-  function to_axi_s2m_r(data : std_logic_vector; data_width : positive; id_width : natural) return axi_s2m_r_t is
+  function to_axi_s2m_r(
+    data : std_logic_vector;
+    data_width : positive;
+    id_width : natural
+  ) return axi_s2m_r_t is
     constant offset : natural := data'low;
     variable result : axi_s2m_r_t := axi_s2m_r_init;
     variable lo, hi : natural := 0;
