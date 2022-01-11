@@ -1,5 +1,5 @@
-About ``hdl_modules``
-=====================
+About hdl_modules
+=================
 
 |pic_website| |pic_gitlab| |pic_gitter| |pic_license|
 
