@@ -283,6 +283,32 @@ class Module(BaseModule):
             )
         )
 
+        # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
+        # a minimal FIFO.
+        generics = dict(
+            use_asynchronous_fifo=False,
+            width=8,
+            depth=32,
+            enable_last=True,
+            enable_output_register=False,
+        )
+        projects.append(
+            VivadoNetlistProject(
+                name=self.test_case_name(f"{self.library_name}.fifo.lutram_minimal", generics),
+                modules=modules,
+                part=part,
+                top="fifo_netlist_build_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(32)),
+                    Ffs(EqualTo(22)),
+                    Ramb36(EqualTo(0)),
+                    Ramb18(EqualTo(0)),
+                    MaximumLogicLevel(EqualTo(3)),
+                ],
+            )
+        )
+
     def _setup_asynchronous_fifo_build_projects(self, projects, modules, part):
         # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
         # Note that this uses the minimal top level wrapper so that only the barebone features
