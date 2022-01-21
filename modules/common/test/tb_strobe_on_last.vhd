@@ -27,6 +27,7 @@ entity tb_strobe_on_last is
   generic (
     data_width : positive;
     test_full_throughput : boolean;
+    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -108,7 +109,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(rnd'instance_name & to_string(seed));
 
     if run("test_data") then
       for burst_idx in 0 to 500 loop
@@ -238,6 +239,7 @@ begin
     handshake_master_inst : entity bfm.handshake_master
       generic map (
         stall_config => stall_config,
+        seed => seed,
         logger_name_suffix => "_input",
         data_width => input_data'length
       )
@@ -266,6 +268,7 @@ begin
         data_width_bits => output_data'length,
         reference_data_queue => reference_data_queue,
         stall_config => stall_config,
+        seed => seed,
         logger_name_suffix => "_input"
       )
       port map (

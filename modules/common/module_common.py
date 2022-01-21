@@ -259,7 +259,12 @@ class Module(BaseModule):
         for data_width in [8, 16, 32]:
             for test_full_throughput in [False, True]:
                 generics = dict(data_width=data_width, test_full_throughput=test_full_throughput)
-                self.add_vunit_config(test=tb, generics=generics)
+
+                # The "full throughput" test is very static, so test only with one seed.
+                # The regular test though should be tested more exhaustively.
+                num_tests = 1 if test_full_throughput else 5
+                for _ in range(num_tests):
+                    self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
     def _get_strobe_on_last_build_projects(self, part, projects):
         modules = [self]
