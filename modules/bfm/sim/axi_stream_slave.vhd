@@ -74,7 +74,7 @@ entity axi_stream_slave is
     --
     ready : out std_logic := '0';
     valid : in std_logic;
-    last : in std_logic;
+    last : in std_logic := '1';
     id : in unsigned(id_width_bits - 1 downto 0) := (others => '0');
     data : in std_logic_vector(data_width_bits - 1 downto 0);
     strobe : in std_logic_vector(data_width_bits / strobe_unit_width_bits - 1 downto 0) :=
