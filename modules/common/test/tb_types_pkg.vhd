@@ -124,6 +124,35 @@ begin
       check_equal(count_ones(bit_data3), 3);
       check_equal(count_ones(byte_data1), 12);
 
+    elsif run("test_frequency_conversion") then
+      -- Same checks as in the netlist build. Should give same result in Vivado as in simulator.
+
+      for test_idx in test_periods'range loop
+        -- Real frequency to period gives no error
+        check_equal(to_period(test_frequencies_real(test_idx)), test_periods(test_idx));
+
+        -- "check almost equal" for 'time' type
+        assert (
+          (
+            to_period(test_frequencies_real(test_idx))
+            >= test_periods(test_idx) - test_tolerances_period_via_integer(test_idx)
+          ) and (
+            to_period(test_frequencies_real(test_idx))
+            <= test_periods(test_idx) + test_tolerances_period_via_integer(test_idx)
+          )
+        );
+
+        check_equal(
+          got=>to_frequency_hz(test_periods(test_idx)),
+          expected=>test_frequencies_real(test_idx),
+          max_diff=>test_tolerances_frequency_real(test_idx)
+        );
+
+        -- Period to integer frequency gives no error
+        check_equal(to_frequency_hz(test_periods(test_idx)), test_frequencies_integer(test_idx));
+
+      end loop;
+
     end if;
 
     test_runner_cleanup(runner);

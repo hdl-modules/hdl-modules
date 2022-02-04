@@ -48,7 +48,8 @@ class Module(BaseModule):
         self._get_keep_remover_build_projects(part, projects)
         self._get_strobe_on_last_build_projects(part, projects)
         self._get_clock_counter_build_projects(part, projects)
-        self._get_period_pulser_build_projects(part, projects)
+        self._get_periodic_pulser_build_projects(part, projects)
+        self._get_frequency_conversion_build_projects(part, projects)
 
         return projects
 
@@ -334,7 +335,7 @@ class Module(BaseModule):
             )
         )
 
-    def _get_period_pulser_build_projects(self, part, projects):
+    def _get_periodic_pulser_build_projects(self, part, projects):
         modules = get_hdl_modules(names_include=[self.name, "math"])
 
         periods = [32, 37, 300, 63 * 64, 311000000]
@@ -358,3 +359,14 @@ class Module(BaseModule):
                     ],
                 )
             )
+
+    def _get_frequency_conversion_build_projects(self, part, projects):
+        # No result checkers, but the entity contains a lot of assertions
+        projects.append(
+            VivadoNetlistProject(
+                name=f"{self.library_name}.test_frequency_conversion",
+                modules=[self],
+                part=part,
+                top="test_frequency_conversion",
+            )
+        )
