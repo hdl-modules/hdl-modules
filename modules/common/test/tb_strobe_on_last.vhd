@@ -109,7 +109,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name & to_string(seed));
+    rnd.InitSeed(seed);
 
     if run("test_data") then
       for burst_idx in 0 to 500 loop
