@@ -175,20 +175,24 @@ begin
     -- Instantiate next stage with the remaining period, or end recursion if done
     ------------------------------------------------------------------------------
     gen_next_stage : if factors.next_stage > 1 generate
+
       periodic_pulser_next_stage : entity work.periodic_pulser
-      generic map (
-        period => factors.next_stage,
-        shift_register_length => shift_register_length)
-      port map (
-        clk => clk,
-        count_enable => pulse_this_stage,
-        pulse => pulse
+        generic map (
+          period => factors.next_stage,
+          shift_register_length => shift_register_length)
+        port map (
+          clk => clk,
+          count_enable => pulse_this_stage,
+          pulse => pulse
         );
-    end generate;
-    do_not_gen_next_stage : if factors.next_stage <= 1 generate
+
+    else generate
+
       -- Another stage is not needed
       pulse <= pulse_this_stage;
+
     end generate;
+
   end generate;
 
 end architecture;
