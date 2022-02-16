@@ -185,12 +185,13 @@ begin
           count_enable => pulse_this_stage,
           pulse => pulse
         );
+    end generate;
 
-    else generate
+    -- Note: Cannot use else-generate here, as that breaks recursion in Vivado
+    do_not_gen_next_stage : if factors.next_stage <= 1 generate
 
       -- Another stage is not needed
       pulse <= pulse_this_stage;
-
     end generate;
 
   end generate;
