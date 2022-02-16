@@ -338,27 +338,87 @@ class Module(BaseModule):
     def _get_periodic_pulser_build_projects(self, part, projects):
         modules = get_hdl_modules(names_include=[self.name, "math"])
 
-        periods = [32, 37, 300, 63 * 64, 311000000]
-        total_luts = [2, 7, 4, 5, 18]
-        srls = [1, 0, 2, 3, 4]
-        ffs = [1, 6, 2, 3, 15]
+        build_settings = [
+            {
+                "period": 32,
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    # A period of 32 fits within an srl in this case
+                    # Note that an extra lut is needed for handling clock enable
+                    "32": {"total_luts": 2, "srls": 1, "ffs": 1},
+                    "1": {"total_luts": 4, "srls": 0, "ffs": 5},
+                },
+            },
+            {
+                # A period of 37 cannot be broken up into multiple shift registers because it is
+                # a prime. It doesn't fit in one srl, so a counter will be created.
+                "period": 37,
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    "32": {"total_luts": 7, "srls": 0, "ffs": 6},
+                    "1": {"total_luts": 7, "srls": 0, "ffs": 6},
+                },
+            },
+            {
+                "period": 100,  # = 25 * 4
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    "32": {"total_luts": 3, "srls": 2, "ffs": 2},
+                    "1": {"total_luts": 8, "srls": 0, "ffs": 7},
+                },
+            },
+            {
+                "period": 125,  # = 25 * 5
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    "32": {"total_luts": 4, "srls": 2, "ffs": 2},
+                    "1": {"total_luts": 8, "srls": 0, "ffs": 7},
+                },
+            },
+            {
+                "period": 16500,  # = 25 * 5 * 33
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    "32": {"total_luts": 5, "srls": 3, "ffs": 5},
+                    "1": {"total_luts": 5, "srls": 0, "ffs": 15},
+                },
+            },
+            {
+                "period": 311000000,  # Would pulse once every second on a 311 MHz clock
+                "shift_register_lengths": (32, 1),
+                "sizes": {
+                    "32": {"total_luts": 18, "srls": 4, "ffs": 15},
+                    "1": {"total_luts": 9, "srls": 0, "ffs": 29},
+                },
+            },
+        ]
 
-        for idx, period in enumerate(periods):
-            generics = dict(period=period, shift_register_length=32)
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(f"{self.library_name}.periodic_pulser", generics),
-                    modules=modules,
-                    part=part,
-                    top="periodic_pulser",
-                    generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(total_luts[idx])),
-                        Srls(EqualTo(srls[idx])),
-                        Ffs(EqualTo(ffs[idx])),
-                    ],
+        for build_setting in build_settings:
+            for shift_register_length in build_setting["shift_register_lengths"]:
+                generics = dict(
+                    period=build_setting["period"],
+                    shift_register_length=shift_register_length,
                 )
-            )
+                projects.append(
+                    VivadoNetlistProject(
+                        name=self.test_case_name(f"{self.library_name}.periodic_pulser", generics),
+                        modules=modules,
+                        part=part,
+                        top="periodic_pulser",
+                        generics=generics,
+                        build_result_checkers=[
+                            TotalLuts(
+                                EqualTo(
+                                    build_setting["sizes"][str(shift_register_length)]["total_luts"]
+                                )
+                            ),
+                            Srls(
+                                EqualTo(build_setting["sizes"][str(shift_register_length)]["srls"])
+                            ),
+                            Ffs(EqualTo(build_setting["sizes"][str(shift_register_length)]["ffs"])),
+                        ],
+                    )
+                )
 
     def _get_frequency_conversion_build_projects(self, part, projects):
         # No result checkers, but the entity contains a lot of assertions
