@@ -23,7 +23,7 @@ entity handshake_splitter is
   port (
     clk : in std_logic;
     --# {{}}
-    input_ready : out std_logic;
+    input_ready : out std_logic := '0';
     input_valid : in std_logic;
     --# {{}}
     output0_ready : in std_logic;
