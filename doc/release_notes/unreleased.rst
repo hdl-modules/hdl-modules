@@ -14,3 +14,9 @@ Breaking changes
 * Change :ref:`common.handshake_pipeline` and :ref:`axi.axi_lite_pipeline` generics
   ``allow_poor_input_ready_timing`` with default value ``false`` to ``pipeline_control_signals``
   with default value ``True``.
+
+* Rename :ref:`bfm.axi_stream_slave` and :ref:`bfm.handshake_slave` generic
+  ``remove_strobed_out_dont_care`` to ``remove_strobed_out_invalid_data``.
+
+* Drive output signals with ``'X'`` per default when ``valid`` is low
+  in :ref:`bfm.axi_stream_master`.

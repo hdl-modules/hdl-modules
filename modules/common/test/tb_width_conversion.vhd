@@ -211,6 +211,9 @@ begin
         reference_data_queue => output_data_queue,
         stall_config => stall_config,
         logger_name_suffix => "_output",
+        -- The DUT can use invalid input bits when the byte lane is strobed out.
+        -- This is not an issue, but the protocol checker needs to know this.
+        remove_strobed_out_invalid_data => true,
         disable_last_check => not enable_last
       )
       port map (

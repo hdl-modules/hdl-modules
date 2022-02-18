@@ -45,17 +45,20 @@ entity axi_stream_master is
     logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
-    strobe_unit_width_bits : positive := 8
+    strobe_unit_width_bits : positive := 8;
+    -- When 'valid' is zero, the associated output ports will be driven with this value.
+    -- This is to avoid a DUT sampling the values in the wrong clock cycle.
+    drive_invalid_value : std_logic := 'X'
   );
   port (
     clk : in std_logic;
     --# {{}}
     ready : in std_logic;
     valid : out std_logic := '0';
-    last : out std_logic := '0';
-    data : out std_logic_vector(data_width_bits - 1 downto 0) := (others => '0');
-    strobe : out std_logic_vector(data_width_bits / strobe_unit_width_bits - 1 downto 0) :=
-      (others => '0')
+    last : out std_logic := drive_invalid_value;
+    data : out std_logic_vector(data_width_bits - 1 downto 0) := (others => drive_invalid_value);
+    strobe : out std_logic_vector(data_width_bits / strobe_unit_width_bits - 1 downto 0)
+      := (others => drive_invalid_value)
   );
 end entity;
 
@@ -101,13 +104,21 @@ begin
       strobe_byte(byte_lane_idx) <= '1';
 
       is_last_byte := byte_idx = burst_length_bytes - 1;
+
+      if is_last_byte then
+        -- If burst length is not aligned with the data width, the last beat might not be fully
+        -- filled with valid data. Fill the remaining data and strobe with '0'.
+        data(data'high downto (byte_lane_idx + 1) * 8) <= (others => '0');
+        strobe_byte(strobe'high downto byte_lane_idx + 1) <= (others => '0');
+      end if;
+
       if byte_lane_idx = bytes_per_beat - 1 or is_last_byte then
         last <= to_sl(is_last_byte);
         wait until (ready and valid) = '1' and rising_edge(clk);
 
-        last <= '0';
-        data <= (others => '0');
-        strobe_byte <= (others => '0');
+        last <= drive_invalid_value;
+        data <= (others => drive_invalid_value);
+        strobe_byte <= (others => drive_invalid_value);
       end if;
     end loop;
 
