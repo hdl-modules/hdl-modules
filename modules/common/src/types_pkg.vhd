@@ -21,7 +21,11 @@ package types_pkg is
   type signed_vec_t is array (integer range <>) of signed;
 
   type natural_vec_t is array (integer range <>) of natural;
+  function sum(data : natural_vec_t) return natural;
+
   type positive_vec_t is array (integer range <>) of positive;
+  function sum(data : positive_vec_t) return positive;
+
   type time_vec_t is array (integer range <>) of time;
   type real_vec_t is array (integer range <>) of real;
   type boolean_vec_t is array (integer range <>) of boolean;
@@ -69,6 +73,26 @@ package types_pkg is
 end package;
 
 package body types_pkg is
+
+  function sum(data : natural_vec_t) return natural is
+    variable result : natural := 0;
+  begin
+    for data_idx in data'range loop
+      result := result + data(data_idx);
+    end loop;
+
+    return result;
+  end function;
+
+  function sum(data : positive_vec_t) return positive is
+    variable result : natural := 0;
+  begin
+    for data_idx in data'range loop
+      result := result + data(data_idx);
+    end loop;
+
+    return result;
+  end function;
 
   function get_maximum(values : positive_vec_t) return positive is
     -- Minimum possible value
