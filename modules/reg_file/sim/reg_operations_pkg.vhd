@@ -15,7 +15,7 @@
 --
 -- Consider the example of ``check`` ing an error status register.
 -- When we want to check that the expected error bit has been set, we would like to be informed if
--- any further errors have also occured.
+-- any further errors have also occurred.
 -- This would not happen unless ``other_bits_value`` value to ``check_reg_equal_bit(s)`` is ``'0'``.
 --
 -- Consider furthermore the situation where we are ``wait`` ing for a certain error bit to be
