@@ -28,7 +28,7 @@ entity axi_write_slave is
     data_width : positive;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural := 8;
+    id_width : natural range 0 to axi_id_sz;
     w_fifo_depth : natural := 0
   );
   port (
@@ -101,7 +101,7 @@ begin
       bresp => axi_write_s2m.b.resp
     );
 
-  awid <= std_logic_vector(axi_write_m2s.aw.id(id_width - 1 downto 0));
+  awid <= std_logic_vector(axi_write_m2s.aw.id(awid'range));
   awaddr <= std_logic_vector(axi_write_m2s.aw.addr);
   awlen <= std_logic_vector(axi_write_m2s.aw.len);
   awsize <= std_logic_vector(axi_write_m2s.aw.size);

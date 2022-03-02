@@ -250,7 +250,8 @@ begin
       generic map (
         axi_read_slave => axi_read_slave,
         axi_write_slave => axi_write_slave,
-        data_width => axi_port_data_width
+        data_width => axi_port_data_width,
+        id_width => 0
       )
       port map (
         clk => clk,

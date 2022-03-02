@@ -32,7 +32,7 @@ entity axi_slave is
     data_width : positive;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural := 8;
+    id_width : natural range 0 to axi_id_sz;
     w_fifo_depth : natural := 0
   );
   port (

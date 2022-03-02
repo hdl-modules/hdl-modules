@@ -28,7 +28,7 @@ entity axi_read_slave is
     data_width : positive;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural := 8
+    id_width : natural range 0 to axi_id_sz
   );
   port (
     clk : in std_logic;
@@ -71,11 +71,11 @@ begin
       rlast => axi_read_s2m.r.last
     );
 
-  arid <= std_logic_vector(axi_read_m2s.ar.id(id_width - 1 downto 0));
+  arid <= std_logic_vector(axi_read_m2s.ar.id(arid'range));
   araddr <= std_logic_vector(axi_read_m2s.ar.addr);
   arlen <= std_logic_vector(axi_read_m2s.ar.len);
   arsize <= std_logic_vector(axi_read_m2s.ar.size);
 
-  axi_read_s2m.r.id(id_width - 1 downto 0) <= unsigned(rid);
+  axi_read_s2m.r.id(rid'range) <= unsigned(rid);
 
 end architecture;

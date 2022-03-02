@@ -20,3 +20,7 @@ Breaking changes
 
 * Drive output signals with ``'X'`` per default when ``valid`` is low
   in :ref:`bfm.axi_stream_master`.
+
+* Remove default value for ``id_width`` generic, which could potentially hide errors, in
+  :ref:`bfm.axi_slave`, :ref:`bfm.axi_read_slave` and :ref:`bfm.axi_write_slave`.
+  Now the user has to set an explicit value for every instance.
