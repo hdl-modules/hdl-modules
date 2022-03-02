@@ -41,6 +41,8 @@ package bfm_pkg is
   type memory_vec_t is array (integer range <>) of memory_t;
   impure function get_new_memories(count : positive) return memory_vec_t;
 
+  type buffer_vec_t is array (integer range <>) of buffer_t;
+
   type axi_slave_vec_t is array (integer range <>) of axi_slave_t;
 
   type axi_stream_master_vec_t is array (integer range <>) of axi_stream_master_t;
