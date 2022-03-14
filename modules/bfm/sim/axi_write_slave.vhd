@@ -17,9 +17,13 @@ use ieee.numeric_std.all;
 
 library vunit_lib;
 context vunit_lib.vc_context;
+context vunit_lib.vunit_context;
 
 library axi;
 use axi.axi_pkg.all;
+
+library common;
+use common.types_pkg.all;
 
 
 entity axi_write_slave is
@@ -35,7 +39,11 @@ entity axi_write_slave is
     clk : in std_logic;
     --# {{}}
     axi_write_m2s : in axi_write_m2s_t := axi_write_m2s_init;
-    axi_write_s2m : out axi_write_s2m_t := axi_write_s2m_init
+    axi_write_s2m : out axi_write_s2m_t := axi_write_s2m_init;
+    --# {{}}
+    -- The number of bursts where data has been written to memory (AW and W done), and the
+    -- B transaction has completed.
+    num_bursts_done : out natural
   );
 end entity;
 
@@ -55,7 +63,7 @@ begin
   -- Optionally use a FIFO for the data channel. This enables a data flow pattern where
   -- the AXI slave can accept a lot of data (many bursts) before a single address transactions
   -- occurs. This can affect the behavior of your AXI master, and is a case that needs to
-  -- tested sometimes.
+  -- be tested sometimes.
   axi_w_fifo_inst : entity axi.axi_w_fifo
     generic map (
       data_width => data_width,
@@ -107,5 +115,94 @@ begin
   awsize <= std_logic_vector(axi_write_m2s.aw.size);
 
   axi_write_s2m.b.id(bid'range) <= unsigned(bid);
+
+
+  ------------------------------------------------------------------------------
+  count_num_bursts : process
+  begin
+    wait until rising_edge(clk);
+
+    num_bursts_done <=
+      num_bursts_done + to_int(axi_write_m2s.b.ready and axi_write_s2m.b.valid);
+  end process;
+
+
+  ------------------------------------------------------------------------------
+  -- Use AXI stream protocol checkers to ensure that ready/valid behave as they should,
+  -- and that none of the fields change value unless a transaction has occurred.
+  aw_axi_stream_protocol_checker_block : block
+    constant packed_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>axi_a_addr_sz);
+    signal packed : std_logic_vector(packed_width - 1 downto 0) := (others => '0');
+
+    constant logger : logger_t
+      := get_logger(get_name(get_logger(axi_slave)) & "_aw_axi_stream_protocol_checker");
+    constant protocol_checker : axi_stream_protocol_checker_t := new_axi_stream_protocol_checker(
+      data_length => packed_width,
+      logger => logger,
+      -- Suppress the
+      --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
+      -- warning by setting a very high value for the limit.
+      -- This warning is considered noise in most testbenches that exercise backpressure.
+      max_waits => natural'high
+    );
+  begin
+
+    ------------------------------------------------------------------------------
+    axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+      generic map (
+        protocol_checker => protocol_checker
+      )
+      port map (
+        aclk => clk,
+        tvalid => axi_write_m2s.aw.valid,
+        tready => axi_write_s2m.aw.ready,
+        tdata => packed,
+        tlast => '1',
+        tstrb => (others => '1'),
+        tkeep => (others => '1')
+      );
+
+    packed <= to_slv(data=>axi_write_m2s.aw, id_width=>id_width, addr_width=>axi_a_addr_sz);
+
+  end block;
+
+
+  ------------------------------------------------------------------------------
+  w_axi_stream_protocol_checker_block : block
+    constant packed_width : positive := axi_m2s_w_sz(data_width=>data_width);
+    signal packed : std_logic_vector(packed_width - 1 downto 0) := (others => '0');
+
+    constant logger : logger_t
+      := get_logger(get_name(get_logger(axi_slave)) & "_w_axi_stream_protocol_checker");
+    constant protocol_checker : axi_stream_protocol_checker_t := new_axi_stream_protocol_checker(
+      data_length => packed_width,
+      logger => logger,
+      -- Suppress the
+      --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
+      -- warning by setting a very high value for the limit.
+      -- This warning is considered noise in most testbenches that exercise backpressure.
+      max_waits => natural'high
+    );
+  begin
+
+    ------------------------------------------------------------------------------
+    axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+      generic map (
+        protocol_checker => protocol_checker
+      )
+      port map (
+        aclk => clk,
+        tvalid => axi_write_m2s.w.valid,
+        tready => axi_write_s2m.w.ready,
+        tdata => packed,
+        tlast => '1',
+        tstrb => (others => '1'),
+        tkeep => (others => '1')
+      );
+
+    -- TODO does not include WID when in AXI3 mode
+    packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
+
+  end block;
 
 end architecture;
