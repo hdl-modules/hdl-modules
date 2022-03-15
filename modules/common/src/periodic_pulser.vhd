@@ -57,7 +57,7 @@ entity periodic_pulser is
     -- The period between pulses
     period : positive range 2 to integer'high;
     -- The shift register length is device specific.
-    -- For Xilinx UltraScale and 7 series devices, it should be set to 32.
+    -- For Xilinx UltraScale and 7 series devices, it should be set to 33.
     shift_register_length : positive
   );
   port (
