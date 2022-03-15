@@ -123,19 +123,26 @@ begin
   -- No further shift register factorization possible, use counter
   ------------------------------------------------------------------------------
   gen_counter : if factors.num_factors_this_stage = 0 generate
-    signal tick_count : integer range 0 to period - 1 := 0;
+    constant num_counter_bits : integer := num_bits_needed(period - 1);
+    -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
+    signal tick_count : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
   begin
     count : process
+      variable tick_count_next : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
     begin
       wait until rising_edge(clk);
 
+      -- By default, increment on clock enable
+      tick_count_next := tick_count + 1;
       if count_enable then
-        if tick_count = period - 1 then
-          tick_count <= 0;
-        else
-          tick_count <= tick_count + 1;
-        end if;
+        tick_count <= tick_count_next;
       end if;
+
+      -- Reset counter when the pulse is output
+      if pulse then
+        tick_count <= (others => '0');
+      end if;
+
     end process;
 
     pulse <= count_enable when tick_count = period - 1 else '0';
