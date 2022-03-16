@@ -5,8 +5,8 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Performs throttling of an AXI bus by limiting the number of outstanding
--- transactions.
+-- Performs throttling of an AXI read bus by limiting the number of outstanding
+-- transactions, which makes the AXI master well behaved.
 --
 -- This entity is to be used in conjunction with a data FIFO on the ``input.r`` side.
 -- Using the level from that FIFO, the throttling will make sure that address
@@ -15,6 +15,31 @@
 --
 -- To achieve this it keeps track of the number of outstanding beats
 -- that have been negotiated but not yet sent.
+--
+-- .. digraph:: my_graph
+--
+--   graph [dpi = 300];
+--   rankdir="LR";
+--
+--   ar [shape=none label="AR"];
+--   r [shape=none label="R"];
+--
+--   {
+--     rank=same;
+--     ar;
+--     r;
+--   }
+--
+--   r_fifo [label="" shape=none image="fifo.png"];
+--   axi_read_throttle [shape=box label="AXI read\nthrottle"];
+--   ar -> axi_read_throttle;
+--
+--   axi_slave [shape=box label="AXI slave" height=2];
+--
+--   axi_read_throttle -> axi_slave [label="AR"];
+--   r_fifo -> axi_slave [dir="back"];
+--   r -> r_fifo [dir="back"];
+--   r_fifo:n -> axi_read_throttle:s [label="level"];
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -80,7 +105,7 @@ architecture a of axi_read_throttle is
   signal num_beats_negotiated_but_not_sent : data_counter_t := 0;
 
   -- Negation of:
-  -- Number of data beat words empty in the FIFO, that are not claimed by oustanding transactions.
+  -- Number of data beat words empty in the FIFO, that are not claimed by outstanding transactions.
   signal minus_num_empty_words_in_fifo_that_have_not_been_negotiated :
     integer range -data_fifo_depth to 0 := 0;
 

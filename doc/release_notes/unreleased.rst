@@ -9,6 +9,8 @@ Bug fixes
 
 * Fix full throughput in :ref:`common.keep_remover` when not all input lanes are strobed.
 
+* Fix bug in :ref:`axi.axi_write_throttle` where rogue ``AR`` transactions could occur.
+
 Breaking changes
 
 * Change :ref:`common.handshake_pipeline` and :ref:`axi.axi_lite_pipeline` generics
@@ -24,3 +26,7 @@ Breaking changes
 * Remove default value for ``id_width`` generic, which could potentially hide errors, in
   :ref:`bfm.axi_slave`, :ref:`bfm.axi_read_slave` and :ref:`bfm.axi_write_slave`.
   Now the user has to set an explicit value for every instance.
+
+* Rework :ref:`axi.axi_write_throttle` concept completely, as part of a bug fix.
+  It is simpler and more light weight now.
+  The ``data_fifo_level`` port as well as all generics have been removed.

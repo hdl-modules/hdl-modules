@@ -8,10 +8,14 @@
 
 from tsfpga.module import BaseModule, get_hdl_modules
 from tsfpga.vivado.project import VivadoNetlistProject
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+        self.setup_axi_read_throttle_tests(vunit_proj=vunit_proj)
+        self.setup_axi_write_throttle_tests(vunit_proj=vunit_proj)
+
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
         for data_width in [32, 64]:
             for id_width in [0, 5]:
@@ -73,10 +77,47 @@ class Module(BaseModule):
         tb.test("read_from_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
         tb.test("write_to_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
 
+    def setup_axi_read_throttle_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_read_throttle")
+
+        # Set low in order to keep simulation time down
+        for max_burst_length_beats in [16, 32]:
+            for full_ar_throughput in [True, False]:
+                generics = dict(
+                    max_burst_length_beats=max_burst_length_beats,
+                    full_ar_throughput=full_ar_throughput,
+                )
+
+                for _ in range(2):
+                    self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
+
+    def setup_axi_write_throttle_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_write_throttle")
+
+        for include_slave_w_fifo in [True, False]:
+            generics = dict(include_slave_w_fifo=include_slave_w_fifo)
+
+            for _ in range(4):
+                self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
+
     def get_build_projects(self):
         projects = []
         modules = get_hdl_modules(names_include=[self.name, "common", "math"])
         part = "xc7z020clg400-1"
+
+        projects.append(
+            VivadoNetlistProject(
+                name=f"{self.library_name}.axi_write_throttle",
+                modules=modules,
+                part=part,
+                top="axi_write_throttle",
+                build_result_checkers=[
+                    TotalLuts(EqualTo(5)),
+                    Ffs(EqualTo(2)),
+                    MaximumLogicLevel(EqualTo(2)),
+                ],
+            )
+        )
 
         generics = dict(
             data_fifo_depth=1024,
@@ -94,16 +135,11 @@ class Module(BaseModule):
                 part=part,
                 top="axi_read_throttle",
                 generics=generics,
-            )
-        )
-
-        projects.append(
-            VivadoNetlistProject(
-                name=f"{self.library_name}.axi_write_throttle",
-                modules=modules,
-                part=part,
-                top="axi_write_throttle",
-                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(40)),
+                    Ffs(EqualTo(75)),
+                    MaximumLogicLevel(EqualTo(9)),
+                ],
             )
         )
 
