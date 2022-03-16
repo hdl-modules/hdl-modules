@@ -145,11 +145,8 @@ begin
 
   ------------------------------------------------------------------------------
   read_block : block
-    signal resynced_m2s, throttled_m2s : axi_read_m2s_t := axi_read_m2s_init;
-    signal resynced_s2m, throttled_s2m : axi_read_s2m_t := axi_read_s2m_init;
-
-    constant data_fifo_depth : positive := 1024;
-    signal data_fifo_level : integer range 0 to data_fifo_depth := 0;
+    signal resynced_m2s : axi_read_m2s_t := axi_read_m2s_init;
+    signal resynced_s2m : axi_read_s2m_t := axi_read_s2m_init;
   begin
 
     ------------------------------------------------------------------------------
@@ -159,7 +156,7 @@ begin
         addr_width => addr_width,
         data_width => data_width,
         enable_data_fifo_packet_mode => false,
-        data_fifo_depth => data_fifo_depth,
+        data_fifo_depth => 1024,
         address_fifo_depth => 32
       )
       port map (
@@ -169,30 +166,7 @@ begin
         --
         clk_output => clk_output,
         output_m2s => resynced_m2s,
-        output_s2m => resynced_s2m,
-        output_data_fifo_level => data_fifo_level
-      );
-
-
-    ------------------------------------------------------------------------------
-    axi_read_throttle_inst : entity work.axi_read_throttle
-      generic map (
-        data_fifo_depth => data_fifo_depth,
-        max_burst_length_beats => max_burst_length_beats,
-        id_width => id_width,
-        addr_width => addr_width,
-        full_ar_throughput => false
-      )
-      port map (
-        clk => clk_output,
-        --
-        data_fifo_level => data_fifo_level,
-        --
-        input_m2s => resynced_m2s,
-        input_s2m => resynced_s2m,
-        --
-        throttled_m2s => throttled_m2s,
-        throttled_s2m => throttled_s2m
+        output_s2m => resynced_s2m
       );
 
 
@@ -206,8 +180,8 @@ begin
       port map (
         clk => clk_output,
         --
-        axi_read_m2s => throttled_m2s,
-        axi_read_s2m => throttled_s2m
+        axi_read_m2s => resynced_m2s,
+        axi_read_s2m => resynced_s2m
       );
 
   end block;
@@ -215,11 +189,8 @@ begin
 
   ------------------------------------------------------------------------------
   write_block : block
-    signal resynced_m2s, throttled_m2s : axi_write_m2s_t := axi_write_m2s_init;
-    signal resynced_s2m, throttled_s2m : axi_write_s2m_t := axi_write_s2m_init;
-
-    constant data_fifo_depth : positive := 1024;
-    signal data_fifo_level : integer range 0 to data_fifo_depth := 0;
+    signal resynced_m2s : axi_write_m2s_t := axi_write_m2s_init;
+    signal resynced_s2m : axi_write_s2m_t := axi_write_s2m_init;
   begin
 
     ------------------------------------------------------------------------------
@@ -230,7 +201,7 @@ begin
         data_width => data_width,
         enable_data_fifo_packet_mode => true,
         address_fifo_depth => 32,
-        data_fifo_depth => data_fifo_depth,
+        data_fifo_depth => 1024,
         response_fifo_depth => 32
       )
       port map (
@@ -240,30 +211,7 @@ begin
         --
         clk_output => clk_output,
         output_m2s => resynced_m2s,
-        output_s2m => resynced_s2m,
-        output_data_fifo_level => data_fifo_level
-      );
-
-
-    ------------------------------------------------------------------------------
-    axi_write_throttle_inst : entity work.axi_write_throttle
-      generic map (
-        data_fifo_depth => data_fifo_depth,
-        max_burst_length_beats => max_burst_length_beats,
-        id_width => id_width,
-        addr_width => addr_width,
-        full_aw_throughput => false
-      )
-      port map (
-        clk => clk_output,
-        --
-        data_fifo_level => data_fifo_level,
-        --
-        input_m2s => resynced_m2s,
-        input_s2m => resynced_s2m,
-        --
-        throttled_m2s => throttled_m2s,
-        throttled_s2m => throttled_s2m
+        output_s2m => resynced_s2m
       );
 
 
@@ -277,8 +225,8 @@ begin
       port map (
         clk => clk_output,
         --
-        axi_write_m2s => throttled_m2s,
-        axi_write_s2m => throttled_s2m
+        axi_write_m2s => resynced_m2s,
+        axi_write_s2m => resynced_s2m
       );
 
   end block;
