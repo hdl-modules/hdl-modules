@@ -53,7 +53,7 @@ architecture a of axi_read_cdc is
 begin
 
   ------------------------------------------------------------------------------
-  axi_address_inst : entity work.axi_address_fifo
+  axi_address_fifo_inst : entity work.axi_address_fifo
     generic map (
       id_width => id_width,
       addr_width => addr_width,
