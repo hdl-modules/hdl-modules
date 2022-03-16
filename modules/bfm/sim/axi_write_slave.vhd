@@ -33,7 +33,17 @@ entity axi_write_slave is
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
     id_width : natural range 0 to axi_id_sz;
-    w_fifo_depth : natural := 0
+    -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
+    -- before AW transactions.
+    w_fifo_depth : natural := 0;
+    -- For protocol checking of WDATA.
+    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
+    -- when tvalid is asserted.
+    -- This often becomes a problem, since many implementations assign don't care to strobed out
+    -- byte lanes as a way of minimizing LUT consumption.
+    -- Assigning 'true' to this generic will workaround the check by assigning '0' to all bits in
+    -- WDATA that are not '1' or '0', and are in strobed out byte lanes in WSTRB.
+    remove_strobed_out_invalid_data : boolean := false
   );
   port (
     clk : in std_logic;
@@ -186,6 +196,38 @@ begin
   begin
 
     ------------------------------------------------------------------------------
+    handle_strobed_out_data : if remove_strobed_out_invalid_data generate
+      signal axi_m2s_w_strobed : axi_m2s_w_t := axi_m2s_w_init;
+    begin
+
+      ------------------------------------------------------------------------------
+      assign_data_without_invalid : process(all)
+      begin
+        axi_m2s_w_strobed <= axi_write_m2s.w;
+
+        for byte_idx in axi_write_m2s.w.strb'range loop
+          if not axi_write_m2s.w.strb(byte_idx) then
+            for bit_idx in (byte_idx + 1) * 8 - 1 downto byte_idx * 8 loop
+              if axi_write_m2s.w.data(bit_idx) /= '1' and axi_write_m2s.w.data(bit_idx) /= '0' then
+                axi_m2s_w_strobed.data(bit_idx) <= '0';
+              end if;
+            end loop;
+          end if;
+        end loop;
+      end process;
+
+      -- TODO does not include WID when in AXI3 mode
+      packed <= to_slv(data=>axi_m2s_w_strobed, data_width=>data_width);
+
+    else generate
+
+      -- TODO does not include WID when in AXI3 mode
+      packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
+
+    end generate;
+
+
+    ------------------------------------------------------------------------------
     axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
       generic map (
         protocol_checker => protocol_checker
@@ -199,9 +241,6 @@ begin
         tstrb => (others => '1'),
         tkeep => (others => '1')
       );
-
-    -- TODO does not include WID when in AXI3 mode
-    packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
 
   end block;
 
