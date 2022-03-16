@@ -117,18 +117,17 @@ begin
 
     data_is_ready <= '1';
 
-    -- Pop reference ID for this burst, if applicable
-    if id'length > 0 then
-      check_true(not is_empty(reference_id_queue), "Must push ID at same time as data");
-      reference_id := pop(reference_id_queue);
-    end if;
-
     for byte_idx in 0 to burst_length_bytes - 1 loop
       byte_lane_idx := byte_idx mod bytes_per_beat;
       is_last_beat := byte_idx / bytes_per_beat = burst_length_beats - 1;
 
       if byte_lane_idx = 0 then
         wait until (ready and valid) = '1' and rising_edge(clk);
+
+        -- Pop reference ID for this burst, if applicable, on the first beat
+        if id'length > 0 and byte_idx = 0 then
+          reference_id := pop(reference_id_queue);
+        end if;
 
         if not disable_last_check then
           check_equal(
