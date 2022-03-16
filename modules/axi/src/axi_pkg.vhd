@@ -39,7 +39,9 @@ package axi_pkg is
   -- Bytes per transfer = 2^size
   constant axi_a_size_sz : positive := 3;
 
-  function to_len(burst_length_beats : positive) return unsigned;
+  function to_len(
+    burst_length_beats : positive range 1 to axi_max_burst_length_beats
+  ) return unsigned;
   function to_size(data_width_bits : positive) return unsigned;
 
   constant axi_a_burst_sz : positive := 2;
@@ -320,7 +322,9 @@ end;
 
 package body axi_pkg is
 
-  function to_len(burst_length_beats : positive) return unsigned is
+  function to_len(
+    burst_length_beats : positive range 1 to axi_max_burst_length_beats
+  ) return unsigned is
     variable result : unsigned(axi_a_len_sz - 1 downto 0);
   begin
     -- burst_length_beats is number of transfers
