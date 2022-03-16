@@ -22,8 +22,8 @@
 -- If the remaining factor is not 1 after the shift registers have been added, a new instance of
 -- this module is added through recursion.
 --
--- If ``period`` cannot be factorized into one or more shift registers, a simple counter is
--- added and recursion ends.
+-- If ``period`` cannot be factorized into one or more shift registers, recursion ends with
+-- either a simple counter or a longer shift register (depending on the size of the factor).
 --
 -- Example
 -- _______
@@ -120,32 +120,53 @@ architecture a of periodic_pulser is
 begin
 
   ------------------------------------------------------------------------------
-  -- No further shift register factorization possible, use counter
+  -- No further shift register factorization possible
   ------------------------------------------------------------------------------
-  gen_counter : if factors.num_factors_this_stage = 0 generate
-    constant num_counter_bits : integer := num_bits_needed(period - 1);
-    -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
-    signal tick_count : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+  gen_last_stage : if factors.num_factors_this_stage = 0 generate
   begin
-    count : process
-      variable tick_count_next : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+
+    -- If the period doesn't fit in a few luts, we create a counter
+    gen_counter : if period > shift_register_length * 4 generate
+      constant num_counter_bits : integer := num_bits_needed(period - 1);
+      -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
+      signal tick_count : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
     begin
-      wait until rising_edge(clk);
+      count : process
+        variable tick_count_next : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+      begin
+        wait until rising_edge(clk);
 
-      -- By default, increment on clock enable
-      tick_count_next := tick_count + 1;
-      if count_enable then
-        tick_count <= tick_count_next;
-      end if;
+        -- By default, increment on clock enable
+        tick_count_next := tick_count + 1;
+        if count_enable then
+          tick_count <= tick_count_next;
+        end if;
 
-      -- Reset counter when the pulse is output
-      if pulse then
-        tick_count <= (others => '0');
-      end if;
+        -- Reset counter when the pulse is output
+        if pulse then
+          tick_count <= (others => '0');
+        end if;
 
-    end process;
+      end process;
 
-    pulse <= count_enable when tick_count = period - 1 else '0';
+      pulse <= count_enable when tick_count = period - 1 else '0';
+
+    -- The period fits in a few luts, so create a long shift register
+    else generate
+      signal shift_reg : std_logic_vector(0 to period - 1) := (0 => '1', others => '0');
+    begin
+      shift : process
+      begin
+        wait until rising_edge(clk);
+        if count_enable then
+          shift_reg <= shift_reg(shift_reg'high) & shift_reg(0 to shift_reg'high - 1);
+        end if;
+      end process;
+
+      pulse <= count_enable and shift_reg(shift_reg'high);
+
+    end generate;
+
   end generate;
 
 

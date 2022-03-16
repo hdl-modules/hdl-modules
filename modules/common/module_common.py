@@ -7,6 +7,7 @@
 # --------------------------------------------------------------------------------------------------
 
 import itertools
+from random import randrange
 
 from tsfpga.module import BaseModule, get_hdl_modules
 from tsfpga.vivado.project import VivadoNetlistProject
@@ -31,8 +32,16 @@ class Module(BaseModule):
         )
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_periodic_pulser")
-        for period in [5, 15, 37, 300, 4032]:
+        for period in [5, 15, 127]:
             self.add_vunit_config(tb, generics=dict(period=period, shift_register_length=8))
+
+        # Create some random settings
+        for _ in range(3):
+            period = randrange(2, 5000)
+            shift_register_length = randrange(1, 66)
+            self.add_vunit_config(
+                tb, generics=dict(period=period, shift_register_length=shift_register_length)
+            )
 
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
         self._setup_width_conversion_tests(vunit_proj=vunit_proj)
@@ -351,11 +360,11 @@ class Module(BaseModule):
             },
             {
                 # A period of 37 cannot be broken up into multiple shift registers because it is
-                # a prime. It doesn't fit in one srl, so a counter will be created.
+                # a prime. It will be put in multiple srls
                 "period": 37,
                 "shift_register_lengths": (33, 1),
                 "sizes": {
-                    "33": {"total_luts": 6, "srls": 0, "ffs": 6},
+                    "33": {"total_luts": 3, "srls": 2, "ffs": 1},
                     "1": {"total_luts": 6, "srls": 0, "ffs": 6},
                 },
             },
@@ -376,10 +385,20 @@ class Module(BaseModule):
                 },
             },
             {
+                # A period of 127 cannot be broken up into multiple shift registers because it is
+                # a prime. It will be put in multiple srls.
+                "period": 127,
+                "shift_register_lengths": (33, 1),
+                "sizes": {
+                    "33": {"total_luts": 5, "srls": 4, "ffs": 1},
+                    "1": {"total_luts": 7, "srls": 0, "ffs": 7},
+                },
+            },
+            {
                 "period": 4625,  # = 25 * 5 * 37
                 "shift_register_lengths": (33, 1),
                 "sizes": {
-                    "33": {"total_luts": 9, "srls": 2, "ffs": 8},
+                    "33": {"total_luts": 7, "srls": 4, "ffs": 3},
                     "1": {"total_luts": 4, "srls": 0, "ffs": 13},
                 },
             },
