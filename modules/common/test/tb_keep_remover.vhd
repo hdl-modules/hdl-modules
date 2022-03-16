@@ -255,13 +255,13 @@ begin
   ------------------------------------------------------------------------------
   axi_stream_slave_inst : entity bfm.axi_stream_slave
     generic map (
-      data_width_bits => output_data'length,
+      data_width => output_data'length,
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
       logger_name_suffix => "_output",
       seed => seed,
       remove_strobed_out_invalid_data => true,
-      strobe_unit_width_bits => output_data'length / output_strobe'length
+      strobe_unit_width => output_data'length / output_strobe'length
     )
     port map (
       clk => clk,

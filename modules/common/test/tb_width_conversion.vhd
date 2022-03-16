@@ -179,11 +179,11 @@ begin
   ------------------------------------------------------------------------------
   axi_stream_master_inst : entity bfm.axi_stream_master
     generic map (
-      data_width_bits => input_data'length,
+      data_width => input_data'length,
       data_queue => input_data_queue,
       stall_config => stall_config,
       logger_name_suffix => "_input",
-      strobe_unit_width_bits => input_data'length / input_strobe'length
+      strobe_unit_width => input_data'length / input_strobe'length
     )
     port map (
       clk => clk,
@@ -207,7 +207,7 @@ begin
     ------------------------------------------------------------------------------
     axi_stream_slave_inst : entity bfm.axi_stream_slave
       generic map (
-        data_width_bits => output_data'length,
+        data_width => output_data'length,
         reference_data_queue => output_data_queue,
         stall_config => stall_config,
         logger_name_suffix => "_output",

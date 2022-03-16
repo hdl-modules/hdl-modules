@@ -200,8 +200,8 @@ begin
     ------------------------------------------------------------------------------
     axi_stream_slave_inst : entity work.axi_stream_slave
       generic map (
-        id_width_bits => id_width,
-        data_width_bits => data_width,
+        id_width => id_width,
+        data_width => data_width,
         reference_data_queue => reference_data_queue,
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,

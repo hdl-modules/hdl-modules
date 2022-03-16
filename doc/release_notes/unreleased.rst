@@ -2,8 +2,12 @@ Added
 
 * Add :ref:`common.handshake_pipeline` generic ``pipeline_data_signals`` with default value
   ``true``, and implement mode that pipelines control signals but not data.
+
 * Add :ref:`fifo.fifo` and :ref:`fifo.asynchronous_fifo` generic ``enable_output_register``,
   which adds a pipeline stage for RAM output data.
+
+* Add :ref:`bfm.axi_read_master` and :ref:`bfm.axi_write_master` BFMs that create and verify
+  AXI transactions.
 
 Bug fixes
 
@@ -22,6 +26,9 @@ Breaking changes
 
 * Drive output signals with ``'X'`` per default when ``valid`` is low
   in :ref:`bfm.axi_stream_master`.
+
+* Rename generics ``data_width_bits`` to ``data_width`` and ``id_width_bits`` to ``id_width``
+  in :ref:`bfm.axi_stream_master` and :ref:`bfm.axi_stream_slave`.
 
 * Remove default value for ``id_width`` generic, which could potentially hide errors, in
   :ref:`bfm.axi_slave`, :ref:`bfm.axi_read_slave` and :ref:`bfm.axi_write_slave`.

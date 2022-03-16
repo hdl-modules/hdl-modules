@@ -33,7 +33,7 @@ use common.types_pkg.all;
 
 entity axi_stream_master is
   generic (
-    data_width_bits : positive;
+    data_width : positive;
     -- Push data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     data_queue : queue_t;
@@ -45,7 +45,7 @@ entity axi_stream_master is
     logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
-    strobe_unit_width_bits : positive := 8;
+    strobe_unit_width : positive := 8;
     -- When 'valid' is zero, the associated output ports will be driven with this value.
     -- This is to avoid a DUT sampling the values in the wrong clock cycle.
     drive_invalid_value : std_logic := 'X'
@@ -56,18 +56,18 @@ entity axi_stream_master is
     ready : in std_logic;
     valid : out std_logic := '0';
     last : out std_logic := drive_invalid_value;
-    data : out std_logic_vector(data_width_bits - 1 downto 0) := (others => drive_invalid_value);
-    strobe : out std_logic_vector(data_width_bits / strobe_unit_width_bits - 1 downto 0)
+    data : out std_logic_vector(data_width - 1 downto 0) := (others => drive_invalid_value);
+    strobe : out std_logic_vector(data_width / strobe_unit_width - 1 downto 0)
       := (others => drive_invalid_value)
   );
 end entity;
 
 architecture a of axi_stream_master is
 
-  constant bytes_per_beat : positive := data_width_bits / 8;
-  constant bytes_per_strobe_unit : positive := strobe_unit_width_bits / 8;
+  constant bytes_per_beat : positive := data_width / 8;
+  constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
-  signal strobe_byte : std_logic_vector(data_width_bits / 8 - 1 downto 0) := (others => '0');
+  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
   signal data_is_valid : std_logic := '0';
 
@@ -153,7 +153,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  assign_byte_strobe : if strobe_unit_width_bits = 8 generate
+  assign_byte_strobe : if strobe_unit_width = 8 generate
 
     strobe <= strobe_byte;
 

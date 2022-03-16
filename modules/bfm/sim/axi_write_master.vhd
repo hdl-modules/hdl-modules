@@ -196,7 +196,7 @@ begin
     ------------------------------------------------------------------------------
     axi_stream_master_inst : entity work.axi_stream_master
       generic map (
-        data_width_bits => data_width,
+        data_width => data_width,
         data_queue => w_data_queue,
         stall_config => w_stall_config,
         seed => seed,

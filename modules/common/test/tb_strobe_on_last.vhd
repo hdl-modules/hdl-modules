@@ -265,7 +265,7 @@ begin
     ------------------------------------------------------------------------------
     axi_stream_slave_inst : entity bfm.axi_stream_slave
       generic map (
-        data_width_bits => output_data'length,
+        data_width => output_data'length,
         reference_data_queue => reference_data_queue,
         stall_config => stall_config,
         seed => seed,

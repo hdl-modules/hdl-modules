@@ -33,14 +33,14 @@ entity axi_stream_slave is
   generic (
     -- Set to zero in order to disable 'id' check. In this case, nothing has to be pushed
     -- to 'reference_id_queue'.
-    id_width_bits : natural := 0;
-    data_width_bits : positive;
+    id_width : natural := 0;
+    data_width : positive;
     -- Push reference data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     reference_data_queue : queue_t;
     -- Push reference 'id' for each data burst to this queue. All data beats in a burst must have
     -- the same ID, and there may be no interleaving of data.
-    -- If 'id_width_bits' is zero, no check will be performed and nothing shall be pushed to
+    -- If 'id_width' is zero, no check will be performed and nothing shall be pushed to
     -- this queue.
     reference_id_queue : queue_t := null_queue;
     stall_config : stall_config_t := null_stall_config;
@@ -59,7 +59,7 @@ entity axi_stream_slave is
     remove_strobed_out_invalid_data : boolean := false;
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
-    strobe_unit_width_bits : positive := 8;
+    strobe_unit_width : positive := 8;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
     -- handshake has happened). Note that according to the AXI-Stream standard 'ready' may fall
     -- at any time (regardless of 'valid'). However, many modules are developed with this
@@ -75,9 +75,9 @@ entity axi_stream_slave is
     ready : out std_logic := '0';
     valid : in std_logic;
     last : in std_logic := '1';
-    id : in unsigned(id_width_bits - 1 downto 0) := (others => '0');
-    data : in std_logic_vector(data_width_bits - 1 downto 0);
-    strobe : in std_logic_vector(data_width_bits / strobe_unit_width_bits - 1 downto 0) :=
+    id : in unsigned(id_width - 1 downto 0) := (others => '0');
+    data : in std_logic_vector(data_width - 1 downto 0);
+    strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '1');
     --
     num_bursts_checked : out natural := 0
@@ -86,10 +86,10 @@ end entity;
 
 architecture a of axi_stream_slave is
 
-  constant bytes_per_beat : positive := data_width_bits / 8;
-  constant bytes_per_strobe_unit : positive := strobe_unit_width_bits / 8;
+  constant bytes_per_beat : positive := data_width / 8;
+  constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
-  signal strobe_byte : std_logic_vector(data_width_bits / 8 - 1 downto 0) := (others => '0');
+  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
   signal data_is_ready : std_logic := '0';
 
@@ -186,7 +186,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  assign_byte_strobe : if strobe_unit_width_bits = 8 generate
+  assign_byte_strobe : if strobe_unit_width = 8 generate
 
     strobe_byte <= strobe;
 
