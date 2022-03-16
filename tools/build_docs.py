@@ -33,21 +33,11 @@ def main():
     generate_documentation()
 
     # Copy files from documentation folder to build folder
-    for name in [
-        "conf.py",
-        "contributing.rst",
-        "getting_started.rst",
-        "license_information.rst",
-        "release_notes.rst",
-        "robots.txt",
-        "css",
-    ]:
-        source = SPHINX_DOC / name
-
-        if source.is_file():
-            shutil.copyfile(source, GENERATED_SPHINX / name)
+    for path in SPHINX_DOC.glob("*"):
+        if path.is_file():
+            shutil.copyfile(path, GENERATED_SPHINX / path.name)
         else:
-            shutil.copytree(source, GENERATED_SPHINX / name, dirs_exist_ok=True)
+            shutil.copytree(path, GENERATED_SPHINX / path.name, dirs_exist_ok=True)
 
     build_sphinx(build_path=GENERATED_SPHINX, output_path=GENERATED_SPHINX_HTML)
 
