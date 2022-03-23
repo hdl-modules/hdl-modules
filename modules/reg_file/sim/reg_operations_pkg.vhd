@@ -71,7 +71,7 @@ package reg_operations_pkg is
   procedure check_reg_equal(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in integer;
+    value : in reg_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -80,7 +80,7 @@ package reg_operations_pkg is
   procedure check_reg_equal(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in integer;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
