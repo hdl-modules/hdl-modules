@@ -111,12 +111,17 @@ def get_readme_rst():
     cumbersome handling where the README is duplicated in two places.
     """
 
-    def get_rst(include_link):
-        extra_rst = (
-            "**See documentation on the website**: https://hdl-modules.com\n"
-            if include_link
-            else ""
-        )
+    def get_rst(include_link_to_website=False, include_link_to_gitlab=False):
+        if include_link_to_website:
+            extra_rst = "**See documentation on the website**: https://hdl-modules.com\n"
+        elif include_link_to_gitlab:
+            extra_rst = """\
+This website contains human-readable documentation of the modules.
+To check out the source code, go to the `gitlab page <https://gitlab.com/tsfpga/hdl_modules>`__.
+"""
+        else:
+            extra_rst = ""
+
         readme_rst = f"""\
 About hdl_modules
 =================
@@ -187,16 +192,16 @@ The following things can be found, at a glance, in the different modules:
 
         return readme_rst
 
-    # First, verify readme.rst in repo root
-    readme_rst = get_rst(include_link=True)
+    # First, verify readme.rst in repo root. The text shall link to the website.
+    readme_rst = get_rst(include_link_to_website=True)
     if read_file(hdl_modules_tools_env.REPO_ROOT / "readme.rst") != readme_rst:
         file_path = create_file(GENERATED_SPHINX / "readme.rst", readme_rst)
         assert (
             False
         ), f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
 
-    # Link shall not be included in the text that goes on the website
-    return get_rst(include_link=False)
+    # Text that goes on website shall include link to gitlab.
+    return get_rst(include_link_to_gitlab=True)
 
 
 def build_information_badges():
