@@ -13,7 +13,7 @@ Bug fixes
 
 * Fix full throughput in :ref:`common.keep_remover` when not all input lanes are strobed.
 
-* Fix bug in :ref:`axi.axi_write_throttle` where rogue ``AR`` transactions could occur.
+* Fix bug in :ref:`axi.axi_write_throttle` where rogue ``AW`` transactions could occur.
 
 Breaking changes
 
