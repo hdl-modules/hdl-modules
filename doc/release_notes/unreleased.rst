@@ -27,7 +27,8 @@ Breaking changes
 * Drive output signals with ``'X'`` per default when ``valid`` is low
   in :ref:`bfm.axi_stream_master`.
 
-* Rename generics ``data_width_bits`` to ``data_width`` and ``id_width_bits`` to ``id_width``
+* Rename generics ``data_width_bits`` to ``data_width``, ``id_width_bits`` to ``id_width``,
+  and ``strobe_unit_width_bits`` to ``strobe_unit_width_bits``
   in :ref:`bfm.axi_stream_master` and :ref:`bfm.axi_stream_slave`.
 
 * Remove default value for ``id_width`` generic, which could potentially hide errors, in
