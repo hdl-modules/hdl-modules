@@ -59,7 +59,7 @@ The following things can be found, at a glance, in the different modules:
 * Some common math function implementations in the
   `math module <https://hdl-modules.com/modules/math/math.html>`__.
 
-* A general register file, as well as a simulation package with register BFM operations, in the
+* A generic register file, as well as a simulation package with register BFM operations, in the
   `reg_file module <https://hdl-modules.com/modules/reg_file/reg_file.html>`__.
 
 * Resynchronization implementations for different signals and buses, along with proper constraints,

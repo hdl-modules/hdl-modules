@@ -5,7 +5,9 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- General register file controlled over AXI-Lite.
+-- Generic, parameterizable, register file for AXI-Lite register buses.
+-- Is parameterizable via a generic that sets the list of registers, with their modes and their
+-- default values.
 --
 -- Will respond with ``SLVERR`` on the ``R`` channel when attempting to read a register that
 --
