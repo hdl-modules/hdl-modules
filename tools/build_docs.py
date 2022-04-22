@@ -146,7 +146,7 @@ About hdl_modules
 
 The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
-It is released under the very permissive BSD 3-Clause License.
+It is released as open source under the very permissive BSD 3-Clause License.
 
 {extra_rst}
 The code is designed to be reusable and portable, while having a clean and intuitive interface.
