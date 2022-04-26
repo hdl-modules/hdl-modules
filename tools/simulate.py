@@ -46,9 +46,9 @@ def main():
         # Enable minimal compilation in VUnit
         args.minimal = True
 
-    simulation_project = SimulationProject(args=args)
+    simulation_project = SimulationProject(args=args, enable_preprocessing=True)
     simulation_project.add_modules(args=args, modules=modules)
-    simulation_project.add_vivado_simlib_and_ip_cores(args=args, modules=modules)
+    simulation_project.add_vivado_simlib(args=args)
 
     simulation_project.vunit_proj.main()
 
