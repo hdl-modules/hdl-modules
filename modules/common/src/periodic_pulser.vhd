@@ -128,29 +128,39 @@ begin
 
     -- If the period doesn't fit in a few luts, we create a counter
     gen_counter : if period > shift_register_length * 4 generate
-      constant num_counter_bits : integer := num_bits_needed(period - 1);
+      constant num_counter_bits : positive := num_bits_needed(period - 1);
+
       -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
-      signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+      -- Start at a value where we have 'period' number ticks until an overflow.
+      constant start_value : positive := 2 ** num_counter_bits - period;
+      constant start_value_unsigned : unsigned(num_counter_bits - 1 downto 0) :=
+        to_unsigned(start_value, num_counter_bits);
+
+      signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := start_value_unsigned;
+      -- Add one extra bit here, this is used to see if there was an overflow, at which point we
+      -- should issue the pulse and then start over
+      signal tick_count_next : u_unsigned(num_counter_bits + 1 - 1 downto 0) := (others => '0');
     begin
       count : process
-        variable tick_count_next : u_unsigned(num_counter_bits - 1 downto 0) := (others => '0');
       begin
         wait until rising_edge(clk);
 
         -- By default, increment on clock enable
-        tick_count_next := tick_count + 1;
         if count_enable then
-          tick_count <= tick_count_next;
+          tick_count <= tick_count_next(tick_count'range);
         end if;
 
         -- Reset counter when the pulse is output
         if pulse then
-          tick_count <= (others => '0');
+          tick_count <= start_value_unsigned;
         end if;
-
       end process;
 
-      pulse <= count_enable when tick_count = period - 1 else '0';
+      tick_count_next <= ("0" & tick_count) + 1;
+
+      -- Send pulse upon counter overflow, which is cheaper than doing numerical comparison
+      -- on all bits.
+      pulse <= count_enable and tick_count_next(tick_count_next'high);
 
     -- The period fits in a few luts, so create a long shift register
     else generate

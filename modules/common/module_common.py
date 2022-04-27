@@ -446,7 +446,7 @@ class Module(BaseModule):
                 Ffs(EqualTo(2)),
             ]
             yield dict(period=100, shift_register_length=1), [
-                TotalLuts(EqualTo(7)),
+                TotalLuts(EqualTo(8)),
                 Srls(EqualTo(0)),
                 Ffs(EqualTo(7)),
             ]
@@ -471,7 +471,7 @@ class Module(BaseModule):
                 Ffs(EqualTo(1)),
             ]
             yield dict(period=127, shift_register_length=1), [
-                TotalLuts(EqualTo(7)),
+                TotalLuts(EqualTo(8)),
                 Srls(EqualTo(0)),
                 Ffs(EqualTo(7)),
             ]
@@ -483,19 +483,19 @@ class Module(BaseModule):
                 Ffs(EqualTo(3)),
             ]
             yield dict(period=4625, shift_register_length=1), [
-                TotalLuts(EqualTo(4)),
+                TotalLuts(EqualTo(2)),
                 Srls(EqualTo(0)),
                 Ffs(EqualTo(13)),
             ]
 
             # Would pulse once every second on a 311 MHz clock
             yield dict(period=311000000, shift_register_length=33), [
-                TotalLuts(EqualTo(17)),
+                TotalLuts(EqualTo(15)),
                 Srls(EqualTo(4)),
                 Ffs(EqualTo(15)),
             ]
             yield dict(period=311000000, shift_register_length=1), [
-                TotalLuts(EqualTo(7)),
+                TotalLuts(EqualTo(2)),
                 Srls(EqualTo(0)),
                 Ffs(EqualTo(29)),
             ]
