@@ -22,15 +22,15 @@ package types_pkg is
 
   type natural_vec_t is array (integer range <>) of natural;
   function sum(data : natural_vec_t) return natural;
+  function get_maximum(data : natural_vec_t) return natural;
 
   type positive_vec_t is array (integer range <>) of positive;
   function sum(data : positive_vec_t) return positive;
+  function get_maximum(values : positive_vec_t) return positive;
 
   type time_vec_t is array (integer range <>) of time;
   type real_vec_t is array (integer range <>) of real;
   type boolean_vec_t is array (integer range <>) of boolean;
-
-  function get_maximum(values : positive_vec_t) return positive;
 
   function to_sl(value : boolean) return std_logic;
   function to_bool(value : std_logic) return boolean;
@@ -79,6 +79,16 @@ package body types_pkg is
   begin
     for data_idx in data'range loop
       result := result + data(data_idx);
+    end loop;
+
+    return result;
+  end function;
+
+  function get_maximum(data : natural_vec_t) return natural is
+    variable result : natural := natural'low;
+  begin
+    for data_idx in data'range loop
+      result := maximum(result, data(data_idx));
     end loop;
 
     return result;

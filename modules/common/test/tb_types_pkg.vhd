@@ -52,12 +52,19 @@ begin
     test_runner_setup(runner, runner_cfg);
 
 
-    if run("test_vec_sum") then
+    if run("test_natural_and_positive_vec_sum") then
       natural_vec := (0, 3, 8, 1);
       check_equal(sum(natural_vec), 12);
 
       positive_vec := (7, 3, 8, 1);
       check_equal(sum(positive_vec), 19);
+
+    elsif run("test_get_maximum_natural") then
+      natural_vec := (1, 1, 0, 1);
+      check_equal(get_maximum(natural_vec), 1);
+
+      natural_vec := (3, 2, 1, 4);
+      check_equal(get_maximum(natural_vec), 4);
 
     elsif run("test_get_maximum_positive") then
       positive_vec := (1, 1, 1, 1);
