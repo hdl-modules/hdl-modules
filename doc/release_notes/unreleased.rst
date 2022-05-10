@@ -9,6 +9,9 @@ Added
 * Add :ref:`bfm.axi_read_master` and :ref:`bfm.axi_write_master` BFMs that create and verify
   AXI transactions.
 
+* Add :ref:`axi.axi_read_pipeline` and :ref:`axi.axi_write_pipeline` blocks that pipeline an
+  AXI bus.
+
 Bug fixes
 
 * Fix full throughput in :ref:`common.keep_remover` when not all input lanes are strobed.

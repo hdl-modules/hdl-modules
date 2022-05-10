@@ -77,6 +77,9 @@ class Module(BaseModule):
         tb.test("read_from_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
         tb.test("write_to_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
 
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pipeline")
+        self.add_vunit_config(test=tb, set_random_seed=True)
+
     def setup_axi_read_throttle_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_read_throttle")
 
