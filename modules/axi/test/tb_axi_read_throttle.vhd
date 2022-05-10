@@ -176,7 +176,8 @@ begin
         stall_probability => 0.5,
         min_stall_cycles => 4,
         max_stall_cycles => 20
-      )
+      ),
+      seed => seed
     )
     port map (
       clk => clk,
@@ -209,7 +210,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_write_slave_inst : entity bfm.axi_read_slave
+  axi_read_slave_inst : entity bfm.axi_read_slave
     generic map (
       axi_slave => axi_slave,
       data_width => data_width,

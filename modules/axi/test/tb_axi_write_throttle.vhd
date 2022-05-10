@@ -176,7 +176,8 @@ begin
       id_width => id_width,
       data_width => data_width,
       job_queue => job_queue,
-      data_queue => data_queue
+      data_queue => data_queue,
+      seed => seed
     )
     port map (
       clk => clk,
