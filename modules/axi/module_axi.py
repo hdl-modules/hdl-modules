@@ -41,8 +41,12 @@ class Module(BaseModule):
                 self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_to_axi_lite_vec")
-        self.add_vunit_config(tb, generics=dict(pipeline=True))
-        self.add_vunit_config(tb, generics=dict(pipeline=False))
+        for pipeline_axi_lite in [True, False]:
+            for pipeline_slaves in [True, False]:
+                generics = dict(
+                    pipeline_axi_lite=pipeline_axi_lite, pipeline_slaves=pipeline_slaves
+                )
+                self.add_vunit_config(tb, generics=generics)
 
         # The setting of max_burst_length_beats is not really dependent on the clock configurations,
         # so we do not need to test every possible combination of these settings.

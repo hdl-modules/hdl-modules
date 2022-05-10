@@ -30,7 +30,8 @@ library bfm;
 
 entity tb_axi_to_axi_lite_vec is
   generic (
-    pipeline : boolean;
+    pipeline_axi_lite : boolean;
+    pipeline_slaves : boolean;
     runner_cfg : string
   );
 end entity;
@@ -79,7 +80,7 @@ begin
   clk_axi_lite_vec(4) <= not clk_axi_lite_vec(4) after clk_axi_lite_fast_period / 2;
   clk_axi_lite_vec(5) <= not clk_axi_lite_vec(5) after clk_axi_lite_fast_period / 2;
 
-  test_runner_watchdog(runner, 2 ms);
+  test_runner_watchdog(runner, 100 us);
 
 
   ------------------------------------------------------------------------------
@@ -150,14 +151,14 @@ begin
   generic map (
     axi_lite_slaves => axi_lite_slaves,
     clocks_are_the_same => clocks_are_the_same,
-    pipeline => pipeline,
-    data_width => reg_width
+    pipeline_axi_lite => pipeline_axi_lite,
+    pipeline_slaves => pipeline_slaves
   )
   port map (
     clk_axi => clk_axi,
     axi_m2s => axi_m2s,
     axi_s2m => axi_s2m,
-
+    --
     clk_axi_lite_vec => clk_axi_lite_vec,
     axi_lite_m2s_vec => axi_lite_m2s_vec,
     axi_lite_s2m_vec => axi_lite_s2m_vec

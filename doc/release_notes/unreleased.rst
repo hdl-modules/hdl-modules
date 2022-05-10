@@ -41,3 +41,5 @@ Breaking changes
 * Rework :ref:`axi.axi_write_throttle` concept completely, as part of a bug fix.
   It is simpler and more light weight now.
   The ``data_fifo_level`` port as well as all generics have been removed.
+
+* Rename generic ``pipeline`` to ``pipeline_axi_lite`` in :ref:`axi.axi_to_axi_lite_vec`.
