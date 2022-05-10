@@ -51,13 +51,16 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal output_data, input_data : std_logic_vector(addr_width - 1 downto 0);
+    signal input_data, output_data : std_logic_vector(addr_width - 1 downto 0);
   begin
 
-    slave_m2s.write.aw.addr(output_data'range) <= unsigned(output_data);
     input_data <= std_logic_vector(master_m2s.write.aw.addr(input_data'range));
 
-    aw_handshake_pipeline_inst : entity common.handshake_pipeline
+    slave_m2s.write.aw.addr(output_data'range) <= unsigned(output_data);
+
+
+    ------------------------------------------------------------------------------
+    handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
@@ -74,22 +77,26 @@ begin
         output_valid => slave_m2s.write.aw.valid,
         output_data => output_data
       );
+
   end block;
 
 
   ------------------------------------------------------------------------------
   w_block : block
-    constant w_width : integer := axi_lite_m2s_w_sz(data_width);
-    signal master_m2s_w, slave_m2s_w : std_logic_vector(w_width - 1 downto 0);
+    constant packed_width : integer := axi_lite_m2s_w_sz(data_width);
+    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
   begin
 
-    slave_m2s.write.w.data <= to_axi_lite_m2s_w(slave_m2s_w, data_width).data;
-    slave_m2s.write.w.strb <= to_axi_lite_m2s_w(slave_m2s_w, data_width).strb;
-    master_m2s_w <= to_slv(master_m2s.write.w, data_width);
+    input_data <= to_slv(master_m2s.write.w, data_width);
 
+    slave_m2s.write.w.data <= to_axi_lite_m2s_w(output_data, data_width).data;
+    slave_m2s.write.w.strb <= to_axi_lite_m2s_w(output_data, data_width).strb;
+
+
+    ------------------------------------------------------------------------------
     handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
-        data_width => w_width,
+        data_width => input_data'length,
         full_throughput => full_throughput,
         pipeline_control_signals => pipeline_control_signals
       )
@@ -98,12 +105,13 @@ begin
         --
         input_ready => master_s2m.write.w.ready,
         input_valid => master_m2s.write.w.valid,
-        input_data => master_m2s_w,
+        input_data => input_data,
         --
         output_ready => slave_s2m.write.w.ready,
         output_valid => slave_m2s.write.w.valid,
-        output_data => slave_m2s_w
+        output_data => output_data
       );
+
   end block;
 
 
@@ -129,13 +137,16 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal output_data, input_data : std_logic_vector(addr_width - 1 downto 0);
+    signal input_data, output_data : std_logic_vector(addr_width - 1 downto 0);
   begin
 
-    slave_m2s.read.ar.addr(output_data'range) <= unsigned(output_data);
     input_data <= std_logic_vector(master_m2s.read.ar.addr(input_data'range));
 
-    ar_handshake_pipeline_inst : entity common.handshake_pipeline
+    slave_m2s.read.ar.addr(output_data'range) <= unsigned(output_data);
+
+
+    ------------------------------------------------------------------------------
+    handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
         data_width => axi_lite_m2s_a_sz(addr_width),
         full_throughput => full_throughput,
@@ -152,22 +163,26 @@ begin
         output_valid => slave_m2s.read.ar.valid,
         output_data => output_data
       );
+
   end block;
 
 
   ------------------------------------------------------------------------------
   r_block : block
-    constant r_width : integer := axi_lite_s2m_r_sz(data_width);
-    signal master_s2m_r, slave_s2m_r : std_logic_vector(r_width - 1 downto 0);
+    constant packed_width : integer := axi_lite_s2m_r_sz(data_width);
+    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
   begin
 
-    master_s2m.read.r.data <= to_axi_lite_s2m_r(master_s2m_r, data_width).data;
-    master_s2m.read.r.resp <= to_axi_lite_s2m_r(master_s2m_r, data_width).resp;
-    slave_s2m_r <= to_slv(slave_s2m.read.r, data_width);
+    input_data <= to_slv(slave_s2m.read.r, data_width);
 
+    master_s2m.read.r.data <= to_axi_lite_s2m_r(output_data, data_width).data;
+    master_s2m.read.r.resp <= to_axi_lite_s2m_r(output_data, data_width).resp;
+
+
+    ------------------------------------------------------------------------------
     handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
-        data_width => r_width,
+        data_width => input_data'length,
         full_throughput => full_throughput,
         pipeline_control_signals => pipeline_control_signals
       )
@@ -176,12 +191,13 @@ begin
         --
         input_ready => slave_m2s.read.r.ready,
         input_valid => slave_s2m.read.r.valid,
-        input_data => slave_s2m_r,
+        input_data => input_data,
         --
         output_ready => master_m2s.read.r.ready,
         output_valid => master_s2m.read.r.valid,
-        output_data => master_s2m_r
+        output_data => output_data
       );
+
   end block;
 
 end architecture;
