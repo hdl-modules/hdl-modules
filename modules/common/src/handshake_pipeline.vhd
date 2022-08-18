@@ -230,7 +230,7 @@ begin
     -- This mode will be able to maintain a third throughput.
 
     type state_t is (wait_for_input_valid, wait_for_output_ready);
-      signal state : state_t := wait_for_input_valid;
+    signal state : state_t := wait_for_input_valid;
 
   begin
 
