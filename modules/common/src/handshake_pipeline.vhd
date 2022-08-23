@@ -41,7 +41,7 @@ entity handshake_pipeline is
     input_valid : in std_logic;
     -- Optional to connect.
     input_last : in std_logic := '-';
-    input_data : in std_logic_vector(data_width - 1 downto 0);
+    input_data : in std_logic_vector(data_width - 1 downto 0) := (others => '-');
     -- Optional to connect. Must set valid 'strobe_unit_width' generic value in order to use this.
     input_strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '-');
