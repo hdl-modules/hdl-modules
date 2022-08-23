@@ -3,8 +3,8 @@ Added
 * Add :ref:`common.handshake_pipeline` generic ``pipeline_data_signals`` with default value
   ``true``, and implement mode that pipelines control signals but not data.
 
-* Add :ref:`fifo.fifo` and :ref:`fifo.asynchronous_fifo` generic ``enable_output_register``,
-  which adds a pipeline stage for RAM output data.
+* Add :ref:`fifo.fifo` and :ref:`fifo.asynchronous_fifo` generic ``enable_output_register`` with
+  default value ``false``, which adds a pipeline stage for RAM output data.
 
 * Add :ref:`bfm.axi_read_master` and :ref:`bfm.axi_write_master` BFMs that create and verify
   AXI transactions.
