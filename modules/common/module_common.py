@@ -44,6 +44,7 @@ class Module(BaseModule):
             )
 
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
+        self._setup_handshake_splitter_tests(vunit_proj=vunit_proj)
         self._setup_width_conversion_tests(vunit_proj=vunit_proj)
         self._setup_keep_remover_tests(vunit_proj=vunit_proj)
         self._setup_strobe_on_last_tests(vunit_proj=vunit_proj)
@@ -53,6 +54,7 @@ class Module(BaseModule):
         part = "xc7z020clg400-1"
 
         self._get_handshake_pipeline_build_projects(part, projects)
+        self._get_handshake_splitter_build_projects(part, projects)
         self._get_width_conversion_build_projects(part, projects)
         self._get_keep_remover_build_projects(part, projects)
         self._get_strobe_on_last_build_projects(part, projects)
@@ -123,6 +125,35 @@ class Module(BaseModule):
                         Ffs(EqualTo(ffs[idx])),
                         MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
                     ],
+                )
+            )
+
+    def _setup_handshake_splitter_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_splitter")
+        for test in tb.get_tests():
+            stall_probability_percent = 0 if "test_full_throughput" in test.name else 20
+            self.add_vunit_config(
+                test=test,
+                generics=dict(stall_probability_percent=stall_probability_percent),
+                set_random_seed=True,
+            )
+
+    def _get_handshake_splitter_build_projects(self, part, projects):
+        def get_build_configurations():
+            yield dict(num_interfaces=2), [TotalLuts(EqualTo(4)), Ffs(EqualTo(2))]
+            yield dict(num_interfaces=4), [TotalLuts(EqualTo(9)), Ffs(EqualTo(4))]
+
+        for generics, build_result_checkers in get_build_configurations():
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.handshake_splitter", generics=generics
+                    ),
+                    modules=[self],
+                    part=part,
+                    top="handshake_splitter",
+                    generics=generics,
+                    build_result_checkers=build_result_checkers,
                 )
             )
 

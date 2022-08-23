@@ -5,14 +5,17 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Combinatorially split a AXI-Stream-like handshaking interface, for cases where two slaves
--- are to receive the data. A transaction occurs when
--- ``input_valid`` is asserted and both outputs assert ``ready``.
+-- Combinatorially split an AXI-Stream-like handshaking interface, for cases where many slaves
+-- are to receive the data.
+-- Maintains full throughput and is AXI-stream compliant in its handling of the handshake signals
+-- (``valid`` does not wait for ``ready``, ``valid`` does not fall unless a transaction
+-- has occurred).
 --
--- Note that this block does NOT follow the AXI-Stream protocol in all cases. If one of the outputs
--- lowers ``ready``, that will lower ``valid`` for the other output. Use only in situations
--- that can handle this. I.e. with modules that can handle ``valid`` falling without a transaction,
--- or with modules that do not lower ``ready`` without a transaction having occurred.
+-- This entity has no pipelining of the handshake signals, but instead connects
+-- them combinatorially.
+-- This increases the logic depth for handshake signals where this entity is used.
+-- If timing issues occur (on the ``input`` or one of the ``output`` s) a
+-- :ref:`common.handshake_pipeline` instance can be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -20,26 +23,56 @@ use ieee.std_logic_1164.all;
 
 
 entity handshake_splitter is
+  generic (
+    num_interfaces : positive
+  );
   port (
     clk : in std_logic;
     --# {{}}
     input_ready : out std_logic := '0';
     input_valid : in std_logic;
     --# {{}}
-    output0_ready : in std_logic;
-    output0_valid : out std_logic := '0';
-    --# {{}}
-    output1_ready : in std_logic;
-    output1_valid : out std_logic := '0'
+    output_ready : in std_logic_vector(0 to num_interfaces - 1);
+    output_valid : out std_logic_vector(0 to num_interfaces - 1) := (others => '0')
   );
 end entity;
 
 architecture a of handshake_splitter is
+
+  -- Keep track of whether a transaction has been performed on each of the output interfaces
+  signal transaction_done : std_logic_vector(output_valid'range) := (others => '0');
+
 begin
 
-  input_ready <= output0_ready and output1_ready;
+  ------------------------------------------------------------------------------
+  output_gen : for output_index in output_valid'range generate
+    signal transaction_done_sticky : std_logic := '0';
+  begin
 
-  output0_valid <= input_valid and output1_ready;
-  output1_valid <= input_valid and output0_ready;
+    ------------------------------------------------------------------------------
+    keep_track_of_whether_transaction_has_occurred_for_this_output : process
+    begin
+      wait until rising_edge(clk);
+
+      transaction_done_sticky <= transaction_done_sticky or transaction_done(output_index);
+
+      -- If an input transaction occurs, that means that a transaction has occurred on
+      -- all output interfaces including this one. Reset to indicate that we are not done
+      -- with the upcoming transaction.
+      if input_ready and input_valid then
+        transaction_done_sticky <= '0';
+      end if;
+    end process;
+
+    transaction_done(output_index) <=
+      transaction_done_sticky or (output_ready(output_index) and output_valid(output_index));
+
+    output_valid(output_index) <= input_valid and not transaction_done_sticky;
+
+  end generate;
+
+  -- Pop on the input side once all output interfaces have performed a transaction
+  -- (in this clock cycle or earlier)
+  input_ready <= and transaction_done;
 
 end architecture;

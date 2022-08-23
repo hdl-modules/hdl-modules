@@ -18,7 +18,12 @@ Bug fixes
 
 * Fix bug in :ref:`axi.axi_write_throttle` where rogue ``AW`` transactions could occur.
 
+* Fix handling of handshake signals in :ref:`common.handshake_splitter` to be AXI-Stream compliant.
+
 Breaking changes
+
+* Rework :ref:`common.handshake_splitter` to use ``std_logic_vector`` for ``output_ready``
+  and ``output_valid``. Introduce mandatory generic ``num_interfaces``.
 
 * Change :ref:`common.handshake_pipeline` and :ref:`axi.axi_lite_pipeline` generics
   ``allow_poor_input_ready_timing`` with default value ``false`` to ``pipeline_control_signals``

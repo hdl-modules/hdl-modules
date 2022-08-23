@@ -10,11 +10,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
+use vunit_lib.random_pkg.all;
 context vunit_lib.vc_context;
+context vunit_lib.vunit_context;
 
 library osvvm;
 use osvvm.RandomPkg.all;
+
+library bfm;
 
 library common;
 
@@ -23,31 +26,37 @@ use work.types_pkg.all;
 
 entity tb_handshake_splitter is
   generic (
+    stall_probability_percent : natural;
+    seed : natural;
     runner_cfg : string
   );
 end entity;
 
 architecture tb of tb_handshake_splitter is
 
+  -- Generics
+  constant num_interfaces : positive := 4;
+
+  -- DUT connections
   signal clk : std_logic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_data : std_logic_vector(8 - 1 downto 0);
   signal input_ready, input_valid : std_logic := '0';
-  signal output0_ready, output0_valid, output1_ready, output1_valid : std_logic := '0';
+  signal input_data : std_logic_vector(8 - 1 downto 0) := (others => '0');
 
-  constant num_words : integer := 2_000;
+  signal output_ready, output_valid : std_logic_vector(0 to num_interfaces - 1) := (others => '0');
 
-  constant axi_stream_master : axi_stream_master_t := new_axi_stream_master(
-    data_length => input_data'length,
-    protocol_checker => new_axi_stream_protocol_checker(
-      logger => get_logger("axi_stream_master"), data_length => input_data'length));
+  -- Testbench stuff
+  constant input_data_queue : queue_t := new_queue;
+  constant output_data_queue : queue_vec_t(output_valid'range) := (others => new_queue);
 
-  signal data_check0_done, data_check1_done : boolean := false;
+  signal num_bursts_checked : natural_vec_t(output_valid'range) := (others => 0);
 
-  shared variable rnd : RandomPType;
-  signal data_queue0 : queue_t := new_queue;
-  signal data_queue1 : queue_t := new_queue;
+  constant stall_config : stall_config_t := (
+    stall_probability => real(stall_probability_percent) / 100.0,
+    min_stall_cycles => 1,
+    max_stall_cycles => 3
+  );
 
 begin
 
@@ -57,129 +66,109 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable data : std_logic_vector(input_data'range) := (others => '0');
-    variable last_dummy : std_logic := '1';
+    variable rnd : RandomPType;
+
+    procedure run_test(num_words : positive) is
+      variable data, data_copy : integer_array_t := null_integer_array;
+    begin
+      random_integer_array(rnd=>rnd, integer_array=>data, width=>num_words, bits_per_word=>8);
+
+      for output_index in output_data_queue'range loop
+        data_copy := copy(data);
+        push_ref(output_data_queue(output_index), data_copy);
+      end loop;
+
+      push_ref(input_data_queue, data);
+    end procedure;
+
+    procedure wait_until_done is
+      -- All words in the test are sent in one burst. Hence when all slaves have checked one burst
+      -- we are done.
+      constant goal_num_bursts_checked : natural_vec_t(num_bursts_checked'range) := (others => 1);
+    begin
+      wait until num_bursts_checked = goal_num_bursts_checked and rising_edge(clk);
+    end procedure;
+
+    variable execution_time_cycles : positive := 1;
+
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(seed);
 
-    if run("test_data") then
-      for i in 1 to num_words loop
-        data := rnd.RandSlv(data'length);
-        push_axi_stream(net, axi_stream_master, tdata => data, tlast => last_dummy);
-        push(data_queue0, data);
-        push(data_queue1, data);
-      end loop;
+    if run("test_random_data") then
+      run_test(num_words => 2000);
+      wait_until_done;
+
+    elsif run("test_full_throughput") then
+      run_test(num_words => 200);
+      wait_until_done;
+
+      execution_time_cycles := now / clk_period;
+      check_relation(execution_time_cycles < 200 + 2);
+
     end if;
-
-    wait until data_check0_done and data_check1_done;
 
     test_runner_cleanup(runner);
   end process;
 
 
   ------------------------------------------------------------------------------
-  data_check0 : process
-    variable data : std_logic_vector(input_data'range) := (others => '0');
-  begin
-    for i in 1 to num_words loop
-      output0_ready <= '1';
-      wait until (output0_ready and output0_valid) = '1' and rising_edge(clk);
-      output0_ready <= '0';
-
-      data := pop(data_queue0);
-      check_equal(input_data, data);
-
-      for jitter in 1 to rnd.RandInt(2) loop
-        wait until rising_edge(clk);
-      end loop;
-    end loop;
-
-    assert is_empty(data_queue0);
-    data_check0_done <= true;
-    wait;
-  end process;
-
-
-  ------------------------------------------------------------------------------
-  output0_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
-    generic map (
+  axi_stream_master_inst : entity bfm.axi_stream_master
+    generic map(
       data_width => input_data'length,
-      logger_name_suffix => "_output0"
+      data_queue => input_data_queue,
+      stall_config => stall_config,
+      seed => seed,
+      logger_name_suffix => "_input"
     )
-    port map (
-      clk => clk,
+    port map(
+      clk   => clk,
       --
-      ready => output0_ready,
-      valid => output0_valid,
-      data => input_data
+      valid => input_valid,
+      ready => input_ready,
+      data  => input_data
     );
 
 
   ------------------------------------------------------------------------------
-  data_check1 : process
-    variable data : std_logic_vector(input_data'range) := (others => '0');
-  begin
-    for i in 1 to num_words loop
-      output1_ready <= '1';
-      wait until (output1_ready and output1_valid) = '1' and rising_edge(clk);
-      output1_ready <= '0';
+  output_gen : for output_index in output_valid'range generate
 
-      data := pop(data_queue1);
-      check_equal(input_data, data);
+    ------------------------------------------------------------------------------
+    axi_stream_slave_inst : entity bfm.axi_stream_slave
+      generic map(
+        data_width => input_data'length,
+        reference_data_queue => output_data_queue(output_index),
+        stall_config => stall_config,
+        seed => seed,
+        logger_name_suffix => "_output" & to_string(output_index),
+        disable_last_check => true
+      )
+      port map(
+        clk   => clk,
+        --
+        valid => output_valid(output_index),
+        ready => output_ready(output_index),
+        data  => input_data,
+        --
+        num_bursts_checked => num_bursts_checked(output_index)
+      );
 
-      for jitter in 1 to rnd.RandInt(2) loop
-        wait until rising_edge(clk);
-      end loop;
-    end loop;
-
-    assert is_empty(data_queue1);
-    data_check1_done <= true;
-    wait;
-  end process;
-
-
-  ------------------------------------------------------------------------------
-  output1_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
-    generic map (
-      data_width => input_data'length,
-      logger_name_suffix => "_output1"
-    )
-    port map (
-      clk => clk,
-      --
-      ready => output1_ready,
-      valid => output1_valid,
-      data => input_data
-    );
-
-
-  ------------------------------------------------------------------------------
-  axi_stream_master_inst : entity vunit_lib.axi_stream_master
-  generic map(
-    master => axi_stream_master
-  )
-  port map(
-    aclk   => clk,
-    tvalid => input_valid,
-    tready => input_ready,
-    tdata  => input_data
-  );
+  end generate;
 
 
   ------------------------------------------------------------------------------
   dut : entity work.handshake_splitter
+    generic map (
+      num_interfaces => num_interfaces
+    )
     port map (
       clk => clk,
       --
       input_ready => input_ready,
       input_valid => input_valid,
       --
-      output0_ready => output0_ready,
-      output0_valid => output0_valid,
-      --
-      output1_ready => output1_ready,
-      output1_valid => output1_valid
+      output_ready => output_ready,
+      output_valid => output_valid
     );
 
 end architecture;
