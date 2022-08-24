@@ -10,14 +10,14 @@ stages:
 
 workflow:
   rules:
-    # Run pipeline for scheduled (nightly master runs), for merge requests, and
+    # Run pipeline for scheduled (nightly main branch runs), for merge requests, and
     # when triggered manually on the web.
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
-    # Pushes to master (a successful merge request is also a "push") should run so
+    # Pushes to main (a successful merge request is also a "push") should run so
     # that new website is deployed.
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
 
 
 default:
@@ -45,7 +45,7 @@ simulate:
   script:
     # We seem to need "git fetch" for some reason.
     # Without it, the "simulate.py --vcs-minimal" call can not
-    # resolve "origin/master" (and running "git branch -a" comes out empty). The tsfpga repo, which
+    # resolve "origin/main" (and running "git branch -a" comes out empty). The tsfpga repo, which
     # has pretty much identical settings, does not have this issue.
     # Might have something to do with a shallow clone strategy, or a gitlab bug related to the
     # project being private and then made public. For now this workaround works, so it is fine.
@@ -80,7 +80,7 @@ pages:
   # anything special.
   image: alpine
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - mv generated/sphinx_html public
   artifacts:

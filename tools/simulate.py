@@ -33,7 +33,10 @@ def main():
             )
 
         test_filters = find_git_test_filters(
-            args=args, repo_root=hdl_modules_tools_env.REPO_ROOT, modules=modules
+            args=args,
+            repo_root=hdl_modules_tools_env.REPO_ROOT,
+            modules=modules,
+            reference_branch="origin/main",
         )
         if not test_filters:
             print("Nothing to run. Appears to be no VHDL-related git diff.")
