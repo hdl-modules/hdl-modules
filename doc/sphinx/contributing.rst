@@ -26,7 +26,8 @@ To make a new release follow these steps.
 Test CI pipeline
 ________________
 
-Before doing anything, launch a CI run from master to see that everything works as expected.
+Before doing anything, launch a CI run from the ``main`` branch to see that everything works
+as expected.
 The CI environment is stable but due to things like, e.g., new pylint version it can
 unexpectedly break.
 When the pipeline has finished and is green you can move on to the next step.
@@ -67,5 +68,5 @@ ___________________
     git push origin --tag vX.Y.Z HEAD:release_branch
 
 Open a new merge request and wait for the CI pipeline to pass.
-If everything went well then you can merge your release commit to master via the gitlab merge
+If everything went well then you can merge your release commit to ``main``` via the gitlab merge
 request GUI.
