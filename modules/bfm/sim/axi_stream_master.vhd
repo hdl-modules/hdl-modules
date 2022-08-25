@@ -12,7 +12,7 @@
 -- Each element in the ``integer_array`` should be an unsigned byte.
 -- Little endian byte order is assumed.
 --
--- The byte length of the bursts (as indicated by the length of the ``data_queue`` arrays)
+-- The byte length of the packets (as indicated by the length of the ``data_queue`` arrays)
 -- does not need to be aligned with the ``data`` width of the bus.
 -- If unaligned, the last data beat will not have all byte lanes set to valid
 -- ``data`` and ``strobe``.
@@ -75,8 +75,8 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable data_burst : integer_array_t := null_integer_array;
-    variable burst_length_bytes : positive := 1;
+    variable data_packet : integer_array_t := null_integer_array;
+    variable packet_length_bytes : positive := 1;
     variable data_value : natural := 0;
 
     variable byte_lane_idx : natural := 0;
@@ -86,27 +86,27 @@ begin
       wait until rising_edge(clk);
     end loop;
 
-    data_burst := pop_ref(data_queue);
-    burst_length_bytes := length(data_burst);
+    data_packet := pop_ref(data_queue);
+    packet_length_bytes := length(data_packet);
 
-    assert burst_length_bytes mod bytes_per_strobe_unit = 0
-      report "Burst length must be a multiple of strobe unit";
+    assert packet_length_bytes mod bytes_per_strobe_unit = 0
+      report "Packet length must be a multiple of strobe unit";
 
     data_is_valid <= '1';
 
-    for byte_idx in 0 to burst_length_bytes - 1 loop
+    for byte_idx in 0 to packet_length_bytes - 1 loop
       byte_lane_idx := byte_idx mod bytes_per_beat;
 
-      data_value := get(arr=>data_burst, idx=>byte_idx);
+      data_value := get(arr=>data_packet, idx=>byte_idx);
       data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
         std_logic_vector(to_unsigned(data_value, 8));
 
       strobe_byte(byte_lane_idx) <= '1';
 
-      is_last_byte := byte_idx = burst_length_bytes - 1;
+      is_last_byte := byte_idx = packet_length_bytes - 1;
 
       if is_last_byte then
-        -- If burst length is not aligned with the data width, the last beat might not be fully
+        -- If packet length is not aligned with the data width, the last beat might not be fully
         -- filled with valid data. Fill the remaining data and strobe with '0'.
         data(data'high downto (byte_lane_idx + 1) * 8) <= (others => '0');
         strobe_byte(strobe'high downto byte_lane_idx + 1) <= (others => '0');
@@ -123,7 +123,7 @@ begin
     end loop;
 
     -- Deallocate after we are done with the data.
-    deallocate(data_burst);
+    deallocate(data_packet);
 
     -- Default: Signal "not valid" to handshake BFM before next packet.
     -- If queue is not empty, it will instantly be raised again (no bubble cycle).

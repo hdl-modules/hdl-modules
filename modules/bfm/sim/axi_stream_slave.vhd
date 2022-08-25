@@ -14,8 +14,8 @@
 --
 -- An optional expected ID is pushed as a ``natural`` to another ``queue`` by the user.
 --
--- The byte length of the bursts (as indicated by the length of the ``reference_data_queue`` arrays)
--- does not need to be aligned with the ``data`` width of the bus.
+-- The byte length of the packets (as indicated by the length of the ``reference_data_queue``
+-- arrays) does not need to be aligned with the ``data`` width of the bus.
 -- If unaligned, the last beat will not have all ``data`` byte lanes checked against reference data.
 -- -------------------------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ entity axi_stream_slave is
     -- Push reference data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     reference_data_queue : queue_t;
-    -- Push reference 'id' for each data burst to this queue. All data beats in a burst must have
+    -- Push reference 'id' for each data packet to this queue. All data beats in a packet must have
     -- the same ID, and there may be no interleaving of data.
     -- If 'id_width' is zero, no check will be performed and nothing shall be pushed to
     -- this queue.
@@ -80,7 +80,7 @@ entity axi_stream_slave is
     strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '1');
     --
-    num_bursts_checked : out natural := 0
+    num_packets_checked : out natural := 0
   );
 end entity;
 
@@ -99,7 +99,7 @@ begin
   main : process
     variable reference_id : natural;
     variable reference_data : integer_array_t := null_integer_array;
-    variable burst_length_bytes, burst_length_beats : positive := 1;
+    variable packet_length_bytes, packet_length_beats : positive := 1;
 
     variable byte_lane_idx : natural := 0;
     variable is_last_beat : boolean := false;
@@ -109,22 +109,22 @@ begin
     end loop;
     reference_data := pop_ref(reference_data_queue);
 
-    burst_length_bytes := length(reference_data);
-    burst_length_beats := (burst_length_bytes + bytes_per_beat - 1) / bytes_per_beat;
+    packet_length_bytes := length(reference_data);
+    packet_length_beats := (packet_length_bytes + bytes_per_beat - 1) / bytes_per_beat;
 
-    assert burst_length_bytes mod bytes_per_strobe_unit = 0
-      report "Burst length must be a multiple of strobe unit";
+    assert packet_length_bytes mod bytes_per_strobe_unit = 0
+      report "Packet length must be a multiple of strobe unit";
 
     data_is_ready <= '1';
 
-    for byte_idx in 0 to burst_length_bytes - 1 loop
+    for byte_idx in 0 to packet_length_bytes - 1 loop
       byte_lane_idx := byte_idx mod bytes_per_beat;
-      is_last_beat := byte_idx / bytes_per_beat = burst_length_beats - 1;
+      is_last_beat := byte_idx / bytes_per_beat = packet_length_beats - 1;
 
       if byte_lane_idx = 0 then
         wait until (ready and valid) = '1' and rising_edge(clk);
 
-        -- Pop reference ID for this burst, if applicable, on the first beat
+        -- Pop reference ID for this packet, if applicable, on the first beat
         if id'length > 0 and byte_idx = 0 then
           reference_id := pop(reference_id_queue);
         end if;
@@ -133,7 +133,7 @@ begin
           check_equal(
             last,
             is_last_beat,
-            "'last' check at burst_idx=" & to_string(num_bursts_checked)
+            "'last' check at packet_idx=" & to_string(num_packets_checked)
               & ",byte_idx=" & to_string(byte_idx)
           );
         end if;
@@ -142,34 +142,34 @@ begin
       check_equal(
         strobe_byte(byte_lane_idx),
         '1',
-        "'strobe' check at burst_idx=" & to_string(num_bursts_checked)
+        "'strobe' check at packet_idx=" & to_string(num_packets_checked)
           & ",byte_idx=" & to_string(byte_idx)
       );
       check_equal(
         unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
         get(arr=>reference_data, idx=>byte_idx),
-        "'data' check at burst_idx="
-          & to_string(num_bursts_checked) & ",byte_idx=" & to_string(byte_idx)
+        "'data' check at packet_idx="
+          & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
       );
 
       if id'length > 0 then
         check_equal(
           unsigned(id),
           reference_id,
-          "'id' check at burst_idx="
-            & to_string(num_bursts_checked) & ",byte_idx=" & to_string(byte_idx)
+          "'id' check at packet_idx="
+            & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
         );
       end if;
     end loop;
 
-    -- Check strobe for last data beat. If burst length aligns with the bus width, all lanes will
-    -- have been checked as '1' above. If burst is not aligned, one or more byte lanes at the top
+    -- Check strobe for last data beat. If packet length aligns with the bus width, all lanes will
+    -- have been checked as '1' above. If packet is not aligned, one or more byte lanes at the top
     -- shall be strobed out.
     for byte_idx in byte_lane_idx + 1 to bytes_per_beat - 1 loop
       check_equal(
         strobe_byte(byte_idx),
         '0',
-        "'strobe' check at burst_idx=" & to_string(num_bursts_checked)
+        "'strobe' check at packet_idx=" & to_string(num_packets_checked)
           & ",byte_idx=" & to_string(byte_idx)
       );
     end loop;
@@ -181,7 +181,7 @@ begin
     -- If queue is not empty, it will instantly be raised again (no bubble cycle).
     data_is_ready <= '0';
 
-    num_bursts_checked <= num_bursts_checked + 1;
+    num_packets_checked <= num_packets_checked + 1;
   end process;
 
 
@@ -213,7 +213,7 @@ begin
   begin
 
     -- The VUnit protocol checker will give an error about "packet completion" unless 'last' arrives
-    -- for each burst. Hence when the master does not set 'last', we set it for each beat.
+    -- for each packet. Hence when the master does not set 'last', we set it for each beat.
     last_int <= '1' when disable_last_check else last;
 
 

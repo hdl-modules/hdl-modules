@@ -13,29 +13,30 @@
 --
 -- There is a generic to enable usage of the ``last`` signal. The ``last`` indicator will be passed
 -- along with the data from the ``input`` to ``output`` side as-is. Note that enabling the
--- ``support_unaligned_burst_length`` generic will enable further processing of ``last``, but in
+-- ``support_unaligned_packet_length`` generic will enable further processing of ``last``, but in
 -- barebone configuration the signal is merely passed on.
 --
 -- There is a generic to enable strobing of data. The ``strobe`` will be passed on from
--- ``input`` to ``output`` side as-is. Note that enabling ``support_unaligned_burst_length`` generic
--- will enable further processing of ``strobe``, but in barebone configuration the signal is merely
--- passed on. This means, for example, that there might be output words where all strobe lanes are
+-- ``input`` to ``output`` side as-is. Note that enabling ``support_unaligned_packet_length``
+-- generic will enable further processing of ``strobe``, but in barebone configuration the signal
+-- is merely passed on.
+-- This means, for example, that there might be output words where all strobe lanes are
 -- zero when downconverting.
 --
--- There are some limitations, and possible remedies, concerning burst length alignment, depending
+-- There are some limitations, and possible remedies, concerning packet length alignment, depending
 -- on if we are doing upconversion or downconversion. See below.
 --
 -- Downconversion
 -- ______________
 --
 -- When doing downconversion, one input beat will result in two or more output beats, depending
--- on width configuration. This means that the output burst length is always aligned with the input
+-- on width configuration. This means that the output packet length is always aligned with the input
 -- data width. This is not always desirable when working with the ``strobe`` and ``last`` signals.
 -- Say for example that we are converting a bus from 16 to 8, and ``input_last`` is asserted on a
 -- beat where the lowest byte is strobed but the highest is not. In this case, we would want
 -- ``output_last`` to be asserted on the second to last byte, and the last byte (which is strobed
 -- out) to be removed.
--- This is achieved by enabling the ``support_unaligned_burst_length`` generic.
+-- This is achieved by enabling the ``support_unaligned_packet_length`` generic.
 -- If the generic is not set, ``output_last`` will be asserted on the very last byte, which will
 -- be strobed out.
 --
@@ -43,19 +44,19 @@
 -- ____________
 --
 -- When upconverting, two or more ``input`` beats result in one ``output`` beat, depending on width
--- configuration. This means that the input burst length must be aligned with the output width,
--- so that each burst fills up a whole number of output words.
--- If this can not be guaranteed, then the ``support_unaligned_burst_length`` mode can be used.
+-- configuration. This means that the input packet length must be aligned with the output
+-- data width, so that each packet fills up a whole number of output words.
+-- If this can not be guaranteed, then the ``support_unaligned_packet_length`` mode can be used.
 -- When that is enabled, the input stream will be padded upon ``last`` indication so that a whole
 -- output word is filled.
 -- Consider the example of converting a bus from 8 to 16, and ``input`` last is asserted on the
--- third input beat. If ``support_unaligned_burst_length`` is disabled, there will be one output
+-- third input beat. If ``support_unaligned_packet_length`` is disabled, there will be one output
 -- beat sent and half an output beat left in the converter.
 -- If the mode is enabled however, the input stream will be padded with another byte so that an
 -- output beat can be sent. The padded parts will have ``strobe`` set to zero.
 --
--- Note that the handling of unaligned bursts is highly dependent on the input stream being well
--- behaved. Specifically
+-- Note that the handling of unaligned packet lengths is highly dependent on the input stream being
+-- well behaved. Specifically
 --
 --   1. There may never be input beats where ``input_strobe`` is all zeros.
 --   2. For all beats except the one where ``input_last`` is asserted, ``input_strobe`` must be
@@ -83,18 +84,18 @@ entity width_conversion is
     -- In other cases, for example when the data is packed, we might use a higher value.
     -- Must assign a valid value if 'enable_strobe' is true.
     strobe_unit_width : positive := 8;
-    -- Enable if 'input' burst lengths are not a multiple of the 'output' width.
+    -- Enable if 'input' packet lengths are not a multiple of the 'output' width.
     -- Must set 'enable_strobe' and 'enable_last' as well to use this.
     -- See header for details about how this works.
     -- Will increase the logic footprint.
-    support_unaligned_burst_length : boolean := false
+    support_unaligned_packet_length : boolean := false
   );
   port (
     clk : in std_logic;
     --# {{}}
     input_ready : out std_logic := '1';
     input_valid : in std_logic;
-    -- Optional packet burst 'last' signalling. Must set 'enable_last' generic in order to use this.
+    -- Optional packet 'last' signalling. Must set 'enable_last' generic in order to use this.
     input_last : in std_logic := '0';
     input_data : in std_logic_vector(input_width - 1 downto 0);
     -- Optional word strobe. Must set 'enable_strobe' generic in order to use this.
@@ -103,7 +104,7 @@ entity width_conversion is
     --# {{}}
     output_ready : in std_logic;
     output_valid : out std_logic := '0';
-    -- Optional packet burst 'last' signalling. Must set 'enable_last' generic in order to use this.
+    -- Optional packet 'last' signalling. Must set 'enable_last' generic in order to use this.
     output_last : out std_logic := '0';
     output_data : out std_logic_vector(output_width - 1 downto 0) := (others => '0');
     -- Optional word strobe. Must set 'enable_strobe' generic in order to use this.
@@ -119,7 +120,7 @@ architecture a of width_conversion is
 
   function get_atom_data_width return positive is
   begin
-    if support_unaligned_burst_length then
+    if support_unaligned_packet_length then
       -- When in 'unaligned' mode we handle each strobe unit separately, and can not take advantage
       -- of a coarser indexing.
       return strobe_unit_width;
@@ -228,15 +229,15 @@ begin
     or (input_width mod strobe_unit_width = 0 and output_width mod strobe_unit_width = 0)
     report "Data width must be a multiple of strobe unit width." severity failure;
 
-  assert enable_strobe or not support_unaligned_burst_length
-    report "Must enable strobing when doing unaligned bursts." severity failure;
+  assert enable_strobe or not support_unaligned_packet_length
+    report "Must enable strobing when doing unaligned packets." severity failure;
 
-  assert enable_last or not support_unaligned_burst_length
-    report "Must enable 'last' when doing unaligned bursts." severity failure;
+  assert enable_last or not support_unaligned_packet_length
+    report "Must enable 'last' when doing unaligned packets." severity failure;
 
 
   ------------------------------------------------------------------------------
-  pad_input_data_generate : if is_upconversion and support_unaligned_burst_length generate
+  pad_input_data_generate : if is_upconversion and support_unaligned_packet_length generate
 
     type state_t is (let_data_pass, send_padding);
     signal state : state_t := let_data_pass;
@@ -275,7 +276,7 @@ begin
     ------------------------------------------------------------------------------
     pad_input_data : process
     begin
-      wait until rising_edge(clk) and support_unaligned_burst_length;
+      wait until rising_edge(clk) and support_unaligned_packet_length;
 
       if padded_input_ready and padded_input_valid then
         beats_filled <= (beats_filled + 1) mod input_beats_per_output_beat;
@@ -335,7 +336,7 @@ begin
 
     shift_reg_next := shift_reg;
     if padded_input_ready and padded_input_valid then
-      if is_downconversion and support_unaligned_burst_length then
+      if is_downconversion and support_unaligned_packet_length then
         -- In this mode we have to put the 'last' indicator on the very last atom that is strobed.
         -- Atoms beyond that one will be stripped on the output.
         -- In other modes, the default value constant will be used for this variable.
@@ -432,7 +433,7 @@ begin
       ) <= atom_strobe;
     end loop;
 
-    if support_unaligned_burst_length then
+    if support_unaligned_packet_length then
       -- The top atom might be strobed out and not have 'last' set. Instead it is found in one of
       -- the lower atoms.
       output_last_int <= or atoms_last;
@@ -443,7 +444,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  strip_output_data_generate : if is_downconversion and support_unaligned_burst_length generate
+  strip_output_data_generate : if is_downconversion and support_unaligned_packet_length generate
     signal strobe_all_zero : std_logic_vector(output_strobe'range) := (others => '0');
   begin
 

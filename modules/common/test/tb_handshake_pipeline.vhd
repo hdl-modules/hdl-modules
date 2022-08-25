@@ -56,7 +56,7 @@ architecture tb of tb_handshake_pipeline is
     max_stall_cycles => 2
   );
 
-  signal num_output_bursts_checked : natural := 0;
+  signal num_output_packets_checked : natural := 0;
 
   constant full_throughput_num_beats : positive := 1024;
 
@@ -69,24 +69,24 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable num_output_bursts_expected : natural := 0;
+    variable num_output_packets_expected : natural := 0;
 
     procedure run_test(fixed_length_beats : natural := 0) is
-      variable burst_length_bytes : positive := 1;
+      variable packet_length_bytes : positive := 1;
       variable data_in, data_out : integer_array_t := null_integer_array;
     begin
       if fixed_length_beats /= 0 then
-        burst_length_bytes := fixed_length_beats * bytes_per_beat;
+        packet_length_bytes := fixed_length_beats * bytes_per_beat;
 
       else
         -- Set a random length, up to a number of words
-        burst_length_bytes := rnd.RandInt(1, 5 * bytes_per_beat);
+        packet_length_bytes := rnd.RandInt(1, 5 * bytes_per_beat);
       end if;
 
       random_integer_array(
         rnd => rnd,
         integer_array => data_in,
-        width => burst_length_bytes,
+        width => packet_length_bytes,
         bits_per_word => 8,
         is_signed => false
       );
@@ -95,7 +95,7 @@ begin
       push_ref(input_data_queue, data_in);
       push_ref(output_data_queue, data_out);
 
-      num_output_bursts_expected := num_output_bursts_expected + 1;
+      num_output_packets_expected := num_output_packets_expected + 1;
     end procedure;
 
     procedure wait_until_done is
@@ -103,7 +103,7 @@ begin
       wait until
         is_empty(input_data_queue)
         and is_empty(output_data_queue)
-        and num_output_bursts_checked = num_output_bursts_expected
+        and num_output_packets_checked = num_output_packets_expected
         and rising_edge(clk);
       wait until rising_edge(clk);
     end procedure;
@@ -176,7 +176,7 @@ begin
       data => output_data,
       strobe => output_strobe,
       --
-      num_bursts_checked => num_output_bursts_checked
+      num_packets_checked => num_output_packets_checked
     );
 
 

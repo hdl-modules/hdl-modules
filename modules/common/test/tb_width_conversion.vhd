@@ -29,7 +29,7 @@ entity tb_width_conversion is
     output_width : positive;
     enable_strobe : boolean;
     enable_last : boolean;
-    support_unaligned_burst_length : boolean := false;
+    support_unaligned_packet_length : boolean := false;
     enable_jitter : boolean := true;
     runner_cfg : string
   );
@@ -68,7 +68,7 @@ architecture tb of tb_width_conversion is
     max_stall_cycles => 4
   );
 
-  signal num_output_bursts_checked : natural := 0;
+  signal num_output_packets_checked : natural := 0;
 
 begin
 
@@ -79,22 +79,22 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable num_output_bursts_expected : natural := 0;
+    variable num_output_packets_expected : natural := 0;
 
     procedure run_test(fixed_length_bytes : natural := 0) is
-      variable burst_length_bytes : positive := 1;
+      variable packet_length_bytes : positive := 1;
       variable num_input_bytes_to_remove : natural := 0;
 
       variable data_in, data_out : integer_array_t := null_integer_array;
     begin
       if fixed_length_bytes /= 0 then
-        burst_length_bytes := fixed_length_bytes;
+        packet_length_bytes := fixed_length_bytes;
 
       else
         -- Set a random length that will fill up whole input and output words
-        burst_length_bytes := rnd.RandInt(1, 5) * maximum_width_bytes;
+        packet_length_bytes := rnd.RandInt(1, 5) * maximum_width_bytes;
 
-        if support_unaligned_burst_length then
+        if support_unaligned_packet_length then
           -- In this case we can unstrobe/remove more than a whole word.
           -- If upconverting, and we remove more than one whole input word, the entity will pad.
           -- If downconverting, and we remove more than one whole output word, the entity
@@ -107,13 +107,13 @@ begin
           num_input_bytes_to_remove := rnd.RandInt(0, minimum_width_bytes - 1);
         end if;
 
-        burst_length_bytes := maximum(1, burst_length_bytes - num_input_bytes_to_remove);
+        packet_length_bytes := maximum(1, packet_length_bytes - num_input_bytes_to_remove);
       end if;
 
       random_integer_array(
         rnd => rnd,
         integer_array => data_in,
-        width => burst_length_bytes,
+        width => packet_length_bytes,
         bits_per_word => 8,
         is_signed => false
       );
@@ -122,7 +122,7 @@ begin
       push_ref(input_data_queue, data_in);
       push_ref(output_data_queue, data_out);
 
-      num_output_bursts_expected := num_output_bursts_expected + 1;
+      num_output_packets_expected := num_output_packets_expected + 1;
     end procedure;
 
     variable start_time, time_diff : time;
@@ -142,7 +142,7 @@ begin
       wait until
         is_empty(input_data_queue)
         and is_empty(output_data_queue)
-        and num_output_bursts_checked = num_output_bursts_expected
+        and num_output_packets_checked = num_output_packets_expected
         and rising_edge(clk);
       wait until rising_edge(clk);
     end procedure;
@@ -225,7 +225,7 @@ begin
         data => output_data,
         strobe => strobe,
         --
-        num_bursts_checked => num_output_bursts_checked
+        num_packets_checked => num_output_packets_checked
       );
 
   end block;
@@ -239,7 +239,7 @@ begin
       enable_strobe => enable_strobe,
       strobe_unit_width => strobe_unit_width,
       enable_last => enable_last,
-      support_unaligned_burst_length => support_unaligned_burst_length
+      support_unaligned_packet_length => support_unaligned_packet_length
     )
     port map (
       clk => clk,

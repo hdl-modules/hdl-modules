@@ -50,7 +50,7 @@ architecture tb of tb_handshake_splitter is
   constant input_data_queue : queue_t := new_queue;
   constant output_data_queue : queue_vec_t(output_valid'range) := (others => new_queue);
 
-  signal num_bursts_checked : natural_vec_t(output_valid'range) := (others => 0);
+  signal num_packets_checked : natural_vec_t(output_valid'range) := (others => 0);
 
   constant stall_config : stall_config_t := (
     stall_probability => real(stall_probability_percent) / 100.0,
@@ -82,11 +82,11 @@ begin
     end procedure;
 
     procedure wait_until_done is
-      -- All words in the test are sent in one burst. Hence when all slaves have checked one burst
+      -- All words in the test are sent in one packet. Hence when all slaves have checked one packet
       -- we are done.
-      constant goal_num_bursts_checked : natural_vec_t(num_bursts_checked'range) := (others => 1);
+      constant goal_num_packets_checked : natural_vec_t(num_packets_checked'range) := (others => 1);
     begin
-      wait until num_bursts_checked = goal_num_bursts_checked and rising_edge(clk);
+      wait until num_packets_checked = goal_num_packets_checked and rising_edge(clk);
     end procedure;
 
     variable execution_time_cycles : positive := 1;
@@ -150,7 +150,7 @@ begin
         ready => output_ready(output_index),
         data  => input_data,
         --
-        num_bursts_checked => num_bursts_checked(output_index)
+        num_packets_checked => num_packets_checked(output_index)
       );
 
   end generate;

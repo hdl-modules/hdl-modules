@@ -175,8 +175,8 @@ class Module(BaseModule):
             )
 
             if enable_strobe and enable_last:
-                for support_unaligned_burst_length in [True, False]:
-                    generics["support_unaligned_burst_length"] = support_unaligned_burst_length
+                for support_unaligned_packet_length in [True, False]:
+                    generics["support_unaligned_packet_length"] = support_unaligned_packet_length
                     self.add_vunit_config(test, generics=generics)
             else:
                 self.add_vunit_config(test, generics=generics)
@@ -212,7 +212,7 @@ class Module(BaseModule):
         output_width = [16, 16, 16] + [32, 32, 32]
         enable_strobe = [False, True, True] + [False, True, True]
         enable_last = [False, True, True] + [False, True, True]
-        support_unaligned_burst_length = [False, False, True] + [False, False, True]
+        support_unaligned_packet_length = [False, False, True] + [False, False, True]
 
         # Resource utilization increases when more features are added.
         total_luts = [20, 23, 29] + [35, 40, 44]
@@ -225,7 +225,7 @@ class Module(BaseModule):
                 output_width=output_width[idx],
                 enable_strobe=enable_strobe[idx],
                 enable_last=enable_last[idx],
-                support_unaligned_burst_length=support_unaligned_burst_length[idx],
+                support_unaligned_packet_length=support_unaligned_packet_length[idx],
             )
 
             projects.append(

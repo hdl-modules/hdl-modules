@@ -56,7 +56,7 @@ architecture tb of tb_strobe_on_last is
 
   shared variable rnd : RandomPType;
 
-  signal num_output_bursts_checked : natural := 0;
+  signal num_output_packets_checked : natural := 0;
 
 begin
 
@@ -67,22 +67,22 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-    variable num_output_bursts_expected : natural := 0;
+    variable num_output_packets_expected : natural := 0;
 
-    procedure run_test_burst is
-      variable burst_length_beats, burst_length_bytes : natural := 0;
+    procedure run_test_packet is
+      variable packet_length_beats, packet_length_bytes : natural := 0;
       variable data_in, reference_data_out : integer_array_t := null_integer_array;
     begin
       -- Random length. We want to run just a few words, since we want to exercise
       -- the 'last' behavior a lot. But set a max value that is higher than the pipeline depth.
-      -- Note that it is possible to have zero length input bursts.
-      burst_length_beats := rnd.RandInt(0, 5);
-      burst_length_bytes := burst_length_beats * bytes_per_beat;
+      -- Note that it is possible to have zero length input packets.
+      packet_length_beats := rnd.RandInt(0, 5);
+      packet_length_bytes := packet_length_beats * bytes_per_beat;
 
       random_integer_array(
         rnd => rnd,
         integer_array => data_in,
-        width => burst_length_bytes,
+        width => packet_length_bytes,
         bits_per_word => 8,
         is_signed => false
       );
@@ -90,10 +90,10 @@ begin
 
       push_ref(input_data_queue, data_in);
 
-      -- Zero length input bursts are dropped by the entity
-      if burst_length_bytes > 0 then
+      -- Zero length input packets are dropped by the entity
+      if packet_length_bytes > 0 then
         push_ref(reference_data_queue, reference_data_out);
-        num_output_bursts_expected := num_output_bursts_expected + 1;
+        num_output_packets_expected := num_output_packets_expected + 1;
       end if;
     end procedure;
 
@@ -102,7 +102,7 @@ begin
       wait until
         is_empty(input_data_queue)
         and is_empty(reference_data_queue)
-        and num_output_bursts_checked = num_output_bursts_expected
+        and num_output_packets_checked = num_output_packets_expected
         and rising_edge(clk);
       wait until rising_edge(clk);
     end procedure;
@@ -112,8 +112,8 @@ begin
     rnd.InitSeed(seed);
 
     if run("test_data") then
-      for burst_idx in 0 to 500 loop
-        run_test_burst;
+      for packet_idx in 0 to 500 loop
+        run_test_packet;
       end loop;
 
       wait_until_done;
@@ -224,7 +224,7 @@ begin
             end if;
 
           else
-            -- This is a word in the middle of the burst. Send as normal.
+            -- This is a word in the middle of the packet. Send as normal.
             send_input_word(data=>data, strobe=>strobe, last=>'0');
           end if;
         end if;
@@ -259,38 +259,25 @@ begin
 
 
   ------------------------------------------------------------------------------
-  checker_block : block
-  begin
-
-    ------------------------------------------------------------------------------
-    axi_stream_slave_inst : entity bfm.axi_stream_slave
-      generic map (
-        data_width => output_data'length,
-        reference_data_queue => reference_data_queue,
-        stall_config => stall_config,
-        seed => seed,
-        logger_name_suffix => "_input"
-      )
-      port map (
-        clk => clk,
-        --
-        ready => output_ready,
-        valid => output_valid,
-        last => output_last,
-        data => output_data,
-        strobe => output_strobe
-      );
-
-    ------------------------------------------------------------------------------
-    count_output_bursts : process
-    begin
-      wait until rising_edge(clk);
-
-      num_output_bursts_checked <=
-        num_output_bursts_checked + to_int(output_ready and output_valid and output_last);
-    end process;
-
-  end block;
+  axi_stream_slave_inst : entity bfm.axi_stream_slave
+    generic map (
+      data_width => output_data'length,
+      reference_data_queue => reference_data_queue,
+      stall_config => stall_config,
+      seed => seed,
+      logger_name_suffix => "_input"
+    )
+    port map (
+      clk => clk,
+      --
+      ready => output_ready,
+      valid => output_valid,
+      last => output_last,
+      data => output_data,
+      strobe => output_strobe,
+      --
+      num_packets_checked => num_output_packets_checked
+    );
 
 
   ------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/tsfpga/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- The goal of this entity is to process an AXI-Stream so that bursts where ``last`` is asserted on
+-- The goal of this entity is to process an AXI-Stream so that packets where ``last`` is asserted on
 -- a word that is completely strobed out are modified so that ``last`` is instead asserted on the
 -- last word which does have a strobe.
 --
@@ -113,8 +113,8 @@ begin
           ) then
             -- Input word is strobed out, which means that it shall be dropped, but it has 'last'
             -- set, so 'last' shall instead be set on the currently pipelined word.
-            -- Note that the currently pipelined word might be the last of a previous burst.
-            -- I.e. the input burst is of length one.
+            -- Note that the currently pipelined word might be the last of a previous packet.
+            -- I.e. the input packet is of length one.
             -- In that case the strobed out input word with 'last' shall simply be dropped.
             state <= send_output_last;
           end if;

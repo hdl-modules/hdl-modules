@@ -59,7 +59,7 @@ architecture tb of tb_keep_remover is
   );
 
   shared variable rnd : RandomPType;
-  signal num_output_bursts_checked : natural := 0;
+  signal num_output_packets_checked : natural := 0;
 
 begin
 
@@ -70,23 +70,23 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-    variable num_output_bursts_expected : natural := 0;
+    variable num_output_packets_expected : natural := 0;
 
-    procedure run_test_burst is
-      variable burst_length_atoms, burst_length_bytes : positive := 1;
+    procedure run_test_packet is
+      variable packet_length_atoms, packet_length_bytes : positive := 1;
       variable data_in, reference_data_out : integer_array_t := null_integer_array;
     begin
       -- Random length. We want to run just a few words, since we want to exercise
       -- the 'last' behavior a lot.
-      burst_length_atoms := rnd.RandInt(1, 3 * atoms_per_word);
+      packet_length_atoms := rnd.RandInt(1, 3 * atoms_per_word);
 
       -- Number of bytes must be a whole number of atoms for strobing to make sense
-      burst_length_bytes := burst_length_atoms * bytes_per_atom;
+      packet_length_bytes := packet_length_atoms * bytes_per_atom;
 
       random_integer_array(
         rnd => rnd,
         integer_array => data_in,
-        width => burst_length_bytes,
+        width => packet_length_bytes,
         bits_per_word => 8,
         is_signed => false
       );
@@ -95,7 +95,7 @@ begin
       push_ref(input_data_queue, data_in);
       push_ref(reference_data_queue, reference_data_out);
 
-      num_output_bursts_expected := num_output_bursts_expected + 1;
+      num_output_packets_expected := num_output_packets_expected + 1;
     end procedure;
 
     procedure wait_until_done is
@@ -103,7 +103,7 @@ begin
       wait until
         is_empty(input_data_queue)
         and is_empty(reference_data_queue)
-        and num_output_bursts_checked = num_output_bursts_expected
+        and num_output_packets_checked = num_output_packets_expected
         and rising_edge(clk);
     end procedure;
 
@@ -112,15 +112,15 @@ begin
     rnd.InitSeed(seed);
 
     if run("test_data") then
-      for burst_idx in 0 to 500 loop
-        run_test_burst;
+      for packet_idx in 0 to 500 loop
+        run_test_packet;
       end loop;
 
     elsif run("test_full_throughput") then
       -- This test will have no jitter/stall in the AXI-Stream master/slave, but random input
       -- strobe. A checker process asserts that 'input_ready' is always one.
-      for burst_idx in 0 to 500 loop
-        run_test_burst;
+      for packet_idx in 0 to 500 loop
+        run_test_packet;
       end loop;
 
     end if;
@@ -272,7 +272,7 @@ begin
       data => output_data,
       strobe => output_strobe,
       --
-      num_bursts_checked => num_output_bursts_checked
+      num_packets_checked => num_output_packets_checked
     );
 
 
