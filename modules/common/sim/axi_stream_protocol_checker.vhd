@@ -64,7 +64,30 @@ end entity;
 
 architecture a of axi_stream_protocol_checker is
 
+  signal data_strobed_out : std_logic_vector(data'range) := (others => '0');
+
 begin
+
+  ------------------------------------------------------------------------------
+  -- For protocol checking of the 'data' port.
+  -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
+  -- when tvalid is asserted. Even when that bit is strobed out by tstrb/tkeep.
+  -- This often becomes a problem, since many implementations assign don't care to strobed out
+  -- byte lanes as a way of minimizing LUT consumption. Also testbenches that use the AXI-Stream
+  -- master will often have 'X' assigned to input bytes that are strobed out, which can propagate
+  -- to this checker.
+  -- Hence the workaround is to assign '0' to all bits that are in strobed out lanes.
+  assign_data_strobed_out : process(data, strobe)
+  begin
+    data_strobed_out <= data;
+
+    for byte_idx in strobe'range loop
+      if not strobe(byte_idx) then
+        data_strobed_out((byte_idx + 1) * 8 - 1 downto byte_idx * 8) <= (others => '0');
+      end if;
+    end loop;
+  end process;
+
 
   ------------------------------------------------------------------------------
   axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
@@ -80,7 +103,7 @@ begin
       aclk => clk,
       tvalid => valid,
       tready => ready,
-      tdata => data,
+      tdata => data_strobed_out,
       tlast => last,
       tstrb => strobe,
       tkeep => strobe,

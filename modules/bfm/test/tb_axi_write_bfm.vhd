@@ -7,6 +7,7 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
+use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
@@ -26,7 +27,7 @@ use common.types_pkg.all;
 use work.axi_bfm_pkg.all;
 
 
-entity tb_axi_write_master is
+entity tb_axi_write_bfm is
   generic (
     data_width : positive;
     data_before_address : boolean;
@@ -36,7 +37,7 @@ entity tb_axi_write_master is
   );
 end entity;
 
-architecture tb of tb_axi_write_master is
+architecture tb of tb_axi_write_bfm is
 
   -- DUT connections
   signal clk : std_logic := '0';
@@ -152,7 +153,6 @@ begin
 
   ------------------------------------------------------------------------------
   delay_job_block : if data_before_address generate
-  begin
 
     ------------------------------------------------------------------------------
     delay_job : process
@@ -174,6 +174,25 @@ begin
 
 
   ------------------------------------------------------------------------------
+  axi_write_master_inst : entity work.axi_write_master
+    generic map (
+      addr_width => addr_width,
+      id_width => id_width,
+      data_width => data_width,
+      job_queue => job_queue,
+      data_queue => data_queue,
+      seed => seed,
+      set_axi3_w_id => set_axi3_w_id
+    )
+    port map (
+      clk => clk,
+      --
+      axi_write_m2s => axi_write_m2s,
+      axi_write_s2m => axi_write_s2m
+    );
+
+
+  ------------------------------------------------------------------------------
   axi_write_slave_inst : entity work.axi_write_slave
     generic map (
       axi_slave => axi_slave,
@@ -192,20 +211,40 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.axi_write_master
-    generic map (
-      addr_width => addr_width,
-      id_width => id_width,
-      data_width => data_width,
-      job_queue => job_queue,
-      data_queue => data_queue,
-      seed => seed,
-      set_axi3_w_id => set_axi3_w_id
-    )
-    port map (
-      clk => clk,
-      axi_write_m2s => axi_write_m2s,
-      axi_write_s2m => axi_write_s2m
+  check_aw_invalid_values : process
+    constant aw_all_x : axi_m2s_a_t := (
+      valid => '0',
+      id => (others => 'X'),
+      addr => (others => 'X'),
+      len => (others => 'X'),
+      size => (others => 'X'),
+      burst => (others => 'X')
     );
+  begin
+    wait until rising_edge(clk);
+
+    -- The master BFM should drive everything on the AW channel with 'X' when the bus is not valid.
+
+    if not axi_write_m2s.aw.valid then
+      assert axi_write_m2s.aw = aw_all_x report "AW not all fields X";
+    end if;
+  end process;
+
+
+  ------------------------------------------------------------------------------
+  check_w_invalid_values : process
+    constant data_all_x : std_logic_vector(data_width - 1 downto 0) := (others => 'X');
+    constant strb_all_x : std_logic_vector(data_width / 8 - 1 downto 0) := (others => 'X');
+  begin
+    wait until rising_edge(clk);
+
+    -- The master BFM should drive everything on the W channel with 'X' when the bus is not valid.
+
+    if not axi_write_m2s.w.valid then
+      check_equal(axi_write_m2s.w.data(data_width - 1 downto 0), data_all_x);
+      check_equal(axi_write_m2s.w.strb(strb_all_x'range), strb_all_x);
+      check_equal(axi_write_m2s.w.last, 'X');
+    end if;
+  end process;
 
 end architecture;

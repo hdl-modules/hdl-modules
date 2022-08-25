@@ -23,7 +23,7 @@ use axi.axi_pkg.all;
 use work.axi_bfm_pkg.all;
 
 
-entity tb_axi_read_master is
+entity tb_axi_read_bfm is
   generic (
     data_width : positive;
     seed : natural;
@@ -31,7 +31,7 @@ entity tb_axi_read_master is
   );
 end entity;
 
-architecture tb of tb_axi_read_master is
+architecture tb of tb_axi_read_bfm is
 
   -- DUT connections
   signal clk : std_logic := '0';
@@ -144,21 +144,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_read_slave_inst : entity work.axi_read_slave
-    generic map (
-      axi_slave => axi_slave,
-      data_width => data_width,
-      id_width => id_width
-    )
-    port map (
-      clk => clk,
-      axi_read_m2s => axi_read_m2s,
-      axi_read_s2m => axi_read_s2m
-    );
-
-
-  ------------------------------------------------------------------------------
-  dut : entity work.axi_read_master
+  axi_read_master_inst : entity work.axi_read_master
     generic map (
       addr_width => addr_width,
       id_width => id_width,
@@ -175,5 +161,40 @@ begin
       --
       num_bursts_checked => num_bursts_checked
     );
+
+
+  ------------------------------------------------------------------------------
+  axi_read_slave_inst : entity work.axi_read_slave
+    generic map (
+      axi_slave => axi_slave,
+      data_width => data_width,
+      id_width => id_width
+    )
+    port map (
+      clk => clk,
+      axi_read_m2s => axi_read_m2s,
+      axi_read_s2m => axi_read_s2m
+    );
+
+
+  ------------------------------------------------------------------------------
+  check_ar_invalid_values : process
+    constant ar_all_x : axi_m2s_a_t := (
+      valid => '0',
+      id => (others => 'X'),
+      addr => (others => 'X'),
+      len => (others => 'X'),
+      size => (others => 'X'),
+      burst => (others => 'X')
+    );
+  begin
+    wait until rising_edge(clk);
+
+    -- The master BFM should drive everything on the AR channel with 'X' when the bus is not valid.
+
+    if not axi_read_m2s.ar.valid then
+      assert axi_read_m2s.ar = ar_all_x report "AR not all fields X";
+    end if;
+  end process;
 
 end architecture;

@@ -35,15 +35,7 @@ entity axi_write_slave is
     id_width : natural range 0 to axi_id_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
-    w_fifo_depth : natural := 0;
-    -- For protocol checking of WDATA.
-    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
-    -- when tvalid is asserted.
-    -- This often becomes a problem, since many implementations assign don't care to strobed out
-    -- byte lanes as a way of minimizing LUT consumption.
-    -- Assigning 'true' to this generic will workaround the check by assigning '0' to all bits in
-    -- WDATA that are not '1' or '0', and are in strobed out byte lanes in WSTRB.
-    remove_strobed_out_invalid_data : boolean := false
+    w_fifo_depth : natural := 0
   );
   port (
     clk : in std_logic;
@@ -59,6 +51,8 @@ end entity;
 
 architecture a of axi_write_slave is
 
+  constant strobe_width : positive := data_width / 8;
+
   signal w_fifo_m2s : axi_m2s_w_t := axi_m2s_w_init;
   signal w_fifo_s2m : axi_s2m_w_t := axi_s2m_w_init;
 
@@ -71,7 +65,7 @@ begin
 
   ------------------------------------------------------------------------------
   -- Optionally use a FIFO for the data channel. This enables a data flow pattern where
-  -- the AXI slave can accept a lot of data (many bursts) before a single address transactions
+  -- the AXI slave can accept a lot of data (many bursts) before a single address transaction
   -- occurs. This can affect the behavior of your AXI master, and is a case that needs to
   -- be tested sometimes.
   axi_w_fifo_inst : entity axi.axi_w_fifo
@@ -196,35 +190,28 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    handle_strobed_out_data : if remove_strobed_out_invalid_data generate
-      signal axi_m2s_w_strobed : axi_m2s_w_t := axi_m2s_w_init;
+    -- For protocol checking of WDATA.
+    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
+    -- when tvalid is asserted. Even when that bit is strobed out by tstrb/tkeep.
+    -- This often becomes a problem, since many implementations assign don't care to strobed out
+    -- byte lanes as a way of minimizing LUT consumption. Also testbenches that use the AXI-Stream
+    -- master will often have 'X' assigned to input bytes that are strobed out, which can propagate
+    -- to this checker.
+    -- Hence the workaround is to assign '0' to all bits that are in strobed out lanes.
+    assign_data_without_invalid : process(all)
+      variable axi_m2s_w_strobed : axi_m2s_w_t := axi_m2s_w_init;
     begin
+      axi_m2s_w_strobed := axi_write_m2s.w;
 
-      ------------------------------------------------------------------------------
-      assign_data_without_invalid : process(all)
-      begin
-        axi_m2s_w_strobed <= axi_write_m2s.w;
-
-        for byte_idx in axi_write_m2s.w.strb'range loop
-          if not axi_write_m2s.w.strb(byte_idx) then
-            for bit_idx in (byte_idx + 1) * 8 - 1 downto byte_idx * 8 loop
-              if axi_write_m2s.w.data(bit_idx) /= '1' and axi_write_m2s.w.data(bit_idx) /= '0' then
-                axi_m2s_w_strobed.data(bit_idx) <= '0';
-              end if;
-            end loop;
-          end if;
-        end loop;
-      end process;
+      for byte_idx in 0 to strobe_width - 1 loop
+        if not axi_write_m2s.w.strb(byte_idx) then
+          axi_m2s_w_strobed.data((byte_idx + 1) * 8 - 1 downto byte_idx * 8 ) := (others => '0');
+        end if;
+      end loop;
 
       -- TODO does not include WID when in AXI3 mode
       packed <= to_slv(data=>axi_m2s_w_strobed, data_width=>data_width);
-
-    else generate
-
-      -- TODO does not include WID when in AXI3 mode
-      packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
-
-    end generate;
+    end process;
 
 
     ------------------------------------------------------------------------------

@@ -260,7 +260,6 @@ begin
       stall_config => stall_config,
       logger_name_suffix => "_output",
       seed => seed,
-      remove_strobed_out_invalid_data => true,
       strobe_unit_width => output_data'length / output_strobe'length
     )
     port map (

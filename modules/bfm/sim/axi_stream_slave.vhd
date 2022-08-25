@@ -49,14 +49,6 @@ entity axi_stream_slave is
     seed : natural := 0;
     -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
-    -- For protocol checking of the 'data' port.
-    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
-    -- when tvalid is asserted. Even when that bit is strobed out by tstrb/tkeep.
-    -- This often becomes a problem, since many implementations assign don't care to strobed out
-    -- byte lanes as a way of minimizing LUT consumption.
-    -- Assigning 'true' to this generic will workaround the check by assigning '0' to all bits that
-    -- are not '1' or '0', and are in strobed out byte lanes.
-    remove_strobed_out_invalid_data : boolean := false;
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
     strobe_unit_width : positive := 8;
@@ -225,8 +217,7 @@ begin
         logger_name_suffix => logger_name_suffix,
         well_behaved_stall => well_behaved_stall,
         data_width => data'length,
-        id_width => id'length,
-        remove_strobed_out_invalid_data => remove_strobed_out_invalid_data
+        id_width => id'length
       )
       port map(
         clk => clk,

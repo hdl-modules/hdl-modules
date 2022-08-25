@@ -85,6 +85,10 @@ begin
   ------------------------------------------------------------------------------
   aw_block : block
     signal data_is_valid : std_logic := '0';
+
+    signal id_target : unsigned(axi_write_m2s.aw.id'range) := (others => 'X');
+    signal addr_target : unsigned(axi_write_m2s.aw.addr'range) := (others => 'X');
+    signal len_target : unsigned(axi_write_m2s.aw.len'range) := (others => 'X');
   begin
 
     ------------------------------------------------------------------------------
@@ -104,21 +108,15 @@ begin
 
       push(b_id_queue, job.id);
 
-      axi_write_m2s.aw.id <= to_unsigned(job.id, axi_write_m2s.aw.id'length);
-      axi_write_m2s.aw.addr <= to_unsigned(job.address, axi_write_m2s.aw.addr'length);
-      axi_write_m2s.aw.len <= to_len((job.length_bytes + bytes_per_beat - 1) / bytes_per_beat);
-      axi_write_m2s.aw.size <= to_size(data_width);
-      axi_write_m2s.aw.burst <= axi_a_burst_incr;
+      id_target <= to_unsigned(job.id, id_target'length);
+      addr_target <= to_unsigned(job.address, addr_target'length);
+      len_target <= to_len((job.length_bytes + bytes_per_beat - 1) / bytes_per_beat);
 
       data_is_valid <= '1';
-      wait until (axi_write_s2m.aw.ready and axi_write_m2s.aw.valid) = '1' and rising_edge(clk);
-      data_is_valid <= '0';
 
-      axi_write_m2s.aw.id <= (others => 'X');
-      axi_write_m2s.aw.addr <= (others => 'X');
-      axi_write_m2s.aw.len <= (others => 'X');
-      axi_write_m2s.aw.size <= (others => 'X');
-      axi_write_m2s.aw.burst <= (others => 'X');
+      wait until (axi_write_s2m.aw.ready and axi_write_m2s.aw.valid) = '1' and rising_edge(clk);
+
+      data_is_valid <= '0';
     end process;
 
 
@@ -138,6 +136,12 @@ begin
         valid => axi_write_m2s.aw.valid
       );
 
+    axi_write_m2s.aw.id <= id_target when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.addr <= addr_target when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.len <= len_target when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.size <= to_size(data_width) when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.burst <= axi_a_burst_incr when axi_write_m2s.aw.valid else (others => 'X');
+
   end block;
 
 
@@ -154,12 +158,12 @@ begin
       return data_queue;
     end function;
     constant w_data_queue : queue_t := get_w_data_queue;
-
-    signal current_w_id : natural := 0;
   begin
 
     ------------------------------------------------------------------------------
     handle_w_id : if set_axi3_w_id generate
+      signal current_w_id : natural := 0;
+    begin
 
       ------------------------------------------------------------------------------
       set_data_and_id : process
@@ -200,7 +204,7 @@ begin
         data_queue => w_data_queue,
         stall_config => w_stall_config,
         seed => seed,
-        logger_name_suffix => "axi_write_master_w" & logger_name_suffix
+        logger_name_suffix => "_axi_write_master_w" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -240,7 +244,7 @@ begin
       generic map (
         stall_config => b_stall_config,
         seed => seed,
-        logger_name_suffix => "axi_write_master_b" & logger_name_suffix,
+        logger_name_suffix => "_axi_write_master_b" & logger_name_suffix,
         data_width => b_slv'length
       )
       port map (

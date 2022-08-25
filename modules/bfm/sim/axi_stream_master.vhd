@@ -67,7 +67,12 @@ architecture a of axi_stream_master is
   constant bytes_per_beat : positive := data_width / 8;
   constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
-  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+  signal last_int : std_logic := drive_invalid_value;
+  signal data_int : std_logic_vector(data'range) := (others => drive_invalid_value);
+  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) :=
+    (others => '0');
+  signal strobe_int : std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+    (others => '0');
 
   signal data_is_valid : std_logic := '0';
 
@@ -98,27 +103,21 @@ begin
       byte_lane_idx := byte_idx mod bytes_per_beat;
 
       data_value := get(arr=>data_packet, idx=>byte_idx);
-      data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
+      data_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
         std_logic_vector(to_unsigned(data_value, 8));
 
       strobe_byte(byte_lane_idx) <= '1';
 
       is_last_byte := byte_idx = packet_length_bytes - 1;
 
-      if is_last_byte then
-        -- If packet length is not aligned with the data width, the last beat might not be fully
-        -- filled with valid data. Fill the remaining data and strobe with '0'.
-        data(data'high downto (byte_lane_idx + 1) * 8) <= (others => '0');
-        strobe_byte(strobe'high downto byte_lane_idx + 1) <= (others => '0');
-      end if;
-
       if byte_lane_idx = bytes_per_beat - 1 or is_last_byte then
-        last <= to_sl(is_last_byte);
+        last_int <= to_sl(is_last_byte);
+
         wait until (ready and valid) = '1' and rising_edge(clk);
 
-        last <= drive_invalid_value;
-        data <= (others => drive_invalid_value);
-        strobe_byte <= (others => drive_invalid_value);
+        -- Default for next beat. We will fill in the byte lanes that are used.
+        data_int <= (others => drive_invalid_value);
+        strobe_byte <= (others => '0');
       end if;
     end loop;
 
@@ -136,8 +135,7 @@ begin
     generic map(
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => logger_name_suffix,
-      data_width => data'length
+      logger_name_suffix => logger_name_suffix
     )
     port map(
       clk => clk,
@@ -145,17 +143,14 @@ begin
       data_is_valid => data_is_valid,
       --
       ready => ready,
-      valid => valid,
-      last => last,
-      data => data,
-      strobe => strobe_byte
+      valid => valid
     );
 
 
   ------------------------------------------------------------------------------
   assign_byte_strobe : if strobe_unit_width = 8 generate
 
-    strobe <= strobe_byte;
+    strobe_int <= strobe_byte;
 
   else generate
 
@@ -167,10 +162,27 @@ begin
     assign : process(all)
     begin
       for strobe_idx in strobe'range loop
-        strobe(strobe_idx) <= strobe_byte(strobe_idx * bytes_per_strobe_unit);
+        strobe_int(strobe_idx) <= strobe_byte(strobe_idx * bytes_per_strobe_unit);
       end loop;
     end process;
 
   end generate;
+
+
+  ------------------------------------------------------------------------------
+  assign_invalid : process(all)
+  begin
+    -- We should drive the 'invalid' value when bus is not valid
+
+    if valid then
+      last <= last_int;
+      data <= data_int;
+      strobe <= strobe_int;
+    else
+      last <= drive_invalid_value;
+      data <= (others => drive_invalid_value);
+      strobe <= (others => drive_invalid_value);
+    end if;
+  end process;
 
 end architecture;

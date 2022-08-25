@@ -81,6 +81,10 @@ begin
   ------------------------------------------------------------------------------
   ar_block : block
     signal data_is_valid : std_logic := '0';
+
+    signal id_target : unsigned(axi_read_m2s.ar.id'range) := (others => 'X');
+    signal addr_target : unsigned(axi_read_m2s.ar.addr'range) := (others => 'X');
+    signal len_target : unsigned(axi_read_m2s.ar.len'range) := (others => 'X');
   begin
 
     ------------------------------------------------------------------------------
@@ -91,27 +95,22 @@ begin
       while is_empty(job_queue) loop
         wait until rising_edge(clk);
       end loop;
+
       job_slv := pop(job_queue);
       job := to_axi_bfm_job(job_slv);
 
       push(r_id_queue, job.id);
       push(r_length_bytes_queue, job.length_bytes);
 
-      axi_read_m2s.ar.id <= to_unsigned(job.id, axi_read_m2s.ar.id'length);
-      axi_read_m2s.ar.addr <= to_unsigned(job.address, axi_read_m2s.ar.addr'length);
-      axi_read_m2s.ar.len <= to_len((job.length_bytes + bytes_per_beat - 1) / bytes_per_beat);
-      axi_read_m2s.ar.size <= to_size(data_width);
-      axi_read_m2s.ar.burst <= axi_a_burst_incr;
+      id_target <= to_unsigned(job.id, id_target'length);
+      addr_target <= to_unsigned(job.address, addr_target'length);
+      len_target <= to_len((job.length_bytes + bytes_per_beat - 1) / bytes_per_beat);
 
       data_is_valid <= '1';
-      wait until (axi_read_s2m.ar.ready and axi_read_m2s.ar.valid) = '1' and rising_edge(clk);
-      data_is_valid <= '0';
 
-      axi_read_m2s.ar.id <= (others => 'X');
-      axi_read_m2s.ar.addr <= (others => 'X');
-      axi_read_m2s.ar.len <= (others => 'X');
-      axi_read_m2s.ar.size <= (others => 'X');
-      axi_read_m2s.ar.burst <= (others => 'X');
+      wait until (axi_read_s2m.ar.ready and axi_read_m2s.ar.valid) = '1' and rising_edge(clk);
+
+      data_is_valid <= '0';
     end process;
 
 
@@ -130,6 +129,12 @@ begin
         ready => axi_read_s2m.ar.ready,
         valid => axi_read_m2s.ar.valid
       );
+
+    axi_read_m2s.ar.id <= id_target when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.addr <= addr_target when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.len <= len_target when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.size <= to_size(data_width) when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.burst <= axi_a_burst_incr when axi_read_m2s.ar.valid else (others => 'X');
 
   end block;
 
@@ -206,8 +211,7 @@ begin
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_read_master_r" & logger_name_suffix,
-        remove_strobed_out_invalid_data => true
+        logger_name_suffix => "_axi_read_master_r" & logger_name_suffix
       )
       port map (
         clk => clk,
