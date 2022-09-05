@@ -27,7 +27,7 @@ class Module(BaseModule):
         tb.test("write_to_non_existent_register").set_generic("use_axi_lite_bfm", False)
         tb.test("write_to_non_write_type_register").set_generic("use_axi_lite_bfm", False)
 
-    def get_build_projects(self):  # pylint: disable=no-self-use
+    def get_build_projects(self):
         projects = []
         all_modules = get_hdl_modules()
         part = "xc7z020clg400-1"
