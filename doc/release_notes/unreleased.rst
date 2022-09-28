@@ -1,3 +1,7 @@
+Added
+
+* Add :ref:`common.handshake_mux`.
+
 Bug fixes
 
 * Fix bug where :ref:`bfm.axi_stream_master`, :ref:`bfm.axi_write_master`
