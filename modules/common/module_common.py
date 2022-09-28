@@ -46,6 +46,7 @@ class Module(BaseModule):
 
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
         self._setup_handshake_splitter_tests(vunit_proj=vunit_proj)
+        self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
         self._setup_width_conversion_tests(vunit_proj=vunit_proj)
         self._setup_keep_remover_tests(vunit_proj=vunit_proj)
         self._setup_strobe_on_last_tests(vunit_proj=vunit_proj)
@@ -157,6 +158,11 @@ class Module(BaseModule):
                     build_result_checkers=build_result_checkers,
                 )
             )
+
+    def _setup_handshake_mux_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_mux")
+        for _ in range(2):
+            self.add_vunit_config(test=tb, set_random_seed=True)
 
     def _setup_width_conversion_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_width_conversion")
