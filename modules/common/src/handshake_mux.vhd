@@ -42,7 +42,8 @@ entity handshake_mux is
     input_valid : in std_logic_vector(0 to num_inputs - 1);
     input_last : in std_logic_vector(0 to num_inputs - 1);
     input_data : in slv_vec_t(0 to num_inputs - 1)(data_width - 1 downto 0);
-    input_strobe : in slv_vec_t(0 to num_inputs - 1)(data_width / 8 - 1 downto 0);
+    input_strobe : in slv_vec_t(0 to num_inputs - 1)(data_width / 8 - 1 downto 0) :=
+      (others => (others => '1'));
     --# {{}}
     result_ready : in std_logic;
     result_valid : out std_logic := '0';
