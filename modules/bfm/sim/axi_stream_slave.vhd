@@ -58,7 +58,7 @@ entity axi_stream_slave is
     -- at any time (regardless of 'valid'). However, many modules are developed with this
     -- well-behavedness as a way of saving resources.
     well_behaved_stall : boolean := false;
-    -- For busses that do not have the 'last' indicator, the check for 'last' on the last beat of
+    -- For buses that do not have the 'last' indicator, the check for 'last' on the last beat of
     -- data can be disabled.
     disable_last_check : boolean := false
   );
