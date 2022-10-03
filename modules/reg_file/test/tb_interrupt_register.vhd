@@ -99,6 +99,25 @@ begin
       -- Trigger is cleared but status remains
       check_status((0, 1, 2));
       check_no_trigger;
+
+    elsif run("test_clearing_a_constantly_active_source_should_result_in_edge") then
+      -- Many interrupt pins, on e.g. a Xilinx PCIe IP core, are edge-triggered, meaning that a
+      -- positive edge on the interrupt trigger pin will trigger an interrupt.
+      -- In the case where an interrupt is cleared but the root cause of the interrupt has not
+      -- been solved, i.e. the interrupt source is static '1', clearing an interrupt should
+      -- immediately re-trigger.
+      sources(0) <= '1';
+      wait_a_while;
+
+      clear(0) <= '1';
+      wait_one_cycle;
+      clear <= (others => '0');
+
+      wait_one_cycle;
+      check_no_trigger;
+      wait_one_cycle;
+      check_trigger;
+
     end if;
 
     test_runner_cleanup(runner);
