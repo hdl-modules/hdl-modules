@@ -17,7 +17,7 @@ HDL_MODULES_DOC = REPO_ROOT / "doc"
 HDL_MODULES_GENERATED = REPO_ROOT / "generated"
 
 # Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
-PATH_TO_TSFPGA = REPO_ROOT.parent.resolve() / "tsfpga"
+PATH_TO_TSFPGA = REPO_ROOT.parent.parent.resolve() / "tsfpga" / "tsfpga"
 sys.path.insert(0, str(PATH_TO_TSFPGA))
 
 PATH_TO_HDL_REGISTERS = REPO_ROOT.parent.parent.resolve() / "hdl_registers" / "hdl_registers"
