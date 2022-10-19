@@ -20,7 +20,7 @@ HDL_MODULES_GENERATED = REPO_ROOT / "generated"
 PATH_TO_TSFPGA = REPO_ROOT.parent.resolve() / "tsfpga"
 sys.path.insert(0, str(PATH_TO_TSFPGA))
 
-PATH_TO_HDL_REGISTERS = REPO_ROOT.parent.resolve() / "hdl_registers"
+PATH_TO_HDL_REGISTERS = REPO_ROOT.parent.parent.resolve() / "hdl_registers" / "hdl_registers"
 sys.path.insert(0, str(PATH_TO_HDL_REGISTERS))
 
 PATH_TO_VUNIT = REPO_ROOT.parent.parent.resolve() / "vunit" / "vunit"
