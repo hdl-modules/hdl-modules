@@ -9,7 +9,7 @@ About hdl_modules
 
 .. |pic_gitlab| image:: https://hdl-modules.com/badges/gitlab.svg
   :alt: Gitlab
-  :target: https://gitlab.com/tsfpga/hdl_modules
+  :target: https://gitlab.com/hdl_modules/hdl_modules
 
 .. |pic_gitter| image:: https://badges.gitter.im/owner/repo.png
   :alt: Gitter

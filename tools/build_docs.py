@@ -118,7 +118,8 @@ def get_readme_rst():
         elif include_link_to_gitlab:
             extra_rst = """\
 This website contains human-readable documentation of the modules.
-To check out the source code, go to the `gitlab page <https://gitlab.com/tsfpga/hdl_modules>`__.
+To check out the source code, go to the
+`gitlab page <https://gitlab.com/hdl_modules/hdl_modules>`__.
 """
         else:
             extra_rst = ""
@@ -135,7 +136,7 @@ About hdl_modules
 
 .. |pic_gitlab| image:: https://hdl-modules.com/badges/gitlab.svg
   :alt: Gitlab
-  :target: https://gitlab.com/tsfpga/hdl_modules
+  :target: https://gitlab.com/hdl_modules/hdl_modules
 
 .. |pic_gitter| image:: https://badges.gitter.im/owner/repo.png
   :alt: Gitter
@@ -213,7 +214,7 @@ def build_information_badges():
 
     badge_svg = badge(
         left_text="",
-        right_text="tsfpga/hdl_modules",
+        right_text="hdl_modules/hdl_modules",
         left_color="grey",
         right_color="grey",
         logo="https://about.gitlab.com/images/press/press-kit-icon.svg",
