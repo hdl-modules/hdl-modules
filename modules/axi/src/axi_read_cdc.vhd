@@ -4,7 +4,7 @@
 -- This file is part of the hdl_modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/tsfpga/hdl_modules
+-- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Clock domain crossing of a full AXI read bus using asynchronous FIFOs for the ``AR`` and ``R``
 -- channels.

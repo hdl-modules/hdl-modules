@@ -4,7 +4,7 @@
 -- This file is part of the hdl_modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/tsfpga/hdl_modules
+-- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Package with common features that do not fit in anywhere else, and are not significant enough
 -- to warrant their own package.

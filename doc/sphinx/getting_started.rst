@@ -4,7 +4,7 @@ Getting started
 The modules can be used straight away in your simulation and build project.
 Start by cloning the repo:
 
-  git clone https://gitlab.com/tsfpga/hdl_modules.git
+  git clone https://gitlab.com/hdl_modules/hdl_modules.git
 
 If you want a stable release you can checkout one of the tags.
 
@@ -38,7 +38,7 @@ These are found in the ``scoped_constraints`` directory of the module, which con
 
 These must be loaded in Vivado with e.g.
 
-  read_xdc -ref asynchronous_fifo /home/lukas/work/repo/tsfpga/hdl_modules/modules/fifo/scoped_constraints/asynchronous_fifo.tcl
+  read_xdc -ref asynchronous_fifo /home/lukas/work/repo/hdl_modules/hdl_modules/modules/fifo/scoped_constraints/asynchronous_fifo.tcl
 
 The constraint file being scoped means that it is applied relative to each instance of the entity.
 Using this we do not have to search through the whole design hierarchically to find the signals that
@@ -54,4 +54,4 @@ Feedback
 
 If you find any bugs or inconsistencies, please write in the
 `gitter channel <https://gitter.im/tsfpga/tsfpga>`__
-or create an `issue on gitlab <https://gitlab.com/tsfpga/hdl_modules/-/issues>`__.
+or create an `issue on gitlab <https://gitlab.com/hdl_modules/hdl_modules/-/issues>`__.

@@ -4,7 +4,7 @@
 -- This file is part of the hdl_modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/tsfpga/hdl_modules
+-- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Resynchronizes a bit, so that the output bit is asserted as many
 -- clock cycles as the input bit.

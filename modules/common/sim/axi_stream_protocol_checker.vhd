@@ -4,7 +4,7 @@
 -- This file is part of the hdl_modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/tsfpga/hdl_modules
+-- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- A wrapper around the VUnit AXI-Stream protocol checker. Has simpler interface, and can hence
 -- be included in synthesizable code with a generate guard:

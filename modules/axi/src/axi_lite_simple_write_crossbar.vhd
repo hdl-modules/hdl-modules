@@ -4,7 +4,7 @@
 -- This file is part of the hdl_modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/tsfpga/hdl_modules
+-- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
 -- Simple N-to-1 crossbar for connecting multiple AXI-Lite write masters to one port.
 -- This is a wrapper around :ref:`axi.axi_simple_write_crossbar`. See that entity for details.

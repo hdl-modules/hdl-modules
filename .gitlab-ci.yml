@@ -1,5 +1,5 @@
 # Instructions here: https://docs.gitlab.com/ee/ci/yaml/
-# Linter here: https://gitlab.com/tsfpga/hdl_modules/-/ci/lint
+# Linter here: https://gitlab.com/hdl_modules/hdl_modules/-/ci/lint
 # We mainly use a docker images that are built for tsfpga CI.
 # See the "docker" folder in the tsfpga repo for details.
 
