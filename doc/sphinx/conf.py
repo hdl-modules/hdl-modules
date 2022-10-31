@@ -42,6 +42,7 @@ html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
     "prev_next_buttons_location": "both",
+    "analytics_id": "G-GN3TVQGSHC",
 }
 
 # These folders are copied to the documentation's HTML output
