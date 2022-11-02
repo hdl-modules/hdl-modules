@@ -65,8 +65,12 @@ ___________________
 
 .. code-block:: shell
 
-    git push origin --tag vX.Y.Z HEAD:release_branch
+    git push origin HEAD:refs/heads/release_branch
+    git push origin vX.Y.Z
 
-Open a new merge request and wait for the CI pipeline to pass.
-If everything went well then you can merge your release commit to ``main``` via the gitlab merge
+**WARNING:** Avoid the "git push --tags" command, which is dangerous since it pushes all your
+local tags.
+
+Open a new merge request to ``main`` and wait for the CI pipeline to pass.
+If everything went well then you can merge your release commit via the gitlab merge
 request GUI.
