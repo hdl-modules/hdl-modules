@@ -9,6 +9,15 @@
 
 # Standard libraries
 import shutil
+import sys
+from pathlib import Path
+
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+REPO_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(REPO_ROOT))
+
+# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
 from pybadges import badge
@@ -18,7 +27,7 @@ from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
 # First party libraries
-import tools.tools_env as tools_env
+from tools import tools_env
 
 GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
 GENERATED_SPHINX_HTML = tools_env.HDL_MODULES_GENERATED / "sphinx_html"

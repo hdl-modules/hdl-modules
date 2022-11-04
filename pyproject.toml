@@ -16,9 +16,9 @@ import_heading_firstparty = "First party libraries"
 import_heading_thirdparty = "Third party libraries"
 import_heading_localfolder = "Local folder libraries"
 
-# Change order so that "example_pythonpath" Python module, which is a "first party" import,
+# Change order so that "tools_pythonpath" Python module, which is a "first party" import,
 # is placed before "third party" imports.
 # This is since that import updates PYTHONPATH, which is needed to find e.g. VUnit which is a
 # third party import.
-known_example_pythonpath = "tools.tools_pythonpath"
+known_tools_pythonpath = "tools.tools_pythonpath"
 sections = "FUTURE,STDLIB,TOOLS_PYTHONPATH,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"

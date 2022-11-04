@@ -9,13 +9,21 @@
 
 # Standard libraries
 import sys
+from pathlib import Path
+
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+REPO_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(REPO_ROOT))
+
+# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
 from tsfpga.examples.simulate import SimulationProject, find_git_test_filters, get_arguments_cli
 from tsfpga.module import get_modules
 
 # First party libraries
-import tools.tools_env as tools_env
+from tools import tools_env
 
 
 def main():

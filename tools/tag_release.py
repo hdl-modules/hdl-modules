@@ -13,6 +13,13 @@ import sys
 from pathlib import Path
 from shutil import move
 
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+REPO_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(REPO_ROOT))
+
+# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+import tools.tools_pythonpath  # noqa: F401
+
 # Third party libraries
 from git import Repo
 from packaging.version import parse
@@ -25,13 +32,8 @@ from tsfpga.tools.version_number_handler import (
 )
 
 # First party libraries
-import tools.tools_env as tools_env
-
-PATH_TO_REPO_ROOT = Path(__file__).parent.parent.resolve()
-sys.path.insert(0, str(PATH_TO_REPO_ROOT))
-
-# First party libraries
 from hdl_modules import __version__ as current_version
+from tools import tools_env
 
 RELEASE_NOTES = tools_env.HDL_MODULES_DOC / "release_notes"
 
@@ -47,7 +49,7 @@ def main():
     git_tag = verify_new_version_number(repo=repo, new_version=release_version)
 
     version_number_handler = VersionNumberHandler(
-        repo=repo, version_file_path=PATH_TO_REPO_ROOT / "hdl_modules" / "__init__.py"
+        repo=repo, version_file_path=REPO_ROOT / "hdl_modules" / "__init__.py"
     )
     version_number_handler.update(new_version=release_version)
 
