@@ -1,2 +1,15 @@
 [tool.black]
 line-length = 100
+
+
+[tool.isort]
+# Make base formatting compatible with black settings
+profile = "black"
+line_length = 100
+
+# Add comments before each import group
+import_heading_future = "Future libraries"
+import_heading_stdlib = "Standard libraries"
+import_heading_firstparty = "First party libraries"
+import_heading_thirdparty = "Third party libraries"
+import_heading_localfolder = "Local folder libraries"
