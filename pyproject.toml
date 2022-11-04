@@ -10,6 +10,15 @@ line_length = 100
 # Add comments before each import group
 import_heading_future = "Future libraries"
 import_heading_stdlib = "Standard libraries"
+import_heading_tools_pythonpath = """\
+Import before others since it modifies PYTHONPATH. pylint: disable=unused-import"""
 import_heading_firstparty = "First party libraries"
 import_heading_thirdparty = "Third party libraries"
 import_heading_localfolder = "Local folder libraries"
+
+# Change order so that "example_pythonpath" Python module, which is a "first party" import,
+# is placed before "third party" imports.
+# This is since that import updates PYTHONPATH, which is needed to find e.g. VUnit which is a
+# third party import.
+known_example_pythonpath = "tools.tools_pythonpath"
+sections = "FUTURE,STDLIB,TOOLS_PYTHONPATH,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"

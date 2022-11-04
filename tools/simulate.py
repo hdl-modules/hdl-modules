@@ -7,22 +7,25 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
 import sys
 
-import hdl_modules_tools_env
-
-from tsfpga.examples.simulate import find_git_test_filters, get_arguments_cli, SimulationProject
+# Third party libraries
+from tsfpga.examples.simulate import SimulationProject, find_git_test_filters, get_arguments_cli
 from tsfpga.module import get_modules
+
+# First party libraries
+import tools.tools_env as tools_env
 
 
 def main():
-    cli = get_arguments_cli(default_output_path=hdl_modules_tools_env.HDL_MODULES_GENERATED)
+    cli = get_arguments_cli(default_output_path=tools_env.HDL_MODULES_GENERATED)
     args = cli.parse_args()
 
     # Avoid the module that depends on Xilinx unisim library
     module_names_avoid = ["hard_fifo"] if args.vivado_skip else []
     modules = get_modules(
-        modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY],
+        modules_folders=[tools_env.HDL_MODULES_DIRECTORY],
         names_avoid=module_names_avoid,
     )
 
@@ -35,7 +38,7 @@ def main():
 
         test_filters = find_git_test_filters(
             args=args,
-            repo_root=hdl_modules_tools_env.REPO_ROOT,
+            repo_root=tools_env.REPO_ROOT,
             modules=modules,
             reference_branch="origin/main",
         )

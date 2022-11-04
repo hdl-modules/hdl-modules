@@ -7,6 +7,7 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Third party libraries
 from tsfpga.module import BaseModule, get_hdl_modules
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, TotalLuts
 from tsfpga.vivado.project import VivadoNetlistProject

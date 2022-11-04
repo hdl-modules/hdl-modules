@@ -7,11 +7,13 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from tools.hdl_modules_tools_env import REPO_ROOT, HDL_MODULES_DOC
-
+# Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_pylint
+
+# First party libraries
+from tools.tools_env import HDL_MODULES_DOC, REPO_ROOT
 
 
 def _files_to_test():

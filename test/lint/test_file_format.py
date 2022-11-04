@@ -7,8 +7,7 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from tools.hdl_modules_tools_env import HDL_MODULES_DIRECTORY, HDL_MODULES_DOC, REPO_ROOT
-
+# Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.test_file_format import (
@@ -19,6 +18,9 @@ from tsfpga.test.lint.test_file_format import (
     check_file_for_trailing_whitespace,
     open_file_with_encoding,
 )
+
+# First party libraries
+from tools.tools_env import HDL_MODULES_DIRECTORY, HDL_MODULES_DOC, REPO_ROOT
 
 
 def files_to_test(excludes=None):

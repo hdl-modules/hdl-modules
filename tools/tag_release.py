@@ -7,31 +7,33 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
 import argparse
+import sys
 from pathlib import Path
 from shutil import move
-import sys
 
-from packaging.version import parse
+# Third party libraries
 from git import Repo
-
-import hdl_modules_tools_env
-
+from packaging.version import parse
 from tsfpga.system_utils import create_file, read_file
 from tsfpga.tools.version_number_handler import (
-    commit_and_tag_release,
-    make_commit,
     UNRELEASED_EMPTY,
     VersionNumberHandler,
+    commit_and_tag_release,
+    make_commit,
 )
+
+# First party libraries
+import tools.tools_env as tools_env
 
 PATH_TO_REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(PATH_TO_REPO_ROOT))
 
+# First party libraries
 from hdl_modules import __version__ as current_version
 
-
-RELEASE_NOTES = hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes"
+RELEASE_NOTES = tools_env.HDL_MODULES_DOC / "release_notes"
 
 
 def main():
@@ -41,7 +43,7 @@ def main():
     )
     release_version = parser.parse_args().release_version[0]
 
-    repo = Repo(hdl_modules_tools_env.REPO_ROOT)
+    repo = Repo(tools_env.REPO_ROOT)
     git_tag = verify_new_version_number(repo=repo, new_version=release_version)
 
     version_number_handler = VersionNumberHandler(

@@ -7,26 +7,28 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
 import shutil
 
+# Third party libraries
 from pybadges import badge
-
-import hdl_modules_tools_env
-
 from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
-GENERATED_SPHINX = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
-GENERATED_SPHINX_HTML = hdl_modules_tools_env.HDL_MODULES_GENERATED / "sphinx_html"
-SPHINX_DOC = hdl_modules_tools_env.HDL_MODULES_DOC / "sphinx"
+# First party libraries
+import tools.tools_env as tools_env
+
+GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
+GENERATED_SPHINX_HTML = tools_env.HDL_MODULES_GENERATED / "sphinx_html"
+SPHINX_DOC = tools_env.HDL_MODULES_DOC / "sphinx"
 
 
 def main():
     rst = generate_release_notes(
-        repo_root=hdl_modules_tools_env.REPO_ROOT,
-        release_notes_directory=hdl_modules_tools_env.HDL_MODULES_DOC / "release_notes",
+        repo_root=tools_env.REPO_ROOT,
+        release_notes_directory=tools_env.HDL_MODULES_DOC / "release_notes",
         project_name="hdl_modules",
     )
     create_file(GENERATED_SPHINX / "generated_release_notes.rst", rst)
@@ -71,7 +73,7 @@ def generate_documentation():
 
 """
 
-    modules = get_modules(modules_folders=[hdl_modules_tools_env.HDL_MODULES_DIRECTORY])
+    modules = get_modules(modules_folders=[tools_env.HDL_MODULES_DIRECTORY])
 
     # Sort by module name
     def sort_key(module):
@@ -196,7 +198,7 @@ The following things can be found, at a glance, in the different modules:
 
     # First, verify readme.rst in repo root. The text shall link to the website.
     readme_rst = get_rst(include_link_to_website=True)
-    if read_file(hdl_modules_tools_env.REPO_ROOT / "readme.rst") != readme_rst:
+    if read_file(tools_env.REPO_ROOT / "readme.rst") != readme_rst:
         file_path = create_file(GENERATED_SPHINX / "readme.rst", readme_rst)
         assert (
             False

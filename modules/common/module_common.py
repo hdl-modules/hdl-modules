@@ -7,19 +7,21 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
 import itertools
 from random import randrange
 
+# Third party libraries
 from tsfpga.module import BaseModule, get_hdl_modules
-from tsfpga.vivado.project import VivadoNetlistProject
 from tsfpga.vivado.build_result_checker import (
-    EqualTo,
     DspBlocks,
+    EqualTo,
     Ffs,
     MaximumLogicLevel,
     Srls,
     TotalLuts,
 )
+from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):

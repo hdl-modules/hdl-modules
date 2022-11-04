@@ -7,8 +7,10 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
 import random
 
+# Third party libraries
 from tsfpga.module import BaseModule
 
 

@@ -7,14 +7,10 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Third party libraries
 from tsfpga.module import BaseModule
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 from tsfpga.vivado.project import VivadoNetlistProject
-from tsfpga.vivado.build_result_checker import (
-    EqualTo,
-    Ffs,
-    MaximumLogicLevel,
-    TotalLuts,
-)
 
 
 class Module(BaseModule):

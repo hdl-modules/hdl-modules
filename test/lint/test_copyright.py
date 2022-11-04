@@ -7,11 +7,13 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
-from tools.hdl_modules_tools_env import REPO_ROOT
-
+# Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.test_copyright import CopyrightHeader
+
+# First party libraries
+from tools.tools_env import REPO_ROOT
 
 COPYRIGHT_HOLDER = "Lukas Vik"
 COPYRIGHT_TEXT = [
