@@ -129,7 +129,7 @@ begin
       ready => ready,
       valid => valid,
       last => last,
-      id => std_ulogic_vector(id),
+      id => std_logic_vector(id),
       data => data,
       strobe => strobe
     );
