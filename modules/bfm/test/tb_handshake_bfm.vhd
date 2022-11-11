@@ -44,16 +44,16 @@ architecture tb of tb_handshake_bfm is
     max_stall_cycles => 5
   );
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid, result_ready, result_valid, input_last, result_last : std_logic
+  signal input_ready, input_valid, result_ready, result_valid, input_last, result_last : std_ulogic
     := '0';
-  signal input_data, result_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
-  signal input_strobe, result_strobe : std_logic_vector(data_width / 8 - 1 downto 0) :=
+  signal input_data, result_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal input_strobe, result_strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) :=
     (others => '0');
 
-  signal result_is_ready, input_is_valid : std_logic := '0';
+  signal result_is_ready, input_is_valid : std_ulogic := '0';
 
   constant reference_data_queue, reference_last_queue : queue_t := new_queue;
 
@@ -66,8 +66,8 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-    variable stimuli_data : std_logic_vector(input_data'range) := (others => '0');
-    variable stimuli_last : std_logic := '0';
+    variable stimuli_data : std_ulogic_vector(input_data'range) := (others => '0');
+    variable stimuli_last : std_ulogic := '0';
     variable rnd : RandomPType;
 
   begin
@@ -185,8 +185,8 @@ begin
 
     ------------------------------------------------------------------------------
     data_check : process
-      variable expected_data : std_logic_vector(result_data'range) := (others => '0');
-      variable expected_last : std_logic := '0';
+      variable expected_data : std_ulogic_vector(result_data'range) := (others => '0');
+      variable expected_last : std_ulogic := '0';
     begin
       wait until (result_ready and result_valid) = '1' and rising_edge(clk);
 

@@ -26,7 +26,7 @@ package bfm_pkg is
   procedure random_stall(
     stall_config : in stall_config_t;
     rnd : inout RandomPType;
-    signal clk : in std_logic
+    signal clk : in std_ulogic
   );
 
   -- Some convenience method for getting vectors of BFM/VC elements.
@@ -71,7 +71,7 @@ package body bfm_pkg is
   procedure random_stall(
     stall_config : in stall_config_t;
     rnd : inout RandomPType;
-    signal clk : in std_logic
+    signal clk : in std_ulogic
   ) is
     variable num_stall_cycles : natural := 0;
   begin

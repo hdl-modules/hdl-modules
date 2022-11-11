@@ -32,7 +32,7 @@ architecture tb of tb_resync_cycles is
   constant clock_period_fast : time := 2 ns;
   constant clock_period_medium : time := 5 ns;
   constant clock_period_slow : time := 10 ns;
-  constant active_level : std_logic := to_sl(active_high);
+  constant active_level : std_ulogic := to_sl(active_high);
 
   function clk_out_period return time is
   begin
@@ -45,8 +45,8 @@ architecture tb of tb_resync_cycles is
     end if;
   end function;
 
-  signal clk_in, clk_out : std_logic := '0';
-  signal data_in, data_out : std_logic := not active_level;
+  signal clk_in, clk_out : std_ulogic := '0';
+  signal data_in, data_out : std_ulogic := not active_level;
 
   signal num_data_out : integer := 0;
   signal reset_reference_counter : boolean := false;

@@ -37,7 +37,7 @@ entity axi_slave is
     w_fifo_depth : natural := 0
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_read_m2s : in axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : out axi_read_s2m_t := axi_read_s2m_init;

@@ -42,67 +42,67 @@ package axi_pkg is
 
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
-  ) return unsigned;
-  function to_size(data_width_bits : positive) return unsigned;
+  ) return u_unsigned;
+  function to_size(data_width_bits : positive) return u_unsigned;
 
   constant axi_a_burst_sz : positive := 2;
-  constant axi_a_burst_fixed : std_logic_vector(axi_a_burst_sz - 1 downto 0) := "00";
-  constant axi_a_burst_incr : std_logic_vector(axi_a_burst_sz - 1 downto 0) := "01";
-  constant axi_a_burst_wrap : std_logic_vector(axi_a_burst_sz - 1 downto 0) := "10";
+  constant axi_a_burst_fixed : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "00";
+  constant axi_a_burst_incr : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "01";
+  constant axi_a_burst_wrap : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "10";
 
   constant axi_a_lock_sz : positive := 1; -- Two bits in AXI3
-  constant axi_a_lock_normal : std_logic_vector(axi_a_lock_sz - 1 downto 0) := "0";
-  constant axi_a_lock_exclusive : std_logic_vector(axi_a_lock_sz - 1 downto 0) := "1";
-  constant axi3_a_lock_normal : std_logic_vector(2 - 1 downto 0) := "00";
-  constant axi3_a_lock_exclusive : std_logic_vector(2 - 1 downto 0) := "01";
-  constant axi3_a_lock_locked : std_logic_vector(2 - 1 downto 0) := "10";
+  constant axi_a_lock_normal : std_ulogic_vector(axi_a_lock_sz - 1 downto 0) := "0";
+  constant axi_a_lock_exclusive : std_ulogic_vector(axi_a_lock_sz - 1 downto 0) := "1";
+  constant axi3_a_lock_normal : std_ulogic_vector(2 - 1 downto 0) := "00";
+  constant axi3_a_lock_exclusive : std_ulogic_vector(2 - 1 downto 0) := "01";
+  constant axi3_a_lock_locked : std_ulogic_vector(2 - 1 downto 0) := "10";
 
   constant axi_a_cache_sz : positive := 4;
-  constant axi_a_cache_device_non_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_a_cache_device_non_bufferable : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "0000";
-  constant axi_a_cache_device_bufferable : std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0001";
+  constant axi_a_cache_device_bufferable : std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0001";
   constant axi_a_cache_normal_non_cacheable_non_bufferable :
-    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0010";
+    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0010";
   constant axi_a_cache_normal_non_cacheable_bufferable :
-    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "0011";
-  constant axi_ar_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0011";
+  constant axi_ar_cache_write_through_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "1010";
-  constant axi_aw_cache_write_through_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_aw_cache_write_through_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "0110";
-  constant axi_a_cache_write_through_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_a_cache_write_through_read_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "0110";
-  constant axi_a_cache_write_through_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_a_cache_write_through_write_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "1010";
   constant axi_a_cache_write_through_read_and_write_allocate :
-    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1110";
-  constant axi_ar_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "1110";
+  constant axi_ar_cache_write_back_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "1011";
-  constant axi_aw_cache_write_back_no_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_aw_cache_write_back_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "0111";
-  constant axi_a_cache_write_back_read_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_a_cache_write_back_read_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "0111";
-  constant axi_a_cache_write_back_write_allocate : std_logic_vector(axi_a_cache_sz - 1 downto 0)
+  constant axi_a_cache_write_back_write_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
     := "1011";
   constant axi_a_cache_write_back_read_and_write_allocate :
-    std_logic_vector(axi_a_cache_sz - 1 downto 0) := "1111";
+    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "1111";
 
   constant axi_a_prot_sz : positive := 3;
-  constant axi_a_prot_privileged : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "001";
-  constant axi_a_prot_unprivileged : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_secure : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_nonsecure : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "010";
-  constant axi_a_prot_data : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_instruction : std_logic_vector(axi_a_prot_sz - 1 downto 0) := "100";
+  constant axi_a_prot_privileged : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "001";
+  constant axi_a_prot_unprivileged : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
+  constant axi_a_prot_secure : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
+  constant axi_a_prot_nonsecure : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "010";
+  constant axi_a_prot_data : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
+  constant axi_a_prot_instruction : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "100";
 
   constant axi_a_region_sz : positive := 4;
 
   type axi_m2s_a_t is record
-    valid : std_logic;
-    id : unsigned(axi_id_sz - 1 downto 0);
-    addr : unsigned(axi_a_addr_sz - 1 downto 0);
-    len : unsigned(axi_a_len_sz - 1 downto 0);
-    size : unsigned(axi_a_size_sz - 1 downto 0);
-    burst : std_logic_vector(axi_a_burst_sz - 1 downto 0);
+    valid : std_ulogic;
+    id : u_unsigned(axi_id_sz - 1 downto 0);
+    addr : u_unsigned(axi_a_addr_sz - 1 downto 0);
+    len : u_unsigned(axi_a_len_sz - 1 downto 0);
+    size : u_unsigned(axi_a_size_sz - 1 downto 0);
+    burst : std_ulogic_vector(axi_a_burst_sz - 1 downto 0);
     -- Excluded members: lock, cache, prot, region.
     -- These are typically not changed on a transfer-to-transfer basis.
   end record;
@@ -117,13 +117,13 @@ package axi_pkg is
 
   function to_slv(
     data : axi_m2s_a_t; id_width : natural; addr_width : positive
-  ) return std_logic_vector;
+  ) return std_ulogic_vector;
   function to_axi_m2s_a(
-    data : std_logic_vector; id_width : natural; addr_width : positive
+    data : std_ulogic_vector; id_width : natural; addr_width : positive
   ) return axi_m2s_a_t;
 
   type axi_s2m_a_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_s2m_a_init : axi_s2m_a_t := (ready => '0');
@@ -138,16 +138,16 @@ package axi_pkg is
   constant axi_data_sz : positive := 128;
   constant axi_w_strb_sz : positive := axi_data_sz / 8;
 
-  function to_strb(data_width : positive) return std_logic_vector;
+  function to_strb(data_width : positive) return std_ulogic_vector;
 
   type axi_m2s_w_t is record
-    valid : std_logic;
-    data : std_logic_vector(axi_data_sz - 1 downto 0);
-    strb : std_logic_vector(axi_w_strb_sz - 1 downto 0);
-    last : std_logic;
+    valid : std_ulogic;
+    data : std_ulogic_vector(axi_data_sz - 1 downto 0);
+    strb : std_ulogic_vector(axi_w_strb_sz - 1 downto 0);
+    last : std_ulogic;
     -- Only available in AXI3. We assume that AXI4 is used most of the time, hence id_width is
     -- defaulted to zero in the functions below.
-    id : unsigned(axi_id_sz - 1 downto 0);
+    id : u_unsigned(axi_id_sz - 1 downto 0);
   end record;
 
   constant axi_m2s_w_init : axi_m2s_w_t := (
@@ -164,13 +164,13 @@ package axi_pkg is
 
   function to_slv(
     data : axi_m2s_w_t; data_width : positive; id_width : natural := 0
-  ) return std_logic_vector;
+  ) return std_ulogic_vector;
   function to_axi_m2s_w(
-    data : std_logic_vector; data_width : positive; id_width : natural := 0
+    data : std_ulogic_vector; data_width : positive; id_width : natural := 0
   ) return axi_m2s_w_t;
 
   type axi_s2m_w_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
   type axi_s2m_w_vec_t is array (integer range <>) of axi_s2m_w_t;
 
@@ -182,24 +182,24 @@ package axi_pkg is
   ------------------------------------------------------------------------------
 
   type axi_m2s_b_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_m2s_b_init : axi_m2s_b_t := (ready => '0');
 
   constant axi_resp_sz : positive := 2;
-  constant axi_resp_okay : std_logic_vector(axi_resp_sz - 1 downto 0) := "00";
+  constant axi_resp_okay : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "00";
   -- Exclusive access okay.
-  constant axi_resp_exokay : std_logic_vector(axi_resp_sz - 1 downto 0) := "01";
+  constant axi_resp_exokay : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "01";
   -- Slave error. Slave wishes to return error.
-  constant axi_resp_slverr : std_logic_vector(axi_resp_sz - 1 downto 0) := "10";
+  constant axi_resp_slverr : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "10";
   -- Decode error. There is no slave at transaction address.
-  constant axi_resp_decerr : std_logic_vector(axi_resp_sz - 1 downto 0) := "11";
+  constant axi_resp_decerr : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "11";
 
   type axi_s2m_b_t is record
-    valid : std_logic;
-    id : unsigned(axi_id_sz - 1 downto 0);
-    resp : std_logic_vector(axi_resp_sz - 1 downto 0);
+    valid : std_ulogic;
+    id : u_unsigned(axi_id_sz - 1 downto 0);
+    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   end record;
 
   constant axi_s2m_b_init : axi_s2m_b_t := (
@@ -210,8 +210,8 @@ package axi_pkg is
   function axi_s2m_b_sz(id_width : natural) return positive;
   type axi_s2m_b_vec_t is array (integer range <>) of axi_s2m_b_t;
 
-  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_logic_vector;
-  function to_axi_s2m_b(data : std_logic_vector; id_width : natural) return axi_s2m_b_t;
+  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_ulogic_vector;
+  function to_axi_s2m_b(data : std_ulogic_vector; id_width : natural) return axi_s2m_b_t;
 
 
   ------------------------------------------------------------------------------
@@ -219,18 +219,18 @@ package axi_pkg is
   ------------------------------------------------------------------------------
 
   type axi_m2s_r_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
   type axi_m2s_r_vec_t is array (integer range <>) of axi_m2s_r_t;
 
   constant axi_m2s_r_init : axi_m2s_r_t := (ready => '0');
 
   type axi_s2m_r_t is record
-    valid : std_logic;
-    id : unsigned(axi_id_sz - 1 downto 0);
-    data : std_logic_vector(axi_data_sz - 1 downto 0);
-    resp : std_logic_vector(axi_resp_sz - 1 downto 0);
-    last : std_logic;
+    valid : std_ulogic;
+    id : u_unsigned(axi_id_sz - 1 downto 0);
+    data : std_ulogic_vector(axi_data_sz - 1 downto 0);
+    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+    last : std_ulogic;
   end record;
 
   constant axi_s2m_r_init : axi_s2m_r_t := (
@@ -246,9 +246,9 @@ package axi_pkg is
     data : axi_s2m_r_t;
     data_width : positive;
     id_width : natural
-  ) return std_logic_vector;
+  ) return std_ulogic_vector;
   function to_axi_s2m_r(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive;
     id_width : natural
   ) return axi_s2m_r_t;
@@ -316,8 +316,8 @@ package axi_pkg is
 
   constant axi_s2m_init : axi_s2m_t := (read => axi_read_s2m_init, write => axi_write_s2m_init);
 
-  function combine_response(resp1, resp2 : std_logic_vector(axi_resp_sz - 1 downto 0))
-    return std_logic_vector;
+  function combine_response(resp1, resp2 : std_ulogic_vector(axi_resp_sz - 1 downto 0))
+    return std_ulogic_vector;
 
 end;
 
@@ -325,16 +325,16 @@ package body axi_pkg is
 
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
-  ) return unsigned is
-    variable result : unsigned(axi_a_len_sz - 1 downto 0);
+  ) return u_unsigned is
+    variable result : u_unsigned(axi_a_len_sz - 1 downto 0);
   begin
     -- burst_length_beats is number of transfers
     result := to_unsigned(burst_length_beats - 1, result'length);
     return result;
   end function;
 
-  function to_size(data_width_bits : positive) return unsigned is
-    variable result : unsigned(axi_a_size_sz - 1 downto 0);
+  function to_size(data_width_bits : positive) return u_unsigned is
+    variable result : u_unsigned(axi_a_size_sz - 1 downto 0);
   begin
     result := to_unsigned(log2(data_width_bits / 8), result'length);
     return result;
@@ -348,24 +348,24 @@ package body axi_pkg is
 
   function to_slv(
     data : axi_m2s_a_t; id_width : natural; addr_width : positive
-  ) return std_logic_vector is
-    variable result : std_logic_vector(axi_m2s_a_sz(id_width, addr_width) - 1 downto 0);
+  ) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_m2s_a_sz(id_width, addr_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
-    result(hi downto lo) := std_logic_vector(data.addr(addr_width - 1 downto 0));
+    result(hi downto lo) := std_ulogic_vector(data.addr(addr_width - 1 downto 0));
     lo := hi + 1;
     hi := lo + data.len'length - 1;
-    result(hi downto lo) := std_logic_vector(data.len);
+    result(hi downto lo) := std_ulogic_vector(data.len);
     lo := hi + 1;
     hi := lo + data.size'length - 1;
-    result(hi downto lo) := std_logic_vector(data.size);
+    result(hi downto lo) := std_ulogic_vector(data.size);
     lo := hi + 1;
     hi := lo + data.burst'length - 1;
     result(hi downto lo) := data.burst;
@@ -374,7 +374,7 @@ package body axi_pkg is
   end function;
 
   function to_axi_m2s_a(
-    data : std_logic_vector; id_width : natural; addr_width : positive
+    data : std_ulogic_vector; id_width : natural; addr_width : positive
   ) return axi_m2s_a_t is
     constant offset : natural := data'low;
     variable result : axi_m2s_a_t := axi_m2s_a_init;
@@ -383,17 +383,17 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
-    result.addr(addr_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
+    result.addr(addr_width - 1 downto 0) := u_unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.len'length - 1;
-    result.len := unsigned(data(hi + offset downto lo + offset));
+    result.len := u_unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.size'length - 1;
-    result.size := unsigned(data(hi + offset downto lo + offset));
+    result.size := u_unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.burst'length - 1;
     result.burst := data(hi + offset downto lo + offset);
@@ -401,8 +401,8 @@ package body axi_pkg is
     return result;
   end function;
 
-  function to_strb(data_width : positive) return std_logic_vector is
-    variable result : std_logic_vector(axi_w_strb_sz - 1 downto 0) := (others => '0');
+  function to_strb(data_width : positive) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_w_strb_sz - 1 downto 0) := (others => '0');
   begin
     result(data_width / 8 - 1 downto 0) := (others => '1');
     return result;
@@ -422,9 +422,9 @@ package body axi_pkg is
 
   function to_slv(
     data : axi_m2s_w_t; data_width : positive; id_width : natural := 0
-  ) return std_logic_vector is
+  ) return std_ulogic_vector is
     variable result :
-      std_logic_vector(axi_m2s_w_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
+      std_ulogic_vector(axi_m2s_w_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
       (others => '0');
     variable lo, hi : natural := 0;
   begin
@@ -439,7 +439,7 @@ package body axi_pkg is
     lo := hi + 1;
 
     hi := lo + id_width - 1;
-    result(hi downto lo) := std_logic_vector(data.id(id_width - 1 downto 0));
+    result(hi downto lo) := std_ulogic_vector(data.id(id_width - 1 downto 0));
     lo := hi + 1;
 
     hi := lo;
@@ -449,7 +449,7 @@ package body axi_pkg is
   end function;
 
   function to_axi_m2s_w(
-    data : std_logic_vector; data_width : positive; id_width : natural := 0
+    data : std_ulogic_vector; data_width : positive; id_width : natural := 0
   ) return axi_m2s_w_t is
     constant offset : natural := data'low;
     variable result : axi_m2s_w_t := axi_m2s_w_init;
@@ -466,7 +466,7 @@ package body axi_pkg is
     lo := hi + 1;
 
     hi := lo + id_width - 1;
-    result.id(id_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
+    result.id(id_width - 1 downto 0) := u_unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
 
     hi := lo;
@@ -481,14 +481,14 @@ package body axi_pkg is
     return id_width + axi_resp_sz;
   end function;
 
-  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_logic_vector is
-    variable result : std_logic_vector(axi_s2m_b_sz(id_width) - 1 downto 0);
+  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_s2m_b_sz(id_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
@@ -497,7 +497,7 @@ package body axi_pkg is
     return result;
   end function;
 
-  function to_axi_s2m_b(data : std_logic_vector; id_width : natural) return axi_s2m_b_t is
+  function to_axi_s2m_b(data : std_ulogic_vector; id_width : natural) return axi_s2m_b_t is
     constant offset : natural := data'low;
     variable result : axi_s2m_b_t := axi_s2m_b_init;
     variable lo, hi : natural := 0;
@@ -505,7 +505,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
@@ -525,14 +525,14 @@ package body axi_pkg is
     data : axi_s2m_r_t;
     data_width : positive;
     id_width : natural)
-  return std_logic_vector is
-    variable result : std_logic_vector(axi_s2m_r_sz(data_width, id_width) - 1 downto 0);
+  return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_s2m_r_sz(data_width, id_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;
@@ -548,7 +548,7 @@ package body axi_pkg is
   end function;
 
   function to_axi_s2m_r(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive;
     id_width : natural
   ) return axi_s2m_r_t is
@@ -559,7 +559,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;
@@ -577,9 +577,9 @@ package body axi_pkg is
   -- Combine responses, with the "worst" response taking priority. OKAY may be considered
   -- an error if an exclusive access was desired, so OKAY takes priority over EXOKAY.
   function combine_response(
-    resp1, resp2 : std_logic_vector(axi_resp_sz - 1 downto 0)
-  ) return std_logic_vector is
-    variable resp : std_logic_vector(axi_resp_sz - 1 downto 0);
+    resp1, resp2 : std_ulogic_vector(axi_resp_sz - 1 downto 0)
+  ) return std_ulogic_vector is
+    variable resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   begin
     resp := resp1;
 

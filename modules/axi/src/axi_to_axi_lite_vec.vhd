@@ -40,12 +40,12 @@ entity axi_to_axi_lite_vec is
     pipeline_slaves : boolean := false
   );
   port (
-    clk_axi : in std_logic;
+    clk_axi : in std_ulogic;
     axi_m2s : in axi_m2s_t;
     axi_s2m : out axi_s2m_t;
     --# {{}}
     -- Only need to set if different from axi_clk
-    clk_axi_lite_vec : in std_logic_vector(axi_lite_slaves'range) := (others => '0');
+    clk_axi_lite_vec : in std_ulogic_vector(axi_lite_slaves'range) := (others => '0');
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);
     axi_lite_s2m_vec : in axi_lite_s2m_vec_t(axi_lite_slaves'range)
   );

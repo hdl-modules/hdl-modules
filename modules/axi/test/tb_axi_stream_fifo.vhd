@@ -38,7 +38,7 @@ architecture tb of tb_axi_stream_fifo is
   constant clk_fast_period : time := 3 ns;
   constant clk_slow_period : time := 7 ns;
 
-  signal clk_input, clk_output : std_logic := '0';
+  signal clk_input, clk_output : std_ulogic := '0';
 
   signal input_m2s, output_m2s : axi_stream_m2s_t := axi_stream_m2s_init;
   signal input_s2m, output_s2m : axi_stream_s2m_t := axi_stream_s2m_init;
@@ -58,8 +58,8 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable data : std_logic_vector(data_width - 1 downto 0);
-    variable user : std_logic_vector(user_width - 1 downto 0);
+    variable data : std_ulogic_vector(data_width - 1 downto 0);
+    variable user : std_ulogic_vector(user_width - 1 downto 0);
   begin
     test_runner_setup(runner, runner_cfg);
     rnd.InitSeed(rnd'instance_name);

@@ -28,9 +28,9 @@ package axi_bfm_pkg is
 
   constant axi_master_bfm_job_size : positive := 3 * 32;
 
-  function to_slv(job : axi_master_bfm_job_t) return std_logic_vector;
+  function to_slv(job : axi_master_bfm_job_t) return std_ulogic_vector;
   function to_axi_bfm_job(
-    data : std_logic_vector(axi_master_bfm_job_size - 1 downto 0)
+    data : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0)
   ) return axi_master_bfm_job_t;
 
   -- Stall in a way where it is probable that W data arrives a long while before AWVALID.
@@ -57,23 +57,23 @@ end package;
 
 package body axi_bfm_pkg is
 
-  function to_slv(job : axi_master_bfm_job_t) return std_logic_vector is
-    variable result : std_logic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
+  function to_slv(job : axi_master_bfm_job_t) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
   begin
-    result(31 downto 0) := std_logic_vector(to_unsigned(job.address, 32));
-    result(63 downto 32) := std_logic_vector(to_unsigned(job.length_bytes, 32));
-    result(95 downto 64) := std_logic_vector(to_unsigned(job.id, 32));
+    result(31 downto 0) := std_ulogic_vector(to_unsigned(job.address, 32));
+    result(63 downto 32) := std_ulogic_vector(to_unsigned(job.length_bytes, 32));
+    result(95 downto 64) := std_ulogic_vector(to_unsigned(job.id, 32));
     return result;
   end function;
 
   function to_axi_bfm_job(
-    data : std_logic_vector(axi_master_bfm_job_size - 1 downto 0)
+    data : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0)
   ) return axi_master_bfm_job_t is
     variable result : axi_master_bfm_job_t := axi_master_bfm_job_init;
   begin
-    result.address := to_integer(unsigned(data(31 downto 0)));
-    result.length_bytes := to_integer(unsigned(data(63 downto 32)));
-    result.id := to_integer(unsigned(data(95 downto 64)));
+    result.address := to_integer(u_unsigned(data(31 downto 0)));
+    result.length_bytes := to_integer(u_unsigned(data(63 downto 32)));
+    result.id := to_integer(u_unsigned(data(95 downto 64)));
     return result;
   end function;
 

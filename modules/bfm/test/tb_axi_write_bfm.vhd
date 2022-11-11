@@ -41,7 +41,7 @@ end entity;
 architecture tb of tb_axi_write_bfm is
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal axi_write_m2s : axi_write_m2s_t := axi_write_m2s_init;
   signal axi_write_s2m : axi_write_s2m_t := axi_write_s2m_init;
@@ -234,8 +234,8 @@ begin
 
   ------------------------------------------------------------------------------
   check_w_invalid_values : process
-    constant data_all_x : std_logic_vector(data_width - 1 downto 0) := (others => 'X');
-    constant strb_all_x : std_logic_vector(data_width / 8 - 1 downto 0) := (others => 'X');
+    constant data_all_x : std_ulogic_vector(data_width - 1 downto 0) := (others => 'X');
+    constant strb_all_x : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => 'X');
   begin
     wait until rising_edge(clk);
 

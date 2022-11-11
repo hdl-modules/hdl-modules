@@ -40,12 +40,12 @@ entity axi_lite_to_vec is
   );
   port (
     --# {{}}
-    clk_axi_lite : in std_logic;
+    clk_axi_lite : in std_ulogic;
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
     --# {{}}
     -- Only need to set if different from clk_axi_lite
-    clk_axi_lite_vec : in std_logic_vector(axi_lite_slaves'range) := (others => '0');
+    clk_axi_lite_vec : in std_ulogic_vector(axi_lite_slaves'range) := (others => '0');
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);
     axi_lite_s2m_vec : in axi_lite_s2m_vec_t(axi_lite_slaves'range)
   );

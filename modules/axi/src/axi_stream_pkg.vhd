@@ -30,10 +30,10 @@ package axi_stream_pkg is
   constant axi_stream_keep_sz : positive := axi_stream_data_sz / 8;
 
   type axi_stream_m2s_t is record
-    valid : std_logic;
-    data : std_logic_vector(axi_stream_data_sz - 1 downto 0);
-    last : std_logic;
-    user : std_logic_vector(axi_stream_user_sz - 1 downto 0);
+    valid : std_ulogic;
+    data : std_ulogic_vector(axi_stream_data_sz - 1 downto 0);
+    last : std_ulogic;
+    user : std_ulogic_vector(axi_stream_user_sz - 1 downto 0);
     -- Excluded members: tkeep, tstrb, tid, tdest.
     -- These are optional according to the standard and should be added when needed.
   end record;
@@ -45,7 +45,7 @@ package axi_stream_pkg is
   );
 
   type axi_stream_s2m_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
   type axi_stream_s2m_vec_t is array (integer range <>) of axi_stream_s2m_t;
 
@@ -57,13 +57,13 @@ package axi_stream_pkg is
     data : axi_stream_m2s_t;
     data_width : positive;
     user_width : natural
-  ) return std_logic_vector;
+  ) return std_ulogic_vector;
 
   function to_axi_stream_m2s(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive;
     user_width : natural;
-    valid : std_logic
+    valid : std_ulogic
   ) return axi_stream_m2s_t;
 
 end;
@@ -81,8 +81,8 @@ package body axi_stream_pkg is
     data : axi_stream_m2s_t;
     data_width : positive;
     user_width : natural
-  ) return std_logic_vector is
-    variable result : std_logic_vector(axi_stream_m2s_sz(data_width, user_width) - 1 downto 0);
+  ) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_stream_m2s_sz(data_width, user_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
@@ -99,10 +99,10 @@ package body axi_stream_pkg is
   end function;
 
   function to_axi_stream_m2s(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive;
     user_width : natural;
-    valid : std_logic
+    valid : std_ulogic
   ) return axi_stream_m2s_t is
     variable offset : natural := data'low;
     variable result : axi_stream_m2s_t := axi_stream_m2s_init;

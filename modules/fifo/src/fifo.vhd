@@ -91,7 +91,7 @@ entity fifo is
     ram_type : ram_style_t := ram_style_auto
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     -- When 'packet_mode' is enabled, this value will still reflect the number of words that are in
     -- the FIFO RAM. This is not necessarily the same as the number of words that can be read, in
@@ -99,30 +99,30 @@ entity fifo is
     level : out natural range 0 to depth := 0;
 
     --# {{}}
-    read_ready : in std_logic;
+    read_ready : in std_ulogic;
     -- '1' if FIFO is not empty
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
     -- Must set 'enable_last' generic in order to use this
-    read_last : out std_logic := '0';
+    read_last : out std_ulogic := '0';
     -- When this is asserted, packets can be read multiple times from the FIFO.
     -- Must set 'enable_peek_mode' generic in order to use this.
-    read_peek_mode : in std_logic := '0';
+    read_peek_mode : in std_ulogic := '0';
     -- '1' if there are 'almost_empty_level' or fewer words available to read
-    almost_empty : out std_logic := '1';
+    almost_empty : out std_ulogic := '1';
 
     --# {{}}
     -- '1' if FIFO is not full
-    write_ready : out std_logic := '1';
-    write_valid : in std_logic;
-    write_data : in std_logic_vector(width - 1 downto 0);
+    write_ready : out std_ulogic := '1';
+    write_valid : in std_ulogic;
+    write_data : in std_ulogic_vector(width - 1 downto 0);
     -- Must set 'enable_last' generic in order to use this
-    write_last : in std_logic := '-';
+    write_last : in std_ulogic := '-';
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
-    almost_full : out std_logic := '0';
+    almost_full : out std_ulogic := '0';
     -- Drop the current packet (all words that have been written since the previous write_last).
     -- Must set 'enable_drop_packet' generic in order to use this.
-    drop_packet : in std_logic := '0'
+    drop_packet : in std_ulogic := '0'
   );
 end entity;
 
@@ -132,7 +132,7 @@ architecture a of fifo is
 
   -- Need one extra bit in the addresses to be able to make the distinction if the FIFO
   -- is full or empty (where the addresses would otherwise be equal).
-  subtype fifo_addr_t is unsigned(num_bits_needed(2 * memory_depth - 1) - 1 downto 0);
+  subtype fifo_addr_t is u_unsigned(num_bits_needed(2 * memory_depth - 1) - 1 downto 0);
   signal read_addr_next, read_addr, read_addr_peek : fifo_addr_t := (others => '0');
   signal write_addr_next, write_addr, write_addr_next_if_not_drop, write_addr_start_of_packet :
     fifo_addr_t := (others => '0');
@@ -142,10 +142,10 @@ architecture a of fifo is
 
   signal num_lasts_in_fifo : natural range 0 to depth := 0;
 
-  signal should_drop_packet, should_peek_read : std_logic := '0';
+  signal should_drop_packet, should_peek_read : std_ulogic := '0';
 
-  signal read_ready_ram, read_valid_ram, read_last_ram : std_logic := '0';
-  signal read_data_ram : std_logic_vector(width - 1 downto 0) := (others => '0');
+  signal read_ready_ram, read_valid_ram, read_last_ram : std_ulogic := '0';
+  signal read_data_ram : std_ulogic_vector(width - 1 downto 0) := (others => '0');
   signal word_in_output_register : natural range 0 to 1 := 0;
 
 begin
@@ -320,7 +320,7 @@ begin
   ------------------------------------------------------------------------------
   memory_block : block
     constant memory_word_width : positive := width + to_int(enable_last);
-    subtype word_t is std_logic_vector(memory_word_width - 1 downto 0);
+    subtype word_t is std_ulogic_vector(memory_word_width - 1 downto 0);
     type mem_t is array (natural range <>) of word_t;
 
     signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));

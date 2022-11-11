@@ -36,9 +36,9 @@ entity axi_r_fifo is
     ram_type : ram_style_t := ram_style_auto
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     -- Only need to assign the clock if generic asynchronous is "True"
-    clk_input : in std_logic := '0';
+    clk_input : in std_ulogic := '0';
     --# {{}}
     input_m2s : in axi_m2s_r_t;
     input_s2m : out axi_s2m_r_t := axi_s2m_r_init;
@@ -62,8 +62,8 @@ begin
 
     constant r_width : integer := axi_s2m_r_sz(data_width, id_width);
 
-    signal read_valid : std_logic := '0';
-    signal read_data, write_data : std_logic_vector(r_width - 1 downto 0);
+    signal read_valid : std_ulogic := '0';
+    signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);
 
   begin
 

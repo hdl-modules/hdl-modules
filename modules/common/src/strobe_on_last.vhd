@@ -26,30 +26,30 @@ entity strobe_on_last is
     data_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '0';
-    input_valid : in std_logic;
-    input_last : in std_logic;
-    input_data : in std_logic_vector(data_width - 1 downto 0);
-    input_strobe : in std_logic_vector(data_width / 8 - 1 downto 0);
+    input_ready : out std_ulogic := '0';
+    input_valid : in std_ulogic;
+    input_last : in std_ulogic;
+    input_data : in std_ulogic_vector(data_width - 1 downto 0);
+    input_strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0);
     --# {{}}
-    output_ready : in std_logic;
-    output_valid : out std_logic := '0';
-    output_last : out std_logic := '0';
-    output_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    output_strobe : out std_logic_vector(data_width / 8 - 1 downto 0) :=
+    output_ready : in std_ulogic;
+    output_valid : out std_ulogic := '0';
+    output_last : out std_ulogic := '0';
+    output_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    output_strobe : out std_ulogic_vector(data_width / 8 - 1 downto 0) :=
       (others => '0')
   );
 end entity;
 
 architecture a of strobe_on_last is
 
-  constant strobe_all_zero : std_logic_vector(input_strobe'range) := (others => '0');
+  constant strobe_all_zero : std_ulogic_vector(input_strobe'range) := (others => '0');
 
-  signal input_stream_ready, input_stream_valid : std_logic := '0';
+  signal input_stream_ready, input_stream_valid : std_ulogic := '0';
 
-  signal pipelined_ready, pipelined_valid, pipelined_last : std_logic := '0';
+  signal pipelined_ready, pipelined_valid, pipelined_last : std_ulogic := '0';
 
 begin
 

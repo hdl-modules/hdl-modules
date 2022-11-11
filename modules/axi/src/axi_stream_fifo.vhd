@@ -35,9 +35,9 @@ entity axi_stream_fifo is
     ram_type : ram_style_t := ram_style_auto
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     -- Only need to assign the clock if generic asynchronous is "True"
-    clk_output : in std_logic := '0';
+    clk_output : in std_ulogic := '0';
     --# {{}}
     input_m2s : in axi_stream_m2s_t;
     input_s2m : out axi_stream_s2m_t := axi_stream_s2m_init;
@@ -51,8 +51,8 @@ architecture a of axi_stream_fifo is
 
   constant bus_width : integer := axi_stream_m2s_sz(data_width, user_width);
 
-  signal write_data, read_data : std_logic_vector(bus_width - 1 downto 0);
-  signal read_valid : std_logic := '0';
+  signal write_data, read_data : std_ulogic_vector(bus_width - 1 downto 0);
+  signal read_valid : std_ulogic := '0';
 
 begin
 

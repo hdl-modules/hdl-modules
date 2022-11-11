@@ -36,7 +36,7 @@ begin
     variable rnd : RandomPType;
 
     variable job, job_converted : axi_master_bfm_job_t := axi_master_bfm_job_init;
-    variable job_slv : std_logic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
+    variable job_slv : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
 
   begin
     test_runner_setup(runner, runner_cfg);

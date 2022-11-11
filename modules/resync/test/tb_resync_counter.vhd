@@ -32,9 +32,9 @@ architecture tb of tb_resync_counter is
     2*clk_out_period +
     to_int(pipeline_output) * clk_out_period;
 
-  signal clk_in                  : std_logic                      := '1';
-  signal clk_out                 : std_logic                      := '0';
-  signal counter_in, counter_out : unsigned(8 - 1 downto 0) := (others => '0');
+  signal clk_in                  : std_ulogic                      := '1';
+  signal clk_out                 : std_ulogic                      := '0';
+  signal counter_in, counter_out : u_unsigned(8 - 1 downto 0) := (others => '0');
   constant counter_max : integer := 2 ** counter_in'length - 1;
 begin
 

@@ -34,15 +34,15 @@ end entity;
 architecture tb of tb_axi_stream_bfm is
 
   -- Generics
-  constant drive_invalid_value : std_logic := 'X';
+  constant drive_invalid_value : std_ulogic := 'X';
 
   -- DUT connections
   constant clk_period : time := 10 ns;
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
-  signal ready, valid, last : std_logic := '0';
-  signal data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
-  signal strobe : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+  signal ready, valid, last : std_ulogic := '0';
+  signal data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
   -- Testbench stuff
   constant master_stall_config : stall_config_t := (
@@ -152,11 +152,11 @@ begin
 
   ------------------------------------------------------------------------------
   check_invalid_value : process
-    constant data_all_invalid : std_logic_vector(data'range) :=
+    constant data_all_invalid : std_ulogic_vector(data'range) :=
       (others => drive_invalid_value);
-    constant strobe_all_invalid : std_logic_vector(strobe'range) :=
+    constant strobe_all_invalid : std_ulogic_vector(strobe'range) :=
       (others => drive_invalid_value);
-    constant byte_invalid : std_logic_vector(8 - 1 downto 0) := (others => drive_invalid_value);
+    constant byte_invalid : std_ulogic_vector(8 - 1 downto 0) := (others => drive_invalid_value);
   begin
     wait until rising_edge(clk);
 

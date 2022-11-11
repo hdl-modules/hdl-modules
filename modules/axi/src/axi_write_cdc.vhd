@@ -40,11 +40,11 @@ entity axi_write_cdc is
     response_fifo_ram_type : ram_style_t := ram_style_auto
   );
   port (
-    clk_input : in std_logic;
+    clk_input : in std_ulogic;
     input_m2s : in axi_write_m2s_t;
     input_s2m : out axi_write_s2m_t := axi_write_s2m_init;
     --# {{}}
-    clk_output : in std_logic;
+    clk_output : in std_ulogic;
     output_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     output_s2m : in axi_write_s2m_t;
     output_data_fifo_level : out integer range 0 to data_fifo_depth := 0

@@ -39,7 +39,7 @@ end entity;
 architecture tb of tb_axi_write_throttle is
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal input_m2s, throttled_m2s : axi_write_m2s_t := axi_write_m2s_init;
   signal input_s2m, throttled_s2m : axi_write_s2m_t := axi_write_s2m_init;
@@ -141,7 +141,7 @@ begin
   ----------------------------------------------------------------------------
   check_well_behaved : process
     variable num_aw_done, num_w_done : natural := 0;
-    variable awvalid_p1 : std_logic := '0';
+    variable awvalid_p1 : std_ulogic := '0';
   begin
     wait until rising_edge(clk);
 

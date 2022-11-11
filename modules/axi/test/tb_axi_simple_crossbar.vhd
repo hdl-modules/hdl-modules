@@ -37,7 +37,7 @@ architecture tb of tb_axi_simple_crossbar is
   constant num_inputs : integer := 4;
   constant clk_period : time := 5 ns;
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   constant axi_port_data_width : integer := 32;
   type bus_master_vec_t is array (integer range <>) of bus_master_t;
@@ -71,7 +71,7 @@ begin
   main : process
     constant num_words : integer := 1000;
     constant bytes_per_word : integer := axi_port_data_width / 8;
-    variable got, expected : std_logic_vector(axi_port_data_width - 1 downto 0);
+    variable got, expected : std_ulogic_vector(axi_port_data_width - 1 downto 0);
     variable address : integer;
     variable buf : buffer_t;
     variable rnd : RandomPType;

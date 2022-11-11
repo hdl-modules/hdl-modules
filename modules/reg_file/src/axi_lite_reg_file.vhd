@@ -49,7 +49,7 @@ entity axi_lite_reg_file is
     default_values : reg_vec_t(regs'range) := (others => (others => '0'))
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     --# Register control bus
     axi_lite_m2s : in axi_lite_m2s_t;
@@ -63,8 +63,8 @@ entity axi_lite_reg_file is
     -- For read, the bit is asserted the exact same cycle as the AXI-Lite R transaction occurs.
     -- For write, the bit is asserted the cycle after the AXI-Lite W transaction occurs, so that
     -- 'regs_down' is updated with the new value.
-    reg_was_read : out std_logic_vector(regs'range) := (others => '0');
-    reg_was_written : out std_logic_vector(regs'range) := (others => '0')
+    reg_was_read : out std_ulogic_vector(regs'range) := (others => '0');
+    reg_was_written : out std_ulogic_vector(regs'range) := (others => '0')
   );
 end entity;
 

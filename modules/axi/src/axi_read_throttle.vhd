@@ -71,7 +71,7 @@ entity axi_read_throttle is
     full_ar_throughput : boolean
   );
   port(
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     data_fifo_level : in natural range 0 to data_fifo_depth;
     --# {{}}
@@ -88,14 +88,14 @@ architecture a of axi_read_throttle is
   signal pipelined_m2s_ar : axi_m2s_a_t := axi_m2s_a_init;
   signal pipelined_s2m_ar : axi_s2m_a_t := axi_s2m_a_init;
 
-  signal address_transaction, data_transaction : std_logic := '0';
+  signal address_transaction, data_transaction : std_ulogic := '0';
 
   -- The bits of the ARLEN field that shall be taken into account
   constant len_width : positive := num_bits_needed(max_burst_length_beats - 1);
   subtype len_range is natural range len_width - 1 downto 0;
 
     -- +1 in range for sign bit
-  signal minus_burst_length_beats : signed(len_width + 1 - 1 downto 0) :=
+  signal minus_burst_length_beats : u_signed(len_width + 1 - 1 downto 0) :=
     (others => '0');
 
   -- Number of data beats that have been negotiated via address transactions,
@@ -116,8 +116,8 @@ begin
   pipeline : block
     constant m2s_length : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width);
     signal input_m2s_ar_slv, pipelined_m2s_ar_slv :
-      std_logic_vector(m2s_length - 1 downto 0) := (others => '0');
-    signal pipelined_valid : std_logic := '0';
+      std_ulogic_vector(m2s_length - 1 downto 0) := (others => '0');
+    signal pipelined_valid : std_ulogic := '0';
   begin
 
     input_m2s_ar_slv <= to_slv(data=>input_m2s.ar, id_width=>id_width, addr_width=>addr_width);
@@ -161,7 +161,7 @@ begin
 
 
   -- Two complement inversion: inv(len) = - len - 1 = - (len + 1) = - burst_length_beats
-  minus_burst_length_beats <= not signed('0' & pipelined_m2s_ar.len(len_range));
+  minus_burst_length_beats <= not u_signed('0' & pipelined_m2s_ar.len(len_range));
 
 
   ------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ begin
   count : process
     variable num_empty_words_in_fifo, num_beats_negotiated_but_not_sent_int
       : data_counter_t := 0;
-    variable ar_term : signed(minus_burst_length_beats'range) := (others => '0');
+    variable ar_term : u_signed(minus_burst_length_beats'range) := (others => '0');
   begin
     wait until rising_edge(clk);
 

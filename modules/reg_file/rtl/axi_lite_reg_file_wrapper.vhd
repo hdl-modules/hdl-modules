@@ -21,7 +21,7 @@ use reg_file.reg_file_pkg.all;
 
 entity axi_lite_reg_file_wrapper is
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
@@ -29,8 +29,8 @@ entity axi_lite_reg_file_wrapper is
     regs_up : in reg_vec_t(0 to 15 - 1);
     regs_down : out reg_vec_t(0 to 15 - 1);
     --
-    reg_was_read : out std_logic_vector(0 to 15 - 1);
-    reg_was_written : out std_logic_vector(0 to 15 - 1)
+    reg_was_read : out std_ulogic_vector(0 to 15 - 1);
+    reg_was_written : out std_ulogic_vector(0 to 15 - 1)
   );
 end entity;
 

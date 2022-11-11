@@ -42,7 +42,7 @@ architecture tb of tb_axi_lite_cdc is
   constant clk_fast_period : time := 3 ns;
   constant clk_slow_period : time := 7 ns;
 
-  signal clk_master, clk_slave : std_logic := '0';
+  signal clk_master, clk_slave : std_ulogic := '0';
 
   signal master_m2s, slave_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
   signal master_s2m, slave_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
@@ -85,7 +85,7 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable data : std_logic_vector(data_width - 1 downto 0);
+    variable data : std_ulogic_vector(data_width - 1 downto 0);
     variable address : integer;
     variable buf : buffer_t;
   begin

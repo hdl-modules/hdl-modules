@@ -39,13 +39,13 @@ architecture tb of tb_handshake_splitter is
   constant num_interfaces : positive := 4;
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid : std_logic := '0';
-  signal input_data : std_logic_vector(8 - 1 downto 0) := (others => '0');
+  signal input_ready, input_valid : std_ulogic := '0';
+  signal input_data : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
 
-  signal output_ready, output_valid : std_logic_vector(0 to num_interfaces - 1) := (others => '0');
+  signal output_ready, output_valid : std_ulogic_vector(0 to num_interfaces - 1) := (others => '0');
 
   -- Testbench stuff
   constant input_data_queue : queue_t := new_queue;

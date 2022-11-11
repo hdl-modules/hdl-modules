@@ -37,7 +37,7 @@ end entity;
 architecture tb of tb_axi_pipeline is
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal pipelined_write_m2s : axi_write_m2s_t := axi_write_m2s_init;
   signal pipelined_write_s2m : axi_write_s2m_t := axi_write_s2m_init;

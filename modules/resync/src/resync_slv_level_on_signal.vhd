@@ -28,14 +28,14 @@ entity resync_slv_level_on_signal is
     width : positive;
     -- Initial value for the output that will be set until the first input
     -- value has propagated and been sampled.
-    default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
+    default_value : std_ulogic_vector(width - 1 downto 0) := (others => '0')
   );
   port (
-   data_in : in std_logic_vector(default_value'range);
+   data_in : in std_ulogic_vector(default_value'range);
    --# {{}}
-   clk_out : in std_logic;
-   sample_value : in std_logic;
-   data_out : out std_logic_vector(default_value'range) := default_value
+   clk_out : in std_ulogic;
+   sample_value : in std_ulogic;
+   data_out : out std_ulogic_vector(default_value'range) := default_value
   );
 end entity;
 

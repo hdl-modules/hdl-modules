@@ -32,14 +32,14 @@ entity resync_slv_level is
     enable_input_register : boolean;
     -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
-    default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
+    default_value : std_ulogic_vector(width - 1 downto 0) := (others => '0')
   );
   port (
-    clk_in : in std_logic := '-';
-    data_in : in std_logic_vector(default_value'range);
+    clk_in : in std_ulogic := '-';
+    data_in : in std_ulogic_vector(default_value'range);
     --# {{}}
-    clk_out : in std_logic;
-    data_out : out std_logic_vector(default_value'range) := default_value
+    clk_out : in std_ulogic;
+    data_out : out std_ulogic_vector(default_value'range) := default_value
   );
 end entity;
 

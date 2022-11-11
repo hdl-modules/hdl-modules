@@ -39,7 +39,7 @@ entity axi_write_slave is
     w_fifo_depth : natural := 0
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_write_m2s : in axi_write_m2s_t := axi_write_m2s_init;
     axi_write_s2m : out axi_write_s2m_t := axi_write_s2m_init;
@@ -57,10 +57,10 @@ architecture a of axi_write_slave is
   signal w_fifo_m2s : axi_m2s_w_t := axi_m2s_w_init;
   signal w_fifo_s2m : axi_s2m_w_t := axi_s2m_w_init;
 
-  signal awid, bid : std_logic_vector(id_width - 1 downto 0) := (others => '0');
-  signal awaddr : std_logic_vector(axi_write_m2s.aw.addr'range) := (others => '0');
-  signal awlen : std_logic_vector(axi_write_m2s.aw.len'range) := (others => '0');
-  signal awsize : std_logic_vector(axi_write_m2s.aw.size'range) := (others => '0');
+  signal awid, bid : std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
+  signal awaddr : std_ulogic_vector(axi_write_m2s.aw.addr'range) := (others => '0');
+  signal awlen : std_ulogic_vector(axi_write_m2s.aw.len'range) := (others => '0');
+  signal awsize : std_ulogic_vector(axi_write_m2s.aw.size'range) := (others => '0');
 
 begin
 
@@ -114,12 +114,12 @@ begin
       bresp => axi_write_s2m.b.resp
     );
 
-  awid <= std_logic_vector(axi_write_m2s.aw.id(awid'range));
-  awaddr <= std_logic_vector(axi_write_m2s.aw.addr);
-  awlen <= std_logic_vector(axi_write_m2s.aw.len);
-  awsize <= std_logic_vector(axi_write_m2s.aw.size);
+  awid <= std_ulogic_vector(axi_write_m2s.aw.id(awid'range));
+  awaddr <= std_ulogic_vector(axi_write_m2s.aw.addr);
+  awlen <= std_ulogic_vector(axi_write_m2s.aw.len);
+  awsize <= std_ulogic_vector(axi_write_m2s.aw.size);
 
-  axi_write_s2m.b.id(bid'range) <= unsigned(bid);
+  axi_write_s2m.b.id(bid'range) <= u_unsigned(bid);
 
 
   ------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ begin
   -- and that none of the fields change value unless a transaction has occurred.
   aw_axi_stream_protocol_checker_block : block
     constant packed_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>axi_a_addr_sz);
-    signal packed : std_logic_vector(packed_width - 1 downto 0) := (others => '0');
+    signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
 
     constant logger : logger_t
       := get_logger(get_name(get_logger(axi_slave)) & "_aw_axi_stream_protocol_checker");
@@ -175,7 +175,7 @@ begin
   ------------------------------------------------------------------------------
   w_axi_stream_protocol_checker_block : block
     constant packed_width : positive := axi_m2s_w_sz(data_width=>data_width);
-    signal packed : std_logic_vector(packed_width - 1 downto 0) := (others => '0');
+    signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
 
     constant logger : logger_t
       := get_logger(get_name(get_logger(axi_slave)) & "_w_axi_stream_protocol_checker");

@@ -28,26 +28,26 @@ entity handshake_splitter is
     num_interfaces : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '0';
-    input_valid : in std_logic;
+    input_ready : out std_ulogic := '0';
+    input_valid : in std_ulogic;
     --# {{}}
-    output_ready : in std_logic_vector(0 to num_interfaces - 1);
-    output_valid : out std_logic_vector(0 to num_interfaces - 1) := (others => '0')
+    output_ready : in std_ulogic_vector(0 to num_interfaces - 1);
+    output_valid : out std_ulogic_vector(0 to num_interfaces - 1) := (others => '0')
   );
 end entity;
 
 architecture a of handshake_splitter is
 
   -- Keep track of whether a transaction has been performed on each of the output interfaces
-  signal transaction_done : std_logic_vector(output_valid'range) := (others => '0');
+  signal transaction_done : std_ulogic_vector(output_valid'range) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
   output_gen : for output_index in output_valid'range generate
-    signal transaction_done_sticky : std_logic := '0';
+    signal transaction_done_sticky : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------

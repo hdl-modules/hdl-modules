@@ -48,11 +48,11 @@ architecture tb of tb_hard_fifo is
   constant fifo_capacity : positive :=
     depth + to_int(enable_output_register) + to_int(not is_asynchronous);
 
-  signal clk_read, clk_write : std_logic := '0';
+  signal clk_read, clk_write : std_ulogic := '0';
 
-  signal read_ready, read_valid : std_logic := '0';
-  signal write_ready, write_valid : std_logic := '0';
-  signal read_data, write_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
+  signal read_ready, read_valid : std_ulogic := '0';
+  signal write_ready, write_valid : std_ulogic := '0';
+  signal read_data, write_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
 
   signal has_gone_full_times, has_gone_empty_times : natural := 0;
 
@@ -69,7 +69,7 @@ architecture tb of tb_hard_fifo is
 
   constant write_data_queue, read_data_queue : queue_t := new_queue;
 
-  signal stimuli_inactive, read_is_ready : std_logic := '0';
+  signal stimuli_inactive, read_is_ready : std_ulogic := '0';
 
 begin
 
@@ -88,7 +88,7 @@ begin
     end generate;
 
   else generate
-    signal clk_base : std_logic := '0';
+    signal clk_base : std_ulogic := '0';
   begin
 
     assert not read_clock_is_faster report "Should not set this generic for synchronous test";
@@ -132,7 +132,7 @@ begin
     end procedure;
 
     procedure run_write(count : natural; wait_until_done : boolean) is
-      variable data : std_logic_vector(write_data'range);
+      variable data : std_ulogic_vector(write_data'range);
     begin
       for write_idx in 0 to count - 1 loop
         data := rnd.RandSLV(data'length);
@@ -208,7 +208,7 @@ begin
 
   ------------------------------------------------------------------------------
   stimuli_block : block
-    signal data_is_valid : std_logic := '0';
+    signal data_is_valid : std_ulogic := '0';
   begin
 
     stimuli_inactive <= not data_is_valid;
@@ -266,7 +266,7 @@ begin
 
   ------------------------------------------------------------------------------
   write_status_tracking : process
-    variable transaction_occured : std_logic := '0';
+    variable transaction_occured : std_ulogic := '0';
   begin
     wait until rising_edge(clk_write);
 
@@ -282,7 +282,7 @@ begin
 
   ------------------------------------------------------------------------------
   read_status_tracking : process
-    variable transaction_occured : std_logic := '0';
+    variable transaction_occured : std_ulogic := '0';
   begin
     wait until rising_edge(clk_read);
 

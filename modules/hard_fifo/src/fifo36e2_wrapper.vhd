@@ -40,15 +40,15 @@ entity fifo36e2_wrapper is
     enable_output_register : boolean
   );
   port (
-    clk_read : in std_logic;
-    read_ready : in std_logic;
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
+    clk_read : in std_ulogic;
+    read_ready : in std_ulogic;
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
     --# {{}}
-    clk_write : in std_logic;
-    write_ready : out std_logic := '0';
-    write_valid : in std_logic;
-    write_data : in std_logic_vector(data_width - 1 downto 0)
+    clk_write : in std_ulogic;
+    write_ready : out std_ulogic := '0';
+    write_valid : in std_ulogic;
+    write_data : in std_ulogic_vector(data_width - 1 downto 0)
   );
 end entity;
 
@@ -82,12 +82,12 @@ architecture a of fifo36e2_wrapper is
   constant data_port_width : positive := write_data'length - parity_port_width;
 
   -- Self-reset the circuit with an SRL
-  signal reset_pipe : std_logic_vector(0 to 16 - 1) := (others => '1');
-  signal reset : std_logic := '1';
+  signal reset_pipe : std_ulogic_vector(0 to 16 - 1) := (others => '1');
+  signal reset : std_ulogic := '1';
 
-  signal full, empty, wren, rden, wrerr, rderr, almost_full, almost_empty : std_logic := '0';
-  signal din, dout : std_logic_vector(64 - 1 downto 0) := (others => '0');
-  signal dinp, doutp : std_logic_vector(8 - 1 downto 0) := (others => '0');
+  signal full, empty, wren, rden, wrerr, rderr, almost_full, almost_empty : std_ulogic := '0';
+  signal din, dout : std_ulogic_vector(64 - 1 downto 0) := (others => '0');
+  signal dinp, doutp : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
 
   -- These seem to work well. Add generic, route these to ports and add test when there is a
   -- use case
@@ -97,7 +97,7 @@ architecture a of fifo36e2_wrapper is
   -- When simulating there are glitches in the level signals.
   -- Hopefully/probably this is only an issue with the unisim simulation model, and works
   -- correctly in the hardware.
-  signal wrcount, rdcount : std_logic_vector(14 - 1 downto 0) := (others => '0');
+  signal wrcount, rdcount : std_ulogic_vector(14 - 1 downto 0) := (others => '0');
   signal read_level, write_level : natural range 0 to get_fifo_depth(target_width=>data_width) := 0;
 
 begin
@@ -221,8 +221,8 @@ begin
 
 
   ------------------------------------------------------------------------------
-  read_level <= to_integer(unsigned(rdcount));
+  read_level <= to_integer(u_unsigned(rdcount));
 
-  write_level <= to_integer(unsigned(wrcount));
+  write_level <= to_integer(u_unsigned(wrcount));
 
 end architecture;

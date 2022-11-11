@@ -24,11 +24,11 @@ end entity;
 
 architecture tb of tb_debounce is
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
   constant stable_count : positive := 100;
-  signal noisy_input, stable_result : std_logic := '0';
+  signal noisy_input, stable_result : std_ulogic := '0';
 
   signal num_rising_edges, num_falling_edges : natural := 0;
 
@@ -91,7 +91,7 @@ begin
 
   ------------------------------------------------------------------------------
   counters : process
-    variable stable_result_p1 : std_logic := '0';
+    variable stable_result_p1 : std_ulogic := '0';
   begin
     wait until rising_edge(clk);
 

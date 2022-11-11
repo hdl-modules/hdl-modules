@@ -37,36 +37,36 @@ entity fifo_wrapper is
   );
   port (
     -- This clock is used for a synchronous FIFO
-    clk : in std_logic;
+    clk : in std_ulogic;
     -- These clocks are used for an asynchronous FIFO
-    clk_read : in std_logic := '0';
-    clk_write : in std_logic := '0';
+    clk_read : in std_ulogic := '0';
+    clk_write : in std_ulogic := '0';
 
     --# {{}}
-    read_ready : in  std_logic;
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
-    read_last : out std_logic := '0';
-    read_peek_mode : in std_logic := '0';
+    read_ready : in  std_ulogic;
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
+    read_last : out std_ulogic := '0';
+    read_peek_mode : in std_ulogic := '0';
 
     -- Note that this is the same as write_level for a synchronous FIFO.
     read_level : out natural range 0 to depth := 0;
     -- Note that for an asynchronous FIFO, this signal is in the "read" clock domain.
-    almost_empty : out std_logic := '1';
+    almost_empty : out std_ulogic := '1';
 
     --# {{}}
-    write_ready : out std_logic := '1';
-    write_valid : in  std_logic;
-    write_data : in  std_logic_vector(width - 1 downto 0);
-    write_last : in std_logic := '0';
+    write_ready : out std_ulogic := '1';
+    write_valid : in  std_ulogic;
+    write_data : in  std_ulogic_vector(width - 1 downto 0);
+    write_last : in std_ulogic := '0';
 
     -- Note that this is the same as read_level for a synchronous FIFO.
     write_level : out natural range 0 to depth := 0;
     -- Note that for an asynchronous FIFO, this signal is in the "write" clock domain.
-    almost_full : out std_logic := '0';
+    almost_full : out std_ulogic := '0';
 
     -- Note that for an asynchronous FIFO, this signal is in the "write" clock domain
-    drop_packet : in std_logic := '0'
+    drop_packet : in std_ulogic := '0'
   );
 end entity;
 

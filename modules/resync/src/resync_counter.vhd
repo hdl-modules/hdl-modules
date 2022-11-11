@@ -49,21 +49,21 @@ entity resync_counter is
     width : positive;
     -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
-    default_value   : unsigned(width - 1 downto 0) := (others => '0');
+    default_value   : u_unsigned(width - 1 downto 0) := (others => '0');
     -- Optional pipeline step on the output after Gray conversion
     pipeline_output : boolean := false
   );
   port (
-    clk_in     : in std_logic;
-    counter_in : in unsigned(default_value'range);
+    clk_in     : in std_ulogic;
+    counter_in : in u_unsigned(default_value'range);
     --# {{}}
-    clk_out     : in std_logic;
-    counter_out : out unsigned(default_value'range) := default_value
+    clk_out     : in std_ulogic;
+    counter_out : out u_unsigned(default_value'range) := default_value
   );
 end entity;
 
 architecture a of resync_counter is
-  signal counter_in_gray, counter_in_gray_p1, counter_out_gray : std_logic_vector(counter_in'range)
+  signal counter_in_gray, counter_in_gray_p1, counter_out_gray : std_ulogic_vector(counter_in'range)
     := to_gray(default_value);
 
   attribute dont_touch of counter_in_gray   : signal is "true";

@@ -48,7 +48,7 @@ entity axi_read_master is
     -- AR transaction.
     job_queue : queue_t;
     -- Push reference data (integer_array_t with push_ref()) to this queue.
-    -- Each element should be an unsigned byte. Little endian byte order is assumed.
+    -- Each element should be an u_unsigned byte. Little endian byte order is assumed.
     -- The data returned on the R channel will be checked against this data.
     reference_data_queue : queue_t;
     -- Stall configuration for the AR channel master
@@ -62,7 +62,7 @@ entity axi_read_master is
     logger_name_suffix : string := ""
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_read_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : in axi_read_s2m_t := axi_read_s2m_init;
@@ -81,16 +81,16 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal data_is_valid : std_logic := '0';
+    signal data_is_valid : std_ulogic := '0';
 
-    signal id_target : unsigned(axi_read_m2s.ar.id'range) := (others => 'X');
-    signal addr_target : unsigned(axi_read_m2s.ar.addr'range) := (others => 'X');
-    signal len_target : unsigned(axi_read_m2s.ar.len'range) := (others => 'X');
+    signal id_target : u_unsigned(axi_read_m2s.ar.id'range) := (others => 'X');
+    signal addr_target : u_unsigned(axi_read_m2s.ar.addr'range) := (others => 'X');
+    signal len_target : u_unsigned(axi_read_m2s.ar.len'range) := (others => 'X');
   begin
 
     ------------------------------------------------------------------------------
     set_ar : process
-      variable job_slv : std_logic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
+      variable job_slv : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
       variable job : axi_master_bfm_job_t := axi_master_bfm_job_init;
     begin
       while is_empty(job_queue) loop
@@ -142,7 +142,7 @@ begin
 
   ------------------------------------------------------------------------------
   r_block : block
-    signal strobe, last_beat_strobe : std_logic_vector(bytes_per_beat - 1 downto 0)
+    signal strobe, last_beat_strobe : std_ulogic_vector(bytes_per_beat - 1 downto 0)
       := (others => '0');
   begin
 

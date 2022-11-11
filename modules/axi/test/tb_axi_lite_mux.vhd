@@ -53,7 +53,7 @@ architecture tb of tb_axi_lite_mux is
   );
 
   constant clk_period : time := 10 ns;
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal axi_lite_m2s, hard_coded_m2s : axi_lite_m2s_t;
   signal axi_lite_s2m : axi_lite_s2m_t;
@@ -89,7 +89,7 @@ begin
       return slave * addr_offset + word * bytes_per_word;
     end function;
 
-    procedure hard_coded_read_data(addr : in unsigned(slave_addrs(0).addr'range)) is
+    procedure hard_coded_read_data(addr : in u_unsigned(slave_addrs(0).addr'range)) is
     begin
       hard_coded_m2s.read.ar.valid <= '1';
       hard_coded_m2s.read.ar.addr <= x"0000_0000" & addr;
@@ -105,8 +105,8 @@ begin
       hard_coded_m2s.read.r.ready <= '0';
     end procedure;
 
-    procedure hard_coded_write_data(addr : in unsigned(slave_addrs(0).addr'range);
-                                    data : in std_logic_vector(data_width - 1 downto 0)) is
+    procedure hard_coded_write_data(addr : in u_unsigned(slave_addrs(0).addr'range);
+                                    data : in std_ulogic_vector(data_width - 1 downto 0)) is
     begin
       hard_coded_m2s.write.aw.valid <= '1';
       hard_coded_m2s.write.aw.addr <= x"0000_0000" & addr;
@@ -131,7 +131,7 @@ begin
     end procedure;
 
     variable rnd : RandomPType;
-    variable data : std_logic_vector(data_width - 1 downto 0);
+    variable data : std_ulogic_vector(data_width - 1 downto 0);
     variable address : integer;
     variable buf : buffer_t;
 

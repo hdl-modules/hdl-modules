@@ -47,7 +47,7 @@ architecture tb of tb_axi_cdc is
   constant clk_fast_period : time := 3 ns;
   constant clk_slow_period : time := 7 ns;
 
-  signal clk_input, clk_output : std_logic := '0';
+  signal clk_input, clk_output : std_ulogic := '0';
 
   signal input_read_m2s : axi_read_m2s_t := axi_read_m2s_init;
   signal input_read_s2m : axi_read_s2m_t := axi_read_s2m_init;
@@ -93,7 +93,7 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable data : std_logic_vector(data_width - 1 downto 0);
+    variable data : std_ulogic_vector(data_width - 1 downto 0);
     variable address : integer;
     variable buf : buffer_t;
   begin

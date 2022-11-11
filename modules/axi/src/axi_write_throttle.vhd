@@ -41,7 +41,7 @@ use common.types_pkg.all;
 
 entity axi_write_throttle is
   port(
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     input_m2s : in axi_write_m2s_t := axi_write_m2s_init;
     input_s2m : out axi_write_s2m_t := axi_write_s2m_init;

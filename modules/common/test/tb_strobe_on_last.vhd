@@ -37,15 +37,15 @@ architecture tb of tb_strobe_on_last is
 
   constant bytes_per_beat : positive := data_width / 8;
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid, input_last : std_logic := '0';
-  signal output_ready, output_valid, output_last : std_logic := '0';
+  signal input_ready, input_valid, input_last : std_ulogic := '0';
+  signal output_ready, output_valid, output_last : std_ulogic := '0';
 
-  signal input_data, output_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
+  signal input_data, output_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
   signal input_strobe, output_strobe :
-    std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+    std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
   constant input_data_queue, reference_data_queue : queue_t := new_queue;
 
@@ -128,7 +128,7 @@ begin
 
   ------------------------------------------------------------------------------
   input_block : block
-    signal data_is_valid : std_logic := '0';
+    signal data_is_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
@@ -146,9 +146,9 @@ begin
       constant may_insert_zero_words : boolean := not test_full_throughput;
 
       procedure send_input_word(
-        data : std_logic_vector(input_data'range);
-        strobe : std_logic_vector(input_strobe'range);
-        last : std_logic
+        data : std_ulogic_vector(input_data'range);
+        strobe : std_ulogic_vector(input_strobe'range);
+        last : std_ulogic
       ) is
       begin
         data_is_valid <= '1';
@@ -168,13 +168,13 @@ begin
         data_is_valid <= '0';
       end procedure;
 
-      procedure send_zero_input_word(last : std_logic) is
+      procedure send_zero_input_word(last : std_ulogic) is
       begin
         send_input_word(data=>(others => '0'), strobe=>(others => '0'), last=>last);
       end procedure;
 
-      variable data : std_logic_vector(input_data'range) := (others => '0');
-      variable strobe : std_logic_vector(input_strobe'range) := (others => '0');
+      variable data : std_ulogic_vector(input_data'range) := (others => '0');
+      variable strobe : std_ulogic_vector(input_strobe'range) := (others => '0');
     begin
       while is_empty(input_data_queue) loop
         wait until rising_edge(clk);
@@ -192,7 +192,7 @@ begin
 
         data_value := get(arr=>input_bytes, idx=>byte_idx);
         data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) :=
-          std_logic_vector(to_unsigned(data_value, 8));
+          std_ulogic_vector(to_unsigned(data_value, 8));
 
         strobe(byte_lane_idx) := '1';
 

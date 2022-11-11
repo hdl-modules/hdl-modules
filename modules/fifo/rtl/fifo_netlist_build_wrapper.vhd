@@ -23,17 +23,17 @@ entity fifo_netlist_build_wrapper is
     enable_output_register : boolean
   );
   port (
-    clk : in std_logic;
-    clk_read : in std_logic;
-    clk_write : in std_logic;
+    clk : in std_ulogic;
+    clk_read : in std_ulogic;
+    clk_write : in std_ulogic;
     --# {{}}
-    read_ready : in std_logic;
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
+    read_ready : in std_ulogic;
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
     --# {{}}
-    write_ready : out std_logic := '1';
-    write_valid : in std_logic;
-    write_data : in std_logic_vector(width - 1 downto 0)
+    write_ready : out std_ulogic := '1';
+    write_valid : in std_ulogic;
+    write_data : in std_ulogic_vector(width - 1 downto 0)
   );
 end entity;
 

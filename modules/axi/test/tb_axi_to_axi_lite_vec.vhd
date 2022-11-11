@@ -62,8 +62,8 @@ architecture tb of tb_axi_to_axi_lite_vec is
   constant clocks_are_the_same : boolean_vector(axi_lite_slaves'range) :=
     (0 => true, 1 => true, 2 => false, 3 => false, 4 => false, 5 => false);
 
-  signal clk_axi : std_logic := '0';
-  signal clk_axi_lite_vec : std_logic_vector(axi_lite_slaves'range) := (others => '0');
+  signal clk_axi : std_ulogic := '0';
+  signal clk_axi_lite_vec : std_ulogic_vector(axi_lite_slaves'range) := (others => '0');
 
   signal axi_m2s : axi_m2s_t;
   signal axi_s2m : axi_s2m_t;
@@ -86,8 +86,8 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    constant beef : std_logic_vector(32 - 1 downto 0) := x"beef_beef";
-    constant dead : std_logic_vector(32 - 1 downto 0) := x"dead_dead";
+    constant beef : std_ulogic_vector(32 - 1 downto 0) := x"beef_beef";
+    constant dead : std_ulogic_vector(32 - 1 downto 0) := x"dead_dead";
   begin
     test_runner_setup(runner, runner_cfg);
 

@@ -10,7 +10,7 @@
 --
 -- Data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
 -- :doc:`VUnit queue <vunit:data_types/queue>`.
--- Each element in the ``integer_array`` should be an unsigned byte.
+-- Each element in the ``integer_array`` should be an u_unsigned byte.
 -- Little endian byte order is assumed.
 --
 -- The byte length of the packets (as indicated by the length of the ``data_queue`` arrays)
@@ -49,16 +49,16 @@ entity axi_stream_master is
     strobe_unit_width : positive := 8;
     -- When 'valid' is zero, the associated output ports will be driven with this value.
     -- This is to avoid a DUT sampling the values in the wrong clock cycle.
-    drive_invalid_value : std_logic := 'X'
+    drive_invalid_value : std_ulogic := 'X'
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    ready : in std_logic;
-    valid : out std_logic := '0';
-    last : out std_logic := drive_invalid_value;
-    data : out std_logic_vector(data_width - 1 downto 0) := (others => drive_invalid_value);
-    strobe : out std_logic_vector(data_width / strobe_unit_width - 1 downto 0)
+    ready : in std_ulogic;
+    valid : out std_ulogic := '0';
+    last : out std_ulogic := drive_invalid_value;
+    data : out std_ulogic_vector(data_width - 1 downto 0) := (others => drive_invalid_value);
+    strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0)
       := (others => drive_invalid_value)
   );
 end entity;
@@ -68,14 +68,14 @@ architecture a of axi_stream_master is
   constant bytes_per_beat : positive := data_width / 8;
   constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
-  signal last_int : std_logic := drive_invalid_value;
-  signal data_int : std_logic_vector(data'range) := (others => drive_invalid_value);
-  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) :=
+  signal last_int : std_ulogic := drive_invalid_value;
+  signal data_int : std_ulogic_vector(data'range) := (others => drive_invalid_value);
+  signal strobe_byte : std_ulogic_vector(data_width / 8 - 1 downto 0) :=
     (others => '0');
-  signal strobe_int : std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+  signal strobe_int : std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
     (others => '0');
 
-  signal data_is_valid : std_logic := '0';
+  signal data_is_valid : std_ulogic := '0';
 
 begin
 
@@ -105,7 +105,7 @@ begin
 
       data_value := get(arr=>data_packet, idx=>byte_idx);
       data_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
-        std_logic_vector(to_unsigned(data_value, 8));
+        std_ulogic_vector(to_unsigned(data_value, 8));
 
       strobe_byte(byte_lane_idx) <= '1';
 

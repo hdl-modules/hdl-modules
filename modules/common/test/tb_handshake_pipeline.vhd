@@ -36,17 +36,17 @@ end entity;
 
 architecture tb of tb_handshake_pipeline is
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
   constant data_width : positive := 16;
   constant bytes_per_beat : positive := data_width / 8;
 
-  signal input_ready, input_valid, input_last : std_logic := '0';
-  signal output_ready, output_valid, output_last : std_logic := '0';
+  signal input_ready, input_valid, input_last : std_ulogic := '0';
+  signal output_ready, output_valid, output_last : std_ulogic := '0';
 
-  signal input_data, output_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
-  signal input_strobe, output_strobe : std_logic_vector(data_width / 8 - 1 downto 0) :=
+  signal input_data, output_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal input_strobe, output_strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) :=
     (others => '0');
 
   constant input_data_queue, output_data_queue : queue_t := new_queue;

@@ -59,14 +59,14 @@ architecture tb of tb_axi_lite_reg_file is
     (idx => 14, reg_type => r_wpulse)
   );
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t;
   signal axi_lite_s2m : axi_lite_s2m_t;
 
   signal regs_up : reg_vec_t(regs'range) := (others => (others => '0'));
   signal regs_down : reg_vec_t(regs'range);
-  signal reg_was_read, reg_was_written : std_logic_vector(regs'range);
+  signal reg_was_read, reg_was_written : std_ulogic_vector(regs'range);
 
   constant axi_master : bus_master_t := new_bus(
     data_length => reg_width,
@@ -74,7 +74,7 @@ architecture tb of tb_axi_lite_reg_file is
   );
 
   constant reg_zero : reg_t := (others => '0');
-  constant reg_was_accessed_zero : std_logic_vector(reg_was_written'range) := (others => '0');
+  constant reg_was_accessed_zero : std_ulogic_vector(reg_was_written'range) := (others => '0');
 
 begin
 
@@ -99,7 +99,7 @@ begin
     end procedure;
 
     procedure reg_data_check(reg : reg_definition_t) is
-      variable reg_was_accessed_expected : std_logic_vector(reg_was_written'range)
+      variable reg_was_accessed_expected : std_ulogic_vector(reg_was_written'range)
         := (others => '0');
       variable read_bus_reference : bus_reference_t;
       variable read_bus_data : reg_t;

@@ -46,13 +46,13 @@ architecture tb of tb_fifo is
 
   constant width : integer := 8;
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   signal level : integer;
 
-  signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_logic := '0';
-  signal write_ready, write_valid, write_last, almost_full : std_logic := '0';
-  signal read_data, write_data : std_logic_vector(width - 1 downto 0) := (others => '0');
-  signal drop_packet : std_logic := '0';
+  signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_ulogic := '0';
+  signal write_ready, write_valid, write_last, almost_full : std_ulogic := '0';
+  signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
+  signal drop_packet : std_ulogic := '0';
 
   signal has_gone_full_times, has_gone_empty_times : integer := 0;
 
@@ -70,7 +70,7 @@ architecture tb of tb_fifo is
   constant write_data_queue, write_last_queue, read_data_queue, read_last_queue : queue_t :=
     new_queue;
 
-  signal stimuli_inactive, read_is_ready : std_logic := '0';
+  signal stimuli_inactive, read_is_ready : std_ulogic := '0';
 
 begin
 
@@ -84,7 +84,7 @@ begin
     variable rnd : RandomPType;
 
     procedure run_read(count : natural; wait_for_status_to_update : boolean := true) is
-      variable last_expected : std_logic := '0';
+      variable last_expected : std_ulogic := '0';
     begin
       for read_idx in 0 to count - 1 loop
         read_is_ready <= '1';
@@ -114,8 +114,8 @@ begin
       set_last_flag : boolean := true;
       wait_until_done : boolean := true
     ) is
-      variable data : std_logic_vector(write_data'range);
-      variable last : std_logic := '0';
+      variable data : std_ulogic_vector(write_data'range);
+      variable last : std_ulogic := '0';
     begin
       for write_idx in 0 to count - 1 loop
         data := rnd.RandSLV(data'length);
@@ -155,16 +155,16 @@ begin
       drop_packet <= '0';
     end procedure;
 
-    constant null_data : std_logic_vector(width - 1 downto 0) := (others => '0');
-    constant one : std_logic := '1';
-    constant zero : std_logic := '0';
+    constant null_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
+    constant one : std_ulogic := '1';
+    constant zero : std_ulogic := '0';
 
     -- For peek mode test, which is handled differently than the other tests
     constant num_packets : positive := 12;
     variable num_peek_iterations : positive := 1;
     variable num_words : positive := 1;
-    variable data : std_logic_vector(write_data'range);
-    variable last : std_logic := '0';
+    variable data : std_ulogic_vector(write_data'range);
+    variable last : std_ulogic := '0';
 
   begin
     test_runner_setup(runner, runner_cfg);
@@ -427,7 +427,7 @@ begin
 
   ------------------------------------------------------------------------------
   stimuli_block : block
-    signal data_is_valid : std_logic := '0';
+    signal data_is_valid : std_ulogic := '0';
   begin
 
     stimuli_inactive <= not data_is_valid;
@@ -486,7 +486,7 @@ begin
 
   ------------------------------------------------------------------------------
   status_tracking : process
-    variable read_transaction, write_transaction : std_logic := '0';
+    variable read_transaction, write_transaction : std_ulogic := '0';
   begin
     wait until rising_edge(clk);
 
@@ -511,7 +511,7 @@ begin
   check_no_bubble_cycles_in_packet_mode : if (
     enable_packet_mode or enable_drop_packet or enable_peek_mode
   ) generate
-    signal start_event, end_event, en : std_logic := '0';
+    signal start_event, end_event, en : std_ulogic := '0';
   begin
     -- These inputs must be signals (not constants), so assign them here instead of the port
     -- map directly

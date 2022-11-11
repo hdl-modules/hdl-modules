@@ -41,15 +41,15 @@ architecture tb of tb_keep_remover is
   constant bytes_per_atom : positive := strobe_unit_width / 8;
   constant atoms_per_word : positive := data_width / strobe_unit_width;
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid, input_last : std_logic := '0';
-  signal output_ready, output_valid, output_last : std_logic := '0';
+  signal input_ready, input_valid, input_last : std_ulogic := '0';
+  signal output_ready, output_valid, output_last : std_ulogic := '0';
 
-  signal input_data, output_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
+  signal input_data, output_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
   signal input_keep, output_strobe :
-    std_logic_vector(data_width / strobe_unit_width - 1 downto 0) := (others => '0');
+    std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) := (others => '0');
 
   constant input_data_queue, reference_data_queue : queue_t := new_queue;
 
@@ -134,8 +134,8 @@ begin
 
   ------------------------------------------------------------------------------
   input_block : block
-    signal data_is_valid : std_logic := '0';
-    signal input_keep_byte : std_logic_vector(input_data'length / 8 - 1 downto 0) :=
+    signal data_is_valid : std_ulogic := '0';
+    signal input_keep_byte : std_ulogic_vector(input_data'length / 8 - 1 downto 0) :=
       (others => '0');
   begin
 
@@ -192,7 +192,7 @@ begin
 
           data_value := get(arr=>input_bytes, idx=>array_byte_idx + data_byte_idx);
           input_data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
-            std_logic_vector(to_unsigned(data_value, 8));
+            std_ulogic_vector(to_unsigned(data_value, 8));
 
           -- Set atom strobe
           input_keep(byte_lane_idx / bytes_per_atom) <= '1';

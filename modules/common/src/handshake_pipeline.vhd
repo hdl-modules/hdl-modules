@@ -36,22 +36,22 @@ entity handshake_pipeline is
     strobe_unit_width : positive := 8
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '0';
-    input_valid : in std_logic;
+    input_ready : out std_ulogic := '0';
+    input_valid : in std_ulogic;
     -- Optional to connect.
-    input_last : in std_logic := '-';
-    input_data : in std_logic_vector(data_width - 1 downto 0) := (others => '-');
+    input_last : in std_ulogic := '-';
+    input_data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '-');
     -- Optional to connect. Must set valid 'strobe_unit_width' generic value in order to use this.
-    input_strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+    input_strobe : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '-');
     --# {{}}
-    output_ready : in std_logic;
-    output_valid : out std_logic := '0';
-    output_last : out std_logic := '0';
-    output_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    output_strobe : out std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+    output_ready : in std_ulogic;
+    output_valid : out std_ulogic := '0';
+    output_last : out std_ulogic := '0';
+    output_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    output_strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '0')
   );
 end entity;
@@ -69,14 +69,14 @@ begin
     -- a register.  It does so while sustaining full throughput. It has the best timing
     -- characteristics but also the largest logic footprint.
 
-    signal input_ready_int : std_logic := '1';
+    signal input_ready_int : std_ulogic := '1';
 
     type state_t is (wait_for_input_valid, full_handshake_throughput, wait_for_output_ready);
     signal state : state_t := wait_for_input_valid;
 
-    signal input_last_skid : std_logic := '0';
-    signal input_data_skid : std_logic_vector(input_data'range) := (others => '0');
-    signal input_strobe_skid : std_logic_vector(input_strobe'range) := (others => '0');
+    signal input_last_skid : std_ulogic := '0';
+    signal input_data_skid : std_ulogic_vector(input_data'range) := (others => '0');
+    signal input_strobe_skid : std_ulogic_vector(input_strobe'range) := (others => '0');
 
   begin
 

@@ -34,7 +34,7 @@ entity axi_lite_master is
     bus_handle : bus_master_t
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_lite_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     axi_lite_s2m : in axi_lite_s2m_t := axi_lite_s2m_init
@@ -43,18 +43,18 @@ end entity;
 
 architecture a of axi_lite_master is
 
-  signal rdata, wdata : std_logic_vector(data_length(bus_handle) - 1 downto 0);
-  signal wstrb : std_logic_vector(byte_enable_length(bus_handle) - 1 downto 0);
+  signal rdata, wdata : std_ulogic_vector(data_length(bus_handle) - 1 downto 0);
+  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0);
 
-  signal araddr, awaddr : std_logic_vector(address_length(bus_handle) - 1 downto 0);
+  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0);
 
 begin
 
   ------------------------------------------------------------------------------
-  axi_lite_m2s.read.ar.addr(araddr'range) <= unsigned(araddr);
+  axi_lite_m2s.read.ar.addr(araddr'range) <= u_unsigned(araddr);
   rdata <= axi_lite_s2m.read.r.data(rdata'range);
 
-  axi_lite_m2s.write.aw.addr(awaddr'range) <= unsigned(awaddr);
+  axi_lite_m2s.write.aw.addr(awaddr'range) <= u_unsigned(awaddr);
   axi_lite_m2s.write.w.data(wdata'range) <= wdata;
   axi_lite_m2s.write.w.strb(wstrb'range) <= wstrb;
 

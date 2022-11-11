@@ -40,19 +40,19 @@ architecture tb of tb_handshake_mux is
   constant num_inputs : positive := 4;
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid, input_last : std_logic_vector(0 to num_inputs - 1) :=
+  signal input_ready, input_valid, input_last : std_ulogic_vector(0 to num_inputs - 1) :=
     (others => '0');
   signal input_data : slv_vec_t(input_valid'range)(data_width - 1 downto 0) :=
     (others => (others => '0'));
   signal input_strobe : slv_vec_t(input_valid'range)(data_width / 8 - 1 downto 0) :=
     (others => (others => '0'));
 
-  signal result_ready, result_valid, result_last : std_logic := '0';
-  signal result_data : std_logic_vector(data_width - 1 downto 0) := (others => '0');
-  signal result_strobe : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+  signal result_ready, result_valid, result_last : std_ulogic := '0';
+  signal result_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal result_strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
   signal result_id : natural range input_valid'range := 0;
 
   -- Testbench stuff
@@ -120,7 +120,7 @@ begin
 
   ------------------------------------------------------------------------------
   bfm_block : block
-    signal bfm_result_ready, bfm_result_valid : std_logic_vector(input_valid'range) :=
+    signal bfm_result_ready, bfm_result_valid : std_ulogic_vector(input_valid'range) :=
       (others => '0');
   begin
 

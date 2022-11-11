@@ -25,8 +25,8 @@ package axi_lite_pkg is
   ------------------------------------------------------------------------------
 
   type axi_lite_m2s_a_t is record
-    valid : std_logic;
-    addr : unsigned(axi_a_addr_sz - 1 downto 0);
+    valid : std_ulogic;
+    addr : u_unsigned(axi_a_addr_sz - 1 downto 0);
     -- Excluded members: prot
     -- These are typically not changed on a transfer-to-transfer basis.
   end record;
@@ -35,7 +35,7 @@ package axi_lite_pkg is
   function axi_lite_m2s_a_sz(addr_width : positive) return positive;
 
   type axi_lite_s2m_a_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_lite_s2m_a_init : axi_lite_s2m_a_t := (ready => '0');
@@ -49,25 +49,25 @@ package axi_lite_pkg is
   constant axi_lite_data_sz : positive := 64;
   constant axi_lite_w_strb_sz : positive := axi_lite_data_sz / 8;
 
-  function to_axi_lite_strb(data_width : positive) return std_logic_vector;
+  function to_axi_lite_strb(data_width : positive) return std_ulogic_vector;
 
   type axi_lite_m2s_w_t is record
-    valid : std_logic;
-    data : std_logic_vector(axi_lite_data_sz - 1 downto 0);
-    strb : std_logic_vector(axi_lite_w_strb_sz - 1 downto 0);
+    valid : std_ulogic;
+    data : std_ulogic_vector(axi_lite_data_sz - 1 downto 0);
+    strb : std_ulogic_vector(axi_lite_w_strb_sz - 1 downto 0);
   end record;
 
   constant axi_lite_m2s_w_init : axi_lite_m2s_w_t := (valid => '0', others => (others => '-'));
 
   function axi_lite_m2s_w_sz(data_width : positive) return positive;
-  function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_logic_vector;
+  function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_ulogic_vector;
   function to_axi_lite_m2s_w(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive
   ) return axi_lite_m2s_w_t;
 
   type axi_lite_s2m_w_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_lite_s2m_w_init : axi_lite_s2m_w_t := (ready => '0');
@@ -78,14 +78,14 @@ package axi_lite_pkg is
   ------------------------------------------------------------------------------
 
   type axi_lite_m2s_b_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_lite_m2s_b_init : axi_lite_m2s_b_t := (ready => '0');
 
   type axi_lite_s2m_b_t is record
-    valid : std_logic;
-    resp : std_logic_vector(axi_resp_sz - 1 downto 0);
+    valid : std_ulogic;
+    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   end record;
 
   constant axi_lite_s2m_b_init : axi_lite_s2m_b_t := (valid => '0', others => (others => '0'));
@@ -98,22 +98,22 @@ package axi_lite_pkg is
   ------------------------------------------------------------------------------
 
   type axi_lite_m2s_r_t is record
-    ready : std_logic;
+    ready : std_ulogic;
   end record;
 
   constant axi_lite_m2s_r_init : axi_lite_m2s_r_t := (ready => '0');
 
   type axi_lite_s2m_r_t is record
-    valid : std_logic;
-    data : std_logic_vector(axi_lite_data_sz - 1 downto 0);
-    resp : std_logic_vector(axi_resp_sz - 1 downto 0);
+    valid : std_ulogic;
+    data : std_ulogic_vector(axi_lite_data_sz - 1 downto 0);
+    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   end record;
 
   constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (valid => '0', others => (others => '0'));
   function axi_lite_s2m_r_sz(data_width : positive) return positive;
-  function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_logic_vector;
+  function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_ulogic_vector;
   function to_axi_lite_s2m_r(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive
   ) return axi_lite_s2m_r_t;
 
@@ -210,15 +210,15 @@ package body axi_lite_pkg is
     return data_width + axi_w_strb_width(data_width);
   end function;
 
-  function to_axi_lite_strb(data_width : positive) return std_logic_vector is
-    variable result : std_logic_vector(axi_lite_w_strb_sz - 1 downto 0) := (others => '0');
+  function to_axi_lite_strb(data_width : positive) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_lite_w_strb_sz - 1 downto 0) := (others => '0');
   begin
     result(data_width / 8 - 1 downto 0) := (others => '1');
     return result;
   end function;
 
-  function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_logic_vector is
-    variable result : std_logic_vector(axi_lite_m2s_w_sz(data_width) - 1 downto 0);
+  function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_lite_m2s_w_sz(data_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
@@ -232,7 +232,7 @@ package body axi_lite_pkg is
   end function;
 
   function to_axi_lite_m2s_w(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive
   ) return axi_lite_m2s_w_t is
     variable result : axi_lite_m2s_w_t := axi_lite_m2s_w_init;
@@ -254,8 +254,8 @@ package body axi_lite_pkg is
     return data_width + axi_resp_sz;
   end function;
 
-  function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_logic_vector is
-    variable result : std_logic_vector(axi_lite_s2m_r_sz(data_width) - 1 downto 0);
+  function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_ulogic_vector is
+    variable result : std_ulogic_vector(axi_lite_s2m_r_sz(data_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
     lo := 0;
@@ -269,7 +269,7 @@ package body axi_lite_pkg is
   end function;
 
   function to_axi_lite_s2m_r(
-    data : std_logic_vector;
+    data : std_ulogic_vector;
     data_width : positive
   ) return axi_lite_s2m_r_t is
     variable result : axi_lite_s2m_r_t := axi_lite_s2m_r_init;

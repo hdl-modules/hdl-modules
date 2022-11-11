@@ -10,7 +10,7 @@
 --
 -- Reference data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
 -- :doc:`VUnit queue <vunit:data_types/queue>`.
--- Each element in the ``integer_array`` should be an unsigned byte.
+-- Each element in the ``integer_array`` should be an u_unsigned byte.
 -- Little endian byte order is assumed.
 --
 -- An optional expected ID is pushed as a ``natural`` to another ``queue`` by the user.
@@ -63,14 +63,14 @@ entity axi_stream_slave is
     disable_last_check : boolean := false
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --
-    ready : out std_logic := '0';
-    valid : in std_logic;
-    last : in std_logic := '1';
-    id : in unsigned(id_width - 1 downto 0) := (others => '0');
-    data : in std_logic_vector(data_width - 1 downto 0);
-    strobe : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+    ready : out std_ulogic := '0';
+    valid : in std_ulogic;
+    last : in std_ulogic := '1';
+    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
+    data : in std_ulogic_vector(data_width - 1 downto 0);
+    strobe : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '1');
     --
     num_packets_checked : out natural := 0
@@ -82,9 +82,9 @@ architecture a of axi_stream_slave is
   constant bytes_per_beat : positive := data_width / 8;
   constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
-  signal strobe_byte : std_logic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+  signal strobe_byte : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
-  signal data_is_ready : std_logic := '0';
+  signal data_is_ready : std_ulogic := '0';
 
 begin
 
@@ -139,7 +139,7 @@ begin
           & ",byte_idx=" & to_string(byte_idx)
       );
       check_equal(
-        unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+        u_unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
         get(arr=>reference_data, idx=>byte_idx),
         "'data' check at packet_idx="
           & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
@@ -147,7 +147,7 @@ begin
 
       if id'length > 0 then
         check_equal(
-          unsigned(id),
+          u_unsigned(id),
           reference_id,
           "'id' check at packet_idx="
             & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
@@ -202,7 +202,7 @@ begin
 
   ------------------------------------------------------------------------------
   handshake_slave_block : block
-    signal last_int : std_logic := '0';
+    signal last_int : std_ulogic := '0';
   begin
 
     -- The VUnit protocol checker will give an error about "packet completion" unless 'last' arrives

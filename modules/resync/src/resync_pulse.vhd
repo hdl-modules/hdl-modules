@@ -33,16 +33,16 @@ entity resync_pulse is
     assert_false_on_pulse_overload : boolean := true
   );
   port (
-    clk_in : in std_logic;
-    pulse_in : in std_logic;
+    clk_in : in std_ulogic;
+    pulse_in : in std_ulogic;
     --# {{}}
-    clk_out : in std_logic;
-    pulse_out : out std_logic := '0'
+    clk_out : in std_ulogic;
+    pulse_out : out std_ulogic := '0'
   );
 end entity;
 
 architecture a of resync_pulse is
-  signal level_in, level_out, level_out_p1, level_out_feedback : std_logic := '0';
+  signal level_in, level_out, level_out_p1, level_out_feedback : std_ulogic := '0';
 begin
 
   ------------------------------------------------------------------------------

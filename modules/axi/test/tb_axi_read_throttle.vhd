@@ -40,7 +40,7 @@ architecture tb of tb_axi_read_throttle is
   constant data_fifo_depth : positive := 2 * max_burst_length_beats;
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal data_fifo_level : natural range 0 to data_fifo_depth;
 

@@ -23,7 +23,7 @@ use math.math_pkg.all;
 package reg_file_pkg is
 
   constant reg_width : positive := 32;
-  subtype reg_t is std_logic_vector(reg_width - 1 downto 0);
+  subtype reg_t is std_ulogic_vector(reg_width - 1 downto 0);
   type reg_vec_t is array (integer range <>) of reg_t;
 
   type reg_type_t is (

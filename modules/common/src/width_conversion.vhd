@@ -92,24 +92,24 @@ entity width_conversion is
     support_unaligned_packet_length : boolean := false
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '1';
-    input_valid : in std_logic;
+    input_ready : out std_ulogic := '1';
+    input_valid : in std_ulogic;
     -- Optional packet 'last' signalling. Must set 'enable_last' generic in order to use this.
-    input_last : in std_logic := '0';
-    input_data : in std_logic_vector(input_width - 1 downto 0);
+    input_last : in std_ulogic := '0';
+    input_data : in std_ulogic_vector(input_width - 1 downto 0);
     -- Optional word strobe. Must set 'enable_strobe' generic in order to use this.
-    input_strobe : in std_logic_vector(input_width / strobe_unit_width - 1 downto 0) :=
+    input_strobe : in std_ulogic_vector(input_width / strobe_unit_width - 1 downto 0) :=
       (others => '1');
     --# {{}}
-    output_ready : in std_logic;
-    output_valid : out std_logic := '0';
+    output_ready : in std_ulogic;
+    output_valid : out std_ulogic := '0';
     -- Optional packet 'last' signalling. Must set 'enable_last' generic in order to use this.
-    output_last : out std_logic := '0';
-    output_data : out std_logic_vector(output_width - 1 downto 0) := (others => '0');
+    output_last : out std_ulogic := '0';
+    output_data : out std_ulogic_vector(output_width - 1 downto 0) := (others => '0');
     -- Optional word strobe. Must set 'enable_strobe' generic in order to use this.
-    output_strobe : out std_logic_vector(output_width / strobe_unit_width - 1 downto 0) :=
+    output_strobe : out std_ulogic_vector(output_width / strobe_unit_width - 1 downto 0) :=
       (others => '1')
   );
 end entity;
@@ -134,27 +134,27 @@ architecture a of width_conversion is
   constant atom_data_width : positive := get_atom_data_width;
   constant atom_strobe_width : positive := atom_data_width / strobe_unit_width;
 
-  subtype atom_data_t is std_logic_vector(atom_data_width - 1 downto 0);
-  subtype atom_strobe_t is std_logic_vector(atom_strobe_width - 1 downto 0);
+  subtype atom_data_t is std_ulogic_vector(atom_data_width - 1 downto 0);
+  subtype atom_strobe_t is std_ulogic_vector(atom_strobe_width - 1 downto 0);
 
   constant num_atoms_per_input : positive := input_width / atom_data_width;
   constant num_atoms_per_output : positive := output_width / atom_data_width;
 
   constant packed_atom_width : positive :=
     atom_data_width + to_int(enable_last) + to_int(enable_strobe) * atom_strobe_width;
-  subtype packed_atom_t is std_logic_vector(packed_atom_width - 1 downto 0);
+  subtype packed_atom_t is std_ulogic_vector(packed_atom_width - 1 downto 0);
 
   constant stored_atom_count_max : positive := num_atoms_per_input + num_atoms_per_output;
   constant shift_reg_length : positive := stored_atom_count_max * packed_atom_width;
-  signal shift_reg : std_logic_vector(shift_reg_length - 1 downto 0) := (others => '0');
+  signal shift_reg : std_ulogic_vector(shift_reg_length - 1 downto 0) := (others => '0');
 
   signal num_atoms_stored : natural range 0 to stored_atom_count_max := 0;
 
   impure function pack(
     atom_data : atom_data_t;
     atom_strobe : atom_strobe_t;
-    atom_last : std_logic
-  ) return std_logic_vector is
+    atom_last : std_ulogic
+  ) return std_ulogic_vector is
     variable result : packed_atom_t := (others => '0');
     variable hi, lo : natural := 0;
   begin
@@ -183,7 +183,7 @@ architecture a of width_conversion is
     packed : in packed_atom_t;
     atom_data : out atom_data_t;
     atom_strobe : out atom_strobe_t;
-    atom_last : out std_logic
+    atom_last : out std_ulogic
   ) is
     variable hi, lo : natural := 0;
   begin
@@ -206,12 +206,12 @@ architecture a of width_conversion is
     assert hi = packed'high report "Something wrong with widths" severity failure;
   end procedure;
 
-  signal padded_input_ready, padded_input_valid, padded_input_last : std_logic := '0';
-  signal padded_input_data : std_logic_vector(input_data'range) := (others => '0');
-  signal padded_input_strobe : std_logic_vector(input_strobe'range) := (others => '0');
+  signal padded_input_ready, padded_input_valid, padded_input_last : std_ulogic := '0';
+  signal padded_input_data : std_ulogic_vector(input_data'range) := (others => '0');
+  signal padded_input_strobe : std_ulogic_vector(input_strobe'range) := (others => '0');
 
-  signal output_ready_int, output_valid_int, output_last_int : std_logic := '0';
-  signal output_strobe_int : std_logic_vector(output_strobe'range) := (others => '0');
+  signal output_ready_int, output_valid_int, output_last_int : std_ulogic := '0';
+  signal output_strobe_int : std_ulogic_vector(output_strobe'range) := (others => '0');
 
 begin
 
@@ -323,13 +323,13 @@ begin
 
     variable atom_data : atom_data_t := (others => '0');
     variable atom_strobe : atom_strobe_t := (others => '0');
-    variable atom_last : std_logic := '0';
+    variable atom_last : std_ulogic := '0';
 
     variable atom_idx_to_write_last : natural range 0 to num_atoms_per_input - 1 :=
       num_atoms_per_input - 1;
 
     variable packed_data_to_shift_in : packed_atom_t := (others => '0');
-    variable shift_reg_next : std_logic_vector(shift_reg'range) := (others => '0');
+    variable shift_reg_next : std_ulogic_vector(shift_reg'range) := (others => '0');
   begin
     wait until rising_edge(clk);
 
@@ -395,7 +395,7 @@ begin
 
     variable packed_atom : packed_atom_t := (others => '0');
 
-    variable atoms_last : std_logic_vector(num_atoms_per_output - 1 downto 0) := (others => '0');
+    variable atoms_last : std_ulogic_vector(num_atoms_per_output - 1 downto 0) := (others => '0');
     variable atom_data : atom_data_t := (others => '0');
     variable atom_strobe : atom_strobe_t := (others => '0');
   begin
@@ -446,7 +446,7 @@ begin
 
   ------------------------------------------------------------------------------
   strip_output_data_generate : if is_downconversion and support_unaligned_packet_length generate
-    signal strobe_all_zero : std_logic_vector(output_strobe'range) := (others => '0');
+    signal strobe_all_zero : std_ulogic_vector(output_strobe'range) := (others => '0');
   begin
 
     -- The write processing will place 'last' indicator on the last atom that is strobed.

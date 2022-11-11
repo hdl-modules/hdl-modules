@@ -37,7 +37,7 @@ entity tb_axi_to_axi_lite_bus_error is
 end entity;
 
 architecture tb of tb_axi_to_axi_lite_bus_error is
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal axi_m2s : axi_m2s_t;
   signal axi_s2m : axi_s2m_t;
@@ -56,7 +56,7 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    procedure test_ar(len, size : integer; resp : std_logic_vector) is
+    procedure test_ar(len, size : integer; resp : std_ulogic_vector) is
     begin
       axi_lite_s2m.read.ar.ready <= '1';
 
@@ -72,7 +72,7 @@ begin
       check_equal(axi_s2m.read.r.resp, resp);
     end procedure;
 
-    procedure test_aw(len, size : integer; resp : std_logic_vector) is
+    procedure test_aw(len, size : integer; resp : std_ulogic_vector) is
     begin
       axi_lite_s2m.write.aw.ready <= '1';
 

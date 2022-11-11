@@ -37,19 +37,19 @@ use math.math_pkg.all;
 entity resync_cycles is
   generic (
     counter_width : positive;
-    active_level : std_logic := '1'
+    active_level : std_ulogic := '1'
   );
   port (
-    clk_in : in std_logic;
-    data_in : in std_logic;
+    clk_in : in std_ulogic;
+    data_in : in std_ulogic;
     --# {{}}
-    clk_out : in std_logic;
-    data_out : out std_logic := (not active_level)
+    clk_out : in std_ulogic;
+    data_out : out std_ulogic := (not active_level)
   );
 end entity;
 
 architecture a of resync_cycles is
-  signal counter_in, counter_in_resync, counter_out : unsigned(counter_width - 1 downto 0)
+  signal counter_in, counter_in_resync, counter_out : u_unsigned(counter_width - 1 downto 0)
     := (others => '0');
 begin
 
@@ -94,7 +94,7 @@ begin
 
   ------------------------------------------------------------------------------
   check_counter_wrapping : process
-    variable counter_in_p1 : unsigned(counter_in'range) := (others => '0');
+    variable counter_in_p1 : u_unsigned(counter_in'range) := (others => '0');
   begin
     wait until rising_edge(clk_out);
 

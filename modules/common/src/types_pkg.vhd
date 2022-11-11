@@ -17,9 +17,9 @@ use ieee.std_logic_1164.all;
 
 package types_pkg is
 
-  type slv_vec_t is array (integer range <>) of std_logic_vector;
-  type unsigned_vec_t is array (integer range <>) of unsigned;
-  type signed_vec_t is array (integer range <>) of signed;
+  type slv_vec_t is array (integer range <>) of std_ulogic_vector;
+  type unsigned_vec_t is array (integer range <>) of u_unsigned;
+  type signed_vec_t is array (integer range <>) of u_signed;
 
   type natural_vec_t is array (integer range <>) of natural;
   function sum(data : natural_vec_t) return natural;
@@ -33,21 +33,21 @@ package types_pkg is
   type real_vec_t is array (integer range <>) of real;
   type boolean_vec_t is array (integer range <>) of boolean;
 
-  function to_sl(value : boolean) return std_logic;
-  function to_bool(value : std_logic) return boolean;
+  function to_sl(value : boolean) return std_ulogic;
+  function to_bool(value : std_ulogic) return boolean;
   function to_bool(value : natural) return boolean;
 
   subtype binary_integer_t is integer range 0 to 1;
   function to_int(value : boolean) return binary_integer_t;
-  function to_int(value : std_logic) return binary_integer_t;
+  function to_int(value : std_ulogic) return binary_integer_t;
 
   subtype binary_real_t is real range 0.0 to 1.0;
   function to_real(value : boolean) return binary_real_t;
 
-  function swap_byte_order(data : std_logic_vector) return std_logic_vector;
-  function swap_bit_order(data : std_logic_vector) return std_logic_vector;
+  function swap_byte_order(data : std_ulogic_vector) return std_ulogic_vector;
+  function swap_bit_order(data : std_ulogic_vector) return std_ulogic_vector;
 
-  function count_ones(data : std_logic_vector) return natural;
+  function count_ones(data : std_ulogic_vector) return natural;
 
   --------------------------------------------------------------------------------------------------
   -- Functions for converting between frequency and period values using the 'time' type.
@@ -115,7 +115,7 @@ package body types_pkg is
     return result;
   end function;
 
-  function to_sl(value : boolean) return std_logic is
+  function to_sl(value : boolean) return std_ulogic is
   begin
     if value then
       return '1';
@@ -123,14 +123,14 @@ package body types_pkg is
     return '0';
   end function;
 
-  function to_bool(value : std_logic) return boolean is
+  function to_bool(value : std_ulogic) return boolean is
   begin
     if value = '1' then
       return true;
     elsif value = '0' then
       return false;
     end if;
-    assert false report "Can not convert value: " & std_logic'image(value) severity failure;
+    assert false report "Can not convert value: " & std_ulogic'image(value) severity failure;
     return false;
   end function;
 
@@ -156,7 +156,7 @@ package body types_pkg is
     end if;
   end function;
 
-  function to_int(value : std_logic) return binary_integer_t is
+  function to_int(value : std_ulogic) return binary_integer_t is
   begin
     if value = '1' then
       return 1;
@@ -172,8 +172,8 @@ package body types_pkg is
     return 0.0;
   end function;
 
-  function swap_byte_order(data : std_logic_vector) return std_logic_vector is
-    variable result : std_logic_vector(data'range);
+  function swap_byte_order(data : std_ulogic_vector) return std_ulogic_vector is
+    variable result : std_ulogic_vector(data'range);
     constant num_bytes : integer := data'length / 8;
     variable result_byte_idx : integer;
   begin
@@ -192,9 +192,9 @@ package body types_pkg is
     return result;
   end function;
 
-  function swap_bit_order(data : std_logic_vector) return std_logic_vector is
+  function swap_bit_order(data : std_ulogic_vector) return std_ulogic_vector is
     constant length : positive := data'length;
-    variable result : std_logic_vector(data'range);
+    variable result : std_ulogic_vector(data'range);
   begin
     -- While maintaining the range and vector direction, swap the location of the data bits.
 
@@ -205,7 +205,7 @@ package body types_pkg is
     return result;
   end function;
 
-  function count_ones(data : std_logic_vector) return natural is
+  function count_ones(data : std_ulogic_vector) return natural is
     variable result : integer range 0 to data'length := 0;
   begin
     for bit_idx in data'range loop
@@ -235,8 +235,8 @@ package body types_pkg is
     -- Using 'time' / 'time' -> 'universal_integer' function (IEEE Std 1076-2008, pp. 260).
     -- Note that 'universal_integer' range is implementation dependent.
     -- 'time' range is also implementation dependent, but guaranteed to be at least 32 bit
-    -- signed integer (pp. 41).
-    -- Vivado seems to handle 'universal_integer' as a 32 bit signed integer.
+    -- u_signed integer (pp. 41).
+    -- Vivado seems to handle 'universal_integer' as a 32 bit u_signed integer.
     -- We divide by "1 fs" below, in order to preserve the maximum resolution as a fixed point
     -- number before converting to a floating point number.
     -- The 'period_fs' value can overflow for 'period' values that are too small.

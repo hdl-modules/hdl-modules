@@ -40,29 +40,29 @@ begin
 
       variable data_a : axi_m2s_a_t := axi_m2s_a_init;
       variable data_a_converted :
-        std_logic_vector(axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width) - 1 downto 0) :=
+        std_ulogic_vector(axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width) - 1 downto 0) :=
         (others => '0');
-      variable data_a_slv : std_logic_vector(data_a_converted'high + offset_max downto 0) :=
+      variable data_a_slv : std_ulogic_vector(data_a_converted'high + offset_max downto 0) :=
         (others => '0');
 
       variable data_w : axi_m2s_w_t := axi_m2s_w_init;
       variable data_w_converted :
-        std_logic_vector(axi_m2s_w_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
+        std_ulogic_vector(axi_m2s_w_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
         (others => '0');
-      variable data_w_slv : std_logic_vector(data_w_converted'high + offset_max downto 0) :=
+      variable data_w_slv : std_ulogic_vector(data_w_converted'high + offset_max downto 0) :=
         (others => '0');
 
       variable data_r : axi_s2m_r_t := axi_s2m_r_init;
       variable data_r_converted :
-        std_logic_vector(axi_s2m_r_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
+        std_ulogic_vector(axi_s2m_r_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
         (others => '0');
-      variable data_r_slv : std_logic_vector(data_r_converted'high + offset_max downto 0) :=
+      variable data_r_slv : std_ulogic_vector(data_r_converted'high + offset_max downto 0) :=
         (others => '0');
 
       variable data_b : axi_s2m_b_t := axi_s2m_b_init;
-      variable data_b_converted : std_logic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0) :=
-        (others => '0');
-      variable data_b_slv : std_logic_vector(data_b_converted'high + offset_max downto 0) :=
+      variable data_b_converted : std_ulogic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0)
+        := (others => '0');
+      variable data_b_slv : std_ulogic_vector(data_b_converted'high + offset_max downto 0) :=
         (others => '0');
 
       variable hi, lo : integer := 0;
@@ -100,7 +100,7 @@ begin
     end procedure;
 
     procedure test_combine_response is
-      variable resp, resp1, resp2, expected : std_logic_vector(axi_resp_sz - 1 downto 0);
+      variable resp, resp1, resp2, expected : std_ulogic_vector(axi_resp_sz - 1 downto 0);
     begin
       for i in 0 to 1000 loop
         resp1 := rnd.RandSlv(resp'length);

@@ -42,10 +42,10 @@ architecture tb of tb_addr_pkg is
 begin
 
   main : process
-    variable value : signed(5 - 1 downto 0);
+    variable value : u_signed(5 - 1 downto 0);
 
     -- Use this function to get addr vector constrained
-    function decode(addr : unsigned(32 - 1 downto 0)) return integer is
+    function decode(addr : u_unsigned(32 - 1 downto 0)) return integer is
     begin
       return decode(addr, addrs);
     end function;

@@ -25,15 +25,15 @@ entity asynchronous_hard_fifo is
     primitive_type : fifo_primitive_t := primitive_fifo36e2
   );
   port (
-    clk_read : in std_logic;
-    read_ready : in std_logic;
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
+    clk_read : in std_ulogic;
+    read_ready : in std_ulogic;
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
     --# {{}}
-    clk_write : in std_logic;
-    write_ready : out std_logic := '0';
-    write_valid : in std_logic;
-    write_data : in std_logic_vector(data_width - 1 downto 0)
+    clk_write : in std_ulogic;
+    write_ready : out std_ulogic := '0';
+    write_valid : in std_ulogic;
+    write_data : in std_ulogic_vector(data_width - 1 downto 0)
   );
 end entity;
 

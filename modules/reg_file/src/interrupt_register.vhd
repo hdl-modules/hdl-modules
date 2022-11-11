@@ -29,14 +29,14 @@ use reg_file.reg_file_pkg.all;
 
 entity interrupt_register is
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     sources : in reg_t := (others => '0');
     mask : in reg_t := (others => '1');
     clear : in reg_t := (others => '0');
     --# {{}}
     status : out reg_t := (others => '0');
-    trigger : out std_logic := '0'
+    trigger : out std_ulogic := '0'
   );
 end entity;
 

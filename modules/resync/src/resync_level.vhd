@@ -66,19 +66,19 @@ entity resync_level is
     enable_input_register : boolean;
     -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
-    default_value : std_logic := '0'
+    default_value : std_ulogic := '0'
   );
   port (
-    clk_in : in std_logic := '-';
-    data_in : in std_logic;
+    clk_in : in std_ulogic := '-';
+    data_in : in std_ulogic;
     --# {{}}
-    clk_out : in std_logic;
-    data_out : out std_logic
+    clk_out : in std_ulogic;
+    data_out : out std_ulogic
   );
 end entity;
 
 architecture a of resync_level is
-  signal data_in_int, data_in_p1, data_out_int : std_logic := default_value;
+  signal data_in_int, data_in_p1, data_out_int : std_ulogic := default_value;
 
   attribute async_reg of data_in_p1 : signal is "true";
   attribute async_reg of data_out_int : signal is "true";

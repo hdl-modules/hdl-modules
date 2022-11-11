@@ -17,3 +17,10 @@ Breaking changes
 * Remove the ``remove_strobed_out_invalid_data`` generic from :ref:`bfm.axi_stream_slave`
   and :ref:`bfm.axi_write_slave`.
   This behavior is now always enabled.
+
+* Change to use unresolved VHDL types consistently.
+
+  * ``std_ulogic`` instead of ``std_logic``.
+  * ``std_ulogic_vector`` instead of ``std_logic_vector``.
+  * ``u_signed`` instead of ``signed``.
+  * ``u_unsigned`` instead of ``unsigned``.

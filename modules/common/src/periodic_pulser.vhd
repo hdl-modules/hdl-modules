@@ -62,10 +62,10 @@ entity periodic_pulser is
     shift_register_length : positive
   );
   port (
-    clk : in std_logic := '0';
+    clk : in std_ulogic := '0';
     --# {{}}
-    count_enable : in std_logic := '1';
-    pulse : out std_logic := '0'
+    count_enable : in std_ulogic := '1';
+    pulse : out std_ulogic := '0'
   );
 end entity;
 
@@ -115,8 +115,8 @@ architecture a of periodic_pulser is
 
   constant factors : stage_factors_t := get_mutual_prime_factors(period);
 
-  signal shift_reg_outputs : std_logic_vector(factors_vec_t'range) := (others => '1');
-  signal pulse_this_stage : std_logic := '0';
+  signal shift_reg_outputs : std_ulogic_vector(factors_vec_t'range) := (others => '1');
+  signal pulse_this_stage : std_ulogic := '0';
 
 begin
 
@@ -129,11 +129,11 @@ begin
     -- If the period doesn't fit in a few luts, we create a counter
     gen_counter : if period > shift_register_length * 4 generate
       constant num_counter_bits : integer := num_bits_needed(period - 1);
-      -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
-      signal tick_count : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+      -- Use an u_unsigned instead of integer for this counter, so that we can let it wrap.
+      signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := (others => '0');
     begin
       count : process
-        variable tick_count_next : unsigned(num_counter_bits - 1 downto 0) := (others => '0');
+        variable tick_count_next : u_unsigned(num_counter_bits - 1 downto 0) := (others => '0');
       begin
         wait until rising_edge(clk);
 
@@ -154,7 +154,7 @@ begin
 
     -- The period fits in a few luts, so create a long shift register
     else generate
-      signal shift_reg : std_logic_vector(0 to period - 1) := (0 => '1', others => '0');
+      signal shift_reg : std_ulogic_vector(0 to period - 1) := (0 => '1', others => '0');
     begin
       shift : process
       begin
@@ -180,7 +180,7 @@ begin
     gen_mutual_prime_srls : for idx in factors.this_stage'range generate
       gen_only_if_not_0 : if factors.this_stage(idx) /= 0 generate
         -- Create a shift register of the length of the current factor factor
-        signal shift_reg : std_logic_vector(0 to factors.this_stage(idx) - 1) :=
+        signal shift_reg : std_ulogic_vector(0 to factors.this_stage(idx) - 1) :=
           (0 => '1', others => '0');
       begin
         shift : process

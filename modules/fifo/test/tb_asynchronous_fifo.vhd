@@ -44,16 +44,16 @@ architecture tb of tb_asynchronous_fifo is
 
   constant width : integer := 8;
 
-  signal clk_read, clk_write : std_logic := '0';
+  signal clk_read, clk_write : std_ulogic := '0';
 
-  signal read_ready, read_valid, read_last : std_logic := '0';
-  signal write_ready, write_valid, write_last : std_logic := '0';
-  signal read_data, write_data : std_logic_vector(width - 1 downto 0) := (others => '0');
+  signal read_ready, read_valid, read_last : std_ulogic := '0';
+  signal write_ready, write_valid, write_last : std_ulogic := '0';
+  signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
 
   signal read_level, write_level : integer;
-  signal read_almost_empty, write_almost_full : std_logic := '0';
+  signal read_almost_empty, write_almost_full : std_ulogic := '0';
 
-  signal drop_packet : std_logic := '0';
+  signal drop_packet : std_ulogic := '0';
 
   signal has_gone_full_times, has_gone_empty_times : integer := 0;
 
@@ -97,8 +97,8 @@ begin
     variable rnd : RandomPType;
 
     procedure run_test(read_count, write_count : natural; set_last_flag : boolean := true) is
-      variable data : std_logic_vector(write_data'range);
-      variable last, last_expected : std_logic := '0';
+      variable data : std_ulogic_vector(write_data'range);
+      variable last, last_expected : std_ulogic := '0';
       variable axi_stream_pop_reference : axi_stream_reference_t;
     begin
       for write_idx in 0 to write_count - 1 loop
@@ -432,7 +432,7 @@ begin
 
   ------------------------------------------------------------------------------
   read_status_tracking : process
-    variable read_transaction : std_logic := '0';
+    variable read_transaction : std_ulogic := '0';
   begin
     wait until rising_edge(clk_read);
 
@@ -448,7 +448,7 @@ begin
 
   ------------------------------------------------------------------------------
   write_status_tracking : process
-    variable write_transaction : std_logic := '0';
+    variable write_transaction : std_ulogic := '0';
   begin
     wait until rising_edge(clk_write);
 
@@ -491,7 +491,7 @@ begin
 
   ------------------------------------------------------------------------------
   check_no_bubble_cycles_in_packet_mode : if enable_packet_mode or enable_drop_packet generate
-    signal start_event, end_event, en : std_logic := '0';
+    signal start_event, end_event, en : std_ulogic := '0';
   begin
     -- These inputs must be signals (not constants), so assign them here instead of the port
     -- map directly

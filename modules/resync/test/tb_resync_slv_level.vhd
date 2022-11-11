@@ -39,11 +39,11 @@ architecture tb of tb_resync_slv_level is
     end if;
   end function;
 
-  constant one : std_logic_vector(16 - 1 downto 0) := x"1111";
-  constant two : std_logic_vector(one'range) := x"2222";
+  constant one : std_ulogic_vector(16 - 1 downto 0) := x"1111";
+  constant two : std_ulogic_vector(one'range) := x"2222";
 
-  signal clk_in, clk_out : std_logic := '0';
-  signal data_in, data_out : std_logic_vector(one'range) := one;
+  signal clk_in, clk_out : std_ulogic := '0';
+  signal data_in, data_out : std_ulogic_vector(one'range) := one;
 
 begin
 
@@ -55,7 +55,7 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-    procedure wait_cycles(signal clk : std_logic; num_cycles : in integer) is
+    procedure wait_cycles(signal clk : std_ulogic; num_cycles : in integer) is
     begin
       for i in 0 to num_cycles-1 loop
         wait until rising_edge(clk);

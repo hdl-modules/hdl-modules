@@ -70,29 +70,29 @@ entity handshake_slave is
     rule_4_performance_check_max_waits : natural := natural'high
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     -- Can be set to '0' by testbench when it is not yet ready to receive data
-    data_is_ready : in std_logic := '1';
+    data_is_ready : in std_ulogic := '1';
     --# {{}}
-    ready : out std_logic := '0';
+    ready : out std_ulogic := '0';
     -- Must be connected if 'well_behaved_stall' is true. Otherwise it is optional and
     -- only for protocol checking.
-    valid : in std_logic := '0';
+    valid : in std_ulogic := '0';
     --# {{}}
     -- The signals below are optional to connect. Only used for protocol checking.
-    last : in std_logic := '1';
+    last : in std_ulogic := '1';
     -- Must set 'id_width' generic in order to use this.
-    id : in unsigned(id_width - 1 downto 0) := (others => '0');
+    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
     -- Must set 'data_width' generic in order to use these.
-    data : in std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_logic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
   );
 end entity;
 
 architecture a of handshake_slave is
 
-  signal stall_data : std_logic := '1';
+  signal stall_data : std_ulogic := '1';
 
 begin
 
@@ -129,7 +129,7 @@ begin
       ready => ready,
       valid => valid,
       last => last,
-      id => std_logic_vector(id),
+      id => std_ulogic_vector(id),
       data => data,
       strobe => strobe
     );

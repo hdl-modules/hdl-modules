@@ -32,7 +32,7 @@ entity axi_read_slave is
     id_width : natural range 0 to axi_id_sz
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_read_m2s : in axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : out axi_read_s2m_t := axi_read_s2m_init
@@ -41,10 +41,10 @@ end entity;
 
 architecture a of axi_read_slave is
 
-  signal arid, rid : std_logic_vector(id_width - 1 downto 0);
-  signal araddr : std_logic_vector(axi_read_m2s.ar.addr'range );
-  signal arlen : std_logic_vector(axi_read_m2s.ar.len'range );
-  signal arsize : std_logic_vector(axi_read_m2s.ar.size'range );
+  signal arid, rid : std_ulogic_vector(id_width - 1 downto 0);
+  signal araddr : std_ulogic_vector(axi_read_m2s.ar.addr'range );
+  signal arlen : std_ulogic_vector(axi_read_m2s.ar.len'range );
+  signal arsize : std_ulogic_vector(axi_read_m2s.ar.size'range );
 
 begin
 
@@ -72,11 +72,11 @@ begin
       rlast => axi_read_s2m.r.last
     );
 
-  arid <= std_logic_vector(axi_read_m2s.ar.id(arid'range));
-  araddr <= std_logic_vector(axi_read_m2s.ar.addr);
-  arlen <= std_logic_vector(axi_read_m2s.ar.len);
-  arsize <= std_logic_vector(axi_read_m2s.ar.size);
+  arid <= std_ulogic_vector(axi_read_m2s.ar.id(arid'range));
+  araddr <= std_ulogic_vector(axi_read_m2s.ar.addr);
+  arlen <= std_ulogic_vector(axi_read_m2s.ar.len);
+  arsize <= std_ulogic_vector(axi_read_m2s.ar.size);
 
-  axi_read_s2m.r.id(rid'range) <= unsigned(rid);
+  axi_read_s2m.r.id(rid'range) <= u_unsigned(rid);
 
 end architecture;

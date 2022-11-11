@@ -31,17 +31,17 @@ entity unsigned_divider is
     divisor_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '1';
-    input_valid : in std_logic;
-    dividend : in unsigned(dividend_width - 1 downto 0);
-    divisor : in unsigned(divisor_width - 1 downto 0);
+    input_ready : out std_ulogic := '1';
+    input_valid : in std_ulogic;
+    dividend : in u_unsigned(dividend_width - 1 downto 0);
+    divisor : in u_unsigned(divisor_width - 1 downto 0);
     --# {{}}
-    result_ready : in std_logic;
-    result_valid : out std_logic := '0';
-    quotient : out unsigned(dividend_width - 1 downto 0);
-    remainder : out unsigned(minimum(divisor_width, dividend_width) - 1 downto 0)
+    result_ready : in std_ulogic;
+    result_valid : out std_ulogic := '0';
+    quotient : out u_unsigned(dividend_width - 1 downto 0);
+    remainder : out u_unsigned(minimum(divisor_width, dividend_width) - 1 downto 0)
   );
 end entity;
 
@@ -51,20 +51,20 @@ architecture a of unsigned_divider is
   signal state : state_t := ready;
 
   signal current_bit : natural range 0 to dividend_width - 1;
-  signal remainder_int : unsigned(dividend'range);
-  signal divisor_int : unsigned((dividend_width - 1) + divisor_width - 1 downto 0);
+  signal remainder_int : u_unsigned(dividend'range);
+  signal divisor_int : u_unsigned((dividend_width - 1) + divisor_width - 1 downto 0);
 
-  function shift_down(bit : std_logic; vector : unsigned) return unsigned is
+  function shift_down(bit : std_ulogic; vector : u_unsigned) return u_unsigned is
   begin
     return bit & vector(vector'high downto vector'low + 1);
   end function;
 
-  function shift_down(vector : unsigned) return unsigned is
+  function shift_down(vector : u_unsigned) return u_unsigned is
   begin
     return shift_down('0', vector);
   end function;
 
-  function shift_up(bit : std_logic; vector : unsigned) return unsigned is
+  function shift_up(bit : std_ulogic; vector : u_unsigned) return u_unsigned is
   begin
     return vector(vector'high - 1 downto vector'low) & bit;
   end function;
@@ -75,12 +75,12 @@ begin
 
   main : process
     variable sub_result :
-      signed(maximum(remainder_int'length, divisor_int'length) + 1 - 1 downto 0) := (others => '0');
+      u_signed(maximum(remainder_int'length, divisor_int'length) + 1 - 1 downto 0) := (others => '0');
   begin
     wait until rising_edge(clk);
 
     divisor_int <= shift_down(divisor_int);
-    sub_result := signed('0' & remainder_int) - signed('0' & divisor_int);
+    sub_result := u_signed('0' & remainder_int) - u_signed('0' & divisor_int);
 
     case state is
       when ready =>

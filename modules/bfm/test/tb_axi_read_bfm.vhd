@@ -35,7 +35,7 @@ end entity;
 architecture tb of tb_axi_read_bfm is
 
   -- DUT connections
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal axi_read_m2s : axi_read_m2s_t := axi_read_m2s_init;
   signal axi_read_s2m : axi_read_s2m_t := axi_read_s2m_init;

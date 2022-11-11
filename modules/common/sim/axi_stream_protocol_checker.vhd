@@ -47,25 +47,25 @@ entity axi_stream_protocol_checker is
     rule_4_performance_check_max_waits : natural := natural'high
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --
-    ready : in std_logic;
-    valid : in std_logic;
+    ready : in std_ulogic;
+    valid : in std_ulogic;
     -- Optional to connect.
-    last : in std_logic := '1';
+    last : in std_ulogic := '1';
     -- Optional to connect.
     -- Must set a valid 'id_width' generic value in order to use these.
-    id : in std_logic_vector(id_width - 1 downto 0) := (others => '0');
+    id : in std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
     -- Optional to connect.
     -- Must set a valid 'data_width' generic value in order to use these.
-    data : in std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_logic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
   );
 end entity;
 
 architecture a of axi_stream_protocol_checker is
 
-  signal data_strobed_out : std_logic_vector(data'range) := (others => '0');
+  signal data_strobed_out : std_ulogic_vector(data'range) := (others => '0');
 
 begin
 

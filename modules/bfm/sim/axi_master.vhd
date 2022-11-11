@@ -39,7 +39,7 @@ entity axi_master is
     bus_handle : bus_master_t
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_read_m2s : out axi_read_m2s_t := axi_read_m2s_init;
     axi_read_s2m : in axi_read_s2m_t := axi_read_s2m_init;
@@ -53,24 +53,24 @@ architecture a of axi_master is
 
   constant data_width : positive := data_length(bus_handle);
 
-  constant len : unsigned(axi_write_m2s.aw.len'range) := to_len(1);
-  constant size : unsigned(axi_write_m2s.aw.size'range) := to_size(data_width);
+  constant len : u_unsigned(axi_write_m2s.aw.len'range) := to_len(1);
+  constant size : u_unsigned(axi_write_m2s.aw.size'range) := to_size(data_width);
 
-  signal araddr, awaddr : std_logic_vector(address_length(bus_handle) - 1 downto 0);
-  signal rdata, wdata : std_logic_vector(data_width - 1 downto 0);
-  signal wstrb : std_logic_vector(byte_enable_length(bus_handle) - 1 downto 0);
+  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0);
+  signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0);
+  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0);
 
 begin
 
   ------------------------------------------------------------------------------
-  axi_read_m2s.ar.addr(araddr'range) <= unsigned(araddr);
+  axi_read_m2s.ar.addr(araddr'range) <= u_unsigned(araddr);
   axi_read_m2s.ar.len <= len;
   axi_read_m2s.ar.size <= size;
   axi_read_m2s.ar.burst <= axi_a_burst_incr;
 
   rdata <= axi_read_s2m.r.data(rdata'range);
 
-  axi_write_m2s.aw.addr(awaddr'range) <= unsigned(awaddr);
+  axi_write_m2s.aw.addr(awaddr'range) <= u_unsigned(awaddr);
   axi_write_m2s.aw.len <= len;
   axi_write_m2s.aw.size <= size;
   axi_write_m2s.aw.burst <= axi_a_burst_incr;

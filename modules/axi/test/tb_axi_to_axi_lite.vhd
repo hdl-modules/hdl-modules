@@ -33,7 +33,7 @@ entity tb_axi_to_axi_lite is
 end entity;
 
 architecture tb of tb_axi_to_axi_lite is
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
   signal axi_m2s : axi_m2s_t;
@@ -68,7 +68,7 @@ begin
   ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
-    variable data, got : std_logic_vector(data_width - 1 downto 0);
+    variable data, got : std_ulogic_vector(data_width - 1 downto 0);
     constant num_words : integer := 1000;
     constant bytes_per_word : integer := data_width / 8;
     variable address : integer;

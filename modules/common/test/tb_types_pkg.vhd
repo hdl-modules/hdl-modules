@@ -28,23 +28,23 @@ begin
 
   main : process
 
-    variable byte_data0 : std_logic_vector(4 * 8 - 1 downto 0) := x"01_23_45_67";
-    constant byte_data0_swapped : std_logic_vector(byte_data0'range) := x"67_45_23_01";
+    variable byte_data0 : std_ulogic_vector(4 * 8 - 1 downto 0) := x"01_23_45_67";
+    constant byte_data0_swapped : std_ulogic_vector(byte_data0'range) := x"67_45_23_01";
 
-    variable byte_data1 : std_logic_vector(8 * 8 - 1 downto 4 * 8) := x"01_23_45_67";
-    constant byte_data1_swapped : std_logic_vector(byte_data0'range) := x"67_45_23_01";
+    variable byte_data1 : std_ulogic_vector(8 * 8 - 1 downto 4 * 8) := x"01_23_45_67";
+    constant byte_data1_swapped : std_ulogic_vector(byte_data0'range) := x"67_45_23_01";
 
-    variable bit_data0 : std_logic_vector(6 - 1 downto 0) := "101010";
-    constant bit_data0_swapped : std_logic_vector(bit_data0'range) := "010101";
+    variable bit_data0 : std_ulogic_vector(6 - 1 downto 0) := "101010";
+    constant bit_data0_swapped : std_ulogic_vector(bit_data0'range) := "010101";
 
-    variable bit_data1 : std_logic_vector(0 to 6 - 1) := "101010";
-    constant bit_data1_swapped : std_logic_vector(bit_data1'range) := "010101";
+    variable bit_data1 : std_ulogic_vector(0 to 6 - 1) := "101010";
+    constant bit_data1_swapped : std_ulogic_vector(bit_data1'range) := "010101";
 
-    variable bit_data2 : std_logic_vector(12 - 1 downto 6) := "101010";
-    constant bit_data2_swapped : std_logic_vector(bit_data2'range) := "010101";
+    variable bit_data2 : std_ulogic_vector(12 - 1 downto 6) := "101010";
+    constant bit_data2_swapped : std_ulogic_vector(bit_data2'range) := "010101";
 
-    variable bit_data3 : std_logic_vector(6 to 12 - 1) := "101010";
-    constant bit_data3_swapped : std_logic_vector(bit_data2'range) := "010101";
+    variable bit_data3 : std_ulogic_vector(6 to 12 - 1) := "101010";
+    constant bit_data3_swapped : std_ulogic_vector(bit_data2'range) := "010101";
 
     variable natural_vec : natural_vec_t(0 to 3) := (others => 0);
     variable positive_vec : positive_vec_t(0 to 3) := (others => 1);

@@ -63,13 +63,13 @@ entity asynchronous_fifo is
   );
   port (
     -- Read data interface
-    clk_read : in std_logic;
-    read_ready : in  std_logic;
+    clk_read : in std_ulogic;
+    read_ready : in  std_ulogic;
     -- '1' if FIFO is not empty
-    read_valid : out std_logic := '0';
-    read_data : out std_logic_vector(width - 1 downto 0) := (others => '0');
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
     -- Must set 'enable_last' generic in order to use this
-    read_last : out std_logic := '0';
+    read_last : out std_ulogic := '0';
 
     -- Status signals on the read side. Updated one clock cycle after read transactions.
     -- Updated "a while" after write transactions (not deterministic).
@@ -82,28 +82,28 @@ entity asynchronous_fifo is
     -- Note that this port will be CONSTANTLY ONE if the 'enable_packet_mode' generic is set
     -- to true, and 'almost_empty_level' has a non-default value.
     -- This is since a glitch-free value of 'read_level' can not be guaranteed in this mode.
-    read_almost_empty : out std_logic := '1';
+    read_almost_empty : out std_ulogic := '1';
 
     --# {{}}
     -- Write data interface
-    clk_write : in std_logic;
+    clk_write : in std_ulogic;
     -- '1' if FIFO is not full
-    write_ready : out std_logic := '1';
-    write_valid : in  std_logic;
-    write_data  : in  std_logic_vector(width - 1 downto 0);
+    write_ready : out std_ulogic := '1';
+    write_valid : in  std_ulogic;
+    write_data  : in  std_ulogic_vector(width - 1 downto 0);
     -- Must set 'enable_last' generic in order to use this
-    write_last : in std_logic := '0';
+    write_last : in std_ulogic := '0';
 
     -- Status signals on the write side. Updated one clock cycle after write transactions.
     -- Updated "a while" after read transactions (not deterministic).
     -- In case the enable_output_register is set, this value will never go below 1
     write_level : out natural range 0 to depth := to_int(enable_output_register);
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
-    write_almost_full : out std_logic := '0';
+    write_almost_full : out std_ulogic := '0';
 
     -- Drop the current packet (all words that have been written since the previous 'write_last').
     -- Must set 'enable_drop_packet' generic in order to use this.
-    drop_packet : in std_logic := '0'
+    drop_packet : in std_ulogic := '0'
   );
 end entity;
 
@@ -113,7 +113,7 @@ architecture a of asynchronous_fifo is
 
   -- Need one extra bit in the addresses to be able to make the distinction if the FIFO
   -- is full or empty (where the addresses would otherwise be equal).
-  subtype fifo_addr_t is unsigned(num_bits_needed(2 * memory_depth - 1) - 1 downto 0);
+  subtype fifo_addr_t is u_unsigned(num_bits_needed(2 * memory_depth - 1) - 1 downto 0);
   signal read_addr_next, write_addr : fifo_addr_t := (others => '0');
 
   -- The counter for number of lasts in the FIFO (used by packet mode) also needs one extra bit,
@@ -124,8 +124,8 @@ architecture a of asynchronous_fifo is
   -- The part of the address that actually goes to the BRAM address port
   subtype bram_addr_range is natural range num_bits_needed(memory_depth - 1) - 1 downto 0;
 
-  signal read_ready_ram, read_valid_ram, read_last_ram : std_logic := '0';
-  signal read_data_ram : std_logic_vector(width - 1 downto 0) := (others => '0');
+  signal read_ready_ram, read_valid_ram, read_last_ram : std_ulogic := '0';
+  signal read_data_ram : std_ulogic_vector(width - 1 downto 0) := (others => '0');
   signal word_in_output_register : natural range 0 to 1 := 0;
 
 begin
@@ -337,7 +337,7 @@ begin
   ------------------------------------------------------------------------------
   memory : block
     constant memory_word_width : positive := width + to_int(enable_last);
-    subtype word_t is std_logic_vector(memory_word_width - 1 downto 0);
+    subtype word_t is std_ulogic_vector(memory_word_width - 1 downto 0);
     type mem_t is array (natural range <>) of word_t;
 
     signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));

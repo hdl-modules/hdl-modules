@@ -53,24 +53,24 @@ entity resync_slv_level_coherent is
     width : positive;
     -- Initial value for the output that will be set for a few cycles before the first input
     -- value has propagated.
-    default_value : std_logic_vector(width - 1 downto 0) := (others => '0')
+    default_value : std_ulogic_vector(width - 1 downto 0) := (others => '0')
   );
   port (
-    clk_in : in std_logic := '0';
-    data_in : in std_logic_vector(default_value'range);
+    clk_in : in std_ulogic := '0';
+    data_in : in std_ulogic_vector(default_value'range);
     --# {{}}
-    clk_out : in std_logic;
-    data_out : out std_logic_vector(default_value'range) := default_value
+    clk_out : in std_ulogic;
+    data_out : out std_ulogic_vector(default_value'range) := default_value
   );
 end entity;
 
 architecture a of resync_slv_level_coherent is
 
-  signal data_in_sampled, data_out_int : std_logic_vector(data_in'range) := default_value;
+  signal data_in_sampled, data_out_int : std_ulogic_vector(data_in'range) := default_value;
 
-  constant level_default_value : std_logic := '0';
+  constant level_default_value : std_ulogic := '0';
   signal input_level, input_level_m1, input_level_m1_not_inverted, output_level, output_level_m1
-    : std_logic := level_default_value;
+    : std_ulogic := level_default_value;
 
 begin
 

@@ -23,7 +23,7 @@ entity axi_lite_simple_read_crossbar is
     num_inputs : positive
   );
   port(
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     input_ports_m2s : in axi_lite_read_m2s_vec_t(0 to num_inputs - 1) :=
       (others => axi_lite_read_m2s_init);

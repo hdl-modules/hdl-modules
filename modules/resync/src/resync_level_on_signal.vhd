@@ -29,20 +29,20 @@ entity resync_level_on_signal is
   generic (
     -- Initial value for the output that will be set until the first input value has propagated
     -- and been sampled.
-    default_value : std_logic := '0'
+    default_value : std_ulogic := '0'
   );
   port (
-   data_in : in std_logic;
+   data_in : in std_ulogic;
    --# {{}}
-   clk_out : in std_logic;
-   sample_value : in std_logic;
-   data_out : out std_logic := default_value
+   clk_out : in std_ulogic;
+   sample_value : in std_ulogic;
+   data_out : out std_ulogic := default_value
   );
 end entity;
 
 architecture a of resync_level_on_signal is
   -- Keep net so that we can apply constraint
-  signal data_in_int : std_logic;
+  signal data_in_int : std_ulogic;
   attribute dont_touch of data_in_int : signal is "true";
 begin
 

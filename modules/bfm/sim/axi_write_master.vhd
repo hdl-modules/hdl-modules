@@ -50,7 +50,7 @@ entity axi_write_master is
     -- AW transaction and eventually a B check.
     job_queue : queue_t;
     -- Push data (integer_array_t with push_ref()) to this queue. Each element should be an
-    -- unsigned byte. Little endian byte order is assumed.
+    -- u_unsigned byte. Little endian byte order is assumed.
     data_queue : queue_t;
     -- Stall configuration for the AW channel master
     aw_stall_config : stall_config_t := default_address_stall_config;
@@ -68,7 +68,7 @@ entity axi_write_master is
     set_axi3_w_id : boolean := false
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_write_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     axi_write_s2m : in axi_write_s2m_t := axi_write_s2m_init
@@ -85,16 +85,16 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal data_is_valid : std_logic := '0';
+    signal data_is_valid : std_ulogic := '0';
 
-    signal id_target : unsigned(axi_write_m2s.aw.id'range) := (others => 'X');
-    signal addr_target : unsigned(axi_write_m2s.aw.addr'range) := (others => 'X');
-    signal len_target : unsigned(axi_write_m2s.aw.len'range) := (others => 'X');
+    signal id_target : u_unsigned(axi_write_m2s.aw.id'range) := (others => 'X');
+    signal addr_target : u_unsigned(axi_write_m2s.aw.addr'range) := (others => 'X');
+    signal len_target : u_unsigned(axi_write_m2s.aw.len'range) := (others => 'X');
   begin
 
     ------------------------------------------------------------------------------
     set_aw : process
-      variable job_slv : std_logic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
+      variable job_slv : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
       variable job : axi_master_bfm_job_t := axi_master_bfm_job_init;
     begin
       while is_empty(job_queue) loop
@@ -222,7 +222,7 @@ begin
 
   ------------------------------------------------------------------------------
   b_block : block
-    signal b_slv : std_logic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0)
+    signal b_slv : std_ulogic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0)
       := (others => '0');
   begin
 

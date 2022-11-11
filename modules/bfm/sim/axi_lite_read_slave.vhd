@@ -30,7 +30,7 @@ entity axi_lite_read_slave is
     data_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_lite_read_m2s : in axi_lite_read_m2s_t := axi_lite_read_m2s_init;
     axi_lite_read_s2m : out axi_lite_read_s2m_t := axi_lite_read_s2m_init
@@ -39,14 +39,14 @@ end entity;
 
 architecture a of axi_lite_read_slave is
 
-  constant len : std_logic_vector(axi_a_len_sz - 1 downto 0) := std_logic_vector(to_len(1));
-  constant size : std_logic_vector(axi_a_size_sz - 1 downto 0) :=
-    std_logic_vector(to_size(data_width));
+  constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_ulogic_vector(to_len(1));
+  constant size : std_ulogic_vector(axi_a_size_sz - 1 downto 0) :=
+    std_ulogic_vector(to_size(data_width));
 
   -- Using "open" not ok in GHDL: unconstrained port "rid" must be connected
-  signal rid, aid : std_logic_vector(8 - 1 downto 0) := (others => '0');
+  signal rid, aid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
 
-  signal araddr : std_logic_vector(axi_lite_read_m2s.ar.addr'range);
+  signal araddr : std_ulogic_vector(axi_lite_read_m2s.ar.addr'range);
 
 begin
 
@@ -74,6 +74,6 @@ begin
       rlast => open
     );
 
-  araddr <= std_logic_vector(axi_lite_read_m2s.ar.addr);
+  araddr <= std_ulogic_vector(axi_lite_read_m2s.ar.addr);
 
 end architecture;

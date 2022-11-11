@@ -29,16 +29,16 @@ entity debounce is
   );
   port (
     -- Input value that may be metastable and noisy
-    noisy_input : in std_logic := '0';
+    noisy_input : in std_ulogic := '0';
     --# {{}}
-    clk : in std_logic;
-    stable_result : out std_logic := '0'
+    clk : in std_ulogic;
+    stable_result : out std_ulogic := '0'
   );
 end entity;
 
 architecture a of debounce is
 
-  signal noisy_input_resync : std_logic := '0';
+  signal noisy_input_resync : std_ulogic := '0';
   signal num_cycles_with_new_value : integer range 0 to stable_count - 1 := 0;
 
 begin

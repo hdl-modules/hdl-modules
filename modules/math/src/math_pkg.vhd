@@ -22,15 +22,15 @@ package math_pkg is
   function is_power_of_two(value : positive) return boolean;
 
   function num_bits_needed(value : natural) return positive;
-  function num_bits_needed(value : unsigned) return positive;
+  function num_bits_needed(value : u_unsigned) return positive;
 
   function round_up_to_power_of_two(value : positive) return positive;
 
-  function lt_0(value  : signed) return boolean;
-  function geq_0(value : signed) return boolean;
+  function lt_0(value  : u_signed) return boolean;
+  function geq_0(value : u_signed) return boolean;
 
-  function to_gray(value : unsigned) return std_logic_vector;
-  function from_gray(code : std_logic_vector) return unsigned;
+  function to_gray(value : u_unsigned) return std_ulogic_vector;
+  function from_gray(code : std_ulogic_vector) return u_unsigned;
 
   function abs_vector(vector : integer_vector) return integer_vector;
   function vector_sum(vector : integer_vector) return integer;
@@ -68,7 +68,7 @@ package body math_pkg is
     return 2 ** log2_value = value;
   end function;
 
-  function num_bits_needed(value : unsigned) return positive is
+  function num_bits_needed(value : u_unsigned) return positive is
   begin
     -- The number of bits needed to express the given value.
     assert value'high > value'low report "Use only with descending range" severity failure;
@@ -83,10 +83,10 @@ package body math_pkg is
   end function;
 
   function num_bits_needed(value : natural) return positive is
-    constant value_vector : unsigned(64 - 1 downto 0) := to_unsigned(value, 64);
+    constant value_vector : u_unsigned(64 - 1 downto 0) := to_unsigned(value, 64);
     constant result : positive := num_bits_needed(value_vector);
   begin
-    -- The number of bits needed to express the given value in an unsigned vector.
+    -- The number of bits needed to express the given value in an u_unsigned vector.
     assert value <= 2**result - 1
       report "Calculated value not correct: " & to_string(value) & " " & to_string(result)
       severity failure;
@@ -98,30 +98,30 @@ package body math_pkg is
     return 2 ** ceil_log2(value);
   end function;
 
-  function lt_0(value : signed) return boolean is
+  function lt_0(value : u_signed) return boolean is
   begin
     -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
     -- doing simply "if value < 0 then ...", hence this bit operation is used instead.
     return value(value'left) = '1';
   end function;
 
-  function geq_0(value : signed) return boolean is
+  function geq_0(value : u_signed) return boolean is
   begin
     -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
     -- doing simply "if value < 0 then ...", hence this bit operation is used instead.
     return value(value'left) = '0';
   end function;
 
-  function to_gray(value : unsigned) return std_logic_vector is
-    variable value_slv, result : std_logic_vector(value'range);
+  function to_gray(value : u_unsigned) return std_ulogic_vector is
+    variable value_slv, result : std_ulogic_vector(value'range);
   begin
-    value_slv := std_logic_vector(value);
+    value_slv := std_ulogic_vector(value);
     result := value_slv xor "0" & value_slv(value_slv'high downto 1);
     return result;
   end function;
 
-  function from_gray(code : std_logic_vector) return unsigned is
-    variable result : unsigned(code'range);
+  function from_gray(code : std_ulogic_vector) return u_unsigned is
+    variable result : u_unsigned(code'range);
   begin
     result(code'high) := code(code'high);
     for bit_num in code'high -1 downto 0 loop

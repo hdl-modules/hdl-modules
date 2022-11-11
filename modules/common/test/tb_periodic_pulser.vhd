@@ -28,10 +28,10 @@ end entity;
 
 architecture tb of tb_periodic_pulser is
 
-  signal clk : std_logic := '0';
-  signal count_enable : std_logic := '1';
-  signal pulse : std_logic := '0';
-  signal target_clock : std_logic;
+  signal clk : std_ulogic := '0';
+  signal count_enable : std_ulogic := '1';
+  signal pulse : std_ulogic := '0';
+  signal target_clock : std_ulogic;
 
   signal start_test, test_done : boolean := false;
 
@@ -73,7 +73,7 @@ begin
     constant num_pulses_to_check : integer := 3;
     variable tick_count : integer range 0 to period - 1;
     variable num_pulses : integer range 0 to num_pulses_to_check := 0;
-    variable expected_pulse : std_logic := '0';
+    variable expected_pulse : std_ulogic := '0';
   begin
     wait until rising_edge(clk);
     expected_pulse := '0';

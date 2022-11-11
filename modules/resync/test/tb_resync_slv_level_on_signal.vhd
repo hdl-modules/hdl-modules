@@ -22,9 +22,9 @@ entity tb_resync_slv_level_on_signal is
 end entity;
 
 architecture tb of tb_resync_slv_level_on_signal is
-  signal clk_out : std_logic := '0';
-  signal data_in, data_out : std_logic_vector(16-1 downto 0) := (others => '0');
-  signal sample_value : std_logic := '0';
+  signal clk_out : std_ulogic := '0';
+  signal data_in, data_out : std_ulogic_vector(16-1 downto 0) := (others => '0');
+  signal sample_value : std_ulogic := '0';
 begin
 
   test_runner_watchdog(runner, 10 ms);
@@ -33,14 +33,14 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    procedure wait_cycles(signal clk : std_logic; num_cycles : in integer) is
+    procedure wait_cycles(signal clk : std_ulogic; num_cycles : in integer) is
     begin
       for i in 0 to num_cycles-1 loop
         wait until rising_edge(clk);
       end loop;
     end procedure;
-    constant zero : std_logic_vector(data_in'range) := (others => '0');
-    constant value : std_logic_vector(data_in'range) := x"BAAD";
+    constant zero : std_ulogic_vector(data_in'range) := (others => '0');
+    constant value : std_ulogic_vector(data_in'range) := x"BAAD";
   begin
     test_runner_setup(runner, runner_cfg);
 

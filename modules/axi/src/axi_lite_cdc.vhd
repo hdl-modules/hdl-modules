@@ -36,11 +36,11 @@ entity axi_lite_cdc is
     ram_type : ram_style_t := ram_style_auto
   );
   port (
-    clk_master : in std_logic;
+    clk_master : in std_ulogic;
     master_m2s : in axi_lite_m2s_t;
     master_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
     --# {{}}
-    clk_slave : in std_logic;
+    clk_slave : in std_ulogic;
     slave_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
     slave_s2m : in axi_lite_s2m_t
   );
@@ -52,11 +52,11 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal read_data, write_data : std_logic_vector(addr_width - 1 downto 0);
+    signal read_data, write_data : std_ulogic_vector(addr_width - 1 downto 0);
   begin
 
-    slave_m2s.write.aw.addr(read_data'range) <= unsigned(read_data);
-    write_data <= std_logic_vector(master_m2s.write.aw.addr(write_data'range));
+    slave_m2s.write.aw.addr(read_data'range) <= u_unsigned(read_data);
+    write_data <= std_ulogic_vector(master_m2s.write.aw.addr(write_data'range));
 
 
     ------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ begin
   ------------------------------------------------------------------------------
   w_block : block
     constant w_width : integer := axi_lite_m2s_w_sz(data_width);
-    signal write_data, read_data : std_logic_vector(w_width - 1 downto 0);
+    signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0);
   begin
 
     slave_m2s.write.w.data <= to_axi_lite_m2s_w(read_data, data_width).data;
@@ -134,11 +134,11 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal read_data, write_data : std_logic_vector(addr_width - 1 downto 0);
+    signal read_data, write_data : std_ulogic_vector(addr_width - 1 downto 0);
   begin
 
-    slave_m2s.read.ar.addr(read_data'range) <= unsigned(read_data);
-    write_data <= std_logic_vector(master_m2s.read.ar.addr(write_data'range));
+    slave_m2s.read.ar.addr(read_data'range) <= u_unsigned(read_data);
+    write_data <= std_ulogic_vector(master_m2s.read.ar.addr(write_data'range));
 
 
     ------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ begin
   ------------------------------------------------------------------------------
   r_block : block
     constant r_width : integer := axi_lite_s2m_r_sz(data_width);
-    signal read_data, write_data : std_logic_vector(r_width - 1 downto 0);
+    signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);
   begin
 
     master_s2m.read.r.data <= to_axi_lite_s2m_r(read_data, data_width).data;

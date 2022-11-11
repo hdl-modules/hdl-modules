@@ -25,10 +25,10 @@ end entity;
 
 architecture tb of tb_interrupt_register is
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal sources, mask, clear, status : reg_t := (others => '0');
-  signal trigger : std_logic := '0';
+  signal trigger : std_ulogic := '0';
 
 begin
 

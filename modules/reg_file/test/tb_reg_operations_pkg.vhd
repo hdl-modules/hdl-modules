@@ -31,10 +31,10 @@ begin
 
   main : process
     variable bit_indexes_1 : natural_vec_t(0 to 2) := (others => 0);
-    variable values_1 : std_logic_vector(0 to 2) := (others => '0');
+    variable values_1 : std_ulogic_vector(0 to 2) := (others => '0');
 
     variable bit_indexes_2 : natural_vec_t(-2147483648 to -2147483647) := (others => 0);
-    variable values_2 : std_logic_vector(0 to 1) := (others => '0');
+    variable values_2 : std_ulogic_vector(0 to 1) := (others => '0');
 
     variable reg_value, reg_value_2 : reg_t := (others => '0');
   begin

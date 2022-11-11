@@ -38,10 +38,10 @@ begin
       constant offset_max : integer := 73;
 
       variable data : axi_stream_m2s_t := axi_stream_m2s_init;
-      variable data_converted : std_logic_vector(
+      variable data_converted : std_ulogic_vector(
         axi_stream_m2s_sz(data_width=>data_width, user_width=>user_width) - 1 downto 0) :=
         (others => '0');
-      variable data_slv : std_logic_vector(data_converted'high + offset_max downto 0) :=
+      variable data_slv : std_ulogic_vector(data_converted'high + offset_max downto 0) :=
         (others => '0');
 
       variable hi, lo : integer := 0;

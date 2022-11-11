@@ -30,7 +30,7 @@ entity axi_write_pipeline is
     full_data_throughput : boolean := true
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     left_m2s : in axi_write_m2s_t;
     left_s2m : out axi_write_s2m_t := axi_write_s2m_init;
@@ -49,8 +49,8 @@ begin
     constant packed_width : positive :=
       axi_m2s_a_sz(id_width => id_width, addr_width => addr_width);
 
-    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
-    signal output_valid : std_logic := '0';
+    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
@@ -93,8 +93,8 @@ begin
     -- Assume AXI4 (no WID)
     constant packed_width : positive := axi_m2s_w_sz(data_width => data_width, id_width => 0);
 
-    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
-    signal output_valid : std_logic := '0';
+    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
@@ -135,8 +135,8 @@ begin
     constant packed_width : positive :=
       axi_s2m_b_sz(id_width => id_width);
 
-    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
-    signal output_valid : std_logic := '0';
+    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------

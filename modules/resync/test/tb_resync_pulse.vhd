@@ -31,8 +31,8 @@ architecture tb of tb_resync_pulse is
 
   constant sleep_between_pulses : time := 10 * clock_period_slow;
 
-  signal clk_in, clk_out : std_logic := '0';
-  signal pulse_in, pulse_out : std_logic;
+  signal clk_in, clk_out : std_ulogic := '0';
+  signal pulse_in, pulse_out : std_ulogic;
 
   signal num_pulses_out : integer := 0;
 begin

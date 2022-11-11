@@ -36,20 +36,20 @@ entity handshake_mux is
     data_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic_vector(0 to num_inputs - 1) := (others => '0');
-    input_valid : in std_logic_vector(0 to num_inputs - 1);
-    input_last : in std_logic_vector(0 to num_inputs - 1);
+    input_ready : out std_ulogic_vector(0 to num_inputs - 1) := (others => '0');
+    input_valid : in std_ulogic_vector(0 to num_inputs - 1);
+    input_last : in std_ulogic_vector(0 to num_inputs - 1);
     input_data : in slv_vec_t(0 to num_inputs - 1)(data_width - 1 downto 0);
     input_strobe : in slv_vec_t(0 to num_inputs - 1)(data_width / 8 - 1 downto 0) :=
       (others => (others => '1'));
     --# {{}}
-    result_ready : in std_logic;
-    result_valid : out std_logic := '0';
-    result_last : out std_logic := '0';
-    result_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    result_strobe : out std_logic_vector(data_width / 8- 1 downto 0) := (others => '0');
+    result_ready : in std_ulogic;
+    result_valid : out std_ulogic := '0';
+    result_last : out std_ulogic := '0';
+    result_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    result_strobe : out std_ulogic_vector(data_width / 8- 1 downto 0) := (others => '0');
     -- The input port index where the packet originated
     result_id : out natural range 0 to num_inputs - 1 := 0
   );

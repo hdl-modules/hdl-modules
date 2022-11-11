@@ -46,19 +46,19 @@ architecture tb of tb_width_conversion is
   constant is_upconversion : boolean := output_width > input_width;
   constant is_downconversion : boolean := output_width < input_width;
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
-  signal input_ready, input_valid, input_last : std_logic := '0';
-  signal output_ready, output_valid, output_last : std_logic := '0';
+  signal input_ready, input_valid, input_last : std_ulogic := '0';
+  signal output_ready, output_valid, output_last : std_ulogic := '0';
 
-  signal input_data : std_logic_vector(input_width - 1 downto 0);
-  signal output_data : std_logic_vector(output_width - 1 downto 0);
+  signal input_data : std_ulogic_vector(input_width - 1 downto 0);
+  signal output_data : std_ulogic_vector(output_width - 1 downto 0);
 
   constant strobe_unit_width : positive := 8;
-  signal input_strobe : std_logic_vector(input_width / strobe_unit_width - 1 downto 0) :=
+  signal input_strobe : std_ulogic_vector(input_width / strobe_unit_width - 1 downto 0) :=
     (others => '0');
-  signal output_strobe : std_logic_vector(output_width / strobe_unit_width - 1 downto 0) :=
+  signal output_strobe : std_ulogic_vector(output_width / strobe_unit_width - 1 downto 0) :=
     (others => '0');
 
   constant input_data_queue, output_data_queue : queue_t := new_queue;
@@ -199,7 +199,7 @@ begin
 
   ------------------------------------------------------------------------------
   output_block : block
-    signal strobe : std_logic_vector(output_strobe'range) := (others => '0');
+    signal strobe : std_ulogic_vector(output_strobe'range) := (others => '0');
   begin
 
     strobe <= output_strobe when enable_strobe else (others => '1');

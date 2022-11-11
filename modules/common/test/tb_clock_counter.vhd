@@ -31,8 +31,8 @@ architecture tb of tb_clock_counter is
   constant resolution_bits : positive := 10;
   constant max_relation_bits : positive := 8;
 
-  signal reference_clock, target_clock : std_logic := '0';
-  signal target_tick_count : unsigned(resolution_bits + max_relation_bits - 1 downto 0) :=
+  signal reference_clock, target_clock : std_ulogic := '0';
+  signal target_tick_count : u_unsigned(resolution_bits + max_relation_bits - 1 downto 0) :=
     (others => '0');
 
   constant reference_clock_period : time := (1.0 / real(reference_clock_rate_mhz)) * (1 us);

@@ -63,19 +63,19 @@ entity keep_remover is
     strobe_unit_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_logic := '0';
-    input_valid : in std_logic;
-    input_last : in std_logic;
-    input_data : in std_logic_vector(data_width - 1 downto 0);
-    input_keep : in std_logic_vector(data_width / strobe_unit_width - 1 downto 0);
+    input_ready : out std_ulogic := '0';
+    input_valid : in std_ulogic;
+    input_last : in std_ulogic;
+    input_data : in std_ulogic_vector(data_width - 1 downto 0);
+    input_keep : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0);
     --# {{}}
-    output_ready : in std_logic;
-    output_valid : out std_logic := '0';
-    output_last : out std_logic := '0';
-    output_data : out std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    output_strobe : out std_logic_vector(data_width / strobe_unit_width - 1 downto 0) :=
+    output_ready : in std_ulogic;
+    output_valid : out std_ulogic := '0';
+    output_last : out std_ulogic := '0';
+    output_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    output_strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '0')
   );
 end entity;
@@ -95,9 +95,9 @@ architecture a of keep_remover is
   constant max_num_words_in_buffer : positive := 2;
   constant max_num_atoms_in_buffer : positive := max_num_words_in_buffer * num_atoms_per_word;
 
-  signal padded_input_ready, padded_input_valid, padded_input_last : std_logic := '0';
-  signal padded_input_data : std_logic_vector(input_data'range) := (others => '0');
-  signal padded_input_keep : std_logic_vector(input_keep'range) := (others => '0');
+  signal padded_input_ready, padded_input_valid, padded_input_last : std_ulogic := '0';
+  signal padded_input_data : std_ulogic_vector(input_data'range) := (others => '0');
+  signal padded_input_keep : std_ulogic_vector(input_keep'range) := (others => '0');
 
   signal num_atoms_in_buffer : natural range 0 to max_num_atoms_in_buffer := 0;
   signal num_atoms_written_in_current_word : natural range 0 to num_atoms_per_word := 0;
@@ -132,7 +132,7 @@ begin
     signal num_atoms_written_in_current_word_plus_this_write :
       natural range 0 to 2 * num_atoms_per_word - 1 := 0;
 
-    signal last_input_needs_padding : std_logic := '0';
+    signal last_input_needs_padding : std_ulogic := '0';
 
     type state_t is (let_data_pass, handle_last);
     signal state : state_t := let_data_pass;
@@ -219,7 +219,7 @@ begin
     -- Note that an array of records (data, strobe, last) result in greater resource utilization
     -- that this SLV.
     constant data_buffer_length : positive := max_num_atoms_in_buffer * packed_atom_width;
-    signal data_buffer : std_logic_vector(data_buffer_length - 1 downto 0) := (others => '0');
+    signal data_buffer : std_ulogic_vector(data_buffer_length - 1 downto 0) := (others => '0');
 
     subtype atom_pointer_t is natural range 0 to max_num_atoms_in_buffer - 1;
     subtype word_pointer_t is natural range 0 to max_num_words_in_buffer - 1;
@@ -229,11 +229,11 @@ begin
     signal read_pointer : word_pointer_t := 0;
 
     function pack(
-      atom_data : std_logic_vector(atom_width - 1 downto 0);
-      atom_strobe : std_logic;
-      atom_last : std_logic
-    ) return std_logic_vector is
-      variable result : std_logic_vector(packed_atom_width - 1 downto 0) := (others => '0');
+      atom_data : std_ulogic_vector(atom_width - 1 downto 0);
+      atom_strobe : std_ulogic;
+      atom_last : std_ulogic
+    ) return std_ulogic_vector is
+      variable result : std_ulogic_vector(packed_atom_width - 1 downto 0) := (others => '0');
     begin
       result(atom_data'range) := atom_data;
       result(result'high - 1) := atom_strobe;
@@ -243,10 +243,10 @@ begin
     end function;
 
     procedure unpack(
-      packed : in std_logic_vector(packed_atom_width - 1 downto 0);
-      atom_data : out std_logic_vector(atom_width - 1 downto 0);
-      atom_strobe : out std_logic;
-      atom_last : out std_logic
+      packed : in std_ulogic_vector(packed_atom_width - 1 downto 0);
+      atom_data : out std_ulogic_vector(atom_width - 1 downto 0);
+      atom_strobe : out std_ulogic;
+      atom_last : out std_ulogic
     ) is
     begin
       atom_data := packed(atom_data'range);
@@ -260,11 +260,11 @@ begin
     main : process
       variable atom_write_idx : atom_pointer_t := 0;
 
-      variable data_to_write : std_logic_vector(atom_width - 1 downto 0) := (others => '0');
-      variable strobe_to_write, last_to_write : std_logic := '0';
+      variable data_to_write : std_ulogic_vector(atom_width - 1 downto 0) := (others => '0');
+      variable strobe_to_write, last_to_write : std_ulogic := '0';
 
-      variable packed_atom : std_logic_vector(packed_atom_width - 1 downto 0) := (others => '0');
-      variable data_buffer_next : std_logic_vector(data_buffer'range) := (others=> '0');
+      variable packed_atom : std_ulogic_vector(packed_atom_width - 1 downto 0) := (others => '0');
+      variable data_buffer_next : std_ulogic_vector(data_buffer'range) := (others=> '0');
 
       variable num_atoms_needed_to_fill_current_word : natural := 0;
 
@@ -337,11 +337,11 @@ begin
     assign_output : process(all)
       variable atom_read_idx : atom_pointer_t := 0;
 
-      variable packed_atom : std_logic_vector(packed_atom_width - 1 downto 0) := (others => '0');
-      variable unpacked_data : std_logic_vector(atom_width - 1 downto 0) := (others => '0');
-      variable unpacked_strobe, unpacked_last : std_logic := '0';
+      variable packed_atom : std_ulogic_vector(packed_atom_width - 1 downto 0) := (others => '0');
+      variable unpacked_data : std_ulogic_vector(atom_width - 1 downto 0) := (others => '0');
+      variable unpacked_strobe, unpacked_last : std_ulogic := '0';
 
-      variable is_last : std_logic := '0';
+      variable is_last : std_ulogic := '0';
     begin
       is_last := '0';
 

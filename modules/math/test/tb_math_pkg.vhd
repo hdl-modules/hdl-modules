@@ -27,8 +27,8 @@ architecture tb of tb_math_pkg is
 
   -- This function calculates the number of bits pars that differs
   -- in the two input vectors.
-  function hamming_distance(in1, in2 : std_logic_vector) return integer is
-    variable tmp : std_logic_vector(in1'range);
+  function hamming_distance(in1, in2 : std_ulogic_vector) return integer is
+    variable tmp : std_ulogic_vector(in1'range);
     variable ret : integer := 0;
   begin
     tmp := in1 xor in2;
@@ -42,8 +42,8 @@ architecture tb of tb_math_pkg is
 begin
 
   main : process
-    variable value : signed(5 - 1 downto 0);
-    variable value_slv : unsigned(8 - 1 downto 0);
+    variable value : u_signed(5 - 1 downto 0);
+    variable value_slv : u_unsigned(8 - 1 downto 0);
     constant some_integer_vector : integer_vector(0 to 3) := (-1, 4, 0, -7);
     variable abs_vector_output : integer_vector(0 to 3);
   begin

@@ -37,7 +37,7 @@ entity axi_to_axi_lite is
     data_width : positive
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     axi_m2s : in axi_m2s_t := axi_m2s_init;
     axi_s2m : out axi_s2m_t := axi_s2m_init;
@@ -52,14 +52,14 @@ architecture a of axi_to_axi_lite is
   constant len : natural := 0;
   constant size : natural := log2(data_width / 8);
 
-  signal read_id, write_id : unsigned(axi_m2s.read.ar.id'range) := (others => '0');
+  signal read_id, write_id : u_unsigned(axi_m2s.read.ar.id'range) := (others => '0');
 
   subtype data_rng is natural range data_width - 1 downto 0;
   subtype strb_rng is natural range data_width / 8 - 1 downto 0;
 
   signal read_error, write_error : boolean := false;
 
-  signal ar_done, aw_done, w_done : std_logic := '0';
+  signal ar_done, aw_done, w_done : std_ulogic := '0';
 
 begin
 
@@ -141,8 +141,8 @@ begin
 
     if axi_m2s.write.aw.valid and axi_s2m.write.aw.ready then
       if (
-        to_integer(unsigned(axi_m2s.write.aw.len)) /= len
-        or to_integer(unsigned(axi_m2s.write.aw.size)) /= size
+        to_integer(u_unsigned(axi_m2s.write.aw.len)) /= len
+        or to_integer(u_unsigned(axi_m2s.write.aw.size)) /= size
       ) then
         write_error <= true;
       else
@@ -152,8 +152,8 @@ begin
 
     if axi_m2s.read.ar.valid and axi_s2m.read.ar.ready then
       if (
-        to_integer(unsigned(axi_m2s.read.ar.len)) /= len
-        or to_integer(unsigned(axi_m2s.read.ar.size)) /= size
+        to_integer(u_unsigned(axi_m2s.read.ar.len)) /= len
+        or to_integer(u_unsigned(axi_m2s.read.ar.size)) /= size
       ) then
         read_error <= true;
       else

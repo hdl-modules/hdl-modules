@@ -30,17 +30,17 @@ end entity;
 
 architecture tb of tb_unsigned_divider is
 
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
-  signal input_ready : std_logic := '0';
-  signal input_valid : std_logic := '0';
-  signal dividend : unsigned(dividend_width - 1 downto 0);
-  signal divisor : unsigned(divisor_width - 1 downto 0);
+  signal input_ready : std_ulogic := '0';
+  signal input_valid : std_ulogic := '0';
+  signal dividend : u_unsigned(dividend_width - 1 downto 0);
+  signal divisor : u_unsigned(divisor_width - 1 downto 0);
 
-  signal result_ready : std_logic := '0';
-  signal result_valid : std_logic := '0';
-  signal quotient : unsigned(dividend'range);
-  signal remainder : unsigned(minimum(divisor_width, dividend_width) - 1 downto 0);
+  signal result_ready : std_ulogic := '0';
+  signal result_valid : std_ulogic := '0';
+  signal quotient : u_unsigned(dividend'range);
+  signal remainder : u_unsigned(minimum(divisor_width, dividend_width) - 1 downto 0);
 
 begin
 

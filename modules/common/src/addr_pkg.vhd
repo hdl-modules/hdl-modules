@@ -20,7 +20,7 @@ use math.math_pkg.all;
 package addr_pkg is
 
   constant addr_width : integer := 32;
-  subtype addr_t is unsigned(addr_width - 1 downto 0);
+  subtype addr_t is u_unsigned(addr_width - 1 downto 0);
   type addr_vec_t is array (integer range <>) of addr_t;
   function to_addr(value : natural) return addr_t;
 
@@ -32,9 +32,9 @@ package addr_pkg is
 
   function addr_bits_needed(addrs : addr_and_mask_vec_t) return positive;
 
-  function match(addr : unsigned; addr_and_mask : addr_and_mask_t) return boolean;
+  function match(addr : u_unsigned; addr_and_mask : addr_and_mask_t) return boolean;
 
-  function decode(addr : unsigned; addrs : addr_and_mask_vec_t) return integer;
+  function decode(addr : u_unsigned; addrs : addr_and_mask_vec_t) return integer;
 
 end package;
 
@@ -56,7 +56,7 @@ package body addr_pkg is
     return result;
   end function;
 
-  function match(addr : unsigned; addr_and_mask : addr_and_mask_t) return boolean is
+  function match(addr : u_unsigned; addr_and_mask : addr_and_mask_t) return boolean is
     variable test_ok : boolean := true;
   begin
     for bit_idx in addr_and_mask.addr'range loop
@@ -68,7 +68,7 @@ package body addr_pkg is
     return test_ok;
   end function;
 
-  function decode(addr : unsigned; addrs : addr_and_mask_vec_t) return integer is
+  function decode(addr : u_unsigned; addrs : addr_and_mask_vec_t) return integer is
     constant decode_fail : integer := addrs'length;
   begin
     for addr_idx in addrs'range loop

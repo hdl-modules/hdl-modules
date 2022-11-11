@@ -91,8 +91,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '0';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -102,8 +102,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '0';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -133,8 +133,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '-';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -145,8 +145,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '-';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -164,7 +164,7 @@ package reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in unsigned(reg_width - 1 downto 0);
+    value : in u_unsigned(reg_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -181,8 +181,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '0';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -191,8 +191,8 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '0';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -201,7 +201,7 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
+    values : in std_ulogic_vector;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -210,7 +210,7 @@ package reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
+    value : in std_ulogic;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -219,7 +219,7 @@ package reg_operations_pkg is
 
   function to_reg_value(
     bit_indexes : natural_vec_t;
-    values : std_logic_vector;
+    values : std_ulogic_vector;
     previous_value : reg_t := (others => '0')
   ) return reg_t;
 
@@ -252,7 +252,7 @@ package body reg_operations_pkg is
     variable address : addr_t;
   begin
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    read_bus(net, bus_handle, std_logic_vector(address), value);
+    read_bus(net, bus_handle, std_ulogic_vector(address), value);
   end procedure;
 
   procedure read_reg(
@@ -265,7 +265,7 @@ package body reg_operations_pkg is
     variable slv_value : reg_t := (others => '0');
   begin
     read_reg(net, reg_index, slv_value, base_address, bus_handle);
-    value := to_integer(signed(slv_value));
+    value := to_integer(u_signed(slv_value));
   end procedure;
 
   procedure check_reg_equal(
@@ -303,8 +303,8 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '0';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -336,8 +336,8 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '0';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -376,7 +376,7 @@ package body reg_operations_pkg is
     wait_until_read_equals(
       net=>net,
       bus_handle=>bus_handle,
-      addr=>std_logic_vector(address),
+      addr=>std_ulogic_vector(address),
       value=>value,
       timeout=>timeout,
       msg=>get_error_message(reg_index, base_address, message)
@@ -396,7 +396,7 @@ package body reg_operations_pkg is
     wait_until_reg_equals(
       net=>net,
       reg_index=>reg_index,
-      value=>std_logic_vector(to_signed(value, reg_width)),
+      value=>std_ulogic_vector(to_signed(value, reg_width)),
       base_address=>base_address,
       bus_handle=>bus_handle,
       timeout=>timeout,
@@ -408,8 +408,8 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '-';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -442,8 +442,8 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '-';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -479,7 +479,7 @@ package body reg_operations_pkg is
     -- Note that this call is non-blocking.
 
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    write_bus(net, bus_handle, std_logic_vector(address), value);
+    write_bus(net, bus_handle, std_ulogic_vector(address), value);
   end procedure;
 
   procedure write_reg(
@@ -495,7 +495,7 @@ package body reg_operations_pkg is
     write_reg(
       net,
       reg_index,
-      std_logic_vector(to_signed(value, reg_width)),
+      std_ulogic_vector(to_signed(value, reg_width)),
       base_address,
       bus_handle
     );
@@ -504,22 +504,22 @@ package body reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in unsigned(reg_width - 1 downto 0);
+    value : in u_unsigned(reg_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
   begin
     -- Note that this call is non-blocking.
 
-    write_reg(net, reg_index, std_logic_vector(value), base_address, bus_handle);
+    write_reg(net, reg_index, std_ulogic_vector(value), base_address, bus_handle);
   end procedure;
 
   procedure write_reg_bits(
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
-    other_bits_value : in std_logic := '0';
+    values : in std_ulogic_vector;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -549,8 +549,8 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
-    other_bits_value : in std_logic := '0';
+    value : in std_ulogic;
+    other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -575,7 +575,7 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_indexes : in natural_vec_t;
-    values : in std_logic_vector;
+    values : in std_ulogic_vector;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -607,7 +607,7 @@ package body reg_operations_pkg is
     signal net : inout network_t;
     reg_index : in natural;
     bit_index : in natural;
-    value : in std_logic;
+    value : in std_ulogic;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -627,7 +627,7 @@ package body reg_operations_pkg is
 
   function to_reg_value(
     bit_indexes : natural_vec_t;
-    values : std_logic_vector;
+    values : std_ulogic_vector;
     previous_value : reg_t := (others => '0')
   ) return reg_t is
     variable result : reg_t := previous_value;
@@ -635,7 +635,7 @@ package body reg_operations_pkg is
     -- Construct a register value based on bit values.
     -- Assigning 'previous_value' realizes a "read-modify-write" behavior.
 
-    -- The natural_vec_t array is of integer range while std_logic_vector array is natural range.
+    -- The natural_vec_t array is of integer range while std_ulogic_vector array is natural range.
     -- This means that for literal inline arrays, bit_indexes will start at -2147483647 while
     -- values will start at 0. Hence the handling is little more cumbersome.
 

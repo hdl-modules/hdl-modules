@@ -37,7 +37,7 @@ entity axi_simple_write_crossbar is
     num_inputs : positive
   );
   port(
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     input_ports_m2s : in axi_write_m2s_vec_t(0 to num_inputs - 1) := (others => axi_write_m2s_init);
     input_ports_s2m : out axi_write_s2m_vec_t(0 to num_inputs - 1)
@@ -65,7 +65,7 @@ begin
 
   ----------------------------------------------------------------------------
   select_input : process
-    variable aw_done, b_done : std_logic;
+    variable aw_done, b_done : std_ulogic;
     variable num_outstanding_addr_transactions : natural range 0 to max_addr_fifo_depth := 0;
   begin
     wait until rising_edge(clk);

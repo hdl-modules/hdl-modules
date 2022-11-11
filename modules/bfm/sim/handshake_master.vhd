@@ -59,25 +59,25 @@ entity handshake_master is
     rule_4_performance_check_max_waits : natural := natural'high
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     -- Set by testbench when there is data available to push
-    data_is_valid : in std_logic;
+    data_is_valid : in std_ulogic;
     --# {{}}
-    ready : in std_logic;
-    valid : out std_logic := '0';
+    ready : in std_ulogic;
+    valid : out std_ulogic := '0';
     --# {{}}
     -- The signals below are optional to connect. Only used for protocol checking.
-    last : in std_logic := '1';
+    last : in std_ulogic := '1';
     -- Must set 'data_width' generic in order to use these ports.
-    data : in std_logic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_logic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
   );
 end entity;
 
 architecture a of handshake_master is
 
-  signal stall_data : std_logic := '1';
+  signal stall_data : std_ulogic := '1';
 
 begin
 

@@ -36,7 +36,7 @@ entity axi_lite_pipeline is
     pipeline_control_signals : boolean := true
   );
   port (
-    clk : in std_logic;
+    clk : in std_ulogic;
     --# {{}}
     master_m2s : in axi_lite_m2s_t;
     master_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
@@ -52,12 +52,12 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal input_data, output_data : std_logic_vector(addr_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(addr_width - 1 downto 0);
   begin
 
-    input_data <= std_logic_vector(master_m2s.write.aw.addr(input_data'range));
+    input_data <= std_ulogic_vector(master_m2s.write.aw.addr(input_data'range));
 
-    slave_m2s.write.aw.addr(output_data'range) <= unsigned(output_data);
+    slave_m2s.write.aw.addr(output_data'range) <= u_unsigned(output_data);
 
 
     ------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ begin
   ------------------------------------------------------------------------------
   w_block : block
     constant packed_width : integer := axi_lite_m2s_w_sz(data_width);
-    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
   begin
 
     input_data <= to_slv(master_m2s.write.w, data_width);
@@ -138,12 +138,12 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal input_data, output_data : std_logic_vector(addr_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(addr_width - 1 downto 0);
   begin
 
-    input_data <= std_logic_vector(master_m2s.read.ar.addr(input_data'range));
+    input_data <= std_ulogic_vector(master_m2s.read.ar.addr(input_data'range));
 
-    slave_m2s.read.ar.addr(output_data'range) <= unsigned(output_data);
+    slave_m2s.read.ar.addr(output_data'range) <= u_unsigned(output_data);
 
 
     ------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ begin
   ------------------------------------------------------------------------------
   r_block : block
     constant packed_width : integer := axi_lite_s2m_r_sz(data_width);
-    signal input_data, output_data : std_logic_vector(packed_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
   begin
 
     input_data <= to_slv(slave_s2m.read.r, data_width);
