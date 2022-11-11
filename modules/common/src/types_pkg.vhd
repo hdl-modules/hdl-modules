@@ -130,7 +130,7 @@ package body types_pkg is
     elsif value = '0' then
       return false;
     end if;
-    assert false report "Can not convert value: " & std_ulogic'image(value) severity failure;
+    assert false report "Can not convert value: " & std_logic'image(value) severity failure;
     return false;
   end function;
 
