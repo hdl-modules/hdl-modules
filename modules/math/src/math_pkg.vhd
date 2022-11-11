@@ -115,7 +115,7 @@ package body math_pkg is
   function to_gray(value : u_unsigned) return std_ulogic_vector is
     variable value_slv, result : std_ulogic_vector(value'range);
   begin
-    value_slv := std_ulogic_vector(value);
+    value_slv := std_logic_vector(value);
     result := value_slv xor "0" & value_slv(value_slv'high downto 1);
     return result;
   end function;

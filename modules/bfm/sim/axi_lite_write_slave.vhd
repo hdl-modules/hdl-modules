@@ -39,7 +39,7 @@ end entity;
 
 architecture a of axi_lite_write_slave is
 
-  constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_ulogic_vector(to_len(1));
+  constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_logic_vector(to_len(1));
   constant size : std_ulogic_vector(axi_a_size_sz - 1 downto 0) :=
     std_ulogic_vector(to_size(data_width));
 
@@ -78,6 +78,6 @@ begin
       bresp => axi_lite_write_s2m.b.resp
     );
 
-  awaddr <= std_ulogic_vector(axi_lite_write_m2s.aw.addr);
+  awaddr <= std_logic_vector(axi_lite_write_m2s.aw.addr);
 
 end architecture;

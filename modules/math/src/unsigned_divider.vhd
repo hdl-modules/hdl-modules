@@ -80,7 +80,7 @@ begin
     wait until rising_edge(clk);
 
     divisor_int <= shift_down(divisor_int);
-    sub_result := u_signed('0' & remainder_int) - u_signed('0' & divisor_int);
+    sub_result := signed('0' & remainder_int) - signed('0' & divisor_int);
 
     case state is
       when ready =>

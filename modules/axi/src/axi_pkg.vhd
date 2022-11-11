@@ -355,17 +355,17 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
-    result(hi downto lo) := std_ulogic_vector(data.addr(addr_width - 1 downto 0));
+    result(hi downto lo) := std_logic_vector(data.addr(addr_width - 1 downto 0));
     lo := hi + 1;
     hi := lo + data.len'length - 1;
-    result(hi downto lo) := std_ulogic_vector(data.len);
+    result(hi downto lo) := std_logic_vector(data.len);
     lo := hi + 1;
     hi := lo + data.size'length - 1;
-    result(hi downto lo) := std_ulogic_vector(data.size);
+    result(hi downto lo) := std_logic_vector(data.size);
     lo := hi + 1;
     hi := lo + data.burst'length - 1;
     result(hi downto lo) := data.burst;
@@ -383,17 +383,17 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
-    result.addr(addr_width - 1 downto 0) := u_unsigned(data(hi + offset downto lo + offset));
+    result.addr(addr_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.len'length - 1;
-    result.len := u_unsigned(data(hi + offset downto lo + offset));
+    result.len := unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.size'length - 1;
-    result.size := u_unsigned(data(hi + offset downto lo + offset));
+    result.size := unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
     hi := lo + result.burst'length - 1;
     result.burst := data(hi + offset downto lo + offset);
@@ -439,7 +439,7 @@ package body axi_pkg is
     lo := hi + 1;
 
     hi := lo + id_width - 1;
-    result(hi downto lo) := std_ulogic_vector(data.id(id_width - 1 downto 0));
+    result(hi downto lo) := std_logic_vector(data.id(id_width - 1 downto 0));
     lo := hi + 1;
 
     hi := lo;
@@ -466,7 +466,7 @@ package body axi_pkg is
     lo := hi + 1;
 
     hi := lo + id_width - 1;
-    result.id(id_width - 1 downto 0) := u_unsigned(data(hi + offset downto lo + offset));
+    result.id(id_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
     lo := hi + 1;
 
     hi := lo;
@@ -488,7 +488,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
@@ -505,7 +505,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
@@ -532,7 +532,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result(hi downto lo) := std_ulogic_vector(data.id(hi downto lo));
+      result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;
@@ -559,7 +559,7 @@ package body axi_pkg is
     lo := 0;
     if id_width > 0 then
       hi := id_width - 1;
-      result.id(hi downto lo) := u_unsigned(data(hi + offset downto lo + offset));
+      result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;

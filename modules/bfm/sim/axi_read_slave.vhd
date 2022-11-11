@@ -72,11 +72,11 @@ begin
       rlast => axi_read_s2m.r.last
     );
 
-  arid <= std_ulogic_vector(axi_read_m2s.ar.id(arid'range));
-  araddr <= std_ulogic_vector(axi_read_m2s.ar.addr);
-  arlen <= std_ulogic_vector(axi_read_m2s.ar.len);
-  arsize <= std_ulogic_vector(axi_read_m2s.ar.size);
+  arid <= std_logic_vector(axi_read_m2s.ar.id(arid'range));
+  araddr <= std_logic_vector(axi_read_m2s.ar.addr);
+  arlen <= std_logic_vector(axi_read_m2s.ar.len);
+  arsize <= std_logic_vector(axi_read_m2s.ar.size);
 
-  axi_read_s2m.r.id(rid'range) <= u_unsigned(rid);
+  axi_read_s2m.r.id(rid'range) <= unsigned(rid);
 
 end architecture;

@@ -39,7 +39,7 @@ end entity;
 
 architecture a of axi_lite_read_slave is
 
-  constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_ulogic_vector(to_len(1));
+  constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_logic_vector(to_len(1));
   constant size : std_ulogic_vector(axi_a_size_sz - 1 downto 0) :=
     std_ulogic_vector(to_size(data_width));
 
@@ -74,6 +74,6 @@ begin
       rlast => open
     );
 
-  araddr <= std_ulogic_vector(axi_lite_read_m2s.ar.addr);
+  araddr <= std_logic_vector(axi_lite_read_m2s.ar.addr);
 
 end architecture;

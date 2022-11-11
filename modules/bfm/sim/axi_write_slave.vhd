@@ -114,12 +114,12 @@ begin
       bresp => axi_write_s2m.b.resp
     );
 
-  awid <= std_ulogic_vector(axi_write_m2s.aw.id(awid'range));
-  awaddr <= std_ulogic_vector(axi_write_m2s.aw.addr);
-  awlen <= std_ulogic_vector(axi_write_m2s.aw.len);
-  awsize <= std_ulogic_vector(axi_write_m2s.aw.size);
+  awid <= std_logic_vector(axi_write_m2s.aw.id(awid'range));
+  awaddr <= std_logic_vector(axi_write_m2s.aw.addr);
+  awlen <= std_logic_vector(axi_write_m2s.aw.len);
+  awsize <= std_logic_vector(axi_write_m2s.aw.size);
 
-  axi_write_s2m.b.id(bid'range) <= u_unsigned(bid);
+  axi_write_s2m.b.id(bid'range) <= unsigned(bid);
 
 
   ------------------------------------------------------------------------------
