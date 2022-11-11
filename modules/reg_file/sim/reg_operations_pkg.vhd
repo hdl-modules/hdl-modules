@@ -495,7 +495,7 @@ package body reg_operations_pkg is
     write_reg(
       net,
       reg_index,
-      std_ulogic_vector(to_signed(value, reg_width)),
+      std_logic_vector(to_signed(value, reg_width)),
       base_address,
       bus_handle
     );

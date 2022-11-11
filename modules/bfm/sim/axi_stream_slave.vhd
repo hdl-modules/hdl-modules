@@ -139,7 +139,7 @@ begin
           & ",byte_idx=" & to_string(byte_idx)
       );
       check_equal(
-        u_unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+        unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
         get(arr=>reference_data, idx=>byte_idx),
         "'data' check at packet_idx="
           & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
@@ -147,7 +147,7 @@ begin
 
       if id'length > 0 then
         check_equal(
-          u_unsigned(id),
+          unsigned(id),
           reference_id,
           "'id' check at packet_idx="
             & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)

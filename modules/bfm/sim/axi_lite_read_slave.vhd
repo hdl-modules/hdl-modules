@@ -41,7 +41,7 @@ architecture a of axi_lite_read_slave is
 
   constant len : std_ulogic_vector(axi_a_len_sz - 1 downto 0) := std_logic_vector(to_len(1));
   constant size : std_ulogic_vector(axi_a_size_sz - 1 downto 0) :=
-    std_ulogic_vector(to_size(data_width));
+    std_logic_vector(to_size(data_width));
 
   -- Using "open" not ok in GHDL: unconstrained port "rid" must be connected
   signal rid, aid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');

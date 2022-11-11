@@ -192,7 +192,7 @@ begin
 
         data_value := get(arr=>input_bytes, idx=>byte_idx);
         data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) :=
-          std_ulogic_vector(to_unsigned(data_value, 8));
+          std_logic_vector(to_unsigned(data_value, 8));
 
         strobe(byte_lane_idx) := '1';
 

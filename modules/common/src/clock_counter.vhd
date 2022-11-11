@@ -55,7 +55,7 @@ end entity;
 architecture a of clock_counter is
 
   signal tick_count, tick_count_resync, tick_count_resync_previous :
-    u_unsigned(target_tick_count'range) := (others => '0');
+    unsigned(target_tick_count'range) := (others => '0');
 
   signal reference_tick : std_ulogic := '0';
 

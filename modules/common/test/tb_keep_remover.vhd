@@ -192,7 +192,7 @@ begin
 
           data_value := get(arr=>input_bytes, idx=>array_byte_idx + data_byte_idx);
           input_data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
-            std_ulogic_vector(to_unsigned(data_value, 8));
+            std_logic_vector(to_unsigned(data_value, 8));
 
           -- Set atom strobe
           input_keep(byte_lane_idx / bytes_per_atom) <= '1';
