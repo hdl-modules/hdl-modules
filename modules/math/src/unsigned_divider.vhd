@@ -74,8 +74,8 @@ begin
   remainder <= resize(remainder_int, remainder'length);
 
   main : process
-    variable sub_result :
-      u_signed(maximum(remainder_int'length, divisor_int'length) + 1 - 1 downto 0) := (others => '0');
+    constant sub_result_width : positive := maximum(remainder_int'length, divisor_int'length) + 1;
+    variable sub_result : u_signed(sub_result_width - 1 downto 0) := (others => '0');
   begin
     wait until rising_edge(clk);
 
