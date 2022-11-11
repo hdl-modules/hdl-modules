@@ -235,8 +235,8 @@ package body types_pkg is
     -- Using 'time' / 'time' -> 'universal_integer' function (IEEE Std 1076-2008, pp. 260).
     -- Note that 'universal_integer' range is implementation dependent.
     -- 'time' range is also implementation dependent, but guaranteed to be at least 32 bit
-    -- u_signed integer (pp. 41).
-    -- Vivado seems to handle 'universal_integer' as a 32 bit u_signed integer.
+    -- signed integer (pp. 41).
+    -- Vivado seems to handle 'universal_integer' as a 32 bit signed integer.
     -- We divide by "1 fs" below, in order to preserve the maximum resolution as a fixed point
     -- number before converting to a floating point number.
     -- The 'period_fs' value can overflow for 'period' values that are too small.

@@ -129,7 +129,7 @@ begin
     -- If the period doesn't fit in a few luts, we create a counter
     gen_counter : if period > shift_register_length * 4 generate
       constant num_counter_bits : integer := num_bits_needed(period - 1);
-      -- Use an u_unsigned instead of integer for this counter, so that we can let it wrap.
+      -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
       signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := (others => '0');
     begin
       count : process

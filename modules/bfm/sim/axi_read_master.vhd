@@ -48,7 +48,7 @@ entity axi_read_master is
     -- AR transaction.
     job_queue : queue_t;
     -- Push reference data (integer_array_t with push_ref()) to this queue.
-    -- Each element should be an u_unsigned byte. Little endian byte order is assumed.
+    -- Each element should be an unsigned byte. Little endian byte order is assumed.
     -- The data returned on the R channel will be checked against this data.
     reference_data_queue : queue_t;
     -- Stall configuration for the AR channel master

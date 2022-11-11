@@ -10,7 +10,7 @@
 --
 -- Reference data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
 -- :doc:`VUnit queue <vunit:data_types/queue>`.
--- Each element in the ``integer_array`` should be an u_unsigned byte.
+-- Each element in the ``integer_array`` should be an unsigned byte.
 -- Little endian byte order is assumed.
 --
 -- An optional expected ID is pushed as a ``natural`` to another ``queue`` by the user.

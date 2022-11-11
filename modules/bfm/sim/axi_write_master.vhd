@@ -50,7 +50,7 @@ entity axi_write_master is
     -- AW transaction and eventually a B check.
     job_queue : queue_t;
     -- Push data (integer_array_t with push_ref()) to this queue. Each element should be an
-    -- u_unsigned byte. Little endian byte order is assumed.
+    -- unsigned byte. Little endian byte order is assumed.
     data_queue : queue_t;
     -- Stall configuration for the AW channel master
     aw_stall_config : stall_config_t := default_address_stall_config;
