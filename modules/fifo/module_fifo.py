@@ -8,7 +8,7 @@
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
-from tsfpga.module import BaseModule, get_hdl_modules
+from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
     Ffs,
@@ -108,6 +108,14 @@ class Module(BaseModule):
                 yield generics
 
     def get_build_projects(self):
+        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
+        # this module is used. Hence we can not import at the top of this file.
+        # This method is only called when running netlist builds in the hdl_modules repo from the
+        # bundled tools/build.py, where PYTHONPATH is correctly set up.
+        # pylint: disable=import-outside-toplevel
+        # First party libraries
+        from hdl_modules import get_hdl_modules
+
         projects = []
         modules = get_hdl_modules()
         part = "xc7z020clg400-1"

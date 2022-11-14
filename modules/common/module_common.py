@@ -12,7 +12,7 @@ import itertools
 from random import randrange
 
 # Third party libraries
-from tsfpga.module import BaseModule, get_hdl_modules
+from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
     DspBlocks,
     EqualTo,
@@ -346,6 +346,14 @@ class Module(BaseModule):
             )
 
     def _get_clock_counter_build_projects(self, part, projects):
+        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
+        # this module is used. Hence we can not import at the top of this file.
+        # This method is only called when running netlist builds in the hdl_modules repo from the
+        # bundled tools/build.py, where PYTHONPATH is correctly set up.
+        # pylint: disable=import-outside-toplevel
+        # First party libraries
+        from hdl_modules import get_hdl_modules
+
         modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
 
         generics = dict(resolution_bits=24, max_relation_bits=6)
@@ -385,6 +393,14 @@ class Module(BaseModule):
         )
 
     def _get_periodic_pulser_build_projects(self, part, projects):
+        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
+        # this module is used. Hence we can not import at the top of this file.
+        # This method is only called when running netlist builds in the hdl_modules repo from the
+        # bundled tools/build.py, where PYTHONPATH is correctly set up.
+        # pylint: disable=import-outside-toplevel
+        # First party libraries
+        from hdl_modules import get_hdl_modules
+
         modules = get_hdl_modules(names_include=[self.name, "math"])
 
         # Returns: generics, checkers
