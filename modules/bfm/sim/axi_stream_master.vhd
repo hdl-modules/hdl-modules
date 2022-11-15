@@ -79,6 +79,19 @@ architecture a of axi_stream_master is
 
 begin
 
+  assert data_width mod 8 = 0
+    report "This entity works on a byte-by-byte basis. Data width must be a multiple of bytes.";
+
+  assert data_width mod strobe_unit_width = 0
+    report "A whole number of strobes must fit in each beat.";
+
+  assert data_width >= strobe_unit_width report "Strobe unit can not be greater than data width.";
+
+  assert strobe_unit_width mod 8 = 0 report "Strobe unit must be a byte multiple";
+
+  assert strobe_unit_width >= 8 report "Strobe unit must be one byte or wider";
+
+
   ------------------------------------------------------------------------------
   main : process
     variable data_packet : integer_array_t := null_integer_array;
@@ -154,10 +167,6 @@ begin
     strobe_int <= strobe_byte;
 
   else generate
-
-    assert data'length mod strobe'length = 0 report "Data width must be a multiple of strobe width";
-    assert data'length > 8 report "Strobe unit must be one byte or wider";
-    assert data'length mod 8 = 0 report "Strobe unit must be a byte multiple";
 
     ------------------------------------------------------------------------------
     assign : process(all)
