@@ -29,7 +29,12 @@ package bfm_pkg is
     signal clk : in std_ulogic
   );
 
-  -- Some convenience method for getting vectors of BFM/VC elements.
+  impure function concatenate_integer_arrays(
+    base_array : integer_array_t;
+    end_array : integer_array_t
+  ) return integer_array_t;
+
+  -- Some convenience methods for getting vectors of BFM/VC elements.
   -- When doing e.g.
   --   constant my_masters : axi_stream_master_vec_t(0 to 1) :=
   --     (others => new_axi_stream_master(...));
@@ -68,6 +73,7 @@ end package;
 
 package body bfm_pkg is
 
+  ------------------------------------------------------------------------------
   procedure random_stall(
     stall_config : in stall_config_t;
     rnd : inout RandomPType;
@@ -86,7 +92,54 @@ package body bfm_pkg is
       end loop;
     end if;
   end procedure;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
+  -- Concatenate two arrays with data.
+  -- Will copy contents to new array, will not deallocate either of the input arrays.
+  impure function concatenate_integer_arrays(
+    base_array : integer_array_t;
+    end_array : integer_array_t
+  ) return integer_array_t is
+    constant total_length : positive := length(base_array) + length(end_array);
+    variable result : integer_array_t := new_1d(
+      length=>total_length,
+      bit_width=>bit_width(base_array),
+      is_signed=>is_signed(base_array)
+    );
+  begin
+    assert bit_width(base_array) = bit_width(end_array)
+      report "Can only concatenate similar arrays";
+    assert is_signed(base_array) = is_signed(end_array)
+      report "Can only concatenate similar arrays";
+
+    assert height(base_array) = 1 report "Can only concatenate one dimensional arrays";
+    assert height(end_array) = 1 report "Can only concatenate one dimensional arrays";
+
+    assert depth(base_array) = 1 report "Can only concatenate one dimensional arrays";
+    assert depth(end_array) = 1 report "Can only concatenate one dimensional arrays";
+
+    for byte_idx in 0 to length(base_array) - 1 loop
+      set(
+        arr=>result,
+        idx=>byte_idx,
+        value=>get(arr=>base_array, idx=>byte_idx)
+      );
+    end loop;
+
+    for byte_idx in 0 to length(end_array) - 1 loop
+      set(
+        arr=>result,
+        idx=>length(base_array) + byte_idx,
+        value=>get(arr=>end_array, idx=>byte_idx)
+      );
+    end loop;
+
+    return result;
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
   impure function get_new_queues(count : positive) return queue_vec_t is
     variable result : queue_vec_t(0 to count - 1) := (others => null_queue);
   begin
@@ -95,7 +148,9 @@ package body bfm_pkg is
     end loop;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   impure function get_new_memories(count : positive) return memory_vec_t is
     variable result : memory_vec_t(0 to count - 1) := (others => null_memory);
   begin
@@ -104,7 +159,9 @@ package body bfm_pkg is
     end loop;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   impure function get_new_axi_stream_masters(
     count : positive;
     data_width : positive;
@@ -125,7 +182,9 @@ package body bfm_pkg is
     end loop;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   impure function get_new_axi_stream_slaves(
     count : positive;
     data_width : positive;
@@ -146,5 +205,6 @@ package body bfm_pkg is
     end loop;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
 end package body;
