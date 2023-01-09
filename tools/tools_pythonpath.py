@@ -26,3 +26,8 @@ sys.path.insert(0, str(PATH_TO_HDL_REGISTERS))
 
 PATH_TO_VUNIT = REPO_ROOT.parent.parent.resolve() / "vunit" / "vunit"
 sys.path.insert(0, str(PATH_TO_VUNIT))
+
+# Alternative repo layout where hdl_modules is a git submodule in a development repo, and VUnit
+# is outside of this structure.
+PATH_TO_VUNIT = REPO_ROOT.parent.parent.parent.parent.parent.resolve() / "vunit" / "vunit"
+sys.path.insert(0, str(PATH_TO_VUNIT))

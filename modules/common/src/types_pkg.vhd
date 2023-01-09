@@ -71,6 +71,26 @@ package types_pkg is
   -- Period to integer frequency seems to give no error (in the test cases at least)
   --------------------------------------------------------------------------------------------------
 
+  --------------------------------------------------------------------------------------------------
+  -- Instead of e.g. writing
+  --
+  --   wait until (ready and valid) = '1' and rising_edge(clk);
+  --
+  -- in testbenches, these two operator functions can be used so that it is enough to write
+  --
+  --   wait until ready and valid and rising_edge(clk);
+  --
+  -- which is a lot shorter. Can also be used in implementation to the extent that std_logic/boolean
+  -- are mixed.
+  --
+  -- The boolean type only has two states (true, false) whereas std_logic has many, including 'X',
+  -- 'U', etc.
+  -- These operator functions use '1' as the only std_logic state equivalent to the boolean state
+  -- of "true".
+  function "and" (left : boolean; right: std_ulogic) return boolean;
+  function "and" (left : std_ulogic; right: boolean) return boolean;
+  --------------------------------------------------------------------------------------------------
+
 end package;
 
 package body types_pkg is
@@ -264,6 +284,18 @@ package body types_pkg is
       severity failure;
 
     return positive(frequency_hz_real);
+  end function;
+  --------------------------------------------------------------------------------------------------
+
+  --------------------------------------------------------------------------------------------------
+  function "and" (left : boolean; right: std_ulogic) return boolean is
+  begin
+    return left and (right = '1');
+  end function;
+
+  function "and" (left : std_ulogic; right: boolean) return boolean is
+  begin
+    return (left = '1') and right;
   end function;
   --------------------------------------------------------------------------------------------------
 

@@ -49,6 +49,9 @@ begin
     variable natural_vec : natural_vec_t(0 to 3) := (others => 0);
     variable positive_vec : positive_vec_t(0 to 3) := (others => 1);
 
+    variable my_boolean : boolean := false;
+    variable my_std_logic : std_logic := '0';
+
   begin
     test_runner_setup(runner, runner_cfg);
 
@@ -169,6 +172,25 @@ begin
         check_equal(to_frequency_hz(test_periods(test_idx)), test_frequencies_integer(test_idx));
 
       end loop;
+
+    elsif run("test_boolean_std_logic_and_operator") then
+      my_boolean := true;
+      my_std_logic := '1';
+      check_true(my_boolean and my_std_logic);
+      check_true(my_std_logic and my_boolean);
+
+      my_boolean := false;
+      check_false(my_boolean and my_std_logic);
+
+      my_boolean := true;
+      my_std_logic := '0';
+      check_false(my_std_logic and my_boolean);
+
+      my_std_logic := 'U';
+      check_false(my_std_logic and my_boolean);
+
+      my_std_logic := '-';
+      check_false(my_std_logic and my_boolean);
 
     end if;
 
