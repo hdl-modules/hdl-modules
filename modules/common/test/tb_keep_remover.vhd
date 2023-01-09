@@ -204,7 +204,7 @@ begin
         -- Can not, and may not, happen on a beat that has no atom strobed.
         input_last <= to_sl(num_bytes_this_word > 0 and array_byte_idx = num_input_bytes);
 
-        wait until (input_ready and input_valid) = '1' and rising_edge(clk);
+        wait until input_ready and input_valid and rising_edge(clk);
 
         input_data <= (others => '0');
         input_keep <= (others => '0');

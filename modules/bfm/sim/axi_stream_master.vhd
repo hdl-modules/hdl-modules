@@ -127,7 +127,7 @@ begin
       if byte_lane_idx = bytes_per_beat - 1 or is_last_byte then
         last_int <= to_sl(is_last_byte);
 
-        wait until (ready and valid) = '1' and rising_edge(clk);
+        wait until ready and valid and rising_edge(clk);
 
         -- Default for next beat. We will fill in the byte lanes that are used.
         data_int <= (others => drive_invalid_value);

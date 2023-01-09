@@ -109,7 +109,7 @@ begin
     procedure wait_until_no_longer_in_reset is
     begin
       if is_asynchronous then
-        wait until write_ready = '1' and rising_edge(clk_write);
+        wait until write_ready and rising_edge(clk_write);
 
         for extra_wait_cycle in 0 to 6 loop
           wait until rising_edge(clk_write);
@@ -121,7 +121,7 @@ begin
     begin
       read_is_ready <= '1';
       for read_idx in 0 to count - 1 loop
-        wait until (read_ready and read_valid) = '1' and rising_edge(clk_read);
+        wait until read_ready and read_valid and rising_edge(clk_read);
         check_equal(
           read_data,
           pop_std_ulogic_vector(read_data_queue),
@@ -142,7 +142,7 @@ begin
 
       if wait_until_done then
         wait until is_empty(write_data_queue) and rising_edge(clk_write);
-        wait until stimuli_inactive = '1' and rising_edge(clk_write);
+        wait until stimuli_inactive and rising_edge(clk_write);
       end if;
     end procedure;
 
@@ -223,7 +223,7 @@ begin
       data_is_valid <= '1';
 
       write_data <= pop(write_data_queue);
-      wait until (write_ready and write_valid) = '1' and rising_edge(clk_write);
+      wait until write_ready and write_valid and rising_edge(clk_write);
 
       data_is_valid <= '0';
     end process;

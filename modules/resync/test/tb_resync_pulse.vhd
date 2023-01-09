@@ -14,6 +14,9 @@ use ieee.numeric_std.all;
 library vunit_lib;
 context vunit_lib.vunit_context;
 
+library common;
+use common.types_pkg.all;
+
 
 entity tb_resync_pulse is
   generic (
@@ -89,7 +92,7 @@ begin
   ------------------------------------------------------------------------------
   output : process
   begin
-    wait until pulse_out = '1' and rising_edge(clk_out);
+    wait until pulse_out and rising_edge(clk_out);
     num_pulses_out <= num_pulses_out + 1;
   end process;
 

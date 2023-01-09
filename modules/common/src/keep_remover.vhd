@@ -111,7 +111,7 @@ begin
   ------------------------------------------------------------------------------
   assert_input : process
   begin
-    wait until input_valid = '1' and rising_edge(clk);
+    wait until input_valid and rising_edge(clk);
 
     assert (or input_keep) or not input_last report
       "'last' may not be asserted on a strobed out word";

@@ -23,6 +23,9 @@ use osvvm.RandomPkg.all;
 library math;
 use math.math_pkg.all;
 
+library common;
+use common.types_pkg.all;
+
 use work.axi_lite_pkg.all;
 use work.axi_pkg.all;
 use work.axi_pkg.axi_resp_okay;
@@ -64,11 +67,11 @@ begin
       axi_m2s.read.ar.len <= to_unsigned(len, axi_m2s.read.ar.len'length);
       axi_m2s.read.ar.size <= to_unsigned(size, axi_m2s.read.ar.size'length);
 
-      wait until (axi_m2s.read.ar.valid and axi_s2m.read.ar.ready) = '1' and rising_edge(clk);
+      wait until axi_m2s.read.ar.valid and axi_s2m.read.ar.ready and rising_edge(clk);
       axi_m2s.read.r.ready <= '1';
       axi_lite_s2m.read.r.valid <= '1';
 
-      wait until (axi_s2m.read.r.valid and axi_m2s.read.r.ready) = '1' and rising_edge(clk);
+      wait until axi_s2m.read.r.valid and axi_m2s.read.r.ready and rising_edge(clk);
       check_equal(axi_s2m.read.r.resp, resp);
     end procedure;
 
@@ -80,11 +83,11 @@ begin
       axi_m2s.write.aw.len <= to_unsigned(len, axi_m2s.write.aw.len'length);
       axi_m2s.write.aw.size <= to_unsigned(size, axi_m2s.write.aw.size'length);
 
-      wait until (axi_m2s.write.aw.valid and axi_s2m.write.aw.ready) = '1' and rising_edge(clk);
+      wait until axi_m2s.write.aw.valid and axi_s2m.write.aw.ready and rising_edge(clk);
       axi_m2s.write.b.ready <= '1';
       axi_lite_s2m.write.b.valid <= '1';
 
-      wait until (axi_s2m.write.b.valid and axi_m2s.write.b.ready) = '1' and rising_edge(clk);
+      wait until axi_s2m.write.b.valid and axi_m2s.write.b.ready and rising_edge(clk);
       check_equal(axi_s2m.write.b.resp, resp);
     end procedure;
 

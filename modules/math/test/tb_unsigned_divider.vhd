@@ -16,6 +16,9 @@ use vunit_lib.random_pkg.all;
 context vunit_lib.vunit_context;
 context vunit_lib.data_types_context;
 
+library common;
+use common.types_pkg.all;
+
 library osvvm;
 use osvvm.RandomPkg.all;
 
@@ -56,11 +59,11 @@ begin
       dividend <= to_unsigned(dividend_tb, dividend'length);
       divisor <= to_unsigned(divisor_tb, divisor'length);
       input_valid <= '1';
-      wait until (input_ready and input_valid) = '1' and rising_edge(clk);
+      wait until input_ready and input_valid and rising_edge(clk);
       input_valid <= '0';
 
       result_ready <= '1';
-      wait until (result_ready and result_valid) = '1' and rising_edge(clk);
+      wait until result_ready and result_valid and rising_edge(clk);
       result_ready <= '0';
     end procedure;
 

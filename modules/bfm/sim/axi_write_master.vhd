@@ -115,7 +115,7 @@ begin
 
       data_is_valid <= '1';
 
-      wait until (axi_write_s2m.aw.ready and axi_write_m2s.aw.valid) = '1' and rising_edge(clk);
+      wait until axi_write_s2m.aw.ready and axi_write_m2s.aw.valid and rising_edge(clk);
 
       data_is_valid <= '0';
     end process;
@@ -230,7 +230,7 @@ begin
     check_b : process
       variable id_reference : natural := 0;
     begin
-      wait until (axi_write_m2s.b.ready and axi_write_s2m.b.valid) = '1' and rising_edge(clk);
+      wait until axi_write_m2s.b.ready and axi_write_s2m.b.valid and rising_edge(clk);
 
       id_reference := pop(b_id_queue);
 

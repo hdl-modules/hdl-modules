@@ -74,7 +74,7 @@ package types_pkg is
   --------------------------------------------------------------------------------------------------
   -- Instead of e.g. writing
   --
-  --   wait until (ready and valid) = '1' and rising_edge(clk);
+  --   wait until ready and valid and rising_edge(clk);
   --
   -- in testbenches, these two operator functions can be used so that it is enough to write
   --

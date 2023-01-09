@@ -157,7 +157,7 @@ begin
         input_strobe <= strobe;
         input_last <= last;
 
-        wait until (input_ready and input_valid) = '1' and rising_edge(clk);
+        wait until input_ready and input_valid and rising_edge(clk);
 
         input_data <= (others => '0');
         input_strobe <= (others => '0');

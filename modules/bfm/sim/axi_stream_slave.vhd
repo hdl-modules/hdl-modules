@@ -29,6 +29,9 @@ context vunit_lib.vunit_context;
 
 library bfm;
 
+library common;
+use common.types_pkg.all;
+
 
 entity axi_stream_slave is
   generic (
@@ -128,7 +131,7 @@ begin
       is_last_beat := byte_idx / bytes_per_beat = packet_length_beats - 1;
 
       if byte_lane_idx = 0 then
-        wait until (ready and valid) = '1' and rising_edge(clk);
+        wait until ready and valid and rising_edge(clk);
 
         -- Pop reference ID for this packet, if applicable, on the first beat
         if id'length > 0 and byte_idx = 0 then

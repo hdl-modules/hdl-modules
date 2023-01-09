@@ -122,7 +122,7 @@ begin
         input_last <= stimuli_last;
         input_data <= stimuli_data;
         input_strobe <= rnd.RandSlv(input_strobe'length);
-        wait until (input_ready and input_valid) = '1' and rising_edge(clk);
+        wait until input_ready and input_valid and rising_edge(clk);
       end loop;
 
       input_is_valid <= '0';
@@ -188,7 +188,7 @@ begin
       variable expected_data : std_ulogic_vector(result_data'range) := (others => '0');
       variable expected_last : std_ulogic := '0';
     begin
-      wait until (result_ready and result_valid) = '1' and rising_edge(clk);
+      wait until result_ready and result_valid and rising_edge(clk);
 
       expected_data := pop(reference_data_queue);
       check_equal(result_data, expected_data);

@@ -37,6 +37,7 @@ library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 library common;
+use common.types_pkg.all;
 
 use work.bfm_pkg.all;
 
@@ -95,7 +96,7 @@ begin
       random_stall(stall_config, rnd, clk);
       stall_data <= '0';
 
-      wait until (ready and valid) = '1' and rising_edge(clk);
+      wait until ready and valid and rising_edge(clk);
     end loop;
   end process;
 

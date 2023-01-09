@@ -109,7 +109,7 @@ begin
 
       data_is_valid <= '1';
 
-      wait until (axi_read_s2m.ar.ready and axi_read_m2s.ar.valid) = '1' and rising_edge(clk);
+      wait until axi_read_s2m.ar.ready and axi_read_m2s.ar.valid and rising_edge(clk);
 
       data_is_valid <= '0';
     end process;
@@ -196,7 +196,7 @@ begin
     ------------------------------------------------------------------------------
     check_resp : process
     begin
-      wait until axi_read_s2m.r.valid = '1' and rising_edge(clk);
+      wait until axi_read_s2m.r.valid and rising_edge(clk);
 
       -- Check response code OKAY (everything else is checked in the axi_stream_slave)
       check_equal(axi_read_s2m.r.resp, 0);

@@ -88,7 +88,7 @@ begin
     begin
       for read_idx in 0 to count - 1 loop
         read_is_ready <= '1';
-        wait until (read_ready and read_valid) = '1' and rising_edge(clk);
+        wait until read_ready and read_valid and rising_edge(clk);
 
         check_equal(
           read_data,
@@ -130,7 +130,7 @@ begin
 
       if wait_until_done then
         wait until is_empty(write_data_queue) and rising_edge(clk);
-        wait until stimuli_inactive = '1' and rising_edge(clk);
+        wait until stimuli_inactive and rising_edge(clk);
       end if;
     end procedure;
 
@@ -443,7 +443,7 @@ begin
 
       write_data <= pop(write_data_queue);
       write_last <= pop(write_last_queue);
-      wait until (write_ready and write_valid) = '1' and rising_edge(clk);
+      wait until write_ready and write_valid and rising_edge(clk);
 
       data_is_valid <= '0';
     end process;
