@@ -26,6 +26,9 @@ use axi.axi_pkg.all;
 library bfm;
 use bfm.axi_bfm_pkg.all;
 
+library common;
+use common.types_pkg.all;
+
 
 entity tb_axi_pipeline is
   generic (
@@ -120,8 +123,7 @@ begin
 
       -- The two pushes above initiate the write operation. Once that is done we start the
       -- read operation.
-      wait until
-        (pipelined_write_m2s.b.ready and pipelined_write_s2m.b.valid) = '1' and rising_edge(clk);
+      wait until pipelined_write_m2s.b.ready and pipelined_write_s2m.b.valid and rising_edge(clk);
 
       -- Can set a different ID for the read than for the write
       job.id := rnd.RandInt(2 ** id_width - 1);
