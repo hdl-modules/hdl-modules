@@ -94,7 +94,7 @@ entity width_conversion is
   port (
     clk : in std_ulogic;
     --# {{}}
-    input_ready : out std_ulogic := '1';
+    input_ready : out std_ulogic := '0';
     input_valid : in std_ulogic;
     -- Optional packet 'last' signalling. Must set 'enable_last' generic in order to use this.
     input_last : in std_ulogic := '0';

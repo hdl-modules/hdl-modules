@@ -31,7 +31,7 @@ entity fifo_netlist_build_wrapper is
     read_valid : out std_ulogic := '0';
     read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
     --# {{}}
-    write_ready : out std_ulogic := '1';
+    write_ready : out std_ulogic := '0';
     write_valid : in std_ulogic;
     write_data : in std_ulogic_vector(width - 1 downto 0)
   );
@@ -41,6 +41,7 @@ architecture a of fifo_netlist_build_wrapper is
 
 begin
 
+  ------------------------------------------------------------------------------
   fifo_wrapper_inst : entity work.fifo_wrapper
     generic map (
       use_asynchronous_fifo => use_asynchronous_fifo,
