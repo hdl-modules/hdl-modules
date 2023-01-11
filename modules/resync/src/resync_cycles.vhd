@@ -72,7 +72,7 @@ begin
     port map (
       clk_in => clk_in,
       counter_in => counter_in,
-
+      --
       clk_out => clk_out,
       counter_out => counter_in_resync
     );

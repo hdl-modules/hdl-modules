@@ -12,7 +12,7 @@
 --   This entity has a scoped constraint file that must be used.
 --
 -- The two registers will be placed in the same slice, in order to minimize Mean Time Between
--- Failure (MTBF). This guarantees proper resynchronization of semi static "level" type
+-- Failure (MTBF). This guarantees proper resynchronization of semi-static "level"-type
 -- signals without meta stability on rising/falling edges. It can not handle
 -- "pulse" type signals. Pulses can be missed and single-cycle pulse behavior
 -- will not work.
@@ -69,7 +69,7 @@ entity resync_level is
     default_value : std_ulogic := '0'
   );
   port (
-    clk_in : in std_ulogic := '-';
+    clk_in : in std_ulogic := 'U';
     data_in : in std_ulogic;
     --# {{}}
     clk_out : in std_ulogic;
@@ -80,20 +80,20 @@ end entity;
 architecture a of resync_level is
   signal data_in_int, data_in_p1, data_out_int : std_ulogic := default_value;
 
+  -- Ensure placement in same slice.
   attribute async_reg of data_in_p1 : signal is "true";
   attribute async_reg of data_out_int : signal is "true";
 begin
-
-  -- This check will trigger in simulation, but will probably not work in synthesis
-  assert clk_in /= '-' or not enable_input_register
-    report "Must assign clock when using input register"
-    severity failure;
 
   data_out <= data_out_int;
 
 
   ------------------------------------------------------------------------------
   assign_input : if enable_input_register generate
+
+    -- This check will trigger in simulation, but will probably not work in synthesis
+    assert clk_in /= 'U' report "Must assign clock when using input register" severity failure;
+
 
     ------------------------------------------------------------------------------
     input_register : process
@@ -114,6 +114,7 @@ begin
   main : process
   begin
     wait until rising_edge(clk_out);
+
     data_out_int <= data_in_p1;
     data_in_p1 <= data_in_int;
   end process;

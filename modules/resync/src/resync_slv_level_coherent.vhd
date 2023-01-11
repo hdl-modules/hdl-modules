@@ -9,11 +9,14 @@
 -- Resynchronize a data vector from one clock domain to another.
 -- Unlike e.g. :ref:`resync.resync_slv_level`, this entity contains a mechanism that guarantees
 -- bit coherency.
--- An :ref:`fifo.asynchronous_fifo` can also be used
--- to achieve this task, but this entity results in a smaller logic footprint.
 --
 -- .. note::
 --   This entity has a scoped constraint file that must be used.
+--
+-- This entity is great for resynchronizing e.g. a control/status register or a counter value,
+-- which are scenarios where bit coherency is crucial.
+-- It will not be able to handle pulses in the input data, it is very likely that pulses will
+-- be missed. Hence the "level" in the name.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with LUTs as well as FFs.
@@ -24,6 +27,10 @@
 -- This ensures that data is sampled on the output side only when we know that the sampled
 -- input data is stable. Conversely, input data is only sampled when we know that data has been
 -- sampled on the output in a stable fashion.
+--
+--
+-- Latency and resource utilization
+-- ________________________________
 --
 -- The latency is less than or equal to
 --
@@ -39,7 +46,9 @@
 -- Compared to :ref:`resync.resync_counter` this entity has lower LUT and FF usage in all scenarios.
 -- It does however have higher latency.
 --
--- Compared to :ref:`fifo.asynchronous_fifo` this entity has lower LUT usage.
+-- Another way of achieving the same functionality is to use a shallow :ref:`fifo.asynchronous_fifo`
+-- with ``write_valid`` and ``read_ready`` statically set to ``1``.
+-- This entity will however have lower LUT usage.
 -- FF usage is lower up to around width 32 where this entity will consume more FF.
 -- Latency is about the same for both.
 -- -------------------------------------------------------------------------------------------------

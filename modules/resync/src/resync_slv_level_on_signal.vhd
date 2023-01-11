@@ -14,6 +14,8 @@
 --
 -- This modules does not utilize any meta stability protection.
 -- It is up to the user to ensure that ``data_in`` is stable when ``sample_value`` is asserted.
+-- It will not be able to handle pulses in the data and does not feature any bit coherency.
+-- Hence it can only be used with semi-static "level"-type signals.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with LUTs as well as FFs.
@@ -43,20 +45,20 @@ architecture a of resync_slv_level_on_signal is
 begin
 
   ------------------------------------------------------------------------------
-  resync_gen : for i in data_in'range generate
+  resync_gen : for data_idx in data_in'range generate
   begin
 
     ------------------------------------------------------------------------------
     resync_on_signal_inst : entity work.resync_level_on_signal
       generic map (
-        default_value => default_value(i)
+        default_value => default_value(data_idx)
       )
       port map (
-        data_in => data_in(i),
-
+        data_in => data_in(data_idx),
+        --
         clk_out => clk_out,
         sample_value => sample_value,
-        data_out => data_out(i)
+        data_out => data_out(data_idx)
       );
 
   end generate;

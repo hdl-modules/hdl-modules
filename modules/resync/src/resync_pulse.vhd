@@ -50,9 +50,10 @@ begin
   begin
     wait until rising_edge(clk_in);
 
-    if pulse_in = '1' then
+    if pulse_in then
       if level_in = level_out_feedback then
         level_in <= not level_in;
+
       elsif assert_false_on_pulse_overload then
         assert false report "Pulse overload";
       end if;
@@ -69,7 +70,7 @@ begin
     port map (
       clk_in => clk_in,
       data_in => level_in,
-
+      --
       clk_out => clk_out,
       data_out => level_out
     );
@@ -84,7 +85,7 @@ begin
     port map (
       clk_in => clk_out,
       data_in => level_out,
-
+      --
       clk_out => clk_in,
       data_out => level_out_feedback
     );
@@ -94,6 +95,7 @@ begin
   output : process
   begin
     wait until rising_edge(clk_out);
+
     pulse_out <= to_sl(level_out /= level_out_p1);
     level_out_p1 <= level_out;
   end process;

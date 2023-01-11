@@ -14,6 +14,9 @@
 --
 -- This simple vector resync mechanism does not guarantee any coherency between the bits.
 -- There might be a large skew between different bits.
+-- It will also not be able to handle pulses in the input data, but can instead only handle
+-- semi-static "level"-type signals.
+--
 -- It does however have meta-stability protection.
 -- See :ref:`resync.resync_level` for details about constraining and usage of
 -- the ``enable_input_register`` generic.
@@ -35,7 +38,7 @@ entity resync_slv_level is
     default_value : std_ulogic_vector(width - 1 downto 0) := (others => '0')
   );
   port (
-    clk_in : in std_ulogic := '-';
+    clk_in : in std_ulogic := 'U';
     data_in : in std_ulogic_vector(default_value'range);
     --# {{}}
     clk_out : in std_ulogic;
@@ -47,21 +50,21 @@ architecture a of resync_slv_level is
 begin
 
   ------------------------------------------------------------------------------
-  resync_gen : for i in data_in'range generate
+  resync_gen : for data_idx in data_in'range generate
   begin
 
     ------------------------------------------------------------------------------
     resync_level_inst : entity work.resync_level
       generic map (
         enable_input_register => enable_input_register,
-        default_value => default_value(i)
+        default_value => default_value(data_idx)
       )
       port map (
         clk_in => clk_in,
-        data_in => data_in(i),
-
+        data_in => data_in(data_idx),
+        --
         clk_out => clk_out,
-        data_out => data_out(i)
+        data_out => data_out(data_idx)
       );
 
   end generate;
