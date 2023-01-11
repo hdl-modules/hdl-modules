@@ -39,10 +39,10 @@ entity axi_slave is
   port (
     clk : in std_ulogic;
     --# {{}}
-    axi_read_m2s : in axi_read_m2s_t := axi_read_m2s_init;
+    axi_read_m2s : in axi_read_m2s_t;
     axi_read_s2m : out axi_read_s2m_t := axi_read_s2m_init;
     --# {{}}
-    axi_write_m2s : in axi_write_m2s_t := axi_write_m2s_init;
+    axi_write_m2s : in axi_write_m2s_t;
     axi_write_s2m : out axi_write_s2m_t := axi_write_s2m_init
   );
 end entity;

@@ -43,11 +43,11 @@ entity axi_write_throttle is
   port(
     clk : in std_ulogic;
     --# {{}}
-    input_m2s : in axi_write_m2s_t := axi_write_m2s_init;
+    input_m2s : in axi_write_m2s_t;
     input_s2m : out axi_write_s2m_t := axi_write_s2m_init;
     --# {{}}
     throttled_m2s : out axi_write_m2s_t := axi_write_m2s_init;
-    throttled_s2m : in axi_write_s2m_t := axi_write_s2m_init
+    throttled_s2m : in axi_write_s2m_t
   );
 end entity;
 

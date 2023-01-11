@@ -71,7 +71,7 @@ entity axi_write_master is
     clk : in std_ulogic;
     --# {{}}
     axi_write_m2s : out axi_write_m2s_t := axi_write_m2s_init;
-    axi_write_s2m : in axi_write_s2m_t := axi_write_s2m_init
+    axi_write_s2m : in axi_write_s2m_t
   );
 end entity;
 

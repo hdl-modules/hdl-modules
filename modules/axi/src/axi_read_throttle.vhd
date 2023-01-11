@@ -75,11 +75,11 @@ entity axi_read_throttle is
     --# {{}}
     data_fifo_level : in natural range 0 to data_fifo_depth;
     --# {{}}
-    input_m2s : in axi_read_m2s_t := axi_read_m2s_init;
+    input_m2s : in axi_read_m2s_t;
     input_s2m : out axi_read_s2m_t := axi_read_s2m_init;
     --# {{}}
     throttled_m2s : out axi_read_m2s_t := axi_read_m2s_init;
-    throttled_s2m : in axi_read_s2m_t := axi_read_s2m_init
+    throttled_s2m : in axi_read_s2m_t
   );
 end entity;
 
