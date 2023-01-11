@@ -62,7 +62,7 @@ entity periodic_pulser is
     shift_register_length : positive
   );
   port (
-    clk : in std_ulogic := '0';
+    clk : in std_ulogic;
     --# {{}}
     count_enable : in std_ulogic := '1';
     pulse : out std_ulogic := '0'

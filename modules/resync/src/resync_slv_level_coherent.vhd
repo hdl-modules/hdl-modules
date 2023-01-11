@@ -65,7 +65,7 @@ entity resync_slv_level_coherent is
     default_value : std_ulogic_vector(width - 1 downto 0) := (others => '0')
   );
   port (
-    clk_in : in std_ulogic := '0';
+    clk_in : in std_ulogic;
     data_in : in std_ulogic_vector(default_value'range);
     --# {{}}
     clk_out : in std_ulogic;
