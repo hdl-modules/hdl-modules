@@ -101,7 +101,7 @@ package body bfm_pkg is
     base_array : integer_array_t;
     end_array : integer_array_t
   ) return integer_array_t is
-    constant total_length : positive := length(base_array) + length(end_array);
+    constant total_length : natural := length(base_array) + length(end_array);
     variable result : integer_array_t := new_1d(
       length=>total_length,
       bit_width=>bit_width(base_array),
