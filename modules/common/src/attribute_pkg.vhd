@@ -22,6 +22,13 @@ package attribute_pkg is
   -- Valid values: "true", "false"
   attribute dont_touch : string;
 
+  -- Specifies that a net should be preserved during synthesis for hardware debug.
+  -- This will prevent optimization that could otherwise eliminate or change the name of the
+  -- specified signal.
+  --
+  -- Valid values: "true", "false"
+  attribute mark_debug : string;
+
   -- Inform the tool that a register is capable of receiving asynchronous data in the D
   -- input pin relative to the source clock, or that the register is a synchronizing
   -- register within a synchronization chain.
@@ -40,10 +47,11 @@ package attribute_pkg is
     ram_style_distributed,
     ram_style_registers,
     ram_style_ultra,
-    ram_style_auto);
+    ram_style_auto
+  );
   function to_attribute(ram_style_enum : ram_style_t) return string;
 
-  -- instructs the synthesis tool how to deal with synthesis arithmetic structures. By
+  -- Instructs the synthesis tool how to deal with synthesis arithmetic structures. By
   -- default, unless there are timing concerns or threshold limits, synthesis attempts to
   -- infer mults, mult-add, mult-sub, and mult-accumulate type structures into DSP blocks.
   -- Adders, subtracters, and accumulators can go into these blocks also, but by default
@@ -76,6 +84,7 @@ end package;
 
 package body attribute_pkg is
 
+  -- Convert from enum to the string value that Vivado uses for RAM_STYLE attribute.
   function to_attribute(ram_style_enum : ram_style_t) return string is
   begin
     case ram_style_enum is
