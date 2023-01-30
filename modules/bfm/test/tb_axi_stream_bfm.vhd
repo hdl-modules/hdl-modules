@@ -74,19 +74,19 @@ begin
     variable num_packets_expected : natural := 0;
 
     procedure test_random_packet is
-      variable data, data_copy : integer_array_t := null_integer_array;
+      variable data_packet, data_packet_copy : integer_array_t := null_integer_array;
     begin
       random_integer_array(
         rnd=>rnd,
-        integer_array=>data,
+        integer_array=>data_packet,
         width=>rnd.RandInt(1, 30),
         bits_per_word => 8,
         is_signed => false
       );
-      data_copy := copy(data);
+      data_packet_copy := copy(data_packet);
 
-      push_ref(input_data_queue, data);
-      push_ref(reference_data_queue, data_copy);
+      push_ref(input_data_queue, data_packet);
+      push_ref(reference_data_queue, data_packet_copy);
 
       num_packets_expected := num_packets_expected + 1;
     end procedure;
