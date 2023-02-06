@@ -28,34 +28,33 @@ begin
     constant test_frequency_real : real := test_frequencies_real(test_idx);
     constant test_frequency_integer : positive := test_frequencies_integer(test_idx);
 
-    constant tolerance_period_via_real : time := test_tolerances_period_via_real(test_idx);
-    constant tolerance_period_via_integer : time := test_tolerances_period_via_integer(test_idx);
-    constant tolerance_frequency_real : real := test_tolerances_frequency_real(test_idx);
+    constant tolerance_period_from_integer : time :=
+      test_tolerances_period_from_integer_frequency(test_idx);
 
-    constant period_via_real : time := to_period(test_frequency_real);
-    constant period_via_integer : time := to_period(test_frequency_integer);
+    constant tolerance_frequency_real : real :=
+      test_tolerances_real_frequency_from_period(test_idx);
+
+    constant period_from_real : time := to_period(test_frequency_real);
+    constant period_from_integer : time := to_period(test_frequency_integer);
 
     constant frequency_hz_real : real := to_frequency_hz(test_period);
     constant frequency_hz_integer : positive := to_frequency_hz(test_period);
   begin
 
-    assert (
-        period_via_real >= test_period - tolerance_period_via_real
-        and period_via_real <= test_period + tolerance_period_via_real
-      )
-      report "Got period_via_real=" & time'image(period_via_real)
+    assert period_from_real = test_period
+      report "Got period_from_real=" & time'image(period_from_real)
         & " expected test_period=" & time'image(test_period)
-        & " (difference=" & time'image(period_via_real - test_period)
+        & " (difference=" & time'image(period_from_real - test_period)
         & ", test_idx=" & natural'image(test_idx) & ")"
       severity failure;
 
     assert (
-        period_via_integer >= test_period - tolerance_period_via_integer
-        and period_via_integer <= test_period + tolerance_period_via_integer
+        period_from_integer >= test_period - tolerance_period_from_integer
+        and period_from_integer <= test_period + tolerance_period_from_integer
       )
-      report "Got period_via_integer=" & time'image(period_via_integer)
+      report "Got period_from_integer=" & time'image(period_from_integer)
         & " expected test_period=" & time'image(test_period)
-        & " (difference=" & time'image(period_via_integer - test_period)
+        & " (difference=" & time'image(period_from_integer - test_period)
         & ", test_idx=" & natural'image(test_idx) & ")"
       severity failure;
 
