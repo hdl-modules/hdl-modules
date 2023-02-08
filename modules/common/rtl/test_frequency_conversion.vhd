@@ -11,7 +11,7 @@
 -- -------------------------------------------------------------------------------------------------
 
 library common;
-use common.types_pkg.all;
+use common.time_pkg.all;
 
 
 entity test_frequency_conversion is
