@@ -24,3 +24,6 @@ Breaking changes
   * ``std_ulogic_vector`` instead of ``std_logic_vector``.
   * ``u_signed`` instead of ``signed``.
   * ``u_unsigned`` instead of ``unsigned``.
+
+* Move ``to_period`` and ``to_frequency_hz`` functions from :ref:`common.types_pkg`
+  to :ref:`common.time_pkg`.
