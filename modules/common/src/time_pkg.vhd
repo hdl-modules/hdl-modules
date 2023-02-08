@@ -6,60 +6,62 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Some basic types that make it easier to work with VHDL.
--- Also some basic functions operating on these types.
+-- Contains a couple of methods for working with the VHDL ``time`` type.
+--
+-- The ``time`` type can be tricky sometimes because its precision is implementation dependent,
+-- just like the ``integer`` and ``universal_integer`` types:
+--
+-- ``integer'high`` is
+--
+-- * 2147483647 in GHDL 3.0.0-dev, corresponding to a 32 bit signed integer.
+-- * 2147483647 in Vivado 2021.2, corresponding to a 32 bit signed integer.
+--
+-- ``time'high`` is
+--
+-- * 9223372036854775807 fs in GHDL 3.0.0-dev, corresponding to a 64 bit signed integer.
+--   Time values greater than this will result in an error.
+-- * 2147483647 fs in Vivado 2021.2, corresponding to a 32 bit signed integer.
+--   However, Vivado 2021.2 can represent time values greater than this since it uses a dynamic
+--   secondary unit for ``time``, as outlined in IEEE Std 1076-2008, page 39.
+--   Precision is never greater than 32 bits though.
+--
+-- In the standard library, the following functions are available for working with
+-- ``time`` values (IEEE Std 1076-2008, page 260):
+--
+-- .. code-block::
+--
+--   function "=" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function "/=" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function "<" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function "<=" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function ">" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function ">=" (anonymous, anonymous: TIME) return BOOLEAN;
+--   function "+" (anonymous: TIME) return TIME;
+--   function "- (anonymous: TIME) return TIME;
+--   function "abs" (anonymous: TIME) return TIME;
+--   function "+" (anonymous, anonymous: TIME) return TIME;
+--   function "-" (anonymous, anonymous: TIME) return TIME;
+--   function "*" (anonymous: TIME; anonymous: INTEGER) return TIME;
+--   function "*" (anonymous: TIME; anonymous: REAL) return TIME;
+--   function "*" (anonymous: INTEGER; anonymous: TIME) return TIME;
+--   function "*" (anonymous: REAL; anonymous: TIME) return TIME;
+--   function "/" (anonymous: TIME; anonymous: INTEGER) return TIME;
+--   function "/" (anonymous: TIME; anonymous: REAL) return TIME;
+--   function "/" (anonymous, anonymous: TIME) return universal_integer;
+--   function "mod" (anonymous, anonymous: TIME) return TIME;
+--   function "rem" (anonymous, anonymous: TIME) return TIME;
+--   function MINIMUM (L, R: TIME) return TIME;
+--   function MAXIMUM (L, R: TIME) return TIME;
+--
+-- Notably missing is a convenient and accurate way of converting a ``time`` value to ``real``
+-- or ``integer``.
+-- So that is most of the complexity in the conversion functions below.
 -- -------------------------------------------------------------------------------------------------
 
 use work.types_pkg.all;
 
 
 package time_pkg is
-
-  -- Below are a couple of methods for working with the VHDL 'time' type.
-  --
-  -- The 'time' type can be tricky sometimes because its precision is implementation dependent,
-  -- just like the integer and universal_integer types:
-  --
-  -- integer'high is
-  -- * 2147483647 in GHDL 3.0.0-dev, corresponding to a 32 bit signed integer.
-  -- * 2147483647 in Vivado 2021.2, corresponding to a 32 bit signed integer.
-  --
-  -- time'high is
-  -- * 9223372036854775807 fs in GHDL 3.0.0-dev, corresponding to a 64 bit signed integer.
-  --   Time values greater than this will result in an error.
-  -- * 2147483647 fs in Vivado 2021.2, corresponding to a 32 bit signed integer.
-  --   However, Vivado 2021.2 can represent time values greater than this since it uses a dynamic
-  --   secondary unit for 'time', as outlined in IEEE Std 1076-2008, page 39.
-  --   Precision is never greater than 32 bits though.
-  --
-  -- In the standard library, the following functions are available for working with
-  -- 'time' values (IEEE Std 1076-2008, page 260):
-  --  * function "=" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function "/=" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function "<" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function "<=" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function ">" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function ">=" (anonymous, anonymous: TIME) return BOOLEAN;
-  --  * function "+" (anonymous: TIME) return TIME;
-  --  * function "- (anonymous: TIME) return TIME;
-  --  * function "abs" (anonymous: TIME) return TIME;
-  --  * function "+" (anonymous, anonymous: TIME) return TIME;
-  --  * function "-" (anonymous, anonymous: TIME) return TIME;
-  --  * function "*" (anonymous: TIME; anonymous: INTEGER) return TIME;
-  --  * function "*" (anonymous: TIME; anonymous: REAL) return TIME;
-  --  * function "*" (anonymous: INTEGER; anonymous: TIME) return TIME;
-  --  * function "*" (anonymous: REAL; anonymous: TIME) return TIME;
-  --  * function "/" (anonymous: TIME; anonymous: INTEGER) return TIME;
-  --  * function "/" (anonymous: TIME; anonymous: REAL) return TIME;
-  --  * function "/" (anonymous, anonymous: TIME) return universal_integer;
-  --  * function "mod" (anonymous, anonymous: TIME) return TIME;
-  --  * function "rem" (anonymous, anonymous: TIME) return TIME;
-  --  * function MINIMUM (L, R: TIME) return TIME;
-  --  * function MAXIMUM (L, R: TIME) return TIME;
-  --
-  -- Notably missing is a convenient and accurate way of converting a 'time' value to 'real'
-  -- or 'integer'.
-  -- So that is most of the complexity in the conversion functions below.
 
   -- Convert a 'time' value to a floating point number of seconds.
   -- It would be lovely if this was part of the standard library.
