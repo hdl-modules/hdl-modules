@@ -46,12 +46,13 @@ class Module(BaseModule):
                 tb, generics=dict(period=period, shift_register_length=shift_register_length)
             )
 
+        self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
         self._setup_handshake_splitter_tests(vunit_proj=vunit_proj)
         self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
-        self._setup_width_conversion_tests(vunit_proj=vunit_proj)
         self._setup_keep_remover_tests(vunit_proj=vunit_proj)
         self._setup_strobe_on_last_tests(vunit_proj=vunit_proj)
+        self._setup_width_conversion_tests(vunit_proj=vunit_proj)
 
     def get_build_projects(self):
         projects = []
@@ -67,6 +68,13 @@ class Module(BaseModule):
         self._get_frequency_conversion_build_projects(part, projects)
 
         return projects
+
+    def _setup_clean_packet_dropper_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_clean_packet_dropper")
+
+        for data_width in [16, 32]:
+            generics = dict(data_width=data_width)
+            self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
     def _setup_handshake_pipeline_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_pipeline")
