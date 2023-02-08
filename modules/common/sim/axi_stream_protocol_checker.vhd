@@ -48,7 +48,7 @@ entity axi_stream_protocol_checker is
   );
   port (
     clk : in std_ulogic;
-    --
+    --# {{}}
     ready : in std_ulogic;
     valid : in std_ulogic;
     -- Optional to connect.
