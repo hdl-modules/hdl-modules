@@ -4,8 +4,14 @@ Added
 
 Bug fixes
 
+* Fix bug where :ref:`fifo.fifo` in packet mode could propagate erroneous data when a packet of
+  length one was written to an almost empty FIFO.
+
+* Fix bug where :ref:`fifo.fifo` and :ref:`fifo.asynchronous_fifo` in packet mode could have bubble
+  cycles in packet readout when output register was enabled.
+
 * Fix bug where :ref:`bfm.axi_stream_master`, :ref:`bfm.axi_write_master`
-  and :ref:`bfm.axi_read_master` would not drive bus with ``'X'`` when ``'valid'`` was low.
+  and :ref:`bfm.axi_read_master` would not drive bus with ``'X'`` when ``valid`` was low.
 
 Breaking changes
 

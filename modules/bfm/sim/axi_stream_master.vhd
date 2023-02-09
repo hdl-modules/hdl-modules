@@ -59,7 +59,9 @@ entity axi_stream_master is
     last : out std_ulogic := drive_invalid_value;
     data : out std_ulogic_vector(data_width - 1 downto 0) := (others => drive_invalid_value);
     strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0)
-      := (others => drive_invalid_value)
+      := (others => drive_invalid_value);
+    --# {{}}
+    num_packets_sent : out natural := 0
   );
 end entity;
 
@@ -141,6 +143,8 @@ begin
     -- Default: Signal "not valid" to handshake BFM before next packet.
     -- If queue is not empty, it will instantly be raised again (no bubble cycle).
     data_is_valid <= '0';
+
+    num_packets_sent <= num_packets_sent + 1;
   end process;
 
 

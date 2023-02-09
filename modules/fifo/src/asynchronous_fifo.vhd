@@ -124,27 +124,36 @@ architecture a of asynchronous_fifo is
   -- The part of the address that actually goes to the BRAM address port
   subtype bram_addr_range is natural range num_bits_needed(memory_depth - 1) - 1 downto 0;
 
-  signal read_ready_ram, read_valid_ram, read_last_ram : std_ulogic := '0';
+  signal read_ready_ram, read_valid_ram, read_valid_ram_pre, read_last_ram : std_ulogic := '0';
   signal read_data_ram : std_ulogic_vector(width - 1 downto 0) := (others => '0');
   signal word_in_output_register : natural range 0 to 1 := 0;
+
+  signal unsure_if_we_have_full_packet, unsure_if_we_have_full_packet_p1 : std_logic := '0';
 
 begin
 
   assert is_power_of_two(memory_depth)
-    report "RAM depth must be a power of two." severity failure;
+    report "RAM depth must be a power of two"
+    severity failure;
 
   assert enable_last or (not enable_packet_mode)
-    report "Must set enable_last for packet mode" severity failure;
+    report "Must set enable_last for packet mode"
+    severity failure;
+
   assert enable_packet_mode or (not enable_drop_packet)
-    report "Must set enable_packet_mode for drop packet support" severity failure;
+    report "Must set enable_packet_mode for drop packet support"
+    severity failure;
 
 
+  ------------------------------------------------------------------------------
   assign_almost_full : if almost_full_level = depth generate
     write_almost_full <= not write_ready;
   else generate
     write_almost_full <= to_sl(write_level > almost_full_level - 1);
   end generate;
 
+
+  ------------------------------------------------------------------------------
   assign_almost_empty : if almost_empty_level = 0 generate
     read_almost_empty <= not read_valid;
   else generate
@@ -199,13 +208,13 @@ begin
 
       -- These signals however must have the updated value.
       write_addr <= write_addr_next;
-      -- The write_level must never be less than the actual number of words stored in the fifo,
+      -- The write_level must never be less than the actual number of words stored in the FIFO,
       -- as that could cause the user to write too many words.
       -- In case the output register is used, it is hard to keep track of the exact level in a
       -- safe way, so instead we always add one to the write_level in that case.
       write_level <=
-        to_integer(write_addr_next - read_addr_resync)
-        mod (2 * memory_depth) + to_int(enable_output_register);
+        (to_integer(write_addr_next - read_addr_resync) mod (2 * memory_depth))
+        + to_int(enable_output_register);
     end process;
 
     write_addr_next_if_not_drop <= write_addr + to_int(write_ready and write_valid);
@@ -232,12 +241,13 @@ begin
   ------------------------------------------------------------------------------
   read_block : block
     signal write_addr_resync, read_addr : fifo_addr_t := (others => '0');
-    signal num_lasts_read, num_lasts_written_resync : fifo_addr_t := (others => '0');
+    signal num_lasts_read, num_lasts_written_resync, num_lasts_in_fifo : fifo_addr_t :=
+      (others => '0');
   begin
 
     ------------------------------------------------------------------------------
     read_status : process
-      variable read_level_next : natural range 0 to depth;
+      variable read_level_next : natural range 0 to depth := 0;
       variable num_lasts_read_next : fifo_addr_t := (others => '0');
       variable word_in_output_register_next : natural range 0 to 1 := 0;
     begin
@@ -247,7 +257,7 @@ begin
 
       -- If drop_packet support is enabled, the write_addr can make jumps that are greater
       -- than +/- 1. This means that the resynced counter can have glitches, since it is possible
-      -- that the counter value is sampled just as more than one bit are changing.
+      -- that the counter value is sampled just as more than one bit is changing.
       -- This is an issue despite the value being gray-coded and the bus_skew constraint
       -- being present.
       --
@@ -265,45 +275,102 @@ begin
             + to_int(read_ready_ram and read_valid_ram)
             -- And one word is removed on handshake on the output
             - to_int(read_ready and read_valid);
-            word_in_output_register <= word_in_output_register_next;
+
+          word_in_output_register <= word_in_output_register_next;
         end if;
 
         read_level <= read_level_next + word_in_output_register_next;
       end if;
 
       if enable_packet_mode then
-        if enable_output_register and not enable_drop_packet then
-          -- When the output register is used, there is one extra cycle latency when reading.
-          -- That means that the last 'last' bit may be on its way to the output register right now,
-          -- and that there therefore isn't any 'last' bit left in the RAM.
-          -- Therefore we only read from RAM if it is not empty
-          -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
-          -- read data, and using it would make it impossible to use the RAM output_register.
-          -- Note: the level counter is not present if enable_drop_packet is activated, so in
-          --       that case we take the "else" branch, which is functionally correct but will not
-          --       utilize the RAM output register.
-          num_lasts_read_next := num_lasts_read + to_int(read_ready and read_valid and read_last);
-          read_valid_ram <=
-            to_sl(num_lasts_read /= num_lasts_written_resync and read_level_next /= 0);
+        -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
+        -- read data, and using it would make it impossible to use the RAM output_register.
+        -- If enable_output_register is not set, read_* and the read_*_ram signals are the same.
+        num_lasts_read_next := num_lasts_read + to_int(read_ready and read_valid and read_last);
+
+        if enable_output_register then
+          -- Note that further conditions are applied in the combinatorial assignment
+          -- of 'read_valid_ram'.
+          -- The condition for 'valid' here is almost the same as the one below for when output
+          -- register is not enabled.
+          -- The difference is that we can use the one cycle old 'num_lasts_read' here, which might
+          -- make us assert 'valid' even though the 'last' beat was just popped.
+          -- However the further conditions for assigning 'read_valid_ram' are pessimistic in this
+          -- regard and will not let anything through in this scenario.
+          -- Hence we can save a little bit of LUTs here.
+          read_valid_ram_pre <= to_sl(num_lasts_read /= num_lasts_written_resync);
+
+          -- These are needed only in this specific mode.
+          num_lasts_in_fifo <= num_lasts_written_resync - num_lasts_read_next;
+          unsure_if_we_have_full_packet_p1 <= unsure_if_we_have_full_packet;
         else
-          num_lasts_read_next :=
-            num_lasts_read + to_int(read_ready_ram and read_valid_ram and read_last_ram);
-          read_valid_ram <= to_sl(num_lasts_read_next /= num_lasts_written_resync);
+          -- Look at 'num_lasts_read_next' to see if we actually have a full packet in the
+          -- the RAM.
+          -- Note that the read that pops the 'last' word might just have happened,
+          -- hence we can not look at the registered 'num_lasts_read'.
+          -- Note that unlike the synchronous FIFO, there is no risk of asserting 'valid' here
+          -- before data has propagated in RAM.
+          -- This is since it takes at least on write clock cycle and two read clock cycles
+          -- for an updated  'num_lasts_written_resync' to arrive.
+          read_valid_ram_pre <= to_sl(num_lasts_read_next /= num_lasts_written_resync);
         end if;
 
+        num_lasts_read <= num_lasts_read_next;
       else
-        read_valid_ram <= to_sl(read_level_next /= 0);
+        read_valid_ram_pre <= to_sl(read_level_next /= 0);
       end if;
-
-      num_lasts_read <= num_lasts_read_next;
     end process;
 
     read_addr_next <= read_addr + to_int(read_ready_ram and read_valid_ram);
+
+    -- When output register is enabled in packet mode, it is very hard to keep track
+    -- of how many 'last's we have, in the RAM or in the output register.
+    -- The 'unsure_if_we_have_full_packet' signals, which are only assigned in that specific mode,
+    -- help out with this.
+    read_valid_ram <= (
+      read_valid_ram_pre
+      and (not unsure_if_we_have_full_packet)
+      and (not unsure_if_we_have_full_packet_p1)
+    );
+
+
+    ------------------------------------------------------------------------------
+    set_full_packet_status : if enable_output_register and enable_packet_mode generate
+
+      -- Pessimistic estimation of whether we have a full packet, either
+      -- * fully in RAM, or
+      -- * partially in RAM with one word in output register, or
+      -- * packet of length one fully in output register.
+      --
+      -- This is all needed due to the fact that we cant utilize 'read_last_ram' since that would
+      -- make usage of RAM output register impossible.
+      --
+      -- There is a tradeoff between LUT, FF, logic depth, and write->read_valid latency going
+      -- on here.
+      -- We could save some logic depth by making this assignment clocked and changing the
+      -- relation to "<= 2".
+      -- This would however increase the latency, and the improvement in logic depth was very
+      -- marginal.
+      -- Similarly, we could use 'num_lasts_read' instead of 'num_lasts_read_next' in the assignment
+      -- of 'num_lasts_in_fifo'.
+      -- But once again, the gain in logic depth is marginal at the cost of latency.
+      -- We could also assign 'num_lasts_in_fifo' combinatorially, which would save FF.
+      -- This however resulted in horribly bad logic depth.
+      unsure_if_we_have_full_packet <= (
+        read_ready
+        and read_valid
+        and read_last
+        and to_sl(num_lasts_in_fifo <= 1)
+      );
+
+    end generate;
 
 
     ------------------------------------------------------------------------------
     -- This value is not used in the write clock domain if we are in drop_packet mode
     resync_write_addr : if not enable_drop_packet generate
+
+      ------------------------------------------------------------------------------
       resync_counter_inst : entity resync.resync_counter
         generic map (
           width => write_addr'length
@@ -314,12 +381,15 @@ begin
           clk_out     => clk_read,
           counter_out => write_addr_resync
         );
+
     end generate;
 
 
     ------------------------------------------------------------------------------
     -- This value is used in the write clock domain only if we are in packet mode
     resync_num_lasts_written : if enable_packet_mode generate
+
+      ------------------------------------------------------------------------------
       resync_counter_inst : entity resync.resync_counter
         generic map (
           width => num_lasts_written'length
@@ -330,7 +400,9 @@ begin
           clk_out     => clk_read,
           counter_out => num_lasts_written_resync
         );
+
     end generate;
+
   end block;
 
 
@@ -349,11 +421,15 @@ begin
     read_data_ram <= memory_read_data(read_data_ram'range);
     memory_write_data(write_data'range) <= write_data;
 
+
+    ------------------------------------------------------------------------------
     assign_data : if enable_last generate
       read_last_ram <= memory_read_data(memory_read_data'high);
       memory_write_data(memory_write_data'high) <= write_last;
     end generate;
 
+
+    ------------------------------------------------------------------------------
     write_memory : process
     begin
       wait until rising_edge(clk_write);
@@ -363,12 +439,15 @@ begin
       end if;
     end process;
 
+
+    ------------------------------------------------------------------------------
     read_memory : process
     begin
       wait until rising_edge(clk_read);
 
       memory_read_data <= mem(to_integer(read_addr_next(bram_addr_range)));
     end process;
+
   end block;
 
 

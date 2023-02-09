@@ -144,9 +144,12 @@ architecture a of fifo is
 
   signal should_drop_packet, should_peek_read : std_ulogic := '0';
 
-  signal read_ready_ram, read_valid_ram, read_last_ram : std_ulogic := '0';
+  signal read_ready_ram, read_valid_ram, read_last_ram, read_valid_ram_pre : std_ulogic := '0';
   signal read_data_ram : std_ulogic_vector(width - 1 downto 0) := (others => '0');
   signal word_in_output_register : natural range 0 to 1 := 0;
+
+  signal write_last_transaction_p1 : std_ulogic := '0';
+  signal unsure_if_we_have_full_packet, unsure_if_we_have_full_packet_p1 : std_ulogic := '0';
 
 begin
 
@@ -172,17 +175,21 @@ begin
   -- When almost_empty_level is zero and a write puts it over the line there will be a two
   -- cycle latency. For a read that puts it below the line there is always one cycle latency.
 
+  ------------------------------------------------------------------------------
   assign_almost_full : if almost_full_level = depth generate
     almost_full <= not write_ready;
   else generate
     almost_full <= to_sl(level > almost_full_level - 1);
   end generate;
 
+
+  ------------------------------------------------------------------------------
   assign_almost_empty : if almost_empty_level = 0 generate
     almost_empty <= not read_valid;
   else generate
     almost_empty <= to_sl(level < almost_empty_level + 1);
   end generate;
+
 
   should_drop_packet <= to_sl(enable_drop_packet) and drop_packet;
   should_peek_read <= to_sl(enable_peek_mode) and read_peek_mode;
@@ -196,32 +203,50 @@ begin
     wait until rising_edge(clk);
 
     if enable_packet_mode then
-      num_lasts_in_fifo_next := num_lasts_in_fifo
-        + to_int(write_ready and write_valid and write_last and not should_drop_packet)
-        -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
-        -- read data, and using it would make it impossible to use the RAM output_register.
-        -- If enable_output_register is not set, read_* and the read_*_ram signals are the same.
-        - to_int(read_ready and read_valid and read_last and not should_peek_read);
+      -- We do _not_ want to look at the read_last_ram signal here, as it is part of the
+      -- read data, and using it would make it impossible to use the RAM output_register.
+      -- If enable_output_register is not set, read_* and the read_*_ram signals are the same.
+      --
+      -- Note that we use a pipelined indicator for the last beat being written.
+      -- I.e. we get a pessimistic estimation for the number of packets that are in the FIFO.
+      -- This is so that valid write data always has time to propagate through the RAM
+      -- to the read side before this counter indicates that there is a packet available.
+      -- This is needed for packets that are one beat long.
+      num_lasts_in_fifo_next := (
+        num_lasts_in_fifo
+        + to_int(write_last_transaction_p1)
+        - to_int(read_ready and read_valid and read_last and not should_peek_read)
+      );
+      write_last_transaction_p1 <=
+        write_ready and write_valid and write_last and not should_drop_packet;
 
       if enable_output_register then
-        -- When the output register is used, there is one extra cycle latency when reading.
-        -- That means that the last 'last' bit may be on its way to the output register right now,
-        -- and that there therefore isn't any 'last' bit left in the RAM.
-        -- Therefore we only read from RAM if it is not empty
-        read_valid_ram <= to_sl(num_lasts_in_fifo /= 0 and read_addr_next /= write_addr);
+        -- Note that further conditions are applied in the combinatorial assignment
+        -- of 'read_valid_ram'.
+        -- The condition for 'valid' here is almost the same as the one below for when output
+        -- register is not enabled.
+        -- The difference is that we can use the one cycle old 'num_lasts_in_fifo' here, which might
+        -- make us assert 'valid' even though the 'last' beat was just popped.
+        -- However the further conditions for assigning 'read_valid_ram' are pessimistic in this
+        -- regard and will not let anything through in this scenario.
+        -- Hence we can save a little bit of LUTs here.
+        read_valid_ram_pre <= to_sl(num_lasts_in_fifo /= 0);
+
+        -- This is only needed in this specific mode.
+        unsure_if_we_have_full_packet_p1 <= unsure_if_we_have_full_packet;
       else
-        -- We look at num_lasts_in_fifo_next since we need to update read_valid_ram the same cycle
-        -- when the read happens.
-        -- We also look at num_lasts_in_fifo since a write needs an additional clock
-        -- cycle to propagate into the RAM. This is really only needed when the FIFO is empty and
-        -- a packet of length one is written. With this condition, there will be a two cycle latency
-        -- from write_last being written to read_valid_ram being asserted.
-        read_valid_ram <= to_sl(num_lasts_in_fifo /= 0 and num_lasts_in_fifo_next /= 0);
+        -- Look at 'num_lasts_in_fifo_next' to see if we actually have a full packet in the
+        -- the RAM.
+        -- Note that the read that pops the 'last' word might just have happened,
+        -- hence we can not look at the registered 'num_lasts_in_fifo'.
+        read_valid_ram_pre <= to_sl(num_lasts_in_fifo_next /= 0);
       end if;
 
       num_lasts_in_fifo <= num_lasts_in_fifo_next;
     else
-      read_valid_ram <= to_sl(read_addr_next /= write_addr);
+      -- Note that 'write_addr' is pipelined one step, so we know that the data has propagated
+      -- through the RAM to the read side.
+      read_valid_ram_pre <= to_sl(read_addr_next /= write_addr);
     end if;
 
     -- Note that write_ready looks at the write_addr_next that will be used if there is
@@ -281,8 +306,8 @@ begin
     -- but write_ready is false.
     -- Also in packet_mode, the level is incremented for words that might be dropped later.
     level <=
-      (to_integer(write_addr_next - read_addr_next) mod (2 * memory_depth)) +
-      word_in_output_register_next;
+      (to_integer(write_addr_next - read_addr_next) mod (2 * memory_depth))
+      + word_in_output_register_next;
 
   end process;
 
@@ -317,6 +342,46 @@ begin
   end generate;
 
 
+  -- When output register is enabled in packet mode, it is very hard to keep track
+  -- of how many 'last's we have, in the RAM or in the output register.
+  -- The 'unsure_if_we_have_full_packet' signals, which are only assigned in that specific mode,
+  -- help out with this.
+  read_valid_ram <= (
+    read_valid_ram_pre
+    and (not unsure_if_we_have_full_packet)
+    and (not unsure_if_we_have_full_packet_p1)
+  );
+
+
+  ------------------------------------------------------------------------------
+  set_full_packet_status : if enable_output_register and enable_packet_mode generate
+
+    -- Pessimistic estimation of whether we have a full packet, either
+    -- * fully in RAM, or
+    -- * partially in RAM with one word in output register, or
+    -- * packet of length one fully in output register.
+    --
+    -- This is all needed due to the fact that we cant utilize 'read_last_ram' since that would
+    -- make usage of RAM output register impossible.
+    --
+    -- There is a tradeoff between LUT, FF, logic depth, and write->read_valid latency going
+    -- on here.
+    -- We could save some logic depth by making this assignment clocked and changing the
+    -- relation to "<= 2".
+    -- This would however increase the latency, and the improvement in logic depth was very
+    -- marginal.
+    -- We could also assign 'num_lasts_in_fifo' combinatorially, which would save FF.
+    -- This however resulted in horribly bad logic depth.
+    unsure_if_we_have_full_packet <= (
+      read_ready
+      and read_valid
+      and read_last
+      and to_sl(num_lasts_in_fifo <= 1)
+    );
+
+  end generate;
+
+
   ------------------------------------------------------------------------------
   memory_block : block
     constant memory_word_width : positive := width + to_int(enable_last);
@@ -332,11 +397,15 @@ begin
     read_data_ram <= memory_read_data(read_data_ram'range);
     memory_write_data(write_data'range) <= write_data;
 
+
+    ------------------------------------------------------------------------------
     assign_data : if enable_last generate
       read_last_ram <= memory_read_data(memory_read_data'high);
       memory_write_data(memory_write_data'high) <= write_last;
     end generate;
 
+
+    ------------------------------------------------------------------------------
     memory : process
     begin
       wait until rising_edge(clk);
@@ -347,6 +416,7 @@ begin
         mem(to_integer(write_addr) mod memory_depth) <= memory_write_data;
       end if;
     end process;
+
   end block;
 
 

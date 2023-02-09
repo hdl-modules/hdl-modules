@@ -8,6 +8,7 @@
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
+import os
 import sys
 from pathlib import Path
 
@@ -60,6 +61,11 @@ def main():
 
         # Enable minimal compilation in VUnit
         args.minimal = True
+
+    # Some of our test names get really long (tb_asynchronous_fifo specifically),
+    # resulting in too long paths: "OSError: [Errno 36] File name too long".
+    # Hence let VUnit shorten the paths in vunit_out folder.
+    os.environ["VUNIT_SHORT_TEST_OUTPUT_PATHS"] = "true"
 
     simulation_project = SimulationProject(args=args, enable_preprocessing=True)
     simulation_project.add_modules(args=args, modules=modules)

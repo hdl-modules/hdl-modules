@@ -67,7 +67,7 @@ entity axi_stream_slave is
   );
   port (
     clk : in std_ulogic;
-    --
+    --# {{}}
     ready : out std_ulogic := '0';
     valid : in std_ulogic;
     last : in std_ulogic := '1';
@@ -75,7 +75,11 @@ entity axi_stream_slave is
     data : in std_ulogic_vector(data_width - 1 downto 0);
     strobe : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
       (others => '1');
-    --
+    --# {{}}
+    -- Optionally, the consuming and checking of data can be disabled.
+    -- Can be done between or in the middle of packets.
+    enable : in std_ulogic := '1';
+    -- Counter for the number of packets that have been consumed and checked against reference data.
     num_packets_checked : out natural := 0
   );
 end entity;
@@ -87,7 +91,7 @@ architecture a of axi_stream_slave is
 
   signal strobe_byte : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
-  signal data_is_ready : std_ulogic := '0';
+  signal checker_is_ready, data_is_ready : std_ulogic := '0';
 
 begin
 
@@ -113,7 +117,7 @@ begin
     variable byte_lane_idx : natural := 0;
     variable is_last_beat : boolean := false;
   begin
-    while is_empty(reference_data_queue) loop
+    while is_empty(reference_data_queue) or enable /= '1' loop
       wait until rising_edge(clk);
     end loop;
     reference_data := pop_ref(reference_data_queue);
@@ -124,7 +128,7 @@ begin
     assert packet_length_bytes mod bytes_per_strobe_unit = 0
       report "Packet length must be a multiple of strobe unit";
 
-    data_is_ready <= '1';
+    checker_is_ready <= '1';
 
     for byte_idx in 0 to packet_length_bytes - 1 loop
       byte_lane_idx := byte_idx mod bytes_per_beat;
@@ -188,10 +192,13 @@ begin
 
     -- Default: Signal "not ready" to handshake BFM before next packet.
     -- If queue is not empty, it will instantly be raised again (no bubble cycle).
-    data_is_ready <= '0';
+    checker_is_ready <= '0';
 
     num_packets_checked <= num_packets_checked + 1;
   end process;
+
+
+  data_is_ready <= checker_is_ready and enable;
 
 
   ------------------------------------------------------------------------------

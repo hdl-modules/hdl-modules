@@ -15,10 +15,11 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library vunit_lib;
-use vunit_lib.axi_stream_pkg.all;
-use vunit_lib.sync_pkg.all;
-context vunit_lib.com_context;
+use vunit_lib.random_pkg.all;
+context vunit_lib.vc_context;
 context vunit_lib.vunit_context;
+
+library bfm;
 
 library common;
 use common.types_pkg.all;
@@ -26,12 +27,13 @@ use common.types_pkg.all;
 
 entity tb_asynchronous_fifo is
   generic (
-    depth : integer;
+    seed : natural;
+    depth : positive;
     read_clock_is_faster : boolean;
     almost_empty_level : natural := 0;
     almost_full_level : natural := 0;
-    read_stall_probability_percent : integer := 0;
-    write_stall_probability_percent : integer := 0;
+    read_stall_probability_percent : natural := 20;
+    write_stall_probability_percent : natural := 20;
     enable_packet_mode : boolean := false;
     enable_last : boolean := false;
     enable_drop_packet : boolean := false;
@@ -42,40 +44,40 @@ end entity;
 
 architecture tb of tb_asynchronous_fifo is
 
-  constant width : integer := 8;
+  -- Generic constants
+  constant width : positive := 8;
 
+  -- DUT ports
   signal clk_read, clk_write : std_ulogic := '0';
 
   signal read_ready, read_valid, read_last : std_ulogic := '0';
   signal write_ready, write_valid, write_last : std_ulogic := '0';
   signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
 
-  signal read_level, write_level : integer;
+  signal read_level, write_level : natural := 0;
   signal read_almost_empty, write_almost_full : std_ulogic := '0';
 
   signal drop_packet : std_ulogic := '0';
 
-  signal has_gone_full_times, has_gone_empty_times : integer := 0;
-
+  -- Testbench stuff
   constant read_stall_config : stall_config_t := new_stall_config(
     stall_probability => real(read_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
-    max_stall_cycles => 4);
-  constant read_slave : axi_stream_slave_t := new_axi_stream_slave(
-    data_length => width,
-    stall_config => read_stall_config,
-    protocol_checker => new_axi_stream_protocol_checker(data_length => width,
-                                                        logger => get_logger("read_slave")));
+    max_stall_cycles => 4
+  );
 
   constant write_stall_config : stall_config_t := new_stall_config(
     stall_probability => real(write_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
-    max_stall_cycles => 4);
-  constant write_master : axi_stream_master_t := new_axi_stream_master(
-    data_length => width,
-    stall_config => write_stall_config,
-    protocol_checker => new_axi_stream_protocol_checker(data_length => width,
-                                                        logger => get_logger("write_master")));
+    max_stall_cycles => 4
+  );
+
+  constant write_queue, read_queue : queue_t := new_queue;
+
+  signal num_beats_written, num_packets_written, num_packets_read : natural := 0;
+  signal has_gone_full_times, has_gone_empty_times : natural := 0;
+
+  signal enable_read : std_ulogic := '1';
 
 begin
 
@@ -93,59 +95,55 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-    variable data_queue, last_queue, axi_stream_pop_reference_queue : queue_t := new_queue;
     variable rnd : RandomPType;
 
-    procedure run_test(read_count, write_count : natural; set_last_flag : boolean := true) is
-      variable data : std_ulogic_vector(write_data'range);
-      variable last, last_expected : std_ulogic := '0';
-      variable axi_stream_pop_reference : axi_stream_reference_t;
+    variable expected_num_packets_written, expected_num_packets_read : natural := 0;
+
+    procedure run_test(
+      num_beats : natural;
+      push_packet_to_checker_times : natural := 1
+    ) is
+      constant num_bytes : natural := num_beats * width / 8;
+      variable data, data_copy : integer_array_t := null_integer_array;
     begin
-      for write_idx in 0 to write_count - 1 loop
-        data := rnd.RandSLV(data'length);
-        last := to_sl(write_idx = write_count - 1 and set_last_flag);
+      if num_beats > 0 then
+        random_integer_array(
+          rnd => rnd,
+          integer_array => data,
+          width => num_bytes,
+          bits_per_word => 8,
+          is_signed => false
+        );
 
-        push_axi_stream(net, write_master, data, last);
+        for packet_check_idx in 0 to push_packet_to_checker_times - 1 loop
+          data_copy := copy(data);
+          push_ref(read_queue, data_copy);
 
-        push(data_queue, data);
-        push(last_queue, last);
-      end loop;
+          expected_num_packets_read := expected_num_packets_read + 1;
+        end loop;
 
-      -- Queue up reads in order to get full throughput
-      for read_idx in 0 to read_count - 1 loop
-        pop_axi_stream(net, read_slave, axi_stream_pop_reference);
-        -- We need to keep track of the pop_reference when we read the reply later.
-        -- Hence it is pushed to a queue.
-        push(axi_stream_pop_reference_queue, axi_stream_pop_reference);
-      end loop;
+        push_ref(write_queue, data);
 
-      for read_idx in 0 to read_count - 1 loop
-        axi_stream_pop_reference := pop(axi_stream_pop_reference_queue);
-        await_pop_axi_stream_reply(net, axi_stream_pop_reference, data, last);
-
-        check_equal(data, pop_std_ulogic_vector(data_queue), "read_idx " & to_string(read_idx));
-        last_expected := pop(last_queue);
-        if enable_last then
-          check_equal(last, last_expected, "read_idx " & to_string(read_idx));
-        end if;
-      end loop;
-
-      wait_until_idle(net, as_sync(write_master));
-      wait until rising_edge(clk_write);
+        expected_num_packets_written := expected_num_packets_written + 1;
+      end if;
     end procedure;
 
-    procedure run_read(count : natural) is
+    procedure wait_until_write_done is
     begin
-      run_test(count, 0);
+      wait until num_packets_written = expected_num_packets_written and rising_edge(clk_write);
     end procedure;
 
-    procedure run_write(count : natural) is
+    procedure wait_until_done is
     begin
-      run_test(0, count);
+      wait until num_packets_written = expected_num_packets_written
+        and num_packets_read = expected_num_packets_read
+        and rising_edge(clk_read);
     end procedure;
 
     procedure wait_for_read_to_propagate is
     begin
+      wait until rising_edge(clk_write);
+      wait until rising_edge(clk_write);
       wait until rising_edge(clk_write);
       wait until rising_edge(clk_write);
     end procedure;
@@ -157,7 +155,6 @@ begin
       wait until rising_edge(clk_read);
       wait until rising_edge(clk_read);
 
-      -- takes one extra cycle if output register is used
       if enable_output_register then
         wait until rising_edge(clk_read);
       end if;
@@ -179,14 +176,6 @@ begin
       wait until rising_edge(clk_write);
     end procedure;
 
-    procedure clear_queue(queue : queue_t) is
-      variable dummy : character;
-    begin
-      while not is_empty(queue) loop
-        dummy := unsafe_pop(queue);
-      end loop;
-    end procedure;
-
     procedure pulse_drop_packet is
     begin
       drop_packet <= '1';
@@ -196,7 +185,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(seed);
 
     -- Decrease noise
     disable(get_logger("read_slave:rule 4"), warning);
@@ -209,173 +198,135 @@ begin
       check_equal(write_ready, '1');
       check_equal(write_almost_full, '0');
       check_equal(read_almost_empty, '1');
+
       wait until
         read_valid'event
         or write_ready'event
         or write_almost_full'event
         or read_almost_empty'event
         for 1 us;
+
       check_equal(read_valid, '0');
       check_equal(write_ready, '1');
       check_equal(write_almost_full, '0');
       check_equal(read_almost_empty, '1');
 
     elsif run("test_write_faster_than_read") then
-      run_test(3000, 3000);
-      check_relation(has_gone_full_times > 200);
-      check_true(is_empty(data_queue));
+      for packet_idx in 0 to 1000 loop
+        run_test(num_beats=>rnd.Uniform(1, 5));
+      end loop;
+
+      wait_until_done;
+      check_relation(has_gone_full_times > 200, "Got " & to_string(has_gone_full_times));
 
     elsif run("test_read_faster_than_write") then
-      run_test(3000, 3000);
-      check_relation(has_gone_empty_times > 200);
-      check_true(is_empty(data_queue));
-
-    elsif run("test_packet_mode") then
-      -- Write and immediately read a small packet
-      run_test(read_count=>1, write_count=>1);
-
-      -- Write a few words, without setting last
-      run_test(read_count=>0, write_count=>3, set_last_flag=>false);
-      wait_for_write_to_propagate;
-      check_relation(read_level > 0);
-      check_equal(read_valid, False);
-
-      -- Writing another word, with last set, shall enable read valid
-      run_test(read_count=>0, write_count=>1);
-      wait_for_write_to_propagate;
-      check_equal(read_valid, True);
-
-      -- Write further packets
-      for i in 1 to 3 loop
-        run_test(read_count=>0, write_count=>4);
-        check_equal(read_valid, True);
+      for packet_idx in 0 to 1000 loop
+        run_test(num_beats=>rnd.Uniform(1, 5));
       end loop;
 
-      -- Read and check all the packets (will only work if read_valid is set properly)
-      run_read(4 * 4);
-      check_equal(read_valid, False);
-      check_equal(read_level, 0);
+      wait_until_done;
+      check_relation(has_gone_empty_times > 200, "Got " & to_string(has_gone_empty_times));
 
-      -- Write a few words, without setting last
-      run_test(read_count=>0, write_count=>3, set_last_flag=>false);
-      wait_for_write_to_propagate;
+    elsif run("test_packet_mode_random_data") then
+      for packet_idx in 0 to 1000 loop
+        run_test(num_beats=>rnd.Uniform(1, 5));
+      end loop;
+
+    elsif run("test_packet_mode_status") then
+      -- Start writing a packet and check status is the middle
+      enable_read <= '0';
+      run_test(num_beats=>depth - 1);
+
+      wait until num_beats_written = depth - 2 and rising_edge(clk_write);
+      check_relation(write_level > 0);
       check_relation(read_level > 0);
       check_equal(read_valid, False);
 
-      -- Writing another word, with last set, shall enable read valid
-      run_test(read_count=>0, write_count=>1);
-      wait_for_write_to_propagate;
-      check_equal(read_valid, True);
+      -- Allow the test to finish
+      enable_read <= '1';
 
     elsif run("test_packet_mode_deep") then
-      -- Show that the FIFO can be filled with lasts and that the last counters can wrap around.
+      -- Show that the FIFO can be filled with lasts
 
       -- Fill the FIFO with lasts
-      for i in 1 to depth loop
-        run_test(read_count=>0, write_count=>1, set_last_flag=>true);
+      enable_read <= '0';
+
+      for beat_idx in 1 to depth loop
+        run_test(num_beats=>1);
       end loop;
-      check_equal(read_valid, True);
+      wait_until_write_done;
 
-      run_read(1);
-      check_equal(read_valid, True);
+      enable_read <= '1';
+      wait until read_ready and read_valid and rising_edge(clk_read);
+      enable_read <= '0';
 
-      run_write(1);
-      wait_for_write_to_propagate;
-      check_equal(read_valid, True);
+      run_test(num_beats=>1);
+      wait_until_write_done;
 
-      run_read(depth);
-      check_equal(read_valid, False);
+      enable_read <= '1';
+      wait_until_done;
 
-      -- Fill the FIFO with lasts again, making the write counter wrap around
+      -- Fill the FIFO with lasts again
+      enable_read <= '0';
       for i in 1 to depth loop
-        run_test(read_count=>0, write_count=>1, set_last_flag=>true);
+        run_test(num_beats=>1);
       end loop;
-      check_equal(read_valid, True);
+      wait_until_write_done;
 
-      run_read(depth - 1);
-      check_equal(read_valid, True);
+      enable_read <= '1';
+      wait_until_done;
 
-      run_read(1);
-      check_equal(read_valid, False);
+      wait until rising_edge(clk_read);
+      check_equal(read_valid, '0');
 
     elsif run("test_drop_packet_mode_read_level_should_be_zero") then
-      -- Write a couple of packets
-      run_write(4);
-      run_write(4);
-      run_write(4);
+      run_test(num_beats=>4);
+      wait_until_write_done;
       wait_for_write_to_propagate;
 
       check_equal(read_level, 0);
 
     elsif run("test_drop_packet_random_data") then
       -- Write and read some data, to make the pointers advance a little.
-      -- Note that this will set write_last on the last write, and some data will be left unread.
-      run_test(read_count=>depth / 2, write_count=>depth * 3 / 4);
-      wait_for_read_to_propagate;
-      -- Note: If output register is used, one value will now have been be stored in it,
-      --       The level in the memory is now therefore be depth / 4 - 1, but when the output
-      --       register is used, we always add 1 to the write level to be sure that it
-      --       is conservative
-      check_equal(write_level, depth / 4);
+      run_test(num_beats=>depth * 3 / 4);
+      -- Write another packet, which we will drop so it is not pushed to checker.
+      -- Note that the length chosen will make the write pointer wraparound.
+      run_test(num_beats=>depth / 2, push_packet_to_checker_times=>0);
 
-      -- Write some data without setting last, simulating a packet in progress.
-      -- Drop the packet, and then read out the remainder of the previous packet.
-      -- Note that the counts chosen will make the pointers wraparound.
-      run_test(read_count=>0, write_count=>depth / 2, set_last_flag=>false);
+      -- Wait until the first packet is fully written
+      wait until write_ready and write_valid and write_last and rising_edge(clk_write);
+      wait until rising_edge(clk_write);
+      -- Set drop_packet on the very last beat of the second packet.
+      -- The whole second packet should be dropped.
+      wait until write_ready and write_valid and write_last;
       pulse_drop_packet;
-      run_read(depth / 4);
 
-      wait_for_read_to_propagate;
-      check_equal(read_valid, '0');
-      -- If output register is used, write_level is always 1 as the lowest
-      check_equal(write_level, to_int(enable_output_register));
+      -- Write and verify a clean packet. Should be the only thing remaining in the FIFO.
+      wait_until_done;
+      enable_read <= '0';
+      run_test(num_beats=>4);
+      wait_until_write_done;
 
-      -- Clear the data in the reference queues. This will be the data that was written, and then
-      -- cleared. Hence it was never read and therefore the data is left in the queues.
-      clear_queue(data_queue);
-      clear_queue(last_queue);
-
-      -- Write and verify a packet. Should be the only thing remaining in the FIFO.
-      run_write(4);
       if enable_output_register then
-        -- When using the output register, the level will first rise to 5, and then
-        -- go pack to to 4 after one value has been pushed into the output register
+        -- With output register enabled, write level is pessimistic when there is nothing currently
+        -- in the output register.
         check_equal(write_level, 5);
-        wait_for_write_level_update_after_last_written_and_output_register_is_used;
+        -- When output register is enabled, it is a long roundtrip before the actual level value
+        -- gets presented on the write side.
+        -- The write address is resynced to read domain, which triggers a read from RAM into output
+        -- register, then the updated read address is resynced back to write domain, which then
+        -- updates the level.
+        wait_for_read_to_propagate;
+        wait_for_write_to_propagate;
       end if;
+      -- Level should be correct.
       check_equal(write_level, 4);
 
-      run_read(4);
+      enable_read <= '1';
+      wait_until_done;
       check_equal(read_valid, '0');
       wait_for_read_to_propagate;
       check_equal(write_level, to_int(enable_output_register));
-
-    elsif run("test_drop_packet_in_same_cycle_as_write_last_should_drop_the_packet") then
-      -- Check empty status
-      -- If output register is used, write_level is always 1 as the lowest
-      check_equal(write_level, to_int(enable_output_register));
-
-      push_axi_stream(net, write_master, tdata=>x"00", tlast=>'0');
-      push_axi_stream(net, write_master, tdata=>x"00", tlast=>'1');
-
-      -- Time the behavior of the AXI-Stream master. Appears to be a one cycle delay.
-      wait until rising_edge(clk_write);
-
-      -- The first write happens at this rising edge.
-      wait until rising_edge(clk_write);
-
-      -- Set drop signal on same cycle as the "last" write
-      drop_packet <= '1';
-      wait until rising_edge(clk_write);
-
-      check_equal(write_level, 1 + to_int(enable_output_register));
-      check_equal(write_ready and write_valid and write_last and drop_packet, '1');
-      wait until rising_edge(clk_write);
-
-      -- Make sure the packet was dropped
-      check_equal(write_level, to_int(enable_output_register));
-      wait_for_write_to_propagate;
-      check_equal(read_valid, '0');
 
     elsif run("test_levels_full_range") then
       -- Check empty status
@@ -384,7 +335,9 @@ begin
       check_equal(read_level, 0);
 
       -- Fill the FIFO
-      run_write(depth);
+      enable_read <= '0';
+      run_test(num_beats=>depth);
+      wait_until_write_done;
 
       -- Check full status. Must wait a while before all writes have propagated to read side.
       check_equal(write_level, depth);
@@ -392,7 +345,8 @@ begin
       check_equal(read_level, depth);
 
       -- Empty the FIFO
-      run_read(depth);
+      enable_read <= '1';
+      wait_until_done;
 
       -- Check empty status. Must wait a while before all reads have propagated to write side.
       check_equal(read_level, 0);
@@ -402,29 +356,43 @@ begin
     elsif run("test_write_almost_full") then
       check_equal(write_almost_full, '0');
 
-      run_write(almost_full_level - 1);
+      enable_read <= '0';
+      run_test(num_beats=>almost_full_level - 1);
+      wait_until_write_done;
       check_equal(write_almost_full, '0');
 
-      run_write(1);
+      run_test(num_beats=>1);
+      wait_until_write_done;
       check_equal(write_almost_full, '1');
 
-      run_read(1);
+      enable_read <= '1';
+      wait until read_ready and read_valid and rising_edge(clk_read);
       wait_for_read_to_propagate;
       check_equal(write_almost_full, '0');
 
     elsif run("test_read_almost_empty") then
       check_equal(read_almost_empty, '1');
 
-      run_write(almost_empty_level);
+      enable_read <= '0';
+      run_test(num_beats=>almost_empty_level);
+      wait_until_write_done;
+      wait_for_write_to_propagate;
+      wait_for_write_to_propagate;
       check_equal(read_almost_empty, '1');
 
-      run_write(1);
+      run_test(num_beats=>1);
+      wait_until_write_done;
       wait_for_write_to_propagate;
       check_equal(read_almost_empty, '0');
 
-      run_read(1);
+      enable_read <= '1';
+      wait until read_ready and read_valid and rising_edge(clk_read);
+      wait until rising_edge(clk_read);
       check_equal(read_almost_empty, '1');
+
     end if;
+
+    wait_until_done;
 
     test_runner_cleanup(runner, allow_disabled_errors=>true);
   end process;
@@ -452,6 +420,8 @@ begin
   begin
     wait until rising_edge(clk_write);
 
+    num_beats_written <= num_beats_written + to_int(write_ready and write_valid);
+
     -- If there was a write transaction last clock cycle, and we now want to write but the fifo
     -- is full.
     if write_transaction and write_valid and not write_ready then
@@ -463,29 +433,46 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_stream_slave_inst : entity vunit_lib.axi_stream_slave
-    generic map(
-      slave => read_slave
+  axi_stream_master_inst : entity bfm.axi_stream_master
+    generic map (
+      data_width => write_data'length,
+      data_queue => write_queue,
+      stall_config => write_stall_config,
+      seed => seed,
+      logger_name_suffix => "_write"
     )
-    port map(
-      aclk => clk_read,
-      tvalid => read_valid,
-      tready => read_ready,
-      tdata => read_data,
-      tlast => read_last
+    port map (
+      clk => clk_write,
+      --
+      ready => write_ready,
+      valid => write_valid,
+      last => write_last,
+      data => write_data,
+      --
+      num_packets_sent => num_packets_written
     );
 
 
   ------------------------------------------------------------------------------
-  axi_stream_master_inst : entity vunit_lib.axi_stream_master
-    generic map(
-      master => write_master)
-    port map(
-      aclk => clk_write,
-      tvalid => write_valid,
-      tready => write_ready,
-      tdata => write_data,
-      tlast => write_last
+  axi_stream_slave_inst : entity bfm.axi_stream_slave
+    generic map (
+      data_width => read_data'length,
+      reference_data_queue => read_queue,
+      stall_config => read_stall_config,
+      seed => seed,
+      logger_name_suffix => "_read",
+      disable_last_check => not enable_last
+    )
+    port map (
+      clk => clk_read,
+      --
+      ready => read_ready,
+      valid => read_valid,
+      last => read_last,
+      data => read_data,
+      --
+      num_packets_checked => num_packets_read,
+      enable => enable_read
     );
 
 

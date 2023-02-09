@@ -22,11 +22,11 @@ from tsfpga.vivado.project import VivadoNetlistProject
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        for test in (
-            vunit_proj.library(self.library_name).test_bench("tb_asynchronous_fifo").get_tests()
-        ):
+        library = vunit_proj.library(self.library_name)
+
+        for test in library.test_bench("tb_asynchronous_fifo").get_tests():
             for enable_output_register in [False, True]:
-                for read_clock_is_faster in [True, False]:
+                for read_clock_is_faster in [False, True]:
                     original_generics = dict(
                         read_clock_is_faster=read_clock_is_faster,
                         enable_output_register=enable_output_register,
@@ -35,9 +35,9 @@ class Module(BaseModule):
                     for generics in self.generate_common_fifo_test_generics(
                         test.name, original_generics
                     ):
-                        self.add_vunit_config(test, generics=generics)
+                        self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
-        for test in vunit_proj.library(self.library_name).test_bench("tb_fifo").get_tests():
+        for test in library.test_bench("tb_fifo").get_tests():
             for enable_output_register in [False, True]:
                 original_generics = dict(enable_output_register=enable_output_register)
                 for generics in self.generate_common_fifo_test_generics(
@@ -47,7 +47,7 @@ class Module(BaseModule):
                     if enable_output_register and "peek_mode" in test.name:
                         continue
 
-                    self.add_vunit_config(test, generics=generics)
+                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
     @staticmethod
     def generate_common_fifo_test_generics(test_name, original_generics=None):
@@ -67,12 +67,7 @@ class Module(BaseModule):
             generics.update(enable_last=True, enable_drop_packet=True)
 
         if "peek_mode" in test_name:
-            generics.update(
-                enable_last=True,
-                enable_peek_mode=True,
-                read_stall_probability_percent=20,
-                write_stall_probability_percent=20,
-            )
+            generics.update(enable_last=True, enable_peek_mode=True)
 
         if "init_state" in test_name or "almost" in test_name:
             # Note that
@@ -90,18 +85,15 @@ class Module(BaseModule):
 
                 yield generics
 
-        elif (
-            "drop_packet_mode_read_level_should_be_zero" in test_name
-            or "drop_packet_in_same_cycle_as_write_last_should_drop_the_packet" in test_name
-        ):
-            # Do not need to test these in many configurations
+        elif "drop_packet_mode_read_level_should_be_zero" in test_name:
+            # Do not need to test this in many configurations
             depth = 16 + generics["enable_output_register"]
             generics.update(depth=depth)
             yield generics
 
         else:
             # For most test, generate configuration with two different depths
-            for depth in [16, 512]:
+            for depth in [16, 64]:
                 depth = depth + generics["enable_output_register"]
                 generics.update(depth=depth)
 
@@ -220,8 +212,8 @@ class Module(BaseModule):
                 top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(42)),
-                    Ffs(EqualTo(46)),
+                    TotalLuts(EqualTo(40)),
+                    Ffs(EqualTo(47)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(6)),
@@ -242,11 +234,11 @@ class Module(BaseModule):
                 top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(44)),
-                    Ffs(EqualTo(48)),
+                    TotalLuts(EqualTo(45)),
+                    Ffs(EqualTo(50)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(6)),
+                    MaximumLogicLevel(EqualTo(9)),
                 ],
             )
         )
@@ -264,8 +256,8 @@ class Module(BaseModule):
                 top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(48)),
-                    Ffs(EqualTo(57)),
+                    TotalLuts(EqualTo(45)),
+                    Ffs(EqualTo(58)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(6)),
@@ -284,8 +276,8 @@ class Module(BaseModule):
                 top="fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(60)),
-                    Ffs(EqualTo(57)),
+                    TotalLuts(EqualTo(58)),
+                    Ffs(EqualTo(58)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(6)),
@@ -470,11 +462,11 @@ class Module(BaseModule):
                 top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(92)),
-                    Ffs(EqualTo(169)),
+                    TotalLuts(EqualTo(108)),
+                    Ffs(EqualTo(180)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(6)),
+                    MaximumLogicLevel(EqualTo(9)),
                 ],
             )
         )
