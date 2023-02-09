@@ -49,7 +49,7 @@ entity handshake_mux is
     result_valid : out std_ulogic := '0';
     result_last : out std_ulogic := '0';
     result_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    result_strobe : out std_ulogic_vector(data_width / 8- 1 downto 0) := (others => '0');
+    result_strobe : out std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
     -- The input port index where the packet originated
     result_id : out natural range 0 to num_inputs - 1 := 0
   );
