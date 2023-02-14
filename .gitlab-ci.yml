@@ -10,12 +10,12 @@ stages:
 
 workflow:
   rules:
-    # Run pipeline for scheduled (nightly main branch runs), for merge requests, and
+    # Run pipeline for scheduled (nightly 'main' branch runs), for merge requests, and
     # when triggered manually on the web.
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_PIPELINE_SOURCE == "web"'
-    # Pushes to main (a successful merge request is also a "push") should run so
+    # Pushes to 'main' (a successful merge request is also a "push") should run so
     # that new website is deployed.
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
 
@@ -42,6 +42,14 @@ pytest:
 simulate:
   stage: test
   image: tsfpga/ci_py_sim
+  rules:
+    # Run pipeline for scheduled (nightly 'main' branch runs), for merge requests, and
+    # when triggered manually on the web.
+    # We do NOT run simulate from 'main' after a successful merge, unlike the others, because this
+    # one takes so long.
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
   script:
     # We seem to need "git fetch" for some reason.
     # Without it, the "simulate.py --vcs-minimal" call can not
