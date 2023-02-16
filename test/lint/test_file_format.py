@@ -27,7 +27,9 @@ def files_to_test(excludes=None):
     excludes = [] if excludes is None else excludes
     # Do not test binary image files
     return find_git_files(
-        directory=REPO_ROOT, exclude_directories=excludes, file_endings_avoid="png"
+        directory=REPO_ROOT,
+        exclude_directories=excludes,
+        file_endings_avoid=("png", "svg"),
     )
 
 

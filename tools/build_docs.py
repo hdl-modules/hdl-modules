@@ -8,7 +8,6 @@
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
-import base64
 import shutil
 import sys
 from pathlib import Path
