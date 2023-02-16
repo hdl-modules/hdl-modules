@@ -8,6 +8,7 @@
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
+import base64
 import shutil
 import sys
 from pathlib import Path
@@ -228,7 +229,7 @@ def build_information_badges():
         right_text="hdl_modules/hdl_modules",
         left_color="grey",
         right_color="grey",
-        logo="https://about.gitlab.com/images/press/press-kit-icon.svg",
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "gitlab.svg"),
         embed_logo=True,
     )
     create_file(output_path / "gitlab.svg", badge_svg)
@@ -238,7 +239,7 @@ def build_information_badges():
         right_text="hdl-modules.com",
         left_color="grey",
         right_color="grey",
-        logo="https://design.firefox.com/product-identity/firefox/firefox/firefox-logo.svg",
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "firefox.svg"),
         embed_logo=True,
     )
     create_file(output_path / "website.svg", badge_svg)
