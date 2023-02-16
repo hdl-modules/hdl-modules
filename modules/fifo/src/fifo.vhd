@@ -298,7 +298,8 @@ begin
         + to_int(read_ready_ram and read_valid_ram)
         -- And one word is removed on handshake on the output
         - to_int(read_ready and read_valid);
-        word_in_output_register <= word_in_output_register_next;
+
+      word_in_output_register <= word_in_output_register_next;
     end if;
 
     -- The level count shall always be correct, and hence uses the updated values. Note that this
