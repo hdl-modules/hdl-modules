@@ -25,6 +25,7 @@ from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
+from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 
 # First party libraries
 from tools import tools_env
@@ -98,7 +99,7 @@ def generate_documentation():
         # Exclude the "rtl/" folder within each module from documentation.
         # With our chosen module structure we only place netlist build wrappers there, which we
         # do not want included in the documentation.
-        ModuleDocumentation(module).create_rst_document(
+        HdlModulesModuleDocumentation(module).create_rst_document(
             output_path=output_path, exclude_module_folders=["rtl"]
         )
 
@@ -215,6 +216,59 @@ The following things can be found, at a glance, in the different modules:
 
     # Text that goes on website shall include link to gitlab.
     return get_rst(include_link_to_gitlab=True)
+
+
+class HdlModulesModuleDocumentation(ModuleDocumentation):
+    """
+    Custom documentation class for this project, overrides methods where we want to change
+    the behavior.
+    """
+
+    def _get_vhdl_file_rst(
+        self, vhdl_file_path, heading_character, heading_character_2, netlist_builds
+    ):
+        """
+        Get reStructuredText documentation for a VHDL file.
+
+        Identical to the method in the parent class, but also adds a link to gitlab.
+        """
+        vhdl_file_documentation = VhdlFileDocumentation(vhdl_file_path)
+
+        file_rst = vhdl_file_documentation.get_header_rst()
+        file_rst = "" if file_rst is None else file_rst
+
+        symbolator_rst = self._get_symbolator_rst(vhdl_file_documentation)
+        symbolator_rst = "" if symbolator_rst is None else symbolator_rst
+
+        resource_utilization_rst = self._get_resource_utilization_rst(
+            vhdl_file_path=vhdl_file_path,
+            heading_character=heading_character_2,
+            netlist_builds=netlist_builds,
+        )
+
+        entity_name = vhdl_file_path.stem
+        heading = f"{vhdl_file_path.name}"
+        heading_underline = heading_character * len(heading)
+
+        base_url = "https://gitlab.com/hdl_modules/hdl_modules/-/tree/main/modules"
+        relative_path = f"{self._module.name}/{vhdl_file_path.parent.name}/{vhdl_file_path.name}"
+
+        rst = f"""
+.. _{self._module.name}.{entity_name}:
+
+{heading}
+{heading_underline}
+
+`View source code on gitlab.com <{base_url}/{relative_path}>`__.
+
+{symbolator_rst}
+
+{file_rst}
+
+{resource_utilization_rst}
+"""
+
+        return rst
 
 
 def build_information_badges():
