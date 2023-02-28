@@ -23,7 +23,7 @@
 --   has been written to FIFO, as indicated by ``write_valid and write_last``.
 --
 -- * The FIFO supports dropping packets that are in the progress of being written.
---   If the ``enable_drop_packet_support`` generic is set to ``true``, the ``drop_packet`` port
+--   If the ``enable_drop_packet`` generic is set to ``true``, the ``drop_packet`` port
 --   can be used to drop the current packet, i.e. all words written since the last
 --   ``write_valid and write_last`` happened.
 --
@@ -117,7 +117,7 @@ entity fifo is
     write_valid : in std_ulogic;
     write_data : in std_ulogic_vector(width - 1 downto 0);
     -- Must set 'enable_last' generic in order to use this
-    write_last : in std_ulogic := '-';
+    write_last : in std_ulogic := '0';
     -- '1' if there are 'almost_full_level' or more words available in the FIFO
     almost_full : out std_ulogic := '0';
     -- Drop the current packet (all words that have been written since the previous write_last).
@@ -153,17 +153,41 @@ architecture a of fifo is
 
 begin
 
-  assert is_power_of_two(depth - to_int(enable_output_register))
-    report "RAM depth must be a power of two." severity failure;
+  ------------------------------------------------------------------------------
+  assert is_power_of_two(memory_depth)
+    report "RAM depth must be a power of two."
+    severity failure;
 
   assert enable_last or (not enable_packet_mode)
-    report "Must set enable_last for packet mode" severity failure;
+    report "Must set enable_last for packet mode"
+    severity failure;
+
   assert enable_packet_mode or (not enable_drop_packet)
-    report "Must set enable_packet_mode for drop packet support" severity failure;
+    report "Must set enable_packet_mode for drop packet support"
+    severity failure;
+
   assert enable_packet_mode or (not enable_peek_mode)
-    report "Must set enable_packet_mode for peek mode support" severity failure;
+    report "Must set enable_packet_mode for peek mode support"
+    severity failure;
+
   assert not (enable_output_register and enable_peek_mode)
-    report "Output register is not supported in peek mode" severity failure;
+    report "Output register is not supported in peek mode"
+    severity failure;
+
+
+  ------------------------------------------------------------------------------
+  assertions : process
+  begin
+    wait until rising_edge(clk);
+
+    assert enable_peek_mode or read_peek_mode = '0'
+      report "Must enable 'peek_mode' using generic"
+      severity failure;
+
+    assert enable_drop_packet or drop_packet = '0'
+      report "Must enable 'drop_packet' using generic"
+      severity failure;
+  end process;
 
 
   -- These flags will update one cycle after the write/read that puts them over/below the line.

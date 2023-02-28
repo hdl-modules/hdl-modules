@@ -244,7 +244,7 @@ begin
       --
       input_ready => input_ready,
       input_valid => input_valid,
-      input_last => input_last,
+      input_last => input_last and enable_last,
       input_data => input_data,
       input_strobe => input_strobe,
       --

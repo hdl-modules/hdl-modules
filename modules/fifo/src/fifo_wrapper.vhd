@@ -74,6 +74,7 @@ architecture a of fifo_wrapper is
 
 begin
 
+  ------------------------------------------------------------------------------
   choose_fifo : if depth = 0 generate
 
     assert not enable_packet_mode report "Can not use packet mode without FIFO";
@@ -86,6 +87,8 @@ begin
     read_data <= write_data;
     read_last <= write_last;
 
+
+  ------------------------------------------------------------------------------
   elsif use_asynchronous_fifo generate
 
     assert not enable_peek_mode report "Only available for synchronous FIFO" severity failure;
@@ -126,6 +129,8 @@ begin
         drop_packet => drop_packet
       );
 
+
+  ------------------------------------------------------------------------------
   else generate
 
     ------------------------------------------------------------------------------
@@ -165,6 +170,5 @@ begin
     write_level <= read_level;
 
   end generate;
-
 
 end architecture;

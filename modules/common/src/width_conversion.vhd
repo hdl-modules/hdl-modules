@@ -217,24 +217,49 @@ begin
 
   ------------------------------------------------------------------------------
   assert input_width /= output_width
-    report "Do not use this module with equal widths" severity failure;
+    report "Do not use this module with equal widths"
+    severity failure;
 
   assert input_width mod output_width = 0 or output_width mod input_width = 0
-    report "Larger width has to be multiple of smaller." severity failure;
+    report "Larger width has to be multiple of smaller."
+    severity failure;
 
   assert (output_width / input_width) mod 2 = 0 and (input_width / output_width) mod 2 = 0
-    report "Larger width has to be power of two multiple of smaller." severity failure;
+    report "Larger width has to be power-of-two multiple of smaller."
+    severity failure;
 
-  assert
-    (not enable_strobe)
-    or (input_width mod strobe_unit_width = 0 and output_width mod strobe_unit_width = 0)
-    report "Data width must be a multiple of strobe unit width." severity failure;
+  assert (
+      (not enable_strobe)
+      or (input_width mod strobe_unit_width = 0 and output_width mod strobe_unit_width = 0)
+    )
+    report "Data width must be a multiple of strobe unit width."
+    severity failure;
 
   assert enable_strobe or not support_unaligned_packet_length
-    report "Must enable strobing when doing unaligned packets." severity failure;
+    report "Must enable strobing when doing unaligned packets."
+    severity failure;
 
   assert enable_last or not support_unaligned_packet_length
-    report "Must enable 'last' when doing unaligned packets." severity failure;
+    report "Must enable 'last' when doing unaligned packets."
+    severity failure;
+
+
+  ------------------------------------------------------------------------------
+  assertions : process
+    constant strobe_init : std_ulogic_vector(input_strobe'range) := (others => '1');
+  begin
+    wait until rising_edge(clk);
+
+    if input_valid then
+      assert enable_last or input_last = '0'
+        report "Must enable 'last' using generic"
+        severity failure;
+
+      assert enable_strobe or input_strobe = strobe_init
+        report "Must enable 'strobe' using generic"
+        severity failure;
+    end if;
+  end process;
 
 
   ------------------------------------------------------------------------------

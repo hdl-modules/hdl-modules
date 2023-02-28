@@ -132,6 +132,7 @@ architecture a of asynchronous_fifo is
 
 begin
 
+  ------------------------------------------------------------------------------
   assert is_power_of_two(memory_depth)
     report "RAM depth must be a power of two"
     severity failure;
@@ -143,6 +144,17 @@ begin
   assert enable_packet_mode or (not enable_drop_packet)
     report "Must set enable_packet_mode for drop packet support"
     severity failure;
+
+
+  ------------------------------------------------------------------------------
+  assertions : process
+  begin
+    wait until rising_edge(clk_write);
+
+    assert enable_drop_packet or drop_packet = '0'
+      report "Must enable 'drop_packet' using generic"
+      severity failure;
+  end process;
 
 
   ------------------------------------------------------------------------------
