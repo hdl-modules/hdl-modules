@@ -439,8 +439,8 @@ class Module(BaseModule):
                 top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(86)),
-                    Ffs(EqualTo(167)),
+                    TotalLuts(EqualTo(60)),
+                    Ffs(EqualTo(123)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
                     MaximumLogicLevel(EqualTo(6)),
@@ -462,11 +462,11 @@ class Module(BaseModule):
                 top="asynchronous_fifo",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(108)),
-                    Ffs(EqualTo(180)),
+                    TotalLuts(EqualTo(76)),
+                    Ffs(EqualTo(135)),
                     Ramb36(EqualTo(1)),
                     Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(9)),
+                    MaximumLogicLevel(EqualTo(8)),
                 ],
             )
         )

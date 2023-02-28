@@ -239,7 +239,6 @@ begin
 
       wait until num_beats_written = depth - 2 and rising_edge(clk_write);
       check_relation(write_level > 0);
-      check_relation(read_level > 0);
       check_equal(read_valid, False);
 
       -- Allow the test to finish

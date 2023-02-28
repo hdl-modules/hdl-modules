@@ -33,3 +33,12 @@ Breaking changes
 
 * Move ``to_period`` and ``to_frequency_hz`` functions from :ref:`common.types_pkg`
   to :ref:`common.time_pkg`.
+
+* Remove erroneous assignment of ``asynchronous_fifo`` port ``read_level`` when packet mode
+  is enabled.
+
+* Remove the rarely used ``axi_w_fifo`` port ``read_level`` which does not have valid value
+  in all configurations.
+
+* Remove the rarely used ``axi_write_cdc`` port ``output_data_fifo_level`` which does not have
+  valid value in all configurations.

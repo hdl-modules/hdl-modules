@@ -50,6 +50,7 @@ entity fifo_wrapper is
     read_peek_mode : in std_ulogic := '0';
 
     -- Note that this is the same as write_level for a synchronous FIFO.
+    -- Note that this value is not assigned for an asynchronous FIFO in packet mode.
     read_level : out natural range 0 to depth := 0;
     -- Note that for an asynchronous FIFO, this signal is in the "read" clock domain.
     almost_empty : out std_ulogic := '1';

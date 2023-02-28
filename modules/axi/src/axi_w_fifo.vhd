@@ -43,9 +43,7 @@ entity axi_w_fifo is
     input_s2m : out axi_s2m_w_t := axi_s2m_w_init;
     --# {{}}
     output_m2s : out axi_m2s_w_t := axi_m2s_w_init;
-    output_s2m : in axi_s2m_w_t;
-    -- Level of the FIFO. If this is an asynchronous FIFO, this value is on the "output" side.
-    output_level : out natural range 0 to depth := 0
+    output_s2m : in axi_s2m_w_t
   );
 end entity;
 
@@ -96,7 +94,6 @@ begin
         read_ready => output_s2m.ready,
         read_valid => read_valid,
         read_data => read_data,
-        read_level => output_level,
         --
         write_ready => input_s2m.ready,
         write_valid => input_m2s.valid,

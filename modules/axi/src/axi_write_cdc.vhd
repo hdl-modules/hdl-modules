@@ -46,8 +46,7 @@ entity axi_write_cdc is
     --# {{}}
     clk_output : in std_ulogic;
     output_m2s : out axi_write_m2s_t := axi_write_m2s_init;
-    output_s2m : in axi_write_s2m_t;
-    output_data_fifo_level : out integer range 0 to data_fifo_depth := 0
+    output_s2m : in axi_write_s2m_t
   );
 end entity;
 
@@ -94,7 +93,6 @@ begin
       --
       output_m2s => output_m2s.w,
       output_s2m => output_s2m.w,
-      output_level => output_data_fifo_level,
       --
       clk_input => clk_input
     );

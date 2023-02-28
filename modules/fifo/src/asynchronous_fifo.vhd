@@ -169,7 +169,7 @@ begin
   assign_almost_empty : if almost_empty_level = 0 generate
     read_almost_empty <= not read_valid;
   else generate
-    -- Note that read_level will always be zero if drop_packet support is enabled, making this
+    -- Note that read_level will always be zero if packet_mode is enabled, making this
     -- signal always '1' in that mode.
     read_almost_empty <= to_sl(read_level < almost_empty_level + 1);
   end generate;
@@ -243,6 +243,7 @@ begin
       port map (
         clk_in      => clk_read,
         counter_in  => read_addr_next,
+        --
         clk_out     => clk_write,
         counter_out => read_addr_resync
       );
@@ -275,7 +276,16 @@ begin
       --
       -- Since we can not guarantee a glitch-free read_level value in this mode, we simply do not
       -- assign the counter.
-      if not enable_drop_packet then
+      --
+      -- Furthermore, in packet_mode the write_addr_resync value is not used for calculation of
+      -- read_valid, which makes the resynchronization of write_addr pointless unless the user would
+      -- like to observe read_level.
+      -- But when read_level is not observed there is a bug/limitation in Vivado where the logic
+      -- is not stripped, see https://gitlab.com/hdl_modules/hdl_modules/-/issues/15.
+      -- This corresponds to quite a lot of LUT/FF in a large project.
+      -- Since few use cases can be imagined for read_level when FIFO is already in packet mode,
+      -- we make the decision of not supporting read_level in this mode.
+      if not enable_packet_mode then
         read_level_next :=
           to_integer(write_addr_resync - read_addr_next) mod (2 * memory_depth);
 
@@ -379,8 +389,8 @@ begin
 
 
     ------------------------------------------------------------------------------
-    -- This value is not used in the write clock domain if we are in drop_packet mode
-    resync_write_addr : if not enable_drop_packet generate
+    -- This value is not used in the read clock domain if we are in packet_mode
+    resync_write_addr : if not enable_packet_mode generate
 
       ------------------------------------------------------------------------------
       resync_counter_inst : entity resync.resync_counter
@@ -390,6 +400,7 @@ begin
         port map (
           clk_in      => clk_write,
           counter_in  => write_addr,
+          --
           clk_out     => clk_read,
           counter_out => write_addr_resync
         );
@@ -409,6 +420,7 @@ begin
         port map (
           clk_in      => clk_write,
           counter_in  => num_lasts_written,
+          --
           clk_out     => clk_read,
           counter_out => num_lasts_written_resync
         );
