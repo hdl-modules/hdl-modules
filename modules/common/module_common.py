@@ -233,7 +233,7 @@ class Module(BaseModule):
 
         # Resource utilization increases when more features are added.
         total_luts = [20, 23, 29] + [35, 40, 44]
-        ffs = [51, 59, 63] + [51, 60, 62]
+        ffs = [51, 59, 63] + [51, 59, 62]
         maximum_logic_level = [2, 2, 3] + [2, 2, 2]
 
         for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
