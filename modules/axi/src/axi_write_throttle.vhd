@@ -6,18 +6,21 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Performs throttling of an AXI write bus, which makes the AXI write master well behaved:
+-- Performs throttling of an AXI write bus with the goal of making the AXI write master
+-- well behaved.
+-- This entity makes sure that ``AWVALID`` is asserted in the same clock cycle as the first
+-- ``WVALID`` of the corresponding data burst.
 --
--- 1. ``AWVALID`` is asserted in the same clock cycle as the first ``WVALID`` of the corresponding
---    data burst.
+-- This, along with the two conditions below, realize the most strict condition imaginable for an
+-- AXI write master interface being well behaved.
+-- It guarantees that not a single clock cycle is wasted on the ``throttled`` interface.
 --
--- 2. Should be used in conjunction with a data FIFO on the ``input.w`` side that has packet mode
+-- 1. Should be used in conjunction with a data FIFO on the ``input.w`` side that has packet mode
 --    enabled. This ensures that once ``WVALID`` has been asserted, it remains high until the
 --    ``WLAST`` transaction has occurred.
 --
--- These two conditions realize the most strict condition imaginable for an AXI write interface
--- being well behaved. They guarantee that not a single clock cycle is wasted on the
--- ``throttled`` interface.
+-- 2. The ``input.b.ready`` signal should be statically ``'1'``.
+--    This ensures that ``B`` master on the ``throttled`` side is never stalled.
 --
 -- The imagined use case for this entity is with an AXI crossbar where the throughput should not
 -- be limited by one port starving out the others by being ill behaved.
