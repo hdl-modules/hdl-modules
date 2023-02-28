@@ -67,6 +67,9 @@ package types_pkg is
   -- of "true".
   function "and" (left : boolean; right: std_ulogic) return boolean;
   function "and" (left : std_ulogic; right: boolean) return boolean;
+
+  function "and" (left : boolean; right: std_ulogic) return std_ulogic;
+  function "and" (left : std_ulogic; right: boolean) return std_ulogic;
   --------------------------------------------------------------------------------------------------
 
 end package;
@@ -221,6 +224,16 @@ package body types_pkg is
   function "and" (left : std_ulogic; right: boolean) return boolean is
   begin
     return (left = '1') and right;
+  end function;
+
+  function "and" (left : boolean; right: std_ulogic) return std_ulogic is
+  begin
+    return to_sl(left) and right;
+  end function;
+
+  function "and" (left : std_ulogic; right: boolean) return std_ulogic is
+  begin
+    return left and to_sl(right);
   end function;
   --------------------------------------------------------------------------------------------------
 

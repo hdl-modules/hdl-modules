@@ -50,12 +50,11 @@ begin
     variable natural_vec : natural_vec_t(0 to 3) := (others => 0);
     variable positive_vec : positive_vec_t(0 to 3) := (others => 1);
 
-    variable my_boolean : boolean := false;
-    variable my_std_logic : std_logic := '0';
+    variable my_boolean, my_boolean2 : boolean := false;
+    variable my_std_logic, my_std_logic2 : std_logic := '0';
 
   begin
     test_runner_setup(runner, runner_cfg);
-
 
     if run("test_natural_and_positive_vec_sum") then
       natural_vec := (0, 3, 8, 1);
@@ -145,24 +144,55 @@ begin
       check_equal(count_ones(bit_data3), 3);
       check_equal(count_ones(byte_data1), 12);
 
-    elsif run("test_boolean_std_logic_and_operator") then
+    elsif run("test_boolean_and_std_logic_to_boolean_operator") then
       my_boolean := true;
       my_std_logic := '1';
-      check_true(my_boolean and my_std_logic);
-      check_true(my_std_logic and my_boolean);
+      my_boolean2 := my_boolean and my_std_logic;
+      check_true(my_boolean2);
+      my_boolean2 := my_std_logic and my_boolean;
+      check_true(my_boolean2);
 
       my_boolean := false;
-      check_false(my_boolean and my_std_logic);
+      my_boolean2 := my_boolean and my_std_logic;
+      check_false(my_boolean2);
 
       my_boolean := true;
       my_std_logic := '0';
-      check_false(my_std_logic and my_boolean);
+      my_boolean2 := my_std_logic and my_boolean;
+      check_false(my_boolean2);
 
       my_std_logic := 'U';
-      check_false(my_std_logic and my_boolean);
+      my_boolean2 := my_std_logic and my_boolean;
+      check_false(my_boolean2);
 
       my_std_logic := '-';
-      check_false(my_std_logic and my_boolean);
+      my_boolean2 := my_std_logic and my_boolean;
+      check_false(my_boolean2);
+
+    elsif run("test_boolean_and_std_logic_to_std_logic_operator") then
+      my_boolean := true;
+      my_std_logic := '1';
+      my_std_logic2 := my_boolean and my_std_logic;
+      check_equal(my_std_logic2, '1');
+      my_std_logic2 := my_std_logic and my_boolean;
+      check_equal(my_std_logic2, '1');
+
+      my_boolean := false;
+      my_std_logic2 := my_boolean and my_std_logic;
+      check_equal(my_std_logic2, '0');
+
+      my_boolean := true;
+      my_std_logic := '0';
+      my_std_logic2 := my_std_logic and my_boolean;
+      check_equal(my_std_logic2, '0');
+
+      my_std_logic := 'U';
+      my_std_logic2 := my_std_logic and my_boolean;
+      check_equal(my_std_logic2, 'U');
+
+      my_std_logic := '-';
+      my_std_logic2 := my_std_logic and my_boolean;
+      check_equal(my_std_logic2, 'X');
 
     end if;
 
