@@ -12,7 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
-__version__ = "2.0.1-dev"
+__version__ = "3.0.0"
 
 
 def get_hdl_modules(names_include=None, names_avoid=None):
