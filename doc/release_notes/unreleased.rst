@@ -2,6 +2,10 @@ Added
 
 * Add :ref:`common.handshake_mux`.
 
+* Add :ref:`common.clean_packet_dropper`.
+
+* Add :ref:`common.time_pkg`.
+
 Bug fixes
 
 * Fix bug where :ref:`fifo.fifo` in packet mode could propagate erroneous data when a packet of

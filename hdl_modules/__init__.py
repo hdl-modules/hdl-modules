@@ -26,7 +26,8 @@ def get_hdl_modules(names_include=None, names_avoid=None):
     """
     # tsfpga might not be available on some systems where the hdl_modules are used.
     # Hence we can not import at the top of this file.
-    # This function however which highly depends on tsfpga Module objects must import.
+    # This function however, which highly depends on tsfpga Module objects, must import it.
+    # We assume that it is only called by users who have tsfpga available.
     # pylint: disable=import-outside-toplevel
     # Third party libraries
     from tsfpga.module import get_modules
