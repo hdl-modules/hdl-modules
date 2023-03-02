@@ -33,18 +33,18 @@ unexpectedly break.
 When the pipeline has finished and is green you can move on to the next step.
 
 
-Determine new version number
-____________________________
-
-We use the `Semantic Versioning <https://semver.org/>`__ scheme.
-Read the **Summary** at the top of that page and decide the new version number accordingly.
-
-
 Review the release notes
 ________________________
 
 Check the release notes file ``unreleased.rst``.
 Fill in anything that is missing according to :ref:`Maintaining changelog <maintain_changelog>`.
+
+
+Determine new version number
+____________________________
+
+We use the `Semantic Versioning <https://semver.org/>`__ scheme.
+Read the **Summary** at the top of that page and decide the new version number accordingly.
 
 
 Run release script
