@@ -26,6 +26,6 @@ If you want to cite this open-source software project, the following BibTeX can 
 
   @misc{hdl_modules,
     author = {Vik, Lukas},
-    title  = {hdl\_modules: A collection of reusable, high-quality, peer-reviewed VHDL building blocks},
+    title  = {{hdl\_modules: A collection of reusable, high-quality, peer-reviewed VHDL building blocks}},
     url    = {https://hdl-modules.com},
   }
