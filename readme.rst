@@ -11,9 +11,9 @@ About hdl_modules
   :alt: Gitlab
   :target: https://gitlab.com/hdl_modules/hdl_modules
 
-.. |pic_gitter| image:: https://badges.gitter.im/owner/repo.png
+.. |pic_gitter| image:: https://hdl-modules.com/badges/gitter.svg
   :alt: Gitter
-  :target: https://gitter.im/tsfpga/tsfpga
+  :target: https://app.gitter.im/#/room/#60a276916da03739847cca54:gitter.im
 
 .. |pic_license| image:: https://hdl-modules.com/badges/license.svg
   :alt: License

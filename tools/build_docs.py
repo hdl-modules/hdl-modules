@@ -150,9 +150,9 @@ About hdl_modules
   :alt: Gitlab
   :target: https://gitlab.com/hdl_modules/hdl_modules
 
-.. |pic_gitter| image:: https://badges.gitter.im/owner/repo.png
+.. |pic_gitter| image:: https://hdl-modules.com/badges/gitter.svg
   :alt: Gitter
-  :target: https://gitter.im/tsfpga/tsfpga
+  :target: https://app.gitter.im/#/room/#60a276916da03739847cca54:gitter.im
 
 .. |pic_license| image:: https://hdl-modules.com/badges/license.svg
   :alt: License
@@ -282,7 +282,7 @@ def build_information_badges():
         right_text="hdl_modules/hdl_modules",
         left_color="grey",
         right_color="grey",
-        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "gitlab.svg"),
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "gitlab.svg"),
         embed_logo=True,
     )
     create_file(output_path / "gitlab.svg", badge_svg)
@@ -292,10 +292,18 @@ def build_information_badges():
         right_text="hdl-modules.com",
         left_color="grey",
         right_color="grey",
-        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "firefox.svg"),
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "firefox.svg"),
         embed_logo=True,
     )
     create_file(output_path / "website.svg", badge_svg)
+
+    badge_svg = badge(
+        left_text="chat",
+        right_text="on gitter",
+        left_color="#5a5a5a",
+        right_color="#41ab8b",
+    )
+    create_file(output_path / "gitter.svg", badge_svg)
 
 
 if __name__ == "__main__":

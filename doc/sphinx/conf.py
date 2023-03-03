@@ -43,7 +43,11 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "prev_next_buttons_location": "both",
     "analytics_id": "G-GN3TVQGSHC",
+    "logo_only": True,
 }
+
+html_logo = "hdl_modules_sphinx.png"
+
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ["css"]
