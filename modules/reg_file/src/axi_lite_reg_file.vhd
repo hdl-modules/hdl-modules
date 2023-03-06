@@ -15,7 +15,7 @@
 -- 1. Does not exists (``ARADDR`` out of range), or
 -- 2. Is not of a register type that can be read by the bus (e.g. write only).
 --
--- Similarly it will respond with ``SLVERR`` on the ``B`` channel attempting to write a
+-- Similarly, it will respond with ``SLVERR`` on the ``B`` channel when attempting to write a
 -- register that
 --
 -- 1. Does not exists (``AWADDR`` out of range), or
