@@ -92,7 +92,7 @@ def test_no_checked_in_files_have_too_long_lines():
         # YAML format seems hard to break lines in
         REPO_ROOT / ".gitlab-ci.yml",
         # We list the license text exactly as the original, with no line breaks
-        REPO_ROOT / "license.rst",
+        REPO_ROOT / "license.txt",
         # Impossible to break RST syntax
         HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
         # Impossible to break TCL syntax

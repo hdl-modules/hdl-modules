@@ -28,6 +28,7 @@ from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 
 # First party libraries
+from hdl_modules.about import get_readme_rst, get_short_slogan
 from tools import tools_env
 
 GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
@@ -43,6 +44,8 @@ def main():
     )
     create_file(GENERATED_SPHINX / "generated_release_notes.rst", rst)
 
+    generate_bibtex()
+
     generate_documentation()
 
     # Copy files from documentation folder to build folder
@@ -57,9 +60,33 @@ def main():
     build_information_badges()
 
 
+def generate_bibtex():
+    """
+    Generate a BibTeX snippet for citing this project.
+
+    Since BibTeX also uses curly braces, f-string formatting is hard here.
+    Hence the string is split up.
+    """
+    rst_before = """\
+.. code-block:: tex
+
+  @misc{hdl_modules,
+    author = {Vik, Lukas},
+    title  = {{hdl_modules: """
+
+    rst_after = """}},
+    url    = {https://hdl-modules.com},
+  }
+"""
+
+    rst = f"{rst_before}{get_short_slogan()}{rst_after}"
+
+    create_file(GENERATED_SPHINX / "bibtex.rst", rst)
+
+
 def generate_documentation():
     index_rst = f"""
-{get_readme_rst()}
+{get_readme()}
 
 .. toctree::
   :caption: About
@@ -115,7 +142,7 @@ def generate_documentation():
     create_file(GENERATED_SPHINX / "index.rst", index_rst)
 
 
-def get_readme_rst():
+def get_readme():
     """
     Get the complete README.rst to be used on website.
 
@@ -123,99 +150,15 @@ def get_readme_rst():
     RST file inclusion in README.rst does not work on gitlab unfortunately, hence this
     cumbersome handling where the README is duplicated in two places.
     """
-
-    def get_rst(include_link_to_website=False, include_link_to_gitlab=False):
-        if include_link_to_website:
-            extra_rst = "**See documentation on the website**: https://hdl-modules.com\n"
-        elif include_link_to_gitlab:
-            extra_rst = """\
-This website contains human-readable documentation of the modules.
-To check out the source code, go to the
-`gitlab page <https://gitlab.com/hdl_modules/hdl_modules>`__.
-"""
-        else:
-            extra_rst = ""
-
-        readme_rst = f"""\
-About hdl_modules
-=================
-
-|pic_website| |pic_gitlab| |pic_gitter| |pic_license|
-
-.. |pic_website| image:: https://hdl-modules.com/badges/website.svg
-  :alt: Website
-  :target: https://hdl-modules.com
-
-.. |pic_gitlab| image:: https://hdl-modules.com/badges/gitlab.svg
-  :alt: Gitlab
-  :target: https://gitlab.com/hdl_modules/hdl_modules
-
-.. |pic_gitter| image:: https://hdl-modules.com/badges/gitter.svg
-  :alt: Gitter
-  :target: https://app.gitter.im/#/room/#60a276916da03739847cca54:gitter.im
-
-.. |pic_license| image:: https://hdl-modules.com/badges/license.svg
-  :alt: License
-  :target: https://hdl-modules.com/license_information.html
-
-The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
-building blocks.
-It is released as open source project under the very permissive BSD 3-Clause License.
-
-{extra_rst}
-The code is designed to be reusable and portable, while having a clean and intuitive interface.
-Resource utilization is always critical in FPGA projects, so these modules are written to be as
-efficient as possible.
-Using generics to enable/disable different features and modes means that resources can be saved when
-not all features are used.
-Some entities are very deliberately area optimized, such as the
-`FIFOs <https://hdl-modules.com/modules/fifo/fifo.html>`__, since they are used very frequently in
-FPGA projects.
-
-More important than anything, however, is the quality.
-Everything in this project is peer reviewed, has good unit test coverage, and is proven in use in
-real FPGA designs.
-All the code is written with readability and maintainability in mind.
-
-The following things can be found, at a glance, in the different modules:
-
-* Crossbars, FIFOs, CDCs, etc., for AXI/AXI-Lite/AXI-Stream in the
-  `axi module <https://hdl-modules.com/modules/axi/axi.html>`__.
-
-* Many BFMs for simulating AXI/AXI-Lite/AXI-Stream in the
-  `bfm module <https://hdl-modules.com/modules/bfm/bfm.html>`__.
-
-* Some miscellaneous, but useful, things that do not fit anywhere else in the
-  `common module <https://hdl-modules.com/modules/common/common.html>`__.
-
-* Synchronous and asynchronous FIFOs with AXI-stream-like handshake interface in the
-  `fifo module <https://hdl-modules.com/modules/fifo/fifo.html>`__.
-
-* Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives in the
-  `hard_fifo module <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`__.
-
-* Some common math function implementations in the
-  `math module <https://hdl-modules.com/modules/math/math.html>`__.
-
-* A generic register file, as well as a simulation package with register BFM operations, in the
-  `reg_file module <https://hdl-modules.com/modules/reg_file/reg_file.html>`__.
-
-* Resynchronization implementations for different signals and buses, along with proper constraints,
-  in the `resync module <https://hdl-modules.com/modules/resync/resync.html>`__.
-"""
-
-        return readme_rst
-
-    # First, verify readme.rst in repo root. The text shall link to the website.
-    readme_rst = get_rst(include_link_to_website=True)
+    # First, verify readme.rst in repo root
+    readme_rst = get_readme_rst(include_extra_for_gitlab=True)
     if read_file(tools_env.REPO_ROOT / "readme.rst") != readme_rst:
         file_path = create_file(GENERATED_SPHINX / "readme.rst", readme_rst)
         assert (
             False
         ), f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
 
-    # Text that goes on website shall include link to gitlab.
-    return get_rst(include_link_to_gitlab=True)
+    return get_readme_rst(include_extra_for_website=True)
 
 
 class HdlModulesModuleDocumentation(ModuleDocumentation):

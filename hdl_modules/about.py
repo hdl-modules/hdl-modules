@@ -1,3 +1,63 @@
+# --------------------------------------------------------------------------------------------------
+# Copyright (c) Lukas Vik. All rights reserved.
+#
+# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# peer-reviewed VHDL building blocks.
+# https://hdl-modules.com
+# https://gitlab.com/hdl_modules/hdl_modules
+# --------------------------------------------------------------------------------------------------
+
+
+def get_short_slogan():
+    """
+    Short slogan used in e.g. Python documentation.
+
+    Note that this slogan should be the same as the one used in the readme and on the website below.
+    The difference is capitalization and whether the project name is included.
+    """
+    result = "A collection of reusable, high-quality, peer-reviewed VHDL building blocks"
+    return result
+
+
+def get_readme_rst(include_extra_for_gitlab=False, include_extra_for_website=False):
+    """
+    Get the complete README.rst (to be used on website).
+    RST file inclusion in README.rst does not work on gitlab unfortunately, hence this
+    cumbersome handling where the README is duplicated in two places.
+
+    The arguments control some extra text that is included. This is mainly links to the
+    other places where you can find information on the project (website, gitlab).
+
+    Arguments:
+        include_extra_for_gitlab (bool): Include the extra text that shall be included in the
+            gitlab README.
+        include_extra_for_website (bool): Include the extra text that shall be included in the
+            website main page.
+    """
+    if include_extra_for_gitlab:
+        readme_rst = ""
+        extra_rst = "**See documentation on the website**: https://hdl-modules.com\n"
+
+    elif include_extra_for_website:
+        # The website needs the initial heading, in order for the landing page to get
+        # the correct title.
+        # Gitlab readme does not need this initial heading, it just makes it more clunky.
+        readme_rst = """\
+About hdl_modules
+=================
+
+"""
+        extra_rst = """\
+This website contains human-readable documentation of the modules.
+To check out the source code, go to the
+`gitlab page <https://gitlab.com/hdl_modules/hdl_modules>`__.
+"""
+
+    else:
+        readme_rst = ""
+        extra_rst = ""
+
+    readme_rst += f"""\
 |pic_website| |pic_gitlab| |pic_gitter| |pic_license|
 
 .. |pic_website| image:: https://hdl-modules.com/badges/website.svg
@@ -20,8 +80,7 @@ The hdl_modules project is a collection of reusable, high-quality, peer-reviewed
 building blocks.
 It is released as open-source project under the very permissive BSD 3-Clause License.
 
-**See documentation on the website**: https://hdl-modules.com
-
+{extra_rst}
 The code is designed to be reusable and portable, while having a clean and intuitive interface.
 Resource utilization is always critical in FPGA projects, so these modules are written to be as
 efficient as possible.
@@ -61,3 +120,6 @@ The following things can be found, at a glance, in the different modules:
 
 * Resynchronization implementations for different signals and buses, along with proper constraints,
   in the `resync module <https://hdl-modules.com/modules/resync/resync.html>`__.
+"""
+
+    return readme_rst

@@ -10,9 +10,13 @@
 # Standard libraries
 from pathlib import Path
 
+# Local folder libraries
+from .about import get_short_slogan
+
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
 __version__ = "3.0.1-dev"
+__doc__ = get_short_slogan()  # pylint: disable=redefined-builtin
 
 
 def get_hdl_modules(names_include=None, names_avoid=None):

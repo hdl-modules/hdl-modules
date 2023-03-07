@@ -10,7 +10,7 @@
 # Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
-from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_pylint
+from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_isort, run_pylint
 
 # First party libraries
 from tools.tools_env import HDL_MODULES_DOC, REPO_ROOT
@@ -38,3 +38,7 @@ def test_flake8_lint():
 
 def test_black_formatting():
     run_black(_files_to_test())
+
+
+def test_isort_formatting():
+    run_isort(files=_files_to_test(), cwd=REPO_ROOT)
