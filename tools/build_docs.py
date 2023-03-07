@@ -72,7 +72,7 @@ def generate_bibtex():
 
   @misc{hdl_modules,
     author = {Vik, Lukas},
-    title  = {{hdl_modules: """
+    title  = {{hdl\\_modules: """
 
     rst_after = """}},
     url    = {https://hdl-modules.com},
