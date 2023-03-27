@@ -40,8 +40,8 @@ entity clock_counter is
     resolution_bits : positive;
     max_relation_bits : positive;
     -- The shift register length is device specific.
-    -- For Xilinx Ultrascale and 7 series devices, it should be set to 32
-    shift_register_length : integer := 32
+    -- For Xilinx Ultrascale and 7 series devices, it should be set to 33
+    shift_register_length : integer := 33
   );
   port (
     target_clock : in std_ulogic;
