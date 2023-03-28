@@ -266,33 +266,33 @@ begin
 
   ------------------------------------------------------------------------------
   write_status_tracking : process
-    variable transaction_occured : std_ulogic := '0';
+    variable transaction_occurred : std_ulogic := '0';
   begin
     wait until rising_edge(clk_write);
 
     -- If there was a write transaction last clock cycle, and we now want to write but the fifo
     -- is full.
-    if transaction_occured and write_valid and not write_ready then
+    if transaction_occurred and write_valid and not write_ready then
       has_gone_full_times <= has_gone_full_times + 1;
     end if;
 
-    transaction_occured := write_ready and write_valid;
+    transaction_occurred := write_ready and write_valid;
   end process;
 
 
   ------------------------------------------------------------------------------
   read_status_tracking : process
-    variable transaction_occured : std_ulogic := '0';
+    variable transaction_occurred : std_ulogic := '0';
   begin
     wait until rising_edge(clk_read);
 
     -- If there was a read transaction last clock cycle, and we now want to read but there is no
     -- data available.
-    if transaction_occured and read_ready and not read_valid then
+    if transaction_occurred and read_ready and not read_valid then
       has_gone_empty_times <= has_gone_empty_times + 1;
     end if;
 
-    transaction_occured := write_ready and write_valid;
+    transaction_occurred := write_ready and write_valid;
   end process;
 
 
