@@ -25,31 +25,108 @@ end entity;
 
 architecture tb of tb_math_pkg is
 
-  -- This function calculates the number of bits pars that differs
-  -- in the two input vectors.
-  function hamming_distance(in1, in2 : std_ulogic_vector) return integer is
-    variable tmp : std_ulogic_vector(in1'range);
-    variable ret : integer := 0;
-  begin
-    tmp := in1 xor in2;
-    for i in tmp'range loop
-      if tmp(i) = '1' then
-        ret := ret + 1;
-      end if;
-    end loop;
-    return ret;
-  end function;
 begin
 
+  ------------------------------------------------------------------------------
   main : process
+
+    ------------------------------------------------------------------------------
+    constant clamp_num_bits : positive := 3;
+    constant clamp_min_value : integer := get_min_signed_integer(num_bits=>clamp_num_bits);
+    constant clamp_max_value : integer := get_max_signed_integer(num_bits=>clamp_num_bits);
+
+    function clamp_integer(value : integer) return integer is
+    begin
+      return clamp(value=>value, min=>clamp_min_value, max=>clamp_max_value);
+    end function;
+
+    function clamp_signed(value : integer) return signed is
+      constant value_signed : signed(clamp_num_bits + 1 - 1 downto 0) := to_signed(
+        value, clamp_num_bits + 1
+      );
+      constant min_value_signed : signed(clamp_num_bits - 1 downto 0) := to_signed(
+        clamp_min_value, clamp_num_bits
+      );
+      constant max_value_signed : signed(clamp_num_bits - 1 downto 0) := to_signed(
+        clamp_max_value, clamp_num_bits
+      );
+      variable result : signed(value_signed'range) := (others => '0');
+    begin
+      result := clamp(value=>value_signed, min=>min_value_signed, max=>max_value_signed);
+      return result;
+    end function;
+    ------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------
+    -- This function calculates the number of bits pars that differs
+    -- in the two input vectors.
+    function hamming_distance(in1, in2 : std_ulogic_vector) return integer is
+      variable tmp : std_ulogic_vector(in1'range);
+      variable ret : integer := 0;
+    begin
+      tmp := in1 xor in2;
+      for i in tmp'range loop
+        if tmp(i) = '1' then
+          ret := ret + 1;
+        end if;
+      end loop;
+      return ret;
+    end function;
+    ------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------
     variable value : u_signed(5 - 1 downto 0);
     variable value_slv : u_unsigned(8 - 1 downto 0);
     constant some_integer_vector : integer_vector(0 to 3) := (-1, 4, 0, -7);
     variable abs_vector_output : integer_vector(0 to 3);
+    ------------------------------------------------------------------------------
+
   begin
     test_runner_setup(runner, runner_cfg);
 
-    if run("ceil_log2") then
+
+    if run("get_min_max_signed_integer") then
+      -- Since get_min/max_signed_integer calls get_min/max_signed, only testing like this
+      -- is enough.
+
+      for num_bits in 1 to 31 loop
+        check_equal(get_min_signed_integer(num_bits=>num_bits), - 2 ** (num_bits - 1));
+        check_equal(get_max_signed_integer(num_bits=>num_bits), 2 ** (num_bits - 1) - 1);
+      end loop;
+
+      -- The calculation of expected value above goes out of range for this number of bits.
+      -- Do it manually instead.
+      check_equal(get_min_signed_integer(num_bits=>32), -2147483648);
+      check_equal(get_max_signed_integer(num_bits=>32), 2147483647);
+
+    elsif run("test_get_max_unsigned_integer") then
+      for num_bits in 1 to 30 loop
+        check_equal(get_max_unsigned_integer(num_bits=>num_bits), 2 ** num_bits - 1);
+      end loop;
+
+      -- The calculation of expected value above goes out of range for this number of bits.
+      -- Do it manually instead.
+      check_equal(get_max_unsigned_integer(num_bits=>31), 2147483647);
+
+    elsif run("test_clamp_integer") then
+      check_equal(clamp_integer(clamp_min_value - 1), clamp_min_value);
+      check_equal(clamp_integer(clamp_min_value), clamp_min_value);
+      check_equal(clamp_integer(clamp_min_value + 1), clamp_min_value + 1);
+
+      check_equal(clamp_integer(clamp_max_value - 1), clamp_max_value - 1);
+      check_equal(clamp_integer(clamp_max_value), clamp_max_value);
+      check_equal(clamp_integer(clamp_max_value + 1), clamp_max_value);
+
+    elsif run("test_clamp_signed") then
+      check_equal(clamp_signed(clamp_min_value - 1), clamp_min_value);
+      check_equal(clamp_signed(clamp_min_value), clamp_min_value);
+      check_equal(clamp_signed(clamp_min_value + 1), clamp_min_value + 1);
+
+      check_equal(clamp_signed(clamp_max_value - 1), clamp_max_value - 1);
+      check_equal(clamp_signed(clamp_max_value), clamp_max_value);
+      check_equal(clamp_signed(clamp_max_value + 1), clamp_max_value);
+
+    elsif run("ceil_log2") then
       check_equal(ceil_log2(1), 0);
 
       check_equal(ceil_log2(2), 1);

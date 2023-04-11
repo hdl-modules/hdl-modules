@@ -17,31 +17,151 @@ use ieee.math_real.all;
 
 package math_pkg is
 
+  ------------------------------------------------------------------------------
+  -- The maximum value that can be expressed in a signed bit vector of the supplied length.
+  function get_min_signed(num_bits : positive) return signed;
+  function get_max_signed(num_bits : positive) return signed;
+
+  -- Same as above but result value given as an integer.
+  -- Note that this limits the number of bits to 32.
+  function get_min_signed_integer(num_bits : positive) return integer;
+  function get_max_signed_integer(num_bits : positive) return natural;
+
+  -- The maximum value that can be expressed in an unsigned bit vector of the supplied length,
+  -- with result value given as an integer.
+  -- Note that this limits the number of bits to 32.
+  function get_max_unsigned_integer(num_bits : positive) return positive;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
+  -- Limit the supplied 'value' between 'min' and 'max'.
+  function clamp(value, min, max : integer) return integer;
+  function clamp(value, min, max : signed) return signed;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
   function ceil_log2(value : positive) return natural;
   function log2(value : positive) return natural;
   function is_power_of_two(value : positive) return boolean;
+  function round_up_to_power_of_two(value : positive) return positive;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function num_bits_needed(value : natural) return positive;
   function num_bits_needed(value : u_unsigned) return positive;
+  ------------------------------------------------------------------------------
 
-  function round_up_to_power_of_two(value : positive) return positive;
-
+  ------------------------------------------------------------------------------
   function lt_0(value  : u_signed) return boolean;
   function geq_0(value : u_signed) return boolean;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function to_gray(value : u_unsigned) return std_ulogic_vector;
   function from_gray(code : std_ulogic_vector) return u_unsigned;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function abs_vector(vector : integer_vector) return integer_vector;
   function vector_sum(vector : integer_vector) return integer;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function greatest_common_divisor(value1, value2 : positive) return positive;
   function is_mutual_prime(candidate : positive; check_against : integer_vector) return boolean;
+  ------------------------------------------------------------------------------
 
 end package;
 
 package body math_pkg is
 
+  ------------------------------------------------------------------------------
+  function get_min_signed(num_bits : positive) return signed is
+    variable result : signed(num_bits - 1 downto 0) := (others => '0');
+  begin
+    result(result'high) := '1';
+    return result;
+  end function;
+
+  function get_max_signed(num_bits : positive) return signed is
+    variable result : signed(num_bits - 1 downto 0) := (others => '1');
+  begin
+    result(result'high) := '0';
+    return result;
+  end function;
+
+  function get_min_signed_integer(num_bits : positive) return integer is
+    constant min_signed : signed(num_bits - 1 downto 0) := get_min_signed(num_bits=>num_bits);
+    variable min_signed_integer : integer := 0;
+  begin
+    assert num_bits <= 32
+      report "Calculation does not work for this many bits: " & integer'image(num_bits)
+      severity failure;
+
+    min_signed_integer := to_integer(min_signed);
+
+    return min_signed_integer;
+  end function;
+
+  function get_max_signed_integer(num_bits : positive) return natural is
+    constant max_signed : signed(num_bits - 1 downto 0) := get_max_signed(num_bits=>num_bits);
+    variable max_signed_integer : natural := 0;
+  begin
+    assert num_bits <= 32
+      report "Calculation does not work for this many bits: " & integer'image(num_bits)
+      severity failure;
+
+    max_signed_integer := to_integer(max_signed);
+
+    return max_signed_integer;
+  end function;
+
+  function get_max_unsigned_integer(num_bits : positive) return positive is
+    constant max_unsigned : unsigned(num_bits - 1 downto 0) := (others => '1');
+    variable max_unsigned_integer : natural := 0;
+  begin
+    assert num_bits <= 32
+      report "Calculation does not work for this many bits: " & integer'image(num_bits)
+      severity failure;
+
+    max_unsigned_integer := to_integer(max_unsigned);
+
+    return max_unsigned_integer;
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
+  function clamp(value, min, max : integer) return integer is
+  begin
+    if value < min then
+      return min;
+    end if;
+
+    if value > max then
+      return max;
+    end if;
+
+    return value;
+  end function;
+
+  function clamp(value, min, max : signed) return signed is
+  begin
+    assert min'length <= value'length report "Min value can not be assigned" severity failure;
+    assert max'length <= value'length report "Max value can not be assigned" severity failure;
+
+    if value < min then
+      return resize(min, value'length);
+    end if;
+
+    if value > max then
+      return resize(max, value'length);
+    end if;
+
+    return value;
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
   function ceil_log2(value : positive) return natural is
   begin
     -- 2-base logarithm rounded up
@@ -68,6 +188,29 @@ package body math_pkg is
     return 2 ** log2_value = value;
   end function;
 
+  function round_up_to_power_of_two(value : positive) return positive is
+  begin
+    return 2 ** ceil_log2(value);
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
+  function lt_0(value : u_signed) return boolean is
+  begin
+    -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
+    -- doing simply "if value < 0 then ...", hence this bit operation is used instead.
+    return value(value'left) = '1';
+  end function;
+
+  function geq_0(value : u_signed) return boolean is
+  begin
+    -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
+    -- doing simply "if value <= 0 then ...", hence this bit operation is used instead.
+    return value(value'left) = '0';
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
   function num_bits_needed(value : u_unsigned) return positive is
   begin
     -- The number of bits needed to express the given value.
@@ -92,26 +235,9 @@ package body math_pkg is
       severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
-  function round_up_to_power_of_two(value : positive) return positive is
-  begin
-    return 2 ** ceil_log2(value);
-  end function;
-
-  function lt_0(value : u_signed) return boolean is
-  begin
-    -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
-    -- doing simply "if value < 0 then ...", hence this bit operation is used instead.
-    return value(value'left) = '1';
-  end function;
-
-  function geq_0(value : u_signed) return boolean is
-  begin
-    -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
-    -- doing simply "if value < 0 then ...", hence this bit operation is used instead.
-    return value(value'left) = '0';
-  end function;
-
+  ------------------------------------------------------------------------------
   function to_gray(value : u_unsigned) return std_ulogic_vector is
     variable value_slv, result : std_ulogic_vector(value'range);
   begin
@@ -130,7 +256,9 @@ package body math_pkg is
 
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function abs_vector(vector : integer_vector) return integer_vector is
     variable result : integer_vector(vector'range);
   begin
@@ -148,7 +276,9 @@ package body math_pkg is
     end loop;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function greatest_common_divisor(value1, value2 : positive) return positive is
     variable tmp, smaller_value, larger_value : natural;
   begin
@@ -180,5 +310,6 @@ package body math_pkg is
     -- factor was a mutual prime with all.
     return true;
   end function;
+  ------------------------------------------------------------------------------
 
 end package body;
