@@ -34,8 +34,11 @@ package math_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  -- Limit the supplied 'value' between 'min' and 'max'.
+  -- Limit the supplied 'value' to the inclusive range [min, max].
+
   function clamp(value, min, max : integer) return integer;
+  -- Note that 'value' may be wider than 'min' and/or 'max' but not the other way around.
+  -- Width of result value is the same width as 'value'.
   function clamp(value, min, max : signed) return signed;
   ------------------------------------------------------------------------------
 
@@ -92,41 +95,41 @@ package body math_pkg is
 
   function get_min_signed_integer(num_bits : positive) return integer is
     constant min_signed : signed(num_bits - 1 downto 0) := get_min_signed(num_bits=>num_bits);
-    variable min_signed_integer : integer := 0;
+    variable result : integer := 0;
   begin
     assert num_bits <= 32
       report "Calculation does not work for this many bits: " & integer'image(num_bits)
       severity failure;
 
-    min_signed_integer := to_integer(min_signed);
+    result := to_integer(min_signed);
 
-    return min_signed_integer;
+    return result;
   end function;
 
   function get_max_signed_integer(num_bits : positive) return natural is
     constant max_signed : signed(num_bits - 1 downto 0) := get_max_signed(num_bits=>num_bits);
-    variable max_signed_integer : natural := 0;
+    variable result : natural := 0;
   begin
     assert num_bits <= 32
       report "Calculation does not work for this many bits: " & integer'image(num_bits)
       severity failure;
 
-    max_signed_integer := to_integer(max_signed);
+    result := to_integer(max_signed);
 
-    return max_signed_integer;
+    return result;
   end function;
 
   function get_max_unsigned_integer(num_bits : positive) return positive is
     constant max_unsigned : unsigned(num_bits - 1 downto 0) := (others => '1');
-    variable max_unsigned_integer : natural := 0;
+    variable result : positive := 1;
   begin
     assert num_bits <= 32
       report "Calculation does not work for this many bits: " & integer'image(num_bits)
       severity failure;
 
-    max_unsigned_integer := to_integer(max_unsigned);
+    result := to_integer(max_unsigned);
 
-    return max_unsigned_integer;
+    return result;
   end function;
   ------------------------------------------------------------------------------
 

@@ -41,6 +41,7 @@ begin
     end function;
 
     function clamp_signed(value : integer) return signed is
+      -- +1 since input 'value' will sometimes be outside of the clamp range.
       constant value_signed : signed(clamp_num_bits + 1 - 1 downto 0) := to_signed(
         value, clamp_num_bits + 1
       );
