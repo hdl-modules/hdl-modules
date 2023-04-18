@@ -41,9 +41,9 @@ RELEASE_NOTES = tools_env.HDL_MODULES_DOC / "release_notes"
 def main():
     parser = argparse.ArgumentParser(description="Make release commits and tag")
     parser.add_argument(
-        "release_version", nargs=1, type=str, help="release version number MAJOR.MINOR.PATCH"
+        "release_version", type=str, help="release version number MAJOR.MINOR.PATCH"
     )
-    release_version = parser.parse_args().release_version[0]
+    release_version = parser.parse_args().release_version
 
     repo = Repo(tools_env.REPO_ROOT)
     git_tag = verify_new_version_number(repo=repo, new_version=release_version)
