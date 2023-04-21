@@ -28,7 +28,7 @@ architecture tb of tb_debounce is
   constant clk_period : time := 10 ns;
 
   constant stable_count : positive := 100;
-  signal noisy_input, stable_result : std_ulogic := '0';
+  signal noisy_input, stable_result, stable_rising_edge, stable_falling_edge : std_ulogic := '0';
 
   signal num_rising_edges, num_falling_edges : natural := 0;
 
@@ -91,13 +91,17 @@ begin
 
   ------------------------------------------------------------------------------
   counters : process
-    variable stable_result_p1 : std_ulogic := '0';
+    variable stable_result_p1, stable_result_p2 : std_ulogic := '0';
   begin
     wait until rising_edge(clk);
 
     num_rising_edges <= num_rising_edges + to_int(stable_result = '1' and stable_result_p1 = '0');
     num_falling_edges <= num_falling_edges + to_int(stable_result = '0' and stable_result_p1 = '1');
 
+    check_equal(stable_rising_edge, stable_result_p1 and not stable_result_p2);
+    check_equal(stable_falling_edge, (not stable_result_p1) and stable_result_p2);
+
+    stable_result_p2 := stable_result_p1;
     stable_result_p1 := stable_result;
   end process;
 
@@ -111,7 +115,9 @@ begin
       noisy_input => noisy_input,
       --
       clk => clk,
-      stable_result => stable_result
+      stable_result => stable_result,
+      stable_rising_edge => stable_rising_edge,
+      stable_falling_edge => stable_falling_edge
     );
 
 end architecture;

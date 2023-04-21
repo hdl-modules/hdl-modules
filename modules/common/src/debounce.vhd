@@ -28,18 +28,24 @@ entity debounce is
     stable_count : positive
   );
   port (
-    -- Input value that may be metastable and noisy
+    -- Input value that may be metastable and/or noisy
     noisy_input : in std_ulogic := '0';
     --# {{}}
     clk : in std_ulogic;
-    stable_result : out std_ulogic := '0'
+    stable_result : out std_ulogic := '0';
+    -- Asserted for one clock cycle when stabilized value goes from '0' to '1'.
+    stable_rising_edge : out std_ulogic := '0';
+    -- Asserted for one clock cycle when stabilized value goes from '1' to '0'.
+    stable_falling_edge : out std_ulogic := '0'
   );
 end entity;
 
 architecture a of debounce is
 
   signal noisy_input_resync : std_ulogic := '0';
+
   signal num_cycles_with_new_value : integer range 0 to stable_count - 1 := 0;
+  signal stable_result_p1 : std_ulogic := '0';
 
 begin
 
@@ -62,6 +68,9 @@ begin
   begin
     wait until rising_edge(clk);
 
+    stable_rising_edge <= stable_result and not stable_result_p1;
+    stable_falling_edge <= (not stable_result) and stable_result_p1;
+
     if noisy_input_resync = stable_result then
       num_cycles_with_new_value <= 0;
 
@@ -73,6 +82,8 @@ begin
         num_cycles_with_new_value <= num_cycles_with_new_value + 1;
       end if;
     end if;
+
+    stable_result_p1 <= stable_result;
   end process;
 
 end architecture;
