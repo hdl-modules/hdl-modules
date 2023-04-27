@@ -149,7 +149,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  handshake_master_int : entity bfm.handshake_master
+  handshake_master_inst : entity bfm.handshake_master
     generic map(
       stall_config => stall_config,
       seed => seed,

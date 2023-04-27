@@ -230,7 +230,7 @@ begin
 
 
     ------------------------------------------------------------------------------
-    handshake_slave_int : entity bfm.handshake_slave
+    handshake_slave_inst : entity bfm.handshake_slave
       generic map(
         stall_config => stall_config,
         seed => seed,
