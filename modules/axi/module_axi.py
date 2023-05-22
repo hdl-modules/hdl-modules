@@ -160,4 +160,18 @@ class Module(BaseModule):
             )
         )
 
+        projects.append(
+            VivadoNetlistProject(
+                name=f"{self.library_name}.axi_lite_mux",
+                modules=modules,
+                part=part,
+                top="axi_lite_mux_netlist_build_wrapper",
+                build_result_checkers=[
+                    TotalLuts(EqualTo(500)),
+                    Ffs(EqualTo(28)),
+                    MaximumLogicLevel(EqualTo(5)),
+                ],
+            )
+        )
+
         return projects

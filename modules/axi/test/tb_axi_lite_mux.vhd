@@ -39,17 +39,31 @@ architecture tb of tb_axi_lite_mux is
 
   constant data_width : integer := 32;
   constant bytes_per_word : integer := data_width / 8;
-  constant num_slaves : integer := 4;
+  constant num_slaves : integer := 19;
   subtype slaves_rng is integer range 0 to num_slaves - 1;
 
   constant num_words : integer := 32;
-  constant addr_offset : integer := 4096; -- Corresponding to the base addresses below
 
   constant slave_addrs : addr_and_mask_vec_t(slaves_rng) := (
-    (addr => x"0000_0000", mask => x"0000_7000"),
-    (addr => x"0000_1000", mask => x"0000_7000"),
-    (addr => x"0000_2000", mask => x"0000_7000"),
-    (addr => x"0000_3000", mask => x"0000_7000")
+    (addr => x"0000_0000", mask => x"0003_F000"),
+    (addr => x"0000_1000", mask => x"0003_F000"),
+    (addr => x"0000_2000", mask => x"0003_F000"),
+    (addr => x"0000_3000", mask => x"0003_F000"),
+    (addr => x"0000_4000", mask => x"0003_F000"),
+    (addr => x"0000_5000", mask => x"0003_F000"),
+    (addr => x"0000_6000", mask => x"0003_F000"),
+    (addr => x"0000_7000", mask => x"0003_F000"),
+    (addr => x"0000_8000", mask => x"0003_F000"),
+    (addr => x"0000_9000", mask => x"0003_F000"),
+    (addr => x"0000_A000", mask => x"0003_F000"),
+    (addr => x"0000_B000", mask => x"0003_F000"),
+    (addr => x"0000_C000", mask => x"0003_F000"),
+    (addr => x"0000_D000", mask => x"0003_F000"),
+    (addr => x"0000_E000", mask => x"0003_F000"),
+    (addr => x"0000_F000", mask => x"0003_F000"),
+    (addr => x"0001_0000", mask => x"0003_0000"),
+    (addr => x"0002_0000", mask => x"0003_0100"),
+    (addr => x"0002_0100", mask => x"0003_0100")
   );
 
   constant clk_period : time := 10 ns;
@@ -72,7 +86,22 @@ architecture tb of tb_axi_lite_mux is
     0 => new_axi_slave(address_fifo_depth => 1, memory => memory(0)),
     1 => new_axi_slave(address_fifo_depth => 1, memory => memory(1)),
     2 => new_axi_slave(address_fifo_depth => 1, memory => memory(2)),
-    3 => new_axi_slave(address_fifo_depth => 1, memory => memory(3))
+    3 => new_axi_slave(address_fifo_depth => 1, memory => memory(3)),
+    4 => new_axi_slave(address_fifo_depth => 1, memory => memory(4)),
+    5 => new_axi_slave(address_fifo_depth => 1, memory => memory(5)),
+    6 => new_axi_slave(address_fifo_depth => 1, memory => memory(6)),
+    7 => new_axi_slave(address_fifo_depth => 1, memory => memory(7)),
+    8 => new_axi_slave(address_fifo_depth => 1, memory => memory(8)),
+    9 => new_axi_slave(address_fifo_depth => 1, memory => memory(9)),
+    10 => new_axi_slave(address_fifo_depth => 1, memory => memory(10)),
+    11 => new_axi_slave(address_fifo_depth => 1, memory => memory(11)),
+    12 => new_axi_slave(address_fifo_depth => 1, memory => memory(12)),
+    13 => new_axi_slave(address_fifo_depth => 1, memory => memory(13)),
+    14 => new_axi_slave(address_fifo_depth => 1, memory => memory(14)),
+    15 => new_axi_slave(address_fifo_depth => 1, memory => memory(15)),
+    16 => new_axi_slave(address_fifo_depth => 1, memory => memory(16)),
+    17 => new_axi_slave(address_fifo_depth => 1, memory => memory(17)),
+    18 => new_axi_slave(address_fifo_depth => 1, memory => memory(18))
   );
 
 begin
@@ -84,9 +113,9 @@ begin
   ------------------------------------------------------------------------------
   main : process
 
-  function bank_address(slave, word : integer) return integer is
+    function bank_address(slave, word : integer) return integer is
     begin
-      return slave * addr_offset + word * bytes_per_word;
+      return to_integer(slave_addrs(slave).addr) + word * bytes_per_word;
     end function;
 
     procedure hard_coded_read_data(addr : in u_unsigned(slave_addrs(0).addr'range)) is
@@ -140,7 +169,7 @@ begin
     rnd.InitSeed(rnd'instance_name);
 
     for slave_idx in memory'range loop
-      buf := allocate(memory(slave_idx), bank_address(slave_idx, num_words));
+      buf := allocate(memory=>memory(slave_idx), num_bytes=>bank_address(slave_idx, num_words));
     end loop;
 
     if run("read_and_write_to_buffer") then
@@ -173,7 +202,7 @@ begin
       end loop;
 
     elsif run("read_from_non_existent_slave_base_address") then
-      hard_coded_read_data(x"0000_4000");
+      hard_coded_read_data(x"0003_4000");
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
@@ -182,7 +211,7 @@ begin
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
       check_equal(axi_lite_s2m.read.r.data(data'range), data);
 
-      hard_coded_read_data(x"0000_5000");
+      hard_coded_read_data(x"0003_5000");
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
@@ -192,7 +221,7 @@ begin
       check_equal(axi_lite_s2m.read.r.data(data'range), data);
 
     elsif run("write_to_non_existent_slave_base_address") then
-      hard_coded_write_data(x"0000_4000", x"0102_0304");
+      hard_coded_write_data(x"0003_4000", x"0102_0304");
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
@@ -201,7 +230,7 @@ begin
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
       check_expected_was_written(memory(0));
 
-      hard_coded_write_data(x"0000_5000", x"0102_0304");
+      hard_coded_write_data(x"0003_5000", x"0102_0304");
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
@@ -217,6 +246,8 @@ begin
 
   ------------------------------------------------------------------------------
   axi_lite_master_generate : if use_axi_lite_bfm generate
+
+    ------------------------------------------------------------------------------
     axi_lite_master_inst : entity bfm.axi_lite_master
       generic map (
         bus_handle => axi_master
@@ -231,12 +262,14 @@ begin
   else generate
 
     axi_lite_m2s <= hard_coded_m2s;
+
   end generate;
 
 
   ------------------------------------------------------------------------------
   axi_lite_slave_gen : for i in axi_read_slave'range generate
-  begin
+
+    ------------------------------------------------------------------------------
     axi_lite_slave_inst : entity bfm.axi_lite_slave
       generic map (
         axi_read_slave => axi_read_slave(i),
@@ -252,6 +285,7 @@ begin
         axi_lite_write_m2s => axi_lite_m2s_vec(i).write,
         axi_lite_write_s2m => axi_lite_s2m_vec(i).write
       );
+
   end generate;
 
 
@@ -262,10 +296,10 @@ begin
     )
     port map (
       clk => clk,
-
+      --
       axi_lite_m2s => axi_lite_m2s,
       axi_lite_s2m => axi_lite_s2m,
-
+      --
       axi_lite_m2s_vec => axi_lite_m2s_vec,
       axi_lite_s2m_vec => axi_lite_s2m_vec
     );
