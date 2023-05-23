@@ -232,9 +232,9 @@ class Module(BaseModule):
         support_unaligned_packet_length = [False, False, True] + [False, False, True]
 
         # Resource utilization increases when more features are added.
-        total_luts = [20, 23, 29] + [35, 40, 44]
-        ffs = [51, 59, 63] + [51, 59, 62]
-        maximum_logic_level = [2, 2, 3] + [2, 2, 2]
+        total_luts = [20, 23, 30] + [35, 40, 45]
+        ffs = [51, 59, 63] + [51, 60, 62]
+        maximum_logic_level = [2, 2, 3] + [2, 2, 3]
 
         for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
             generics = dict(
