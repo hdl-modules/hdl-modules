@@ -84,7 +84,7 @@ begin
 
   ------------------------------------------------------------------------------
   w_block : block
-    constant packed_width : integer := axi_lite_m2s_w_sz(data_width);
+    constant packed_width : positive := axi_lite_m2s_w_sz(data_width);
     signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
   begin
 
@@ -170,7 +170,7 @@ begin
 
   ------------------------------------------------------------------------------
   r_block : block
-    constant packed_width : integer := axi_lite_s2m_r_sz(data_width);
+    constant packed_width : positive := axi_lite_s2m_r_sz(data_width);
     signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
   begin
 

@@ -76,16 +76,16 @@ architecture a of periodic_pulser is
   subtype factors_vec_t is integer_vector(0 to shift_register_length - 1);
   type stage_factors_t is record
     this_stage : factors_vec_t;
-    next_stage : integer;
-    num_factors_this_stage : integer;
+    next_stage : natural;
+    num_factors_this_stage : natural;
   end record;
   constant stage_factors_init : stage_factors_t := (this_stage => (others => 0), others => 0);
 
   -- Factorize into mutual primes as far as possible
   function get_mutual_prime_factors(value : positive) return stage_factors_t is
-    variable remaining_value : integer := value;
+    variable remaining_value : natural := value;
     variable result : stage_factors_t := stage_factors_init;
-    variable idx : integer range 0 to shift_register_length := 0;
+    variable idx : natural range 0 to shift_register_length := 0;
   begin
     -- Start with shift_register_length and work downward, as we want as large factors as
     -- possible in each shift register

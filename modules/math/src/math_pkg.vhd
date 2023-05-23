@@ -186,7 +186,7 @@ package body math_pkg is
   end function;
 
   function is_power_of_two(value : positive) return boolean is
-    constant log2_value : integer := floor_log2(value);
+    constant log2_value : natural := floor_log2(value);
   begin
     return 2 ** log2_value = value;
   end function;

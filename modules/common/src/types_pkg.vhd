@@ -175,8 +175,8 @@ package body types_pkg is
 
   function swap_byte_order(data : std_ulogic_vector) return std_ulogic_vector is
     variable result : std_ulogic_vector(data'range);
-    constant num_bytes : integer := data'length / 8;
-    variable result_byte_idx : integer;
+    constant num_bytes : positive := data'length / 8;
+    variable result_byte_idx : natural := 0;
   begin
     -- Swap endianness of the input word.
     -- I.e., while maintaining the range and vector direction, swap the location of the data bytes.
@@ -207,7 +207,7 @@ package body types_pkg is
   end function;
 
   function count_ones(data : std_ulogic_vector) return natural is
-    variable result : integer range 0 to data'length := 0;
+    variable result : natural range 0 to data'length := 0;
   begin
     for bit_idx in data'range loop
       result := result + to_int(data(bit_idx));

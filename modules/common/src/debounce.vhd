@@ -44,7 +44,7 @@ architecture a of debounce is
 
   signal noisy_input_resync : std_ulogic := '0';
 
-  signal num_cycles_with_new_value : integer range 0 to stable_count - 1 := 0;
+  signal num_cycles_with_new_value : natural range 0 to stable_count - 1 := 0;
   signal stable_result_p1 : std_ulogic := '0';
 
 begin

@@ -82,7 +82,7 @@ begin
 
   ------------------------------------------------------------------------------
   w_block : block
-    constant w_width : integer := axi_lite_m2s_w_sz(data_width);
+    constant w_width : positive := axi_lite_m2s_w_sz(data_width);
     signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0);
   begin
 
@@ -164,7 +164,7 @@ begin
 
   ------------------------------------------------------------------------------
   r_block : block
-    constant r_width : integer := axi_lite_s2m_r_sz(data_width);
+    constant r_width : positive := axi_lite_s2m_r_sz(data_width);
     signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);
   begin
 

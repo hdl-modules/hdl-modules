@@ -60,7 +60,7 @@ begin
 
   else generate
 
-    constant r_width : integer := axi_s2m_r_sz(data_width, id_width);
+    constant r_width : positive := axi_s2m_r_sz(data_width, id_width);
 
     signal read_valid : std_ulogic := '0';
     signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);

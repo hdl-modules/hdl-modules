@@ -49,9 +49,11 @@ end entity;
 
 architecture a of axi_stream_fifo is
 
-  constant bus_width : integer := axi_stream_m2s_sz(data_width, user_width);
+  constant bus_width : positive := axi_stream_m2s_sz(
+    data_width=>data_width, user_width=>user_width
+  );
 
-  signal write_data, read_data : std_ulogic_vector(bus_width - 1 downto 0);
+  signal write_data, read_data : std_ulogic_vector(bus_width - 1 downto 0) := (others => '0');
   signal read_valid : std_ulogic := '0';
 
 begin

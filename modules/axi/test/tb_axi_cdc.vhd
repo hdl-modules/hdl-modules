@@ -94,7 +94,7 @@ begin
   main : process
     variable rnd : RandomPType;
     variable data : std_ulogic_vector(data_width - 1 downto 0);
-    variable address : integer;
+    variable address : natural := 0;
     variable buf : buffer_t;
   begin
     test_runner_setup(runner, runner_cfg);
