@@ -68,10 +68,10 @@ begin
     )
     port map (
       clk => clk_axi,
-
+      --
       axi_m2s => axi_m2s,
       axi_s2m => axi_s2m,
-
+      --
       axi_lite_m2s => axi_lite_m2s,
       axi_lite_s2m => axi_lite_s2m
     );
