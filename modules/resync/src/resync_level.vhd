@@ -73,7 +73,7 @@ entity resync_level is
     data_in : in std_ulogic;
     --# {{}}
     clk_out : in std_ulogic;
-    data_out : out std_ulogic
+    data_out : out std_ulogic := default_value
   );
 end entity;
 
