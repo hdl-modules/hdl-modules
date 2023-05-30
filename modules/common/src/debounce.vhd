@@ -25,14 +25,17 @@ library resync;
 entity debounce is
   generic (
     -- Number of cycles the input must be stable for the value to propagate to the result side.
-    stable_count : positive
+    stable_count : positive;
+    -- Initial value for the stable result that will be set until the first real input
+    -- value has propagated.
+    default_value : std_ulogic := '0'
   );
   port (
     -- Input value that may be metastable and/or noisy
     noisy_input : in std_ulogic := '0';
     --# {{}}
     clk : in std_ulogic;
-    stable_result : out std_ulogic := '0';
+    stable_result : out std_ulogic := default_value;
     -- Asserted for one clock cycle when stabilized value goes from '0' to '1'.
     stable_rising_edge : out std_ulogic := '0';
     -- Asserted for one clock cycle when stabilized value goes from '1' to '0'.
@@ -52,8 +55,9 @@ begin
   ------------------------------------------------------------------------------
   resync_level_inst : entity resync.resync_level
     generic map (
-      -- We do not know the input clock, so set this to false
-      enable_input_register => false
+      -- We do not know the input clock, so set this to false.
+      enable_input_register => false,
+      default_value => default_value
     )
     port map (
       data_in => noisy_input,
