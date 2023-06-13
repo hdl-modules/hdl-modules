@@ -47,6 +47,7 @@ package math_pkg is
   function log2(value : positive) return natural;
   function is_power_of_two(value : positive) return boolean;
   function round_up_to_power_of_two(value : positive) return positive;
+  function round_up_to_power_of_two(value : real range 1.0 to real'high) return real;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
@@ -194,6 +195,13 @@ package body math_pkg is
   function round_up_to_power_of_two(value : positive) return positive is
   begin
     return 2 ** ceil_log2(value);
+  end function;
+
+  function round_up_to_power_of_two(value : real range 1.0 to real'high) return real is
+    constant value_integer : positive := positive(ceil(value));
+    constant result_integer : positive := round_up_to_power_of_two(value_integer);
+  begin
+    return real(result_integer);
   end function;
   ------------------------------------------------------------------------------
 

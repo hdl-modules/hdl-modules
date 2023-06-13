@@ -161,17 +161,25 @@ begin
 
     elsif run("round_up_to_power_of_two") then
       check_equal(round_up_to_power_of_two(1), 1);
+      check_equal(round_up_to_power_of_two(1.0), 1.0);
 
       check_equal(round_up_to_power_of_two(2), 2);
+      check_equal(round_up_to_power_of_two(2.0), 2.0);
 
       check_equal(round_up_to_power_of_two(3), 4);
       check_equal(round_up_to_power_of_two(4), 4);
+      check_equal(round_up_to_power_of_two(3.0), 4.0);
+      check_equal(round_up_to_power_of_two(4.0), 4.0);
 
       check_equal(round_up_to_power_of_two(5), 8);
+      check_equal(round_up_to_power_of_two(5.0), 8.0);
 
       check_equal(round_up_to_power_of_two(127), 128);
       check_equal(round_up_to_power_of_two(128), 128);
       check_equal(round_up_to_power_of_two(129), 256);
+      check_equal(round_up_to_power_of_two(127.0), 128.0);
+      check_equal(round_up_to_power_of_two(128.0), 128.0);
+      check_equal(round_up_to_power_of_two(129.0), 256.0);
 
     elsif run("num_bits_needed_vector") then
       value_slv := "00000000";
