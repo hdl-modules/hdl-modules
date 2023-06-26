@@ -54,7 +54,7 @@ begin
     wait until assert_false_on_last_mismatch and rising_edge(clk);
 
     if result_valid then
-      assert (and input_last) = (or input_last) report "Input packet lengths are different";
+      assert not (xor input_last) report "Input packet lengths are different";
     end if;
   end process;
 
