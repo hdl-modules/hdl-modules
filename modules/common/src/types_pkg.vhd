@@ -21,6 +21,8 @@ package types_pkg is
   type unsigned_vec_t is array (integer range <>) of u_unsigned;
   type signed_vec_t is array (integer range <>) of u_signed;
 
+  type integer_vec_t is array (integer range <>) of integer;
+
   type natural_vec_t is array (integer range <>) of natural;
   function sum(data : natural_vec_t) return natural;
   function get_maximum(data : natural_vec_t) return natural;
