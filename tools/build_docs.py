@@ -55,6 +55,9 @@ def main():
         else:
             shutil.copytree(path, GENERATED_SPHINX / path.name, dirs_exist_ok=True)
 
+    logos_path = create_directory(GENERATED_SPHINX_HTML / "logos")
+    shutil.copy2(tools_env.HDL_MODULES_DOC / "logos" / "banner.png", logos_path)
+
     build_sphinx(build_path=GENERATED_SPHINX, output_path=GENERATED_SPHINX_HTML)
 
     build_information_badges()
