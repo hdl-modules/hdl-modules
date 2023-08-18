@@ -1,15 +1,15 @@
-|pic_website| |pic_gitlab| |pic_gitter| |pic_license|
+|pic_website| |pic_repository| |pic_chat| |pic_license|
 
 .. |pic_website| image:: https://hdl-modules.com/badges/website.svg
   :alt: Website
   :target: https://hdl-modules.com
 
-.. |pic_gitlab| image:: https://hdl-modules.com/badges/gitlab.svg
-  :alt: Gitlab
+.. |pic_repository| image:: https://hdl-modules.com/badges/repository.svg
+  :alt: Repository
   :target: https://gitlab.com/hdl_modules/hdl_modules
 
-.. |pic_gitter| image:: https://hdl-modules.com/badges/gitter.svg
-  :alt: Gitter
+.. |pic_chat| image:: https://hdl-modules.com/badges/chat.svg
+  :alt: Chat
   :target: https://app.gitter.im/#/room/#60a276916da03739847cca54:gitter.im
 
 .. |pic_license| image:: https://hdl-modules.com/badges/license.svg
