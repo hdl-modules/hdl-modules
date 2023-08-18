@@ -228,7 +228,7 @@ def build_information_badges():
         logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "gitlab.svg"),
         embed_logo=True,
     )
-    create_file(output_path / "gitlab.svg", badge_svg)
+    create_file(output_path / "repository.svg", badge_svg)
 
     badge_svg = badge(
         left_text="",
@@ -246,7 +246,7 @@ def build_information_badges():
         left_color="#5a5a5a",
         right_color="#41ab8b",
     )
-    create_file(output_path / "gitter.svg", badge_svg)
+    create_file(output_path / "chat.svg", badge_svg)
 
 
 if __name__ == "__main__":
