@@ -80,15 +80,7 @@ To check out the source code, go to the
   :alt: License
   :target: https://hdl-modules.com/license_information.html
 
-.. raw:: html
-
-    <center>
-
 |pic_website| |pic_repository| |pic_chat| |pic_license|
-
-.. raw:: html
-
-    </center>
 
 The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
