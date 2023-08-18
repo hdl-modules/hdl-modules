@@ -1,4 +1,8 @@
-|pic_website| |pic_repository| |pic_chat| |pic_license|
+.. image:: https://hdl-modules.com//logos/banner.png
+  :alt: Project banner
+  :align: center
+
+|
 
 .. |pic_website| image:: https://hdl-modules.com/badges/website.svg
   :alt: Website
@@ -15,6 +19,16 @@
 .. |pic_license| image:: https://hdl-modules.com/badges/license.svg
   :alt: License
   :target: https://hdl-modules.com/license_information.html
+
+.. raw:: html
+
+    <center>
+
+|pic_website| |pic_repository| |pic_chat| |pic_license|
+
+.. raw:: html
+
+    </center>
 
 The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
