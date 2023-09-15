@@ -18,7 +18,8 @@ use ieee.math_real.all;
 package math_pkg is
 
   ------------------------------------------------------------------------------
-  -- The maximum value that can be expressed in a signed bit vector of the supplied length.
+  -- The smallest/greatest value that can be expressed in a signed bit vector of the
+  -- supplied length.
   function get_min_signed(num_bits : positive) return signed;
   function get_max_signed(num_bits : positive) return signed;
 
@@ -27,8 +28,12 @@ package math_pkg is
   function get_min_signed_integer(num_bits : positive range 1 to 32) return integer;
   function get_max_signed_integer(num_bits : positive range 1 to 32) return natural;
 
-  -- The maximum value that can be expressed in an unsigned bit vector of the supplied length,
-  -- with result value given as an integer.
+  -- The smallest/greatest value that can be expressed in an unsigned bit vector of the
+  -- supplied length.
+  function get_min_unsigned(num_bits : positive) return unsigned;
+  function get_max_unsigned(num_bits : positive) return unsigned;
+
+  -- Same as above but result value given as an integer.
   -- Note that this limits the number of bits to 32.
   function get_max_unsigned_integer(num_bits : positive range 1 to 32) return positive;
   ------------------------------------------------------------------------------
@@ -108,8 +113,20 @@ package body math_pkg is
     return result;
   end function;
 
+  function get_min_unsigned(num_bits : positive) return unsigned is
+    constant result : unsigned(num_bits - 1 downto 0) := (others => '0');
+  begin
+    return result;
+  end function;
+
+  function get_max_unsigned(num_bits : positive) return unsigned is
+    constant result : unsigned(num_bits - 1 downto 0) := (others => '1');
+  begin
+    return result;
+  end function;
+
   function get_max_unsigned_integer(num_bits : positive range 1 to 32) return positive is
-    constant max_unsigned : unsigned(num_bits - 1 downto 0) := (others => '1');
+    constant max_unsigned : unsigned(num_bits - 1 downto 0) := get_max_unsigned(num_bits=>num_bits);
     constant result : positive := to_integer(max_unsigned);
   begin
     return result;
