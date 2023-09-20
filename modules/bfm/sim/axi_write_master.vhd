@@ -43,8 +43,11 @@ use work.axi_bfm_pkg.all;
 
 entity axi_write_master is
   generic (
+    -- The desired width of the 'AWADDR' signal.
     addr_width : positive;
+    -- The desired width of the 'AWID' and, possibly if using AXI3, 'WID' signals.
     id_width : natural;
+    -- The desired width of the 'WDATA' signal.
     data_width : positive;
     -- Push jobs (SLV of axi_master_bfm_job_t) to this queue. Each job pushed will result in an
     -- AW transaction and eventually a B check.
@@ -63,7 +66,7 @@ entity axi_write_master is
     seed : natural := 0;
     -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
-    -- When this generic is set, WID will be assigned to same ID as corresponding AW transaction.
+    -- When this generic is set, 'WID' will be assigned to same ID as corresponding AW transaction.
     -- Also means that W data will never be sent before an AW transaction
     set_axi3_w_id : boolean := false
   );

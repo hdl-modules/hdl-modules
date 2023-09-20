@@ -41,8 +41,11 @@ use work.axi_bfm_pkg.all;
 
 entity axi_read_master is
   generic (
+    -- The desired width of the 'ARADDR' signal.
     addr_width : positive;
+    -- The desired width of the 'ARID' and 'RID' signals.
     id_width : natural;
+    -- The desired width of the 'RDATA' signal.
     data_width : positive;
     -- Push jobs (SLV of axi_master_bfm_job_t) to this queue. Each job pushed will result in an
     -- AR transaction.
@@ -206,9 +209,9 @@ begin
     ------------------------------------------------------------------------------
     axi_stream_slave_inst : entity work.axi_stream_slave
       generic map (
-        id_width => id_width,
         data_width => data_width,
         reference_data_queue => reference_data_queue,
+        id_width => id_width,
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,
         seed => seed,

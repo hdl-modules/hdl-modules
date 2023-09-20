@@ -35,18 +35,20 @@ use common.types_pkg.all;
 
 entity axi_stream_slave is
   generic (
-    -- Set to zero in order to disable 'id' check. In this case, nothing has to be pushed
-    -- to 'reference_id_queue'.
-    id_width : natural := 0;
+    -- Set the desired width of the 'data' field.
     data_width : positive;
     -- Push reference data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     reference_data_queue : queue_t;
+    -- Set to non-zero in order to enable 'id' check.
+    -- In this case reference values have to be pushed to the 'reference_id_queue'.
+    id_width : natural := 0;
     -- Push reference 'id' for each data packet to this queue. All data beats in a packet must have
     -- the same ID, and there may be no interleaving of data.
     -- If 'id_width' is zero, no check will be performed and nothing shall be pushed to
     -- this queue.
     reference_id_queue : queue_t := null_queue;
+    -- Assign non-zero to randomly insert jitter/stalling in the data stream.
     stall_config : stall_config_t := null_stall_config;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
@@ -110,7 +112,7 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable reference_id : natural;
+    variable reference_id : natural := 0;
     variable reference_data : integer_array_t := null_integer_array;
     variable packet_length_bytes, packet_length_beats : positive := 1;
 
@@ -137,7 +139,7 @@ begin
       if byte_lane_idx = 0 then
         wait until ready and valid and rising_edge(clk);
 
-        -- Pop reference ID for this packet, if applicable, on the first beat
+        -- Pop reference ID once for this packet, if applicable.
         if id'length > 0 and byte_idx = 0 then
           reference_id := pop(reference_id_queue);
         end if;
@@ -150,29 +152,29 @@ begin
               & ",byte_idx=" & to_string(byte_idx)
           );
         end if;
+
+        if id'length > 0 then
+          check_equal(
+            unsigned(id),
+            reference_id,
+            "'id' check at packet_idx="
+              & to_string(num_packets_checked) & ", byte_idx=" & to_string(byte_idx)
+          );
+        end if;
       end if;
 
       check_equal(
         strobe_byte(byte_lane_idx),
         '1',
         "'strobe' check at packet_idx=" & to_string(num_packets_checked)
-          & ",byte_idx=" & to_string(byte_idx)
+          & ", byte_idx=" & to_string(byte_idx)
       );
       check_equal(
         unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
         get(arr=>reference_data, idx=>byte_idx),
         "'data' check at packet_idx="
-          & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
+          & to_string(num_packets_checked) & ", byte_idx=" & to_string(byte_idx)
       );
-
-      if id'length > 0 then
-        check_equal(
-          unsigned(id),
-          reference_id,
-          "'id' check at packet_idx="
-            & to_string(num_packets_checked) & ",byte_idx=" & to_string(byte_idx)
-        );
-      end if;
     end loop;
 
     -- Check strobe for last data beat. If packet length aligns with the bus width, all lanes will
@@ -183,7 +185,7 @@ begin
         strobe_byte(byte_idx),
         '0',
         "'strobe' check at packet_idx=" & to_string(num_packets_checked)
-          & ",byte_idx=" & to_string(byte_idx)
+          & ", byte_idx=" & to_string(byte_idx)
       );
     end loop;
 

@@ -55,6 +55,7 @@ package bfm_pkg is
   impure function get_new_axi_stream_masters(
     count : positive;
     data_width : positive;
+    user_width : natural := 0;
     logger_name : string;
     stall_config : stall_config_t
   ) return axi_stream_master_vec_t;
@@ -63,6 +64,7 @@ package bfm_pkg is
   impure function get_new_axi_stream_slaves(
     count : positive;
     data_width : positive;
+    user_width : natural := 0;
     logger_name : string;
     stall_config : stall_config_t
   ) return axi_stream_slave_vec_t;
@@ -165,6 +167,7 @@ package body bfm_pkg is
   impure function get_new_axi_stream_masters(
     count : positive;
     data_width : positive;
+    user_width : natural := 0;
     logger_name : string;
     stall_config : stall_config_t
   ) return axi_stream_master_vec_t is
@@ -173,9 +176,11 @@ package body bfm_pkg is
     for result_idx in result'range loop
       result(result_idx) := new_axi_stream_master(
         data_length => data_width,
+        user_length => user_width,
         protocol_checker => new_axi_stream_protocol_checker(
           logger => get_logger(logger_name),
-          data_length => data_width
+          data_length => data_width,
+          user_length => user_width
         ),
         stall_config => stall_config
       );
@@ -188,6 +193,7 @@ package body bfm_pkg is
   impure function get_new_axi_stream_slaves(
     count : positive;
     data_width : positive;
+    user_width : natural := 0;
     logger_name : string;
     stall_config : stall_config_t
   ) return axi_stream_slave_vec_t is
@@ -196,9 +202,11 @@ package body bfm_pkg is
     for result_idx in result'range loop
       result(result_idx) := new_axi_stream_slave(
         data_length => data_width,
+        user_length => user_width,
         protocol_checker => new_axi_stream_protocol_checker(
           logger => get_logger(logger_name),
-          data_length => data_width
+          data_length => data_width,
+          user_length => user_width
         ),
         stall_config => stall_config
       );

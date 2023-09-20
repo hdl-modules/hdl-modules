@@ -34,10 +34,12 @@ use common.types_pkg.all;
 
 entity axi_stream_master is
   generic (
+    -- Set the desired width of the 'data' field.
     data_width : positive;
     -- Push data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     data_queue : queue_t;
+    -- Assign non-zero to randomly insert jitter/stalling in the data stream.
     stall_config : stall_config_t := null_stall_config;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
@@ -58,8 +60,9 @@ entity axi_stream_master is
     valid : out std_ulogic := '0';
     last : out std_ulogic := drive_invalid_value;
     data : out std_ulogic_vector(data_width - 1 downto 0) := (others => drive_invalid_value);
-    strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0)
-      := (others => drive_invalid_value);
+    strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) := (
+      others => drive_invalid_value
+    );
     --# {{}}
     num_packets_sent : out natural := 0
   );
