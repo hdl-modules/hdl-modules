@@ -14,6 +14,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
+library common;
+use common.types_pkg.all;
+
 
 package math_pkg is
 
@@ -56,8 +59,17 @@ package math_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function num_bits_needed(value : natural) return positive;
+  -- The minimum number of bits needed to express the given value as an unsigned vector.
   function num_bits_needed(value : u_unsigned) return positive;
+  -- The number of bits needed to express the given value as an unsigned vector.
+  function num_bits_needed(value : natural) return positive;
+
+  -- The number of bits needed to express the value as a signed vector.
+  function num_bits_needed_signed(value : integer) return positive;
+  -- The number of bits required to express each of the values as a signed vector.
+  function num_bits_needed_signed(values : integer_vec_t) return positive;
+  -- The number of bits required to express each of the values as a signed vector.
+  function num_bits_needed_signed(values : integer_matrix_t) return positive;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
@@ -223,7 +235,6 @@ package body math_pkg is
   ------------------------------------------------------------------------------
   function num_bits_needed(value : u_unsigned) return positive is
   begin
-    -- The number of bits needed to express the given value.
     assert value'high > value'low report "Use only with descending range" severity failure;
     assert value'low = 0 report "Use vector that starts at zero" severity failure;
 
@@ -239,10 +250,43 @@ package body math_pkg is
     constant value_vector : u_unsigned(64 - 1 downto 0) := to_unsigned(value, 64);
     constant result : positive := num_bits_needed(value_vector);
   begin
-    -- The number of bits needed to express the given value in an u_unsigned vector.
     assert value <= 2**result - 1
       report "Calculated value not correct: " & to_string(value) & " " & to_string(result)
       severity failure;
+    return result;
+  end function;
+
+  function num_bits_needed_signed(value : integer) return positive is
+    constant value_vector : u_signed(64 - 1 downto 0) := to_signed(value, 64);
+  begin
+    for bit_idx in value_vector'high downto value_vector'low loop
+      if value_vector(bit_idx) = not value_vector(value_vector'high) then
+        return bit_idx + 1 + 1;
+      end if;
+    end loop;
+
+    return 1;
+  end function;
+
+  function num_bits_needed_signed(values : integer_vec_t) return positive is
+    variable result : positive := 1;
+  begin
+    for value_idx in values'range loop
+      result := maximum(result, num_bits_needed_signed(value=>values(value_idx)));
+    end loop;
+    return result;
+  end function;
+
+  function num_bits_needed_signed(values : integer_matrix_t) return positive is
+    variable result : positive := 1;
+  begin
+    for first_dimension_idx in values'range loop
+      for second_dimension_idx in values(0)'range loop
+        result := maximum(
+          result, num_bits_needed_signed(value=>values(first_dimension_idx)(second_dimension_idx))
+        );
+      end loop;
+    end loop;
     return result;
   end function;
   ------------------------------------------------------------------------------

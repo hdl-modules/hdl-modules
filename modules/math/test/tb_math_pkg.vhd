@@ -14,6 +14,9 @@ use ieee.numeric_std.all;
 library vunit_lib;
 context vunit_lib.vunit_context;
 
+library common;
+use common.types_pkg.all;
+
 use work.math_pkg.all;
 
 
@@ -56,6 +59,11 @@ begin
       result := clamp(value=>value_signed, min=>min_value_signed, max=>max_value_signed);
       return result;
     end function;
+    ------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------
+    variable vector : integer_vector(0 to 2) := (others => 0);
+    variable matrix : integer_matrix_t(0 to 1)(0 to 2) := (others => (others => 0));
     ------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------
@@ -148,7 +156,7 @@ begin
       check_equal(log2(64), 6);
       check_equal(log2(128), 7);
 
-    elsif run("num_bits_needed_int") then
+    elsif run("num_bits_needed_unsigned_integer") then
       check_equal(num_bits_needed(0), 1);
       check_equal(num_bits_needed(1), 1);
       check_equal(num_bits_needed(2), 2);
@@ -158,6 +166,39 @@ begin
       check_equal(num_bits_needed(7), 3);
       check_equal(num_bits_needed(8), 4);
       check_equal(num_bits_needed(9), 4);
+
+    elsif run("test_num_bits_needed_signed_integer") then
+      check_equal(num_bits_needed_signed(0), 1);
+
+      check_equal(num_bits_needed_signed(-1), 1);
+      check_equal(num_bits_needed_signed(-3), 3);
+      check_equal(num_bits_needed_signed(-4), 3);
+
+      check_equal(num_bits_needed_signed(1), 2);
+      check_equal(num_bits_needed_signed(3), 3);
+      check_equal(num_bits_needed_signed(4), 4);
+
+    elsif run("test_num_bits_needed_signed_vector") then
+      check_equal(num_bits_needed_signed(vector), 1);
+
+      vector := (7, 6, -1);
+      check_equal(num_bits_needed_signed(vector), 4);
+      vector := (0, 8, -1);
+      check_equal(num_bits_needed_signed(vector), 5);
+
+      vector := (-7, 6, -1);
+      check_equal(num_bits_needed_signed(vector), 4);
+      vector := (1, -9, -1);
+      check_equal(num_bits_needed_signed(vector), 5);
+
+    elsif run("test_num_bits_needed_signed_matrix") then
+      check_equal(num_bits_needed_signed(matrix), 1);
+
+      matrix := ((7, 6, -1), (0, 8, -1));
+      check_equal(num_bits_needed_signed(matrix), 5);
+
+      matrix := ((-7, 6, -1), (1, -9, -1));
+      check_equal(num_bits_needed_signed(matrix), 5);
 
     elsif run("round_up_to_power_of_two") then
       check_equal(round_up_to_power_of_two(1), 1);

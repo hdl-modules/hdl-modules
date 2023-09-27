@@ -22,6 +22,7 @@ package types_pkg is
   type signed_vec_t is array (integer range <>) of u_signed;
 
   type integer_vec_t is array (integer range <>) of integer;
+  type integer_matrix_t is array (integer range <>) of integer_vec_t;
 
   type natural_vec_t is array (integer range <>) of natural;
   function sum(data : natural_vec_t) return natural;
