@@ -1,5 +1,1 @@
-Added
-
-* Add ``stable_rising_edge`` and ``stable_falling_edge`` ports to :ref:`common.debounce`.
-
-* Add :ref:`common.handshake_merger`.
+Nothing here yet.
