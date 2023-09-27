@@ -15,7 +15,7 @@ from .about import get_short_slogan
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
-__version__ = "3.0.2-dev"
+__version__ = "3.0.2"
 __doc__ = get_short_slogan()  # pylint: disable=redefined-builtin
 
 
