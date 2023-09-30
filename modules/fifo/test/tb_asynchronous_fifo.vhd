@@ -54,7 +54,7 @@ architecture tb of tb_asynchronous_fifo is
   signal write_ready, write_valid, write_last : std_ulogic := '0';
   signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
 
-  signal read_level, write_level : natural := 0;
+  signal read_level, write_level : natural range 0 to depth := 0;
   signal read_almost_empty, write_almost_full : std_ulogic := '0';
 
   signal drop_packet : std_ulogic := '0';

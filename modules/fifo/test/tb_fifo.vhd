@@ -49,7 +49,7 @@ architecture tb of tb_fifo is
 
   -- DUT ports
   signal clk : std_ulogic := '0';
-  signal level : natural := 0;
+  signal level : natural range 0 to depth := 0;
 
   signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_ulogic := '0';
   signal write_ready, write_valid, write_last, almost_full : std_ulogic := '0';
