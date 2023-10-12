@@ -34,7 +34,7 @@ use work.axi_pkg.all;
 
 entity axi_lite_mux is
   generic (
-    slave_addrs : addr_and_mask_vec_t
+    base_addresses : addr_vec_t
   );
   port (
     clk : in std_ulogic;
@@ -42,12 +42,16 @@ entity axi_lite_mux is
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
     --# {{}}
-    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(slave_addrs'range) := (others => axi_lite_m2s_init);
-    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(slave_addrs'range)
+    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(base_addresses'range) := (
+      others => axi_lite_m2s_init
+    );
+    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(base_addresses'range)
   );
 end entity;
 
 architecture a of axi_lite_mux is
+
+  constant base_addresses_and_mask : addr_and_mask_vec_t := calculate_mask(base_addresses);
 
   -- Decode function will return upper index + 1 if no slave matched
   constant decode_failed : positive := axi_lite_m2s_vec'length;
@@ -148,7 +152,7 @@ begin
       case state is
         when waiting =>
           if axi_lite_m2s.read.ar.valid then
-            decoded_idx := decode(axi_lite_m2s.read.ar.addr, slave_addrs);
+            decoded_idx := decode(axi_lite_m2s.read.ar.addr, base_addresses_and_mask);
 
             if decoded_idx = decode_failed then
               -- If there is no AXI-Lite slave on the requested address, we have to complete the
@@ -209,7 +213,7 @@ begin
       case state is
         when waiting =>
           if axi_lite_m2s.write.aw.valid then
-            decoded_idx := decode(axi_lite_m2s.write.aw.addr, slave_addrs);
+            decoded_idx := decode(axi_lite_m2s.write.aw.addr, base_addresses_and_mask);
 
             if decoded_idx = decode_failed then
               -- If there is no AXI-Lite slave on the requested address, we have to complete the

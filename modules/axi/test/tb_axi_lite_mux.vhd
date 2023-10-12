@@ -39,31 +39,32 @@ architecture tb of tb_axi_lite_mux is
 
   constant data_width : integer := 32;
   constant bytes_per_word : integer := data_width / 8;
-  constant num_slaves : integer := 19;
-  subtype slaves_rng is integer range 0 to num_slaves - 1;
+
+  constant num_base_addresses : integer := 19;
+  subtype base_address_range is integer range 0 to num_base_addresses - 1;
 
   constant num_words : integer := 32;
 
-  constant slave_addrs : addr_and_mask_vec_t(slaves_rng) := (
-    (addr => x"0000_0000", mask => x"0003_F000"),
-    (addr => x"0000_1000", mask => x"0003_F000"),
-    (addr => x"0000_2000", mask => x"0003_F000"),
-    (addr => x"0000_3000", mask => x"0003_F000"),
-    (addr => x"0000_4000", mask => x"0003_F000"),
-    (addr => x"0000_5000", mask => x"0003_F000"),
-    (addr => x"0000_6000", mask => x"0003_F000"),
-    (addr => x"0000_7000", mask => x"0003_F000"),
-    (addr => x"0000_8000", mask => x"0003_F000"),
-    (addr => x"0000_9000", mask => x"0003_F000"),
-    (addr => x"0000_A000", mask => x"0003_F000"),
-    (addr => x"0000_B000", mask => x"0003_F000"),
-    (addr => x"0000_C000", mask => x"0003_F000"),
-    (addr => x"0000_D000", mask => x"0003_F000"),
-    (addr => x"0000_E000", mask => x"0003_F000"),
-    (addr => x"0000_F000", mask => x"0003_F000"),
-    (addr => x"0001_0000", mask => x"0003_0000"),
-    (addr => x"0002_0000", mask => x"0003_0100"),
-    (addr => x"0002_0100", mask => x"0003_0100")
+  constant base_addresses : addr_vec_t(base_address_range) := (
+    x"0000_1000",
+    x"0000_2000",
+    x"0000_3000",
+    x"0000_4000",
+    x"0000_5000",
+    x"0000_6000",
+    x"0000_7000",
+    x"0000_8000",
+    x"0000_9000",
+    x"0000_A000",
+    x"0000_B000",
+    x"0000_C000",
+    x"0000_D000",
+    x"0000_E000",
+    x"0000_F000",
+    x"0001_0000",
+    x"0002_0200",
+    x"0002_0100",
+    x"0002_0300"
   );
 
   constant clk_period : time := 10 ns;
@@ -72,36 +73,36 @@ architecture tb of tb_axi_lite_mux is
   signal axi_lite_m2s, hard_coded_m2s : axi_lite_m2s_t;
   signal axi_lite_s2m : axi_lite_s2m_t;
 
-  signal axi_lite_m2s_vec : axi_lite_m2s_vec_t(slaves_rng);
-  signal axi_lite_s2m_vec : axi_lite_s2m_vec_t(slaves_rng);
+  signal axi_lite_m2s_vec : axi_lite_m2s_vec_t(base_address_range);
+  signal axi_lite_s2m_vec : axi_lite_s2m_vec_t(base_address_range);
 
   constant axi_master : bus_master_t := new_bus(
     data_length => data_width,
     address_length => axi_lite_m2s.read.ar.addr'length
   );
 
-  constant memory : memory_vec_t(slaves_rng) := get_new_memories(num_slaves);
+  constant memory : memory_vec_t(base_address_range) := get_new_memories(num_base_addresses);
 
-  constant axi_read_slave, axi_write_slave : axi_slave_vec_t(slaves_rng) := (
-    0 => new_axi_slave(address_fifo_depth => 1, memory => memory(0)),
-    1 => new_axi_slave(address_fifo_depth => 1, memory => memory(1)),
-    2 => new_axi_slave(address_fifo_depth => 1, memory => memory(2)),
-    3 => new_axi_slave(address_fifo_depth => 1, memory => memory(3)),
-    4 => new_axi_slave(address_fifo_depth => 1, memory => memory(4)),
-    5 => new_axi_slave(address_fifo_depth => 1, memory => memory(5)),
-    6 => new_axi_slave(address_fifo_depth => 1, memory => memory(6)),
-    7 => new_axi_slave(address_fifo_depth => 1, memory => memory(7)),
-    8 => new_axi_slave(address_fifo_depth => 1, memory => memory(8)),
-    9 => new_axi_slave(address_fifo_depth => 1, memory => memory(9)),
-    10 => new_axi_slave(address_fifo_depth => 1, memory => memory(10)),
-    11 => new_axi_slave(address_fifo_depth => 1, memory => memory(11)),
-    12 => new_axi_slave(address_fifo_depth => 1, memory => memory(12)),
-    13 => new_axi_slave(address_fifo_depth => 1, memory => memory(13)),
-    14 => new_axi_slave(address_fifo_depth => 1, memory => memory(14)),
-    15 => new_axi_slave(address_fifo_depth => 1, memory => memory(15)),
-    16 => new_axi_slave(address_fifo_depth => 1, memory => memory(16)),
-    17 => new_axi_slave(address_fifo_depth => 1, memory => memory(17)),
-    18 => new_axi_slave(address_fifo_depth => 1, memory => memory(18))
+  constant axi_read_slave, axi_write_slave : axi_slave_vec_t(base_address_range) := (
+    new_axi_slave(address_fifo_depth => 1, memory => memory(0)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(1)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(2)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(3)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(4)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(5)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(6)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(7)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(8)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(9)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(10)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(11)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(12)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(13)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(14)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(15)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(16)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(17)),
+    new_axi_slave(address_fifo_depth => 1, memory => memory(18))
   );
 
 begin
@@ -115,10 +116,10 @@ begin
 
     function bank_address(slave, word : integer) return integer is
     begin
-      return to_integer(slave_addrs(slave).addr) + word * bytes_per_word;
+      return to_integer(base_addresses(slave)) + word * bytes_per_word;
     end function;
 
-    procedure hard_coded_read_data(addr : in u_unsigned(slave_addrs(0).addr'range)) is
+    procedure hard_coded_read_data(addr : in u_unsigned(base_addresses(0)'range)) is
     begin
       hard_coded_m2s.read.ar.valid <= '1';
       hard_coded_m2s.read.ar.addr <= x"0000_0000" & addr;
@@ -134,8 +135,10 @@ begin
       hard_coded_m2s.read.r.ready <= '0';
     end procedure;
 
-    procedure hard_coded_write_data(addr : in u_unsigned(slave_addrs(0).addr'range);
-                                    data : in std_ulogic_vector(data_width - 1 downto 0)) is
+    procedure hard_coded_write_data(
+      addr : in u_unsigned(base_addresses(0)'range);
+      data : in std_ulogic_vector(data_width - 1 downto 0)
+    ) is
     begin
       hard_coded_m2s.write.aw.valid <= '1';
       hard_coded_m2s.write.aw.addr <= x"0000_0000" & addr;
@@ -202,21 +205,21 @@ begin
       end loop;
 
     elsif run("read_from_non_existent_slave_base_address") then
-      hard_coded_read_data(x"0003_4000");
+      hard_coded_read_data(x"0000_0000");
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
       write_word(memory(0), bank_address(0, 0), data);
-      hard_coded_read_data(slave_addrs(0).addr);
+      hard_coded_read_data(base_addresses(0));
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
       check_equal(axi_lite_s2m.read.r.data(data'range), data);
 
-      hard_coded_read_data(x"0003_5000");
+      hard_coded_read_data(x"8F00_0000");
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_decerr);
 
       data := rnd.RandSLV(data'length);
       write_word(memory(1), bank_address(1, 0), data);
-      hard_coded_read_data(slave_addrs(1).addr);
+      hard_coded_read_data(base_addresses(1));
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
       check_equal(axi_lite_s2m.read.r.data(data'range), data);
 
@@ -226,7 +229,7 @@ begin
 
       data := rnd.RandSLV(data'length);
       set_expected_word(memory(0), bank_address(0, 0), data);
-      hard_coded_write_data(slave_addrs(0).addr, data);
+      hard_coded_write_data(base_addresses(0), data);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
       check_expected_was_written(memory(0));
 
@@ -235,7 +238,7 @@ begin
 
       data := rnd.RandSLV(data'length);
       set_expected_word(memory(1), bank_address(1, 0), data);
-      hard_coded_write_data(slave_addrs(1).addr, data);
+      hard_coded_write_data(base_addresses(1), data);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
       check_expected_was_written(memory(1));
     end if;
@@ -292,7 +295,7 @@ begin
   ------------------------------------------------------------------------------
   dut : entity work.axi_lite_mux
     generic map (
-      slave_addrs => slave_addrs
+      base_addresses => base_addresses
     )
     port map (
       clk => clk,

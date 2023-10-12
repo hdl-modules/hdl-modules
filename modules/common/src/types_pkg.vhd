@@ -51,6 +51,7 @@ package types_pkg is
   function swap_bit_order(data : std_ulogic_vector) return std_ulogic_vector;
 
   function count_ones(data : std_ulogic_vector) return natural;
+  function count_ones(data : u_unsigned) return natural;
 
   --------------------------------------------------------------------------------------------------
   -- Instead of e.g. writing
@@ -215,6 +216,12 @@ package body types_pkg is
     for bit_idx in data'range loop
       result := result + to_int(data(bit_idx));
     end loop;
+    return result;
+  end function;
+
+  function count_ones(data : u_unsigned) return natural is
+    constant result : natural range 0 to data'length := count_ones(data=>std_logic_vector(data));
+  begin
     return result;
   end function;
 

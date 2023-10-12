@@ -29,13 +29,13 @@ use reg_file.reg_file_pkg.all;
 
 entity axi_lite_to_vec is
   generic (
-    axi_lite_slaves : addr_and_mask_vec_t;
-    -- Set to false in order to insert a CDC for this slave.
-    -- Must also set clk_axi_lite_vec.
-    clocks_are_the_same : boolean_vector(axi_lite_slaves'range) := (others => true);
+    base_addresses : addr_vec_t;
+    -- Set an index to false in order to insert a CDC for that slave.
+    -- Must also set 'clk_axi_lite_vec' port for that index.
+    clocks_are_the_same : boolean_vector(base_addresses'range) := (others => true);
     cdc_fifo_depth : positive := 16;
     cdc_ram_type : ram_style_t := ram_style_auto;
-    -- Optionally insert a pipeline stage after the axi_lite_mux for each slave
+    -- Optionally insert a pipeline stage after the 'axi_lite_mux' for each slave.
     pipeline_slaves : boolean := false
   );
   port (
@@ -44,27 +44,30 @@ entity axi_lite_to_vec is
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
     --# {{}}
-    -- Only need to set if different from clk_axi_lite
-    clk_axi_lite_vec : in std_ulogic_vector(axi_lite_slaves'range) := (others => '0');
-    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);
-    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(axi_lite_slaves'range)
+    -- Only need to set if different from 'clk_axi_lite'.
+    clk_axi_lite_vec : in std_ulogic_vector(base_addresses'range) := (others => '0');
+    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(base_addresses'range);
+    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(base_addresses'range)
   );
 end entity;
 
 architecture a of axi_lite_to_vec is
 
-  constant addr_width : positive := addr_bits_needed(axi_lite_slaves);
+  -- Calculate the required address width, based on the base addresses and masks.
+  constant base_addresses_and_mask : addr_and_mask_vec_t := calculate_mask(base_addresses);
+  constant addr_width : positive := addr_bits_needed(base_addresses_and_mask);
+
   constant data_width : positive := reg_width;
 
-  signal axi_lite_m2s_vec_int : axi_lite_m2s_vec_t(axi_lite_slaves'range);
-  signal axi_lite_s2m_vec_int : axi_lite_s2m_vec_t(axi_lite_slaves'range);
+  signal axi_lite_m2s_vec_int : axi_lite_m2s_vec_t(base_addresses'range);
+  signal axi_lite_s2m_vec_int : axi_lite_s2m_vec_t(base_addresses'range);
 
 begin
 
   ------------------------------------------------------------------------------
   axi_lite_mux_inst : entity axi.axi_lite_mux
     generic map (
-      slave_addrs => axi_lite_slaves
+      base_addresses => base_addresses
     )
     port map (
       clk => clk_axi_lite,
@@ -78,10 +81,10 @@ begin
 
 
   ------------------------------------------------------------------------------
-  output_buffering : for slave in axi_lite_slaves'range generate
+  output_buffering : for vector_idx in base_addresses'range generate
 
     ------------------------------------------------------------------------------
-    same_or_different_clock : if clocks_are_the_same(slave) generate
+    same_or_different_clock : if clocks_are_the_same(vector_idx) generate
 
       ------------------------------------------------------------------------------
       pipeline_or_passthrough : if pipeline_slaves generate
@@ -99,18 +102,18 @@ begin
           port map (
             clk => clk_axi_lite,
             --
-            master_m2s => axi_lite_m2s_vec_int(slave),
-            master_s2m => axi_lite_s2m_vec_int(slave),
+            master_m2s => axi_lite_m2s_vec_int(vector_idx),
+            master_s2m => axi_lite_s2m_vec_int(vector_idx),
             --
-            slave_m2s => axi_lite_m2s_vec(slave),
-            slave_s2m => axi_lite_s2m_vec(slave)
+            slave_m2s => axi_lite_m2s_vec(vector_idx),
+            slave_s2m => axi_lite_s2m_vec(vector_idx)
           );
 
       ------------------------------------------------------------------------------
       else generate
 
-        axi_lite_m2s_vec(slave) <= axi_lite_m2s_vec_int(slave);
-        axi_lite_s2m_vec_int(slave) <= axi_lite_s2m_vec(slave);
+        axi_lite_m2s_vec(vector_idx) <= axi_lite_m2s_vec_int(vector_idx);
+        axi_lite_s2m_vec_int(vector_idx) <= axi_lite_s2m_vec(vector_idx);
 
       end generate;
 
@@ -128,12 +131,12 @@ begin
         )
         port map (
           clk_master => clk_axi_lite,
-          master_m2s => axi_lite_m2s_vec_int(slave),
-          master_s2m => axi_lite_s2m_vec_int(slave),
+          master_m2s => axi_lite_m2s_vec_int(vector_idx),
+          master_s2m => axi_lite_s2m_vec_int(vector_idx),
           --
-          clk_slave => clk_axi_lite_vec(slave),
-          slave_m2s => axi_lite_m2s_vec(slave),
-          slave_s2m => axi_lite_s2m_vec(slave)
+          clk_slave => clk_axi_lite_vec(vector_idx),
+          slave_m2s => axi_lite_m2s_vec(vector_idx),
+          slave_s2m => axi_lite_s2m_vec(vector_idx)
         );
 
       -- If the AXI master and the AXI-Lite slaves are in different clock domains we do not insert

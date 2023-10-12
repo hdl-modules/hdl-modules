@@ -11,7 +11,6 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
 library common;
@@ -34,26 +33,26 @@ end entity;
 
 architecture a of axi_lite_mux_netlist_build_wrapper is
 
-  constant slave_addrs : addr_and_mask_vec_t(axi_lite_m2s_vec'range) := (
-    (addr => x"0000_0000", mask => x"0003_F000"),
-    (addr => x"0000_1000", mask => x"0003_F000"),
-    (addr => x"0000_2000", mask => x"0003_F000"),
-    (addr => x"0000_3000", mask => x"0003_F000"),
-    (addr => x"0000_4000", mask => x"0003_F000"),
-    (addr => x"0000_5000", mask => x"0003_F000"),
-    (addr => x"0000_6000", mask => x"0003_F000"),
-    (addr => x"0000_7000", mask => x"0003_F000"),
-    (addr => x"0000_8000", mask => x"0003_F000"),
-    (addr => x"0000_9000", mask => x"0003_F000"),
-    (addr => x"0000_A000", mask => x"0003_F000"),
-    (addr => x"0000_B000", mask => x"0003_F000"),
-    (addr => x"0000_C000", mask => x"0003_F000"),
-    (addr => x"0000_D000", mask => x"0003_F000"),
-    (addr => x"0000_E000", mask => x"0003_F000"),
-    (addr => x"0000_F000", mask => x"0003_F000"),
-    (addr => x"0001_0000", mask => x"0003_0000"),
-    (addr => x"0002_0000", mask => x"0003_0100"),
-    (addr => x"0002_0100", mask => x"0003_0100")
+  constant base_addresses : addr_vec_t(axi_lite_m2s_vec'range) := (
+    x"0000_0000",
+    x"0000_1000",
+    x"0000_2000",
+    x"0000_3000",
+    x"0000_4000",
+    x"0000_5000",
+    x"0000_6000",
+    x"0000_7000",
+    x"0000_8000",
+    x"0000_9000",
+    x"0000_A000",
+    x"0000_B000",
+    x"0000_C000",
+    x"0000_D000",
+    x"0000_E000",
+    x"0000_F000",
+    x"0001_0000",
+    x"0002_0000",
+    x"0002_0100"
   );
 
 begin
@@ -61,7 +60,7 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_mux_inst : entity work.axi_lite_mux
     generic map (
-      slave_addrs => slave_addrs
+      base_addresses => base_addresses
     )
     port map (
       clk => clk,

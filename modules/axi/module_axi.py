@@ -161,7 +161,7 @@ class Module(BaseModule):
                 part=part,
                 top="axi_lite_mux_netlist_build_wrapper",
                 build_result_checkers=[
-                    TotalLuts(EqualTo(500)),
+                    TotalLuts(EqualTo(516)),
                     Ffs(EqualTo(28)),
                     MaximumLogicLevel(EqualTo(5)),
                 ],

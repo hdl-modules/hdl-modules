@@ -7,3 +7,8 @@ Breaking changes
 
 * Remove unused ``addr_width`` generic from :ref:`bfm.axi_read_master`
   and :ref:`bfm.axi_write_master`.
+
+* Rename :ref:`axi.axi_lite_mux` generic ``slave_addrs`` to ``base_addresses`` and change type
+  to ``addr_vec_t``, i.e. a list of base addresses.
+  Same for :ref:`axi.axi_lite_to_vec` generic ``axi_lite_slaves``.
+  The address mask is now calculated internally.

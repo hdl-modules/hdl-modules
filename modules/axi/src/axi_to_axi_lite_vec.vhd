@@ -30,10 +30,10 @@ use reg_file.reg_file_pkg.all;
 
 entity axi_to_axi_lite_vec is
   generic (
-    axi_lite_slaves : addr_and_mask_vec_t;
+    base_addresses : addr_vec_t;
     -- Set to false in order to insert a CDC for this slave.
     -- Must also set clk_axi_lite_vec.
-    clocks_are_the_same : boolean_vector(axi_lite_slaves'range) := (others => true);
+    clocks_are_the_same : boolean_vector(base_addresses'range) := (others => true);
     -- Optionally insert a pipeline stage on the AXI-Lite bus after the AXI to AXI-Lite conversion
     pipeline_axi_lite : boolean := false;
     -- Optionally insert a pipeline stage after the axi_lite_mux for each slave
@@ -45,19 +45,22 @@ entity axi_to_axi_lite_vec is
     axi_s2m : out axi_s2m_t;
     --# {{}}
     -- Only need to set if different from axi_clk
-    clk_axi_lite_vec : in std_ulogic_vector(axi_lite_slaves'range) := (others => '0');
-    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(axi_lite_slaves'range);
-    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(axi_lite_slaves'range)
+    clk_axi_lite_vec : in std_ulogic_vector(base_addresses'range) := (others => '0');
+    axi_lite_m2s_vec : out axi_lite_m2s_vec_t(base_addresses'range);
+    axi_lite_s2m_vec : in axi_lite_s2m_vec_t(base_addresses'range)
   );
 end entity;
 
 architecture a of axi_to_axi_lite_vec is
 
+  -- Calculate the required address width, based on the base addresses and masks.
+  constant base_addresses_and_mask : addr_and_mask_vec_t := calculate_mask(base_addresses);
+  constant addr_width : positive := addr_bits_needed(base_addresses_and_mask);
+
+  constant data_width : positive := reg_width;
+
   signal axi_lite_m2s, axi_lite_pipelined_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
   signal axi_lite_s2m, axi_lite_pipelined_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
-
-  constant addr_width : positive := addr_bits_needed(axi_lite_slaves);
-  constant data_width : positive := reg_width;
 
 begin
 
@@ -107,7 +110,7 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_to_vec_inst : entity work.axi_lite_to_vec
     generic map (
-      axi_lite_slaves => axi_lite_slaves,
+      base_addresses => base_addresses,
       clocks_are_the_same => clocks_are_the_same,
       pipeline_slaves => pipeline_slaves
     )
