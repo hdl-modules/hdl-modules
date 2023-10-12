@@ -75,9 +75,11 @@ begin
       -- Master requested a slave address that does not exist. Return decode error.
       -- State machine will perform handshake on the different channels.
       axi_lite_s2m.read.ar <= (ready => read_decode_error_s2m.ar.ready);
-      axi_lite_s2m.read.r <= (valid => read_decode_error_s2m.r.valid,
-                          resp => axi_resp_decerr,
-                          data => (others => '-'));
+      axi_lite_s2m.read.r <= (
+        valid => read_decode_error_s2m.r.valid,
+        resp => axi_resp_decerr,
+        data => (others => '-')
+      );
 
     else
       -- Connect the selected slave. State machine will un-select when all transactions are done.
@@ -100,8 +102,9 @@ begin
       -- State machine will perform handshake on the different channels.
       axi_lite_s2m.write.aw <= (ready => write_decode_error_s2m.aw.ready);
       axi_lite_s2m.write.w <= (ready => write_decode_error_s2m.w.ready);
-      axi_lite_s2m.write.b <= (valid => write_decode_error_s2m.b.valid,
-                           resp => axi_resp_decerr);
+      axi_lite_s2m.write.b <= (
+        valid => write_decode_error_s2m.b.valid, resp => axi_resp_decerr
+      );
 
     else
       -- Connect the selected slave. State machine will un-select when all transactions are done.
@@ -135,6 +138,8 @@ begin
     type state_t is (waiting, decode_error, reading);
     signal state : state_t := waiting;
   begin
+
+    ------------------------------------------------------------------------------
     select_read_slave : process
       variable decoded_idx : natural range 0 to decode_failed;
     begin
@@ -185,6 +190,7 @@ begin
           end if;
       end case;
     end process;
+
   end block;
 
 
@@ -193,6 +199,8 @@ begin
     type state_t is (waiting, decode_error_w, decode_error_b, writing);
     signal state : state_t := waiting;
   begin
+
+    ------------------------------------------------------------------------------
     select_write_slave : process
       variable decoded_idx : natural range 0 to decode_failed;
     begin
@@ -253,6 +261,7 @@ begin
           end if;
       end case;
     end process;
+
   end block;
 
 end architecture;
