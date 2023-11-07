@@ -64,7 +64,6 @@ begin
     end procedure;
 
     procedure check_no_trigger is
-      variable expected : reg_t := (others => '0');
     begin
       check_equal(trigger, '0');
     end procedure;

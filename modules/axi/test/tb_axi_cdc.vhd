@@ -32,7 +32,6 @@ entity tb_axi_cdc is
   generic (
     input_clk_fast : boolean := false;
     output_clk_fast : boolean := false;
-    max_burst_length_beats : positive;
     runner_cfg : string
   );
 end entity;

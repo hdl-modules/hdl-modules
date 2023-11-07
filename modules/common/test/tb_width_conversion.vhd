@@ -43,9 +43,6 @@ architecture tb of tb_width_conversion is
   constant minimum_width_bytes : positive := minimum(input_bytes_per_beat, output_bytes_per_beat);
   constant maximum_width_bytes : positive := maximum(input_bytes_per_beat, output_bytes_per_beat);
 
-  constant is_upconversion : boolean := output_width > input_width;
-  constant is_downconversion : boolean := output_width < input_width;
-
   signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
@@ -96,14 +93,14 @@ begin
         packet_length_bytes := rnd.RandInt(1, 5) * maximum_width_bytes;
 
         if support_unaligned_packet_length then
-          -- In this case we can unstrobe/remove more than a whole word.
+          -- In this case we can un-strobe/remove more than a whole word.
           -- If upconverting, and we remove more than one whole input word, the entity will pad.
           -- If downconverting, and we remove more than one whole output word, the entity
           -- will strip.
           num_input_bytes_to_remove := rnd.RandInt(0, maximum_width_bytes - 1);
 
         elsif enable_strobe then
-          -- Unstrobe a number of byte lanes on the last input beat.
+          -- Un-strobe a number of byte lanes on the last input beat.
           -- We must still be aligned in terms of number of output beats.
           num_input_bytes_to_remove := rnd.RandInt(0, minimum_width_bytes - 1);
         end if;

@@ -41,8 +41,6 @@ use work.axi_bfm_pkg.all;
 
 entity axi_read_master is
   generic (
-    -- The desired width of the 'ARADDR' signal.
-    addr_width : positive;
     -- The desired width of the 'ARID' and 'RID' signals.
     id_width : natural;
     -- The desired width of the 'RDATA' signal.

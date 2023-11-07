@@ -41,7 +41,6 @@ architecture tb of tb_axi_read_bfm is
   signal axi_read_s2m : axi_read_s2m_t := axi_read_s2m_init;
 
   -- Testbench stuff
-  constant addr_width : positive := 24;
   constant id_width : natural := 5;
 
   constant bytes_per_beat : positive := data_width / 8;
@@ -147,7 +146,6 @@ begin
   ------------------------------------------------------------------------------
   axi_read_master_inst : entity work.axi_read_master
     generic map (
-      addr_width => addr_width,
       id_width => id_width,
       data_width => data_width,
       job_queue => job_queue,

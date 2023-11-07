@@ -43,8 +43,6 @@ use work.axi_bfm_pkg.all;
 
 entity axi_write_master is
   generic (
-    -- The desired width of the 'AWADDR' signal.
-    addr_width : positive;
     -- The desired width of the 'AWID' and, possibly if using AXI3, 'WID' signals.
     id_width : natural;
     -- The desired width of the 'WDATA' signal.

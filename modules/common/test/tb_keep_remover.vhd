@@ -135,8 +135,6 @@ begin
   ------------------------------------------------------------------------------
   input_block : block
     signal data_is_valid : std_ulogic := '0';
-    signal input_keep_byte : std_ulogic_vector(input_data'length / 8 - 1 downto 0) :=
-      (others => '0');
   begin
 
     ------------------------------------------------------------------------------

@@ -45,7 +45,6 @@ architecture tb of tb_axi_write_throttle is
   signal input_s2m, throttled_s2m : axi_write_s2m_t := axi_write_s2m_init;
 
   -- Testbench stuff
-  constant addr_width : positive := 24;
   constant id_width : natural := 5;
   constant data_width : positive := 32;
 
@@ -173,7 +172,6 @@ begin
   ------------------------------------------------------------------------------
   axi_write_master_inst : entity bfm.axi_write_master
     generic map (
-      addr_width => addr_width,
       id_width => id_width,
       data_width => data_width,
       job_queue => job_queue,

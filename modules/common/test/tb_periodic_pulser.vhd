@@ -31,7 +31,6 @@ architecture tb of tb_periodic_pulser is
   signal clk : std_ulogic := '0';
   signal count_enable : std_ulogic := '1';
   signal pulse : std_ulogic := '0';
-  signal target_clock : std_ulogic;
 
   signal start_test, test_done : boolean := false;
 

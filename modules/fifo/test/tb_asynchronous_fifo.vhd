@@ -160,22 +160,6 @@ begin
       end if;
     end procedure;
 
-    procedure wait_for_write_level_update_after_last_written_and_output_register_is_used is
-    begin
-      -- Wait for num_lasts_written to propagate to write side
-      wait until rising_edge(clk_write);
-      wait until rising_edge(clk_read);
-      wait until rising_edge(clk_read);
-      -- Wait for delay from num_lasts_written_resync to read_addr update
-      wait until rising_edge(clk_read);
-      wait until rising_edge(clk_read);
-      -- Wait for read_addr to propagate to read side
-      wait until rising_edge(clk_write);
-      wait until rising_edge(clk_write);
-      -- Lastly wait for it to propagate into write_level
-      wait until rising_edge(clk_write);
-    end procedure;
-
     procedure pulse_drop_packet is
     begin
       drop_packet <= '1';

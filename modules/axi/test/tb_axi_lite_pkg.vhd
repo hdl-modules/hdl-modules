@@ -35,10 +35,6 @@ begin
     variable rnd : RandomPType;
 
     procedure test_slv_conversion(addr_width : positive) is
-      variable data_a : axi_lite_m2s_a_t;
-      variable data_a_slv, data_a_converted :
-        std_ulogic_vector(axi_lite_m2s_a_sz(addr_width) - 1 downto 0) := (others => '0');
-
       variable data_w : axi_lite_m2s_w_t := axi_lite_m2s_w_init;
       variable data_w_slv, data_w_converted :
         std_ulogic_vector(axi_lite_m2s_w_sz(data_width) - 1 downto 0) := (others => '0');

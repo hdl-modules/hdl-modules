@@ -167,7 +167,6 @@ begin
   ------------------------------------------------------------------------------
   axi_read_master_inst : entity bfm.axi_read_master
     generic map (
-      addr_width => addr_width,
       id_width => id_width,
       data_width => data_width,
       job_queue => job_queue,

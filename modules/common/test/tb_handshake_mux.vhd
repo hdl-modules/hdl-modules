@@ -82,7 +82,6 @@ begin
     procedure send_random is
       constant input_idx : natural := rnd.Uniform(0, input_valid'high);
 
-      constant packet_length_beats : natural := rnd.Uniform(1, 10);
       constant packet_length_bytes : natural := rnd.Uniform(1, 5 * bytes_per_beat);
 
       variable data, data_copy : integer_array_t := null_integer_array;
