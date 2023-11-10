@@ -23,10 +23,13 @@ from tsfpga.vivado.project import VivadoNetlistProject
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_reg_file")
-        tb.test("read_from_non_existent_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("read_from_non_read_type_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("write_to_non_existent_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("write_to_non_write_type_register").set_generic("use_axi_lite_bfm", False)
+
+        tb.test("test_read_from_non_existent_register").set_generic("use_axi_lite_bfm", False)
+        tb.test("test_read_from_non_read_type_register").set_generic("use_axi_lite_bfm", False)
+        tb.test("test_write_to_non_existent_register").set_generic("use_axi_lite_bfm", False)
+        tb.test("test_write_to_non_write_type_register").set_generic("use_axi_lite_bfm", False)
+
+        self.add_vunit_config(test=tb, set_random_seed=True)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
@@ -48,7 +51,7 @@ class Module(BaseModule):
                 part=part,
                 top="axi_lite_reg_file_wrapper",
                 build_result_checkers=[
-                    TotalLuts(EqualTo(197)),
+                    TotalLuts(EqualTo(202)),
                     Ffs(EqualTo(447)),
                     Ramb36(EqualTo(0)),
                     Ramb18(EqualTo(0)),

@@ -24,6 +24,7 @@ library bfm;
 
 library common;
 use common.addr_pkg.all;
+use common.types_pkg.all;
 
 library axi;
 use axi.axi_pkg.all;
@@ -34,6 +35,7 @@ use work.reg_file_pkg.all;
 
 entity tb_axi_lite_reg_file is
   generic (
+    seed : natural;
     use_axi_lite_bfm : boolean := true;
     runner_cfg : string
   );
@@ -41,6 +43,7 @@ end entity;
 
 architecture tb of tb_axi_lite_reg_file is
 
+  -- Generic constants.
   constant regs : reg_definition_vec_t(0 to 15 - 1) := (
     (idx => 0, reg_type => r),
     (idx => 1, reg_type => r),
@@ -59,6 +62,26 @@ architecture tb of tb_axi_lite_reg_file is
     (idx => 14, reg_type => r_wpulse)
   );
 
+  constant default_values : reg_vec_t(regs'range) := (
+    0 => x"dcd3e0e6",
+    1 => x"323e4bfd",
+    2 => x"7ddd475b",
+    3 => x"0c4c3891",
+    4 => x"cb40a113",
+    5 => x"f8c6f339",
+    6 => x"a17f0a63",
+    7 => x"333665c6",
+    8 => x"136f6857",
+    9 => x"9901a7d0",
+    10 => x"45974c0b",
+    11 => x"067b0394",
+    12 => x"c5b5d0fc",
+    13 => x"86130210",
+    14 => x"ad1f5653"
+  );
+
+  -- DUT connections.
+  constant clk_period : time := 10 ns;
   signal clk : std_ulogic := '0';
 
   signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t;
@@ -68,18 +91,20 @@ architecture tb of tb_axi_lite_reg_file is
   signal regs_down : reg_vec_t(regs'range);
   signal reg_was_read, reg_was_written : std_ulogic_vector(regs'range);
 
+  -- Testbench stuff.
   constant axi_master : bus_master_t := new_bus(
     data_length => reg_width,
     address_length => axi_lite_m2s.read.ar.addr'length
   );
 
-  constant reg_zero : reg_t := (others => '0');
   constant reg_was_accessed_zero : std_ulogic_vector(reg_was_written'range) := (others => '0');
+
+  signal regs_down_non_default_count : natural := 0;
 
 begin
 
   test_runner_watchdog(runner, 2 ms);
-  clk <= not clk after 2 ns;
+  clk <= not clk after clk_period / 2;
 
 
   ------------------------------------------------------------------------------
@@ -109,9 +134,9 @@ begin
       if is_write_type(reg.reg_type) then
         wait_for_write_to_go_through : while true loop
           if is_write_pulse_type(reg.reg_type) then
-            -- The value that fabric gets should be zero all cycles except the one where the
+            -- The value that fabric gets should be default all cycles except the one where the
             -- write happens
-            check_equal(regs_down(reg.idx), reg_zero);
+            check_equal(regs_down(reg.idx), default_values(reg.idx));
           end if;
 
           wait until rising_edge(clk);
@@ -126,9 +151,9 @@ begin
 
       if is_write_pulse_type(reg.reg_type) then
         wait until rising_edge(clk);
-        -- The value that fabric gets should be zero all cycles except the one where the
+        -- The value that fabric gets should be default all cycles except the one where the
         -- write happens
-        check_equal(regs_down(reg.idx), reg_zero);
+        check_equal(regs_down(reg.idx), default_values(reg.idx));
       end if;
 
       if is_read_type(reg.reg_type) then
@@ -188,9 +213,14 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(seed);
 
-    if run("random_read_and_write") then
+    if run("test_default_register_values") then
+      wait for 10 * clk_period;
+
+      check_equal(regs_down_non_default_count, 0);
+
+    elsif run("test_random_read_and_write") then
       for list_idx in regs'range loop
         fabric_data(list_idx) := rnd.RandSLV(fabric_data(0)'length);
         bus_data(list_idx) := rnd.RandSLV(bus_data(0)'length);
@@ -201,21 +231,21 @@ begin
         reg_data_check(regs(list_idx));
       end loop;
 
-    elsif run("read_from_non_existent_register") then
+    elsif run("test_read_from_non_existent_register") then
       read_hardcoded(regs(regs'high).idx + 1);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
 
       read_hardcoded(regs(regs'high).idx);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
 
-    elsif run("write_to_non_existent_register") then
+    elsif run("test_write_to_non_existent_register") then
       write_hardcoded(regs(regs'high).idx + 1);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
 
       write_hardcoded(regs(regs'high).idx);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
 
-    elsif run("read_from_non_read_type_register") then
+    elsif run("test_read_from_non_read_type_register") then
       assert regs(3).reg_type = w;
       read_hardcoded(3);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
@@ -223,7 +253,7 @@ begin
       read_hardcoded(regs(regs'high).idx);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
 
-    elsif run("write_to_non_write_type_register") then
+    elsif run("test_write_to_non_write_type_register") then
       assert regs(0).reg_type = r;
       write_hardcoded(0);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
@@ -234,6 +264,17 @@ begin
 
 
     test_runner_cleanup(runner);
+  end process;
+
+
+  ------------------------------------------------------------------------------
+  count_status : process
+  begin
+    wait until rising_edge(clk);
+
+    regs_down_non_default_count <= (
+      regs_down_non_default_count + to_int(regs_down /= default_values)
+    );
   end process;
 
 
@@ -258,7 +299,8 @@ begin
   ------------------------------------------------------------------------------
   dut : entity work.axi_lite_reg_file
     generic map (
-      regs => regs
+      regs => regs,
+      default_values => default_values
     )
     port map (
       clk => clk,

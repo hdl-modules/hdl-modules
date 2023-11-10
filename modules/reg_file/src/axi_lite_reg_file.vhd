@@ -178,9 +178,9 @@ begin
 
       for list_idx in regs'range loop
         if is_write_pulse_type(regs(list_idx).reg_type) then
-          -- Set default value zero. If a write occurs to this register, the value
-          -- will be asserted for one cycle below.
-          reg_values(list_idx) <= (others => '0');
+          -- Set initial default value.
+          -- If a write occurs to this register, the value will be asserted for one cycle below.
+          reg_values(list_idx) <= default_values(list_idx);
         end if;
       end loop;
 
