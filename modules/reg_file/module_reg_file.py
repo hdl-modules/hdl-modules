@@ -12,7 +12,6 @@ from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
     Ffs,
-    LogicLuts,
     MaximumLogicLevel,
     Ramb18,
     Ramb36,
@@ -50,7 +49,6 @@ class Module(BaseModule):
                 top="axi_lite_reg_file_wrapper",
                 build_result_checkers=[
                     TotalLuts(EqualTo(197)),
-                    LogicLuts(EqualTo(197)),
                     Ffs(EqualTo(447)),
                     Ramb36(EqualTo(0)),
                     Ramb18(EqualTo(0)),

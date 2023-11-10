@@ -54,11 +54,31 @@ architecture a of axi_lite_reg_file_wrapper is
     (idx=>14, reg_type=>r_wpulse)
   );
 
+  constant default_values : reg_vec_t(regs'range) := (
+    0 => x"dcd3e0e6",
+    1 => x"323e4bfd",
+    2 => x"7ddd475b",
+    3 => x"0c4c3891",
+    4 => x"cb40a113",
+    5 => x"f8c6f339",
+    6 => x"a17f0a63",
+    7 => x"333665c6",
+    8 => x"136f6857",
+    9 => x"9901a7d0",
+    10 => x"45974c0b",
+    11 => x"067b0394",
+    12 => x"c5b5d0fc",
+    13 => x"86130210",
+    14 => x"ad1f5653"
+  );
+
 begin
 
+  ------------------------------------------------------------------------------
   axi_lite_reg_file_inst : entity reg_file.axi_lite_reg_file
     generic map (
-      regs => regs
+      regs => regs,
+      default_values => default_values
     )
     port map (
       clk => clk,
