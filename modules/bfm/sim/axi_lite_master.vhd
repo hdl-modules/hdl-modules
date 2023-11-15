@@ -24,6 +24,9 @@ use math.math_pkg.all;
 library axi;
 use axi.axi_lite_pkg.all;
 
+library reg_file;
+use reg_file.reg_operations_pkg.all;
+
 library vunit_lib;
 context vunit_lib.vunit_context;
 context vunit_lib.vc_context;
@@ -31,7 +34,7 @@ context vunit_lib.vc_context;
 
 entity axi_lite_master is
   generic (
-    bus_handle : bus_master_t
+    bus_handle : bus_master_t := regs_bus_master
   );
   port (
     clk : in std_ulogic;
