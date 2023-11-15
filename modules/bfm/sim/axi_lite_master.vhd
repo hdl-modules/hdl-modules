@@ -12,6 +12,9 @@
 -- read/write transactions.
 -- Is used by performing VUnit VC calls, such as ``read_bus``,
 -- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.
+--
+-- Note that the default value for ``bus_handle`` is the same as the default bus handle for the
+-- procedures in :ref:`reg_file.reg_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
