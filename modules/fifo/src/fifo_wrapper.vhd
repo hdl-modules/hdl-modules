@@ -6,7 +6,7 @@
 -- https://hdl-modules.com
 -- https://gitlab.com/hdl_modules/hdl_modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper that selects synchronous/asynchronous FIFO or passthrough depending on on generic values.
+-- Wrapper that selects synchronous/asynchronous FIFO or passthrough depending on generic values.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
