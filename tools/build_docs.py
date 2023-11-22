@@ -176,7 +176,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         """
         Get reStructuredText documentation for a VHDL file.
 
-        Identical to the method in the parent class, but also adds a link to gitlab.
+        Identical to the method in the super class, but also adds a link to gitlab.
         """
         vhdl_file_documentation = VhdlFileDocumentation(vhdl_file_path)
 
