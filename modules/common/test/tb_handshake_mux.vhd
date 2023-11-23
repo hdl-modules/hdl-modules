@@ -20,6 +20,7 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library bfm;
+use bfm.bfm_pkg.all;
 
 use work.types_pkg.all;
 
@@ -62,8 +63,9 @@ architecture tb of tb_handshake_mux is
     max_stall_cycles => 3
   );
 
-  constant input_data_queues, data_reference_queues : queue_vec_t(input_data'range) :=
-    (others => new_queue);
+  constant input_data_queues, data_reference_queues : queue_vec_t(
+    input_valid'range
+  ) := get_new_queues(input_valid'length);
 
   signal num_packets_checked : natural_vec_t(input_valid'range) := (others => 0);
 

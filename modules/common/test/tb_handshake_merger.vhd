@@ -19,6 +19,7 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library bfm;
+use bfm.bfm_pkg.all;
 
 use work.types_pkg.all;
 
@@ -48,7 +49,7 @@ architecture tb of tb_handshake_merger is
   signal result_ready, result_valid, result_last : std_ulogic := '0';
 
   -- Testbench stuff
-  constant input_queues : queue_vec_t(input_valid'range) := (others => new_queue);
+  constant input_queues : queue_vec_t(input_valid'range) := get_new_queues(input_valid'length);
   constant result_queue : queue_t := new_queue;
 
   signal num_packets_checked : natural := 0;
