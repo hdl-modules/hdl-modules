@@ -22,3 +22,7 @@ import_heading_localfolder = "Local folder libraries"
 # third party import.
 known_tools_pythonpath = "tools.tools_pythonpath"
 sections = "FUTURE,STDLIB,TOOLS_PYTHONPATH,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+
+
+[tool.mypy]
+strict = true

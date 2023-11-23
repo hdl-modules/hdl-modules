@@ -20,19 +20,20 @@ sys.path.insert(0, str(REPO_ROOT))
 import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
-from tsfpga.examples.simulate import SimulationProject, find_git_test_filters, get_arguments_cli
+from tsfpga.examples.simulate import find_git_test_filters
+from tsfpga.examples.simulation_utils import SimulationProject, get_arguments_cli
 from tsfpga.module import get_modules
 
 # First party libraries
 from tools import tools_env
 
 
-def main():
+def main() -> None:
     cli = get_arguments_cli(default_output_path=tools_env.HDL_MODULES_GENERATED)
-    args = cli.parse_args()
+    args = cli.parse_args()  # type: ignore[no-untyped-call]
 
     # Avoid the module that depends on Xilinx unisim library
-    module_names_avoid = ["hard_fifo"] if args.vivado_skip else []
+    module_names_avoid = set(["hard_fifo"]) if args.vivado_skip else None
     modules = get_modules(
         modules_folders=[tools_env.HDL_MODULES_DIRECTORY],
         names_avoid=module_names_avoid,

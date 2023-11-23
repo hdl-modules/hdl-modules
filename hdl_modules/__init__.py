@@ -9,9 +9,14 @@
 
 # Standard libraries
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional
 
 # Local folder libraries
 from .about import get_short_slogan
+
+if TYPE_CHECKING:
+    # Third party libraries
+    from tsfpga.module_list import ModuleList
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
@@ -19,14 +24,16 @@ __version__ = "3.0.3-dev"
 __doc__ = get_short_slogan()  # pylint: disable=redefined-builtin
 
 
-def get_hdl_modules(names_include=None, names_avoid=None):
+def get_hdl_modules(
+    names_include: Optional[set[str]] = None, names_avoid: Optional[set[str]] = None
+) -> "ModuleList":
     """
     Wrapper of :func:`tsfpga.module.get_modules` which returns the ``hdl_modules`` module objects.
 
     Arguments will be passed on to :func:`.get_modules`.
 
     Return:
-        :class:`.ModuleList`: The module objects.
+        The module objects.
     """
     # tsfpga might not be available on some systems where the hdl_modules are used.
     # Hence we can not import at the top of this file.

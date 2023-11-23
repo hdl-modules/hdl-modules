@@ -27,7 +27,7 @@ from tsfpga.module import get_modules
 from tools import tools_env
 
 
-def main():
+def main() -> None:
     args = arguments(default_temp_dir=tools_env.HDL_MODULES_GENERATED)
     modules = get_modules([tools_env.HDL_MODULES_DIRECTORY])
     projects = BuildProjectList(

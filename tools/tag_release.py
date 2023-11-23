@@ -21,7 +21,7 @@ sys.path.insert(0, str(REPO_ROOT))
 import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
-from git import Repo
+from git.repo import Repo
 from packaging.version import parse
 from tsfpga.system_utils import create_file, read_file
 from tsfpga.tools.version_number_handler import (
@@ -38,7 +38,7 @@ from tools import tools_env
 RELEASE_NOTES = tools_env.HDL_MODULES_DOC / "release_notes"
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Make release commits and tag")
     parser.add_argument(
         "release_version", type=str, help="release version number MAJOR.MINOR.PATCH"
@@ -61,7 +61,7 @@ def main():
     make_commit(repo=repo, commit_message="Set pre-release version number")
 
 
-def verify_new_version_number(repo, new_version):
+def verify_new_version_number(repo: Repo, new_version: str) -> str:
     if repo.is_dirty():
         sys.exit("Must make release from clean repo")
 
@@ -72,7 +72,7 @@ def verify_new_version_number(repo, new_version):
     if parse(new_version) <= parse(current_version):
         sys.exit(f"New version {new_version} is not greater than current version {current_version}")
 
-    new_git_tag = "v" + new_version
+    new_git_tag = f"v{new_version}"
     for existing_tag in repo.tags:
         existing_tag_str = str(existing_tag)
 
@@ -87,7 +87,7 @@ def verify_new_version_number(repo, new_version):
     return new_git_tag
 
 
-def move_release_notes(repo, version):
+def move_release_notes(repo: Repo, version: str) -> None:
     unreleased_rst = RELEASE_NOTES / "unreleased.rst"
     version_rst = RELEASE_NOTES / f"{version}.rst"
 

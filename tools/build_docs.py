@@ -11,6 +11,7 @@
 import shutil
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 # Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
 REPO_ROOT = Path(__file__).parent.parent.resolve()
@@ -31,12 +32,17 @@ from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 from hdl_modules.about import get_readme_rst, get_short_slogan
 from tools import tools_env
 
+if TYPE_CHECKING:
+    # Third party libraries
+    from tsfpga.module import BaseModule
+    from tsfpga.vivado.project import VivadoNetlistProject
+
 GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
 GENERATED_SPHINX_HTML = tools_env.HDL_MODULES_GENERATED / "sphinx_html"
 SPHINX_DOC = tools_env.HDL_MODULES_DOC / "sphinx"
 
 
-def main():
+def main() -> None:
     rst = generate_release_notes(
         repo_root=tools_env.REPO_ROOT,
         release_notes_directory=tools_env.HDL_MODULES_DOC / "release_notes",
@@ -63,7 +69,7 @@ def main():
     build_information_badges()
 
 
-def generate_bibtex():
+def generate_bibtex() -> None:
     """
     Generate a BibTeX snippet for citing this project.
 
@@ -87,7 +93,7 @@ def generate_bibtex():
     create_file(GENERATED_SPHINX / "bibtex.rst", rst)
 
 
-def generate_documentation():
+def generate_documentation() -> None:
     index_rst = f"""
 {get_readme()}
 
@@ -116,12 +122,12 @@ def generate_documentation():
     modules = get_modules(modules_folders=[tools_env.HDL_MODULES_DIRECTORY])
 
     # Sort by module name
-    def sort_key(module):
+    def sort_key(module: "BaseModule") -> str:
         return module.name
 
-    modules = sorted(modules, key=sort_key)
+    modules_sorted: list["BaseModule"] = sorted(modules, key=sort_key)
 
-    for module in modules:
+    for module in modules_sorted:
         index_rst += f"  modules/{module.name}/{module.name}\n"
 
         output_path = GENERATED_SPHINX / "modules" / module.name
@@ -145,7 +151,7 @@ def generate_documentation():
     create_file(GENERATED_SPHINX / "index.rst", index_rst)
 
 
-def get_readme():
+def get_readme() -> str:
     """
     Get the complete README.rst to be used on website.
 
@@ -171,8 +177,12 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
     """
 
     def _get_vhdl_file_rst(
-        self, vhdl_file_path, heading_character, heading_character_2, netlist_builds
-    ):
+        self,
+        vhdl_file_path: Path,
+        heading_character: str,
+        heading_character_2: str,
+        netlist_builds: list["VivadoNetlistProject"],
+    ) -> str:
         """
         Get reStructuredText documentation for a VHDL file.
 
@@ -217,7 +227,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         return rst
 
 
-def build_information_badges():
+def build_information_badges() -> None:
     output_path = create_directory(GENERATED_SPHINX_HTML / "badges")
 
     badge_svg = badge(left_text="license", right_text="BSD 3-Clause", right_color="blue")

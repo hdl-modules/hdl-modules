@@ -7,9 +7,15 @@
 # https://gitlab.com/hdl_modules/hdl_modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+import subprocess
+import sys
+from pathlib import Path
+
 # Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
+from tsfpga.system_utils import create_file
 from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_isort, run_pylint
 
 # First party libraries
@@ -42,3 +48,20 @@ def test_black_formatting():
 
 def test_isort_formatting():
     run_isort(files=_files_to_test(), cwd=REPO_ROOT)
+
+
+def test_mypy():
+    command = [sys.executable, "-m", "mypy", "--package", "hdl_modules", "--package", "tools"]
+
+    # Add to PYTHONPATH so that mypy can find everything
+    sys.path.append(str(REPO_ROOT.parent.parent.resolve() / "tsfpga" / "tsfpga"))
+    sys.path.append(str(REPO_ROOT.parent.parent.resolve() / "vunit" / "vunit"))
+
+    # Third party libraries
+    import vunit  # pylint: disable=import-outside-toplevel
+
+    # Create the py.typed file that is currently missing in VUnit.
+    create_file(Path(vunit.__file__).parent / "py.typed")
+
+    env = dict(PYTHONPATH=":".join(sys.path))
+    subprocess.check_call(command, cwd=REPO_ROOT, env=env)

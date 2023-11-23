@@ -8,7 +8,7 @@
 # --------------------------------------------------------------------------------------------------
 
 
-def get_short_slogan():
+def get_short_slogan() -> str:
     """
     Short slogan used in e.g. Python documentation.
 
@@ -19,7 +19,9 @@ def get_short_slogan():
     return result
 
 
-def get_readme_rst(include_extra_for_gitlab=False, include_extra_for_website=False):
+def get_readme_rst(
+    include_extra_for_gitlab: bool = False, include_extra_for_website: bool = False
+) -> str:
     """
     Get the complete README.rst (to be used on website).
     RST file inclusion in README.rst does not work on gitlab unfortunately, hence this
