@@ -8,14 +8,24 @@
 -- -------------------------------------------------------------------------------------------------
 -- AXI-Lite mux, aka simple 1-to-N crossbar.
 --
--- The ``slave_addrs`` generic is a list of base address configurations for the
--- N slaves. Each entry consists of a base address, along with a mask that
--- will be used to match the master address with a slave. Only the bits that
--- are asserted in the mask are taken into account when matching.
+-- The ``base_addresses`` generic is a list of base addresses for the N slaves.
+-- If the address requested by the master does not match any base address, this entity
+-- will send AXI decode error ``DECERR`` on the response channel (``RRESP`` or ``BRESP``).
+-- There will still be proper AXI handshaking done, so the master will not be stalled.
 --
--- If the address requested by the master does not match any slave, this entity
--- will send AXI decode error on the response channel. There will still be
--- proper AXI handshaking done, so the master will not be stalled.
+-- .. warning::
+--   This entity is written to be used in a register bus, and is designed for simplicity and low
+--   resource utilization.
+--   An assumption is made that the AXI-Lite master does not queue up reads or writes.
+--   I.e. after an ``AR`` transactions it does not send another ``ARVALID`` before the
+--   ``R`` transaction has happened.
+--   Same for ``AW`` and ``W``/``B``.
+--
+--   If the AXI-Lite does queue up transactions it can lead to locking the bus.
+--
+--   However, if you are using this entity then you probably have a :ref:`axi.axi_to_axi_lite`
+--   instance upstream.
+--   This entity will by design not queue up transactions.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
