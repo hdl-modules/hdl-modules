@@ -8,14 +8,13 @@
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
-import subprocess
 import sys
 from pathlib import Path
 
 # Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
-from tsfpga.system_utils import create_file
+from tsfpga.system_utils import create_file, run_command
 from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_isort, run_pylint
 
 # First party libraries
@@ -64,4 +63,4 @@ def test_mypy():
     create_file(Path(vunit.__file__).parent / "py.typed")
 
     env = dict(PYTHONPATH=":".join(sys.path))
-    subprocess.check_call(command, cwd=REPO_ROOT, env=env)
+    run_command(cmd=command, cwd=REPO_ROOT, env=env)
