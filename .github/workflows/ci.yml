@@ -36,7 +36,14 @@ jobs:
     - name: Install Python packages
       run: |
         python3 -m pip install \
-          pytest
+          black \
+          flake8 \
+          GitPython \
+          pybadges \
+          mypy \
+          pylint \
+          pytest \
+          vunit-hdl
 
     - name: Clone dependency repos
       run: |
@@ -54,7 +61,6 @@ jobs:
 
   build_doc:
     name: Build HTML documentation
-    needs: pytest
     runs-on: ubuntu-latest
     steps:
 
@@ -68,17 +74,36 @@ jobs:
         cache: pip
         cache-dependency-path: hdl_registers/requirements_develop.txt
 
+    - name: Install system packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev pkg-config
+        version: 1.0
+
+    # Install symbolator and hdlparse from github forks that are maintained.
+    # The official versions do not work with newer setuptools or newer sphinx.
+    # The pyHDLParser repo seems to be under active development and the current master did not
+    # work, so peg to the latest revision that does work for us.
     - name: Install Python packages
       run: |
         pip install \
+          git+https://github.com/hdl/pyHDLParser@354dc73a231677f277709633b9bcd0110f1816d0 \
+          git+https://github.com/hdl/symbolator \
           GitPython \
           pybadges \
+          pycairo \
+          PyGObject \
+          rtoml \
           sphinx \
           sphinx-rtd-theme \
-          sphinx_sitemap
+          sphinx_sitemap \
+          sphinxcontrib-wavedrom \
+          vunit-hdl
 
     - name: Clone dependency repos
       run: |
+        git clone --depth 1 --single-branch --branch main \
+          https://github.com/hdl-registers/hdl-registers.git ../../hdl-registers/hdl-registers
         git clone --depth 1 --single-branch --branch main \
           https://github.com/tsfpga/tsfpga.git ../../tsfpga/tsfpga
 
@@ -148,6 +173,8 @@ jobs:
     - name: Install Python packages
       run: |
         python3 -m pip install \
+          GitPython \
+          rtoml \
           vunit-hdl
 
     - name: Setup GHDL
@@ -156,7 +183,9 @@ jobs:
     - name: Clone dependency repos
       run: |
         git clone --depth 1 --single-branch --branch main \
-          https://gitlab.com/tsfpga/tsfpga.git ../../tsfpga/tsfpga
+          https://github.com/hdl-registers/hdl-registers.git ../../hdl-registers/hdl-registers
+        git clone --depth 1 --single-branch --branch main \
+          https://github.com/tsfpga/tsfpga.git ../../tsfpga/tsfpga
 
     - name: Run minimal simulation
       if: github.ref != 'refs/heads/main'
