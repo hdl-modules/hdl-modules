@@ -30,8 +30,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-        cache: pip
-        cache-dependency-path: hdl_registers/requirements_develop.txt
 
     - name: Install Python packages
       run: |
@@ -70,15 +68,18 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.12
-        cache: pip
-        cache-dependency-path: hdl_registers/requirements_develop.txt
+        python-version: '3.12'
 
     - name: Install system packages
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev pkg-config
-        version: 1.0
+      run: |
+        sudo apt-get install --yes --no-install-recommends \
+        gir1.2-gtk-3.0 \
+        graphviz \
+        graphviz-dev \
+        libgirepository1.0-dev \
+        libcairo2-dev \
+        pkg-config \
+        python3-dev
 
     # Install symbolator and hdlparse from github forks that are maintained.
     # The official versions do not work with newer setuptools or newer sphinx.
@@ -87,12 +88,12 @@ jobs:
     - name: Install Python packages
       run: |
         pip install \
+          pycairo \
+          PyGObject \
           git+https://github.com/hdl/pyHDLParser@354dc73a231677f277709633b9bcd0110f1816d0 \
           git+https://github.com/hdl/symbolator \
           GitPython \
           pybadges \
-          pycairo \
-          PyGObject \
           rtoml \
           sphinx \
           sphinx-rtd-theme \
@@ -112,6 +113,10 @@ jobs:
         # Without tags, 'build_docs.py' can not find all git tags fo release history.
         # Note that 'fetch-tags: true' on the checkout actions did not work (2023-11-29).
         git fetch --all --tags
+        # Sometimes, not always, we get 'Format: "png" not recognized'. The below seems to solve it.
+        # https://stackoverflow.com/questions/35688320
+        sudo dot -c
+        # Build the actual documentation.
         python3 tools/build_docs.py
 
     - name: Configure Pages
@@ -167,8 +172,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-        cache: pip
-        cache-dependency-path: tsfpga/requirements_develop.txt
 
     - name: Install Python packages
       run: |
