@@ -77,7 +77,7 @@ jobs:
     - name: Install system packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev pkg-config
+        packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev
         version: 1.0
 
     # Install symbolator and hdlparse from github forks that are maintained.
