@@ -82,7 +82,12 @@ To check out the source code, go to the
   :alt: License
   :target: https://hdl-modules.com/license_information.html
 
-|pic_website| |pic_repository| |pic_chat| |pic_license|
+.. |pic_ci_status| image:: https://github.com/hdl-modules/hdl-modules/actions/workflows/ci.yml/\
+badge.svg?branch=main
+  :alt: CI status
+  :target: https://github.com/hdl-modules/hdl-modules/actions/workflows/ci.yml
+
+|pic_website| |pic_repository| |pic_chat| |pic_license| |pic_ci_status|
 
 The hdl-modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.

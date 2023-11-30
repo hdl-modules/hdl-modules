@@ -89,6 +89,8 @@ def test_no_checked_in_files_contain_trailing_whitespace():
 def test_no_checked_in_files_have_too_long_lines():
     test_ok = True
     excludes = [
+        # RST syntax hard to break.
+        REPO_ROOT / "readme.rst",
         # We list the license text exactly as the original, with no line breaks
         REPO_ROOT / "license.txt",
         # Impossible to break RST syntax
