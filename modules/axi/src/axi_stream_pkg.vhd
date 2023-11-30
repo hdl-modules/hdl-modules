@@ -1,10 +1,10 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the hdl_modules project, a collection of reusable, high-quality,
+-- This file is part of the hdl-modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/hdl_modules/hdl_modules
+-- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Data types for working with AXI4-Stream interfaces.
 -- Based on the document "ARM IHI 0051A (ID030610) AMBA 4 AXI4-Stream Protocol Specification"

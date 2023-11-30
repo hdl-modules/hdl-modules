@@ -1,8 +1,8 @@
 License
 =======
 
-The ``hdl_modules`` project is released under the terms of the BSD 3-Clause License.
-This is a very permissive license, which means that ``hdl_modules`` components can be incorporated
+The ``hdl-modules`` project is released under the terms of the BSD 3-Clause License.
+This is a very permissive license, which means that ``hdl-modules`` components can be incorporated
 in commercial products.
 See the license text below for details:
 

@@ -1,7 +1,7 @@
 Contribution guide
 ==================
 
-Information on how to make contributions to the ``hdl_modules`` project.
+Information on how to make contributions to the ``hdl-modules`` project.
 
 
 .. _maintain_changelog:
@@ -71,6 +71,6 @@ ___________________
 **WARNING:** Avoid the "git push --tags" command, which is dangerous since it pushes all your
 local tags.
 
-Open a new merge request to ``main`` and wait for the CI pipeline to pass.
-If everything went well then you can merge your release commit via the gitlab merge
+Open a new pull request to ``main`` and wait for the CI pipeline to pass.
+If everything went well then you can merge your release commit via the GitHub pull
 request GUI.

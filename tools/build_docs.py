@@ -1,10 +1,10 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
@@ -41,12 +41,15 @@ GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
 GENERATED_SPHINX_HTML = tools_env.HDL_MODULES_GENERATED / "sphinx_html"
 SPHINX_DOC = tools_env.HDL_MODULES_DOC / "sphinx"
 
+BADGE_COLOR_LEFT = "#32383f"
+BADGE_COLOR_RIGHT = "#2db84d"
+
 
 def main() -> None:
     rst = generate_release_notes(
         repo_root=tools_env.REPO_ROOT,
         release_notes_directory=tools_env.HDL_MODULES_DOC / "release_notes",
-        project_name="hdl_modules",
+        project_name="hdl-modules",
     )
     create_file(GENERATED_SPHINX / "generated_release_notes.rst", rst)
 
@@ -79,9 +82,9 @@ def generate_bibtex() -> None:
     rst_before = """\
 .. code-block:: tex
 
-  @misc{hdl_modules,
+  @misc{hdl-modules,
     author = {Vik, Lukas},
-    title  = {{hdl\\_modules: """
+    title  = {{hdl-modules: """
 
     rst_after = """}},
     url    = {https://hdl-modules.com},
@@ -156,11 +159,11 @@ def get_readme() -> str:
     Get the complete README.rst to be used on website.
 
     Will also verify that readme.rst in the project root is identical.
-    RST file inclusion in README.rst does not work on gitlab unfortunately, hence this
+    RST file inclusion in README.rst does not work on github unfortunately, hence this
     cumbersome handling where the README is duplicated in two places.
     """
     # First, verify readme.rst in repo root
-    readme_rst = get_readme_rst(include_extra_for_gitlab=True)
+    readme_rst = get_readme_rst(include_extra_for_github=True)
     if read_file(tools_env.REPO_ROOT / "readme.rst") != readme_rst:
         file_path = create_file(GENERATED_SPHINX / "readme.rst", readme_rst)
         assert (
@@ -186,7 +189,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         """
         Get reStructuredText documentation for a VHDL file.
 
-        Identical to the method in the super class, but also adds a link to gitlab.
+        Identical to the method in the super class, but also adds a link to github.
         """
         vhdl_file_documentation = VhdlFileDocumentation(vhdl_file_path)
 
@@ -206,7 +209,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         heading = f"{vhdl_file_path.name}"
         heading_underline = heading_character * len(heading)
 
-        base_url = "https://gitlab.com/hdl_modules/hdl_modules/-/tree/main/modules"
+        base_url = "https://github.com/hdl-modules/hdl-modules/tree/main/modules"
         relative_path = f"{self._module.name}/{vhdl_file_path.parent.name}/{vhdl_file_path.name}"
 
         rst = f"""
@@ -215,7 +218,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
 {heading}
 {heading_underline}
 
-`View source code on gitlab.com <{base_url}/{relative_path}>`__.
+`View source code on github.com <{base_url}/{relative_path}>`__.
 
 {symbolator_rst}
 
@@ -230,24 +233,29 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
 def build_information_badges() -> None:
     output_path = create_directory(GENERATED_SPHINX_HTML / "badges")
 
-    badge_svg = badge(left_text="license", right_text="BSD 3-Clause", right_color="blue")
+    badge_svg = badge(
+        left_text="license",
+        right_text="BSD 3-Clause",
+        left_color=BADGE_COLOR_LEFT,
+        right_color=BADGE_COLOR_RIGHT,
+    )
     create_file(output_path / "license.svg", badge_svg)
 
     badge_svg = badge(
-        left_text="",
-        right_text="hdl_modules/hdl_modules",
-        left_color="grey",
-        right_color="grey",
-        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "gitlab.svg"),
+        left_text="github",
+        right_text="hdl-modules/hdl-modules",
+        left_color=BADGE_COLOR_LEFT,
+        right_color=BADGE_COLOR_RIGHT,
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "github.svg"),
         embed_logo=True,
     )
     create_file(output_path / "repository.svg", badge_svg)
 
     badge_svg = badge(
-        left_text="",
+        left_text="website",
         right_text="hdl-modules.com",
-        left_color="grey",
-        right_color="grey",
+        left_color=BADGE_COLOR_LEFT,
+        right_color=BADGE_COLOR_RIGHT,
         logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "firefox.svg"),
         embed_logo=True,
     )
@@ -256,8 +264,8 @@ def build_information_badges() -> None:
     badge_svg = badge(
         left_text="chat",
         right_text="on gitter",
-        left_color="#5a5a5a",
-        right_color="#41ab8b",
+        left_color=BADGE_COLOR_LEFT,
+        right_color=BADGE_COLOR_RIGHT,
     )
     create_file(output_path / "chat.svg", badge_svg)
 

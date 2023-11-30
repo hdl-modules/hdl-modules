@@ -1,16 +1,16 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
-from tsfpga.test.lint.test_file_format import (
+from tsfpga.test.lint.file_format_lint import (
     check_file_ends_with_newline,
     check_file_for_carriage_return,
     check_file_for_line_length,
@@ -89,8 +89,6 @@ def test_no_checked_in_files_contain_trailing_whitespace():
 def test_no_checked_in_files_have_too_long_lines():
     test_ok = True
     excludes = [
-        # YAML format seems hard to break lines in
-        REPO_ROOT / ".gitlab-ci.yml",
         # We list the license text exactly as the original, with no line breaks
         REPO_ROOT / "license.txt",
         # Impossible to break RST syntax

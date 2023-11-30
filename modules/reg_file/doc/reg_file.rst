@@ -1,4 +1,4 @@
-The hdl_modules project contains many components that together form everything you need to set up a
+The hdl-modules project contains many components that together form everything you need to set up a
 register bus.
 Below is a diagram of the typical layout for a register bus.
 
@@ -34,7 +34,7 @@ Below is a diagram of the typical layout for a register bus.
   dots [ shape=none label="..."];
   axi_lite_mux -> dots;
 
-In hdl_modules, the register bus used is is AXI-Lite.
+In hdl-modules, the register bus used is is AXI-Lite.
 In cases where a module uses a different clock than the AXI master (CPU), the bus must
 be resynchronized.
 This makes sure that each module's register values are always in the clock domain where they

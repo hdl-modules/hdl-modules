@@ -1,17 +1,17 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 """
 Configuration file for the Sphinx documentation builder.
 """
 
-project = "hdl_modules"
+project = "hdl-modules"
 copyright = "Lukas Vik"
 author = "Lukas Vik"
 

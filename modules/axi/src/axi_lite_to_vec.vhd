@@ -1,10 +1,10 @@
 -- -------------------------------------------------------------------------------------------------
 -- Copyright (c) Lukas Vik. All rights reserved.
 --
--- This file is part of the hdl_modules project, a collection of reusable, high-quality,
+-- This file is part of the hdl-modules project, a collection of reusable, high-quality,
 -- peer-reviewed VHDL building blocks.
 -- https://hdl-modules.com
--- https://gitlab.com/hdl_modules/hdl_modules
+-- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Convenience wrapper for splitting and CDC'ing a register bus based on generics.
 -- The goal is to split a register bus, and have each resulting AXI-Lite bus in the same clock

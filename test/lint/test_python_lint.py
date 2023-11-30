@@ -1,10 +1,10 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
@@ -15,7 +15,7 @@ from pathlib import Path
 # pylint: disable=wrong-import-order
 from tsfpga.git_utils import find_git_files
 from tsfpga.system_utils import create_file, run_command
-from tsfpga.test.lint.test_python_lint import run_black, run_flake8_lint, run_isort, run_pylint
+from tsfpga.test.lint.python_lint import run_black, run_flake8_lint, run_isort, run_pylint
 
 # First party libraries
 from tools.tools_env import HDL_MODULES_DOC, REPO_ROOT

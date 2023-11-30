@@ -1,10 +1,10 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
@@ -28,14 +28,14 @@ def get_hdl_modules(
     names_include: Optional[set[str]] = None, names_avoid: Optional[set[str]] = None
 ) -> "ModuleList":
     """
-    Wrapper of :func:`tsfpga.module.get_modules` which returns the ``hdl_modules`` module objects.
+    Wrapper of :func:`tsfpga.module.get_modules` which returns the ``hdl-modules`` module objects.
 
     Arguments will be passed on to :func:`.get_modules`.
 
     Return:
         The module objects.
     """
-    # tsfpga might not be available on some systems where the hdl_modules are used.
+    # tsfpga might not be available on some systems where the hdl-modules are used.
     # Hence we can not import at the top of this file.
     # This function however, which highly depends on tsfpga Module objects, must import it.
     # We assume that it is only called by users who have tsfpga available.

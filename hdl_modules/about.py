@@ -1,10 +1,10 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 
@@ -20,39 +20,39 @@ def get_short_slogan() -> str:
 
 
 def get_readme_rst(
-    include_extra_for_gitlab: bool = False, include_extra_for_website: bool = False
+    include_extra_for_github: bool = False, include_extra_for_website: bool = False
 ) -> str:
     """
     Get the complete README.rst (to be used on website).
-    RST file inclusion in README.rst does not work on gitlab unfortunately, hence this
+    RST file inclusion in README.rst does not work on github unfortunately, hence this
     cumbersome handling where the README is duplicated in two places.
 
     The arguments control some extra text that is included. This is mainly links to the
-    other places where you can find information on the project (website, gitlab).
+    other places where you can find information on the project (website, github).
 
     Arguments:
-        include_extra_for_gitlab (bool): Include the extra text that shall be included in the
-            gitlab README.
+        include_extra_for_github (bool): Include the extra text that shall be included in the
+            github README.
         include_extra_for_website (bool): Include the extra text that shall be included in the
             website main page.
     """
-    if include_extra_for_gitlab:
+    if include_extra_for_github:
         readme_rst = ""
         extra_rst = "**See documentation on the website**: https://hdl-modules.com\n"
 
     elif include_extra_for_website:
         # The website needs the initial heading, in order for the landing page to get
         # the correct title.
-        # Gitlab readme does not need this initial heading, it just makes it more clunky.
+        # Github readme does not need this initial heading, it just makes it more clunky.
         readme_rst = """\
-About hdl_modules
+About hdl-modules
 =================
 
 """
         extra_rst = """\
 This website contains human-readable documentation of the modules.
 To check out the source code, go to the
-`gitlab page <https://gitlab.com/hdl_modules/hdl_modules>`__.
+`GitHub page <https://github.com/hdl-modules/hdl-modules>`__.
 """
 
     else:
@@ -72,7 +72,7 @@ To check out the source code, go to the
 
 .. |pic_repository| image:: https://hdl-modules.com/badges/repository.svg
   :alt: Repository
-  :target: https://gitlab.com/hdl_modules/hdl_modules
+  :target: https://github.com/hdl-modules/hdl-modules
 
 .. |pic_chat| image:: https://hdl-modules.com/badges/chat.svg
   :alt: Chat
@@ -84,7 +84,7 @@ To check out the source code, go to the
 
 |pic_website| |pic_repository| |pic_chat| |pic_license|
 
-The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
+The hdl-modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
 It is released as open-source project under the very permissive BSD 3-Clause License.
 

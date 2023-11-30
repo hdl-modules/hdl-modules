@@ -4,7 +4,7 @@ Getting started
 The modules can be used straight away in your simulation and build project.
 Start by cloning the repo:
 
-  git clone https://gitlab.com/hdl_modules/hdl_modules.git
+  git clone https://github.com/hdl-modules/hdl-modules.git
 
 If you want a stable release you can checkout one of the tags.
 
@@ -37,7 +37,7 @@ These are found in the ``scoped_constraints`` directory of the module, which con
 
 These must be loaded in Vivado with e.g.
 
-  read_xdc -ref asynchronous_fifo /home/lukas/work/repo/hdl_modules/hdl_modules/modules/fifo/scoped_constraints/asynchronous_fifo.tcl
+  read_xdc -ref asynchronous_fifo /home/lukas/work/repo/hdl-modules/hdl-modules/modules/fifo/scoped_constraints/asynchronous_fifo.tcl
 
 The constraint file being scoped means that it is applied relative to each instance of the entity.
 Using this we do not have to search through the whole design hierarchically to find the signals that
@@ -45,7 +45,7 @@ we are interested in in our constraint file.
 
 .. note::
   When using tsfpga, this is done automatically for build projects, since
-  hdl_modules uses the recommended module structure.
+  hdl-modules uses the recommended module structure.
 
 
 Unresolved types
@@ -57,8 +57,8 @@ This means that accidental multiple drivers of a signal will result in an error 
 or synthesizing the design.
 
 Since e.g. ``std_logic`` is a sub-type of ``std_ulogic`` in VHDL-2008, it is no problem if
-hdl_modules components are integrated in a code base that still uses the resolved types.
-E.g. a ``std_logic`` signal can be attached to a hdl_modules port of type ``std_ulogic``
+hdl-modules components are integrated in a code base that still uses the resolved types.
+E.g. a ``std_logic`` signal can be attached to a hdl-modules port of type ``std_ulogic``
 (both ``in`` and ``out``) without problem.
 
 
@@ -67,4 +67,4 @@ Feedback
 
 If you find any bugs or inconsistencies, please write in the
 `gitter channel <https://gitter.im/tsfpga/tsfpga>`__
-or create an `issue on gitlab <https://gitlab.com/hdl_modules/hdl_modules/-/issues>`__.
+or create an `issue on GitHub <https://github.com/hdl-modules/hdl-modules/issues>`__.

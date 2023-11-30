@@ -10,7 +10,7 @@
 
 .. |pic_repository| image:: https://hdl-modules.com/badges/repository.svg
   :alt: Repository
-  :target: https://gitlab.com/hdl_modules/hdl_modules
+  :target: https://github.com/hdl-modules/hdl-modules
 
 .. |pic_chat| image:: https://hdl-modules.com/badges/chat.svg
   :alt: Chat
@@ -22,7 +22,7 @@
 
 |pic_website| |pic_repository| |pic_chat| |pic_license|
 
-The hdl_modules project is a collection of reusable, high-quality, peer-reviewed VHDL
+The hdl-modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
 It is released as open-source project under the very permissive BSD 3-Clause License.
 

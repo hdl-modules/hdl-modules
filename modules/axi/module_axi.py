@@ -1,10 +1,10 @@
 # --------------------------------------------------------------------------------------------------
 # Copyright (c) Lukas Vik. All rights reserved.
 #
-# This file is part of the hdl_modules project, a collection of reusable, high-quality,
+# This file is part of the hdl-modules project, a collection of reusable, high-quality,
 # peer-reviewed VHDL building blocks.
 # https://hdl-modules.com
-# https://gitlab.com/hdl_modules/hdl_modules
+# https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
@@ -106,7 +106,7 @@ class Module(BaseModule):
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
-        # This method is only called when running netlist builds in the hdl_modules repo from the
+        # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build.py, where PYTHONPATH is correctly set up.
         # pylint: disable=import-outside-toplevel
         # First party libraries
