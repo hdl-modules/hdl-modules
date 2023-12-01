@@ -17,10 +17,8 @@ from typing import TYPE_CHECKING
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
-# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
-import tools.tools_pythonpath  # noqa: F401
-
 # Third party libraries
+from hdl_modules.about import get_readme_rst, get_short_slogan
 from pybadges import badge
 from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
@@ -29,7 +27,7 @@ from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 
 # First party libraries
-from hdl_modules.about import get_readme_rst, get_short_slogan
+import tools.tools_pythonpath  # noqa: F401
 from tools import tools_env
 
 if TYPE_CHECKING:
@@ -238,6 +236,8 @@ def build_information_badges() -> None:
         right_text="BSD 3-Clause",
         left_color=BADGE_COLOR_LEFT,
         right_color=BADGE_COLOR_RIGHT,
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "law.svg"),
+        embed_logo=True,
     )
     create_file(output_path / "license.svg", badge_svg)
 
@@ -263,9 +263,11 @@ def build_information_badges() -> None:
 
     badge_svg = badge(
         left_text="chat",
-        right_text="on gitter",
+        right_text="GitHub Discussions",
         left_color=BADGE_COLOR_LEFT,
         right_color=BADGE_COLOR_RIGHT,
+        logo=str(tools_env.HDL_MODULES_DOC / "logos" / "third_party" / "discussions.svg"),
+        embed_logo=True,
     )
     create_file(output_path / "chat.svg", badge_svg)
 

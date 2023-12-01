@@ -18,4 +18,19 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 github.svg:
 Original file name: github-mark-white.svg
 Downloaded from: https://github.com/logos
+Changes made: Changed color to darker.
 License: (C) 2023 GitHub, Inc.
+
+
+
+
+discussions.svg:
+Fom GitHub website "Discussions" link button.
+License: (C) 2023 GitHub, Inc.
+
+
+
+law.svg
+Downloaded from https://www.iconfinder.com/icons/2102065/hammer_justice_law_icon
+License: Creative Commons (Attribution 3.0 Unported)
+Changes made: Changed color, made transparent, made base smaller.

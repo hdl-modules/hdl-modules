@@ -14,7 +14,7 @@
 
 .. |pic_chat| image:: https://hdl-modules.com/badges/chat.svg
   :alt: Chat
-  :target: https://app.gitter.im/#/room/#60a276916da03739847cca54:gitter.im
+  :target: https://github.com/hdl-modules/hdl-modules/discussions
 
 .. |pic_license| image:: https://hdl-modules.com/badges/license.svg
   :alt: License
@@ -24,7 +24,7 @@
   :alt: CI status
   :target: https://github.com/hdl-modules/hdl-modules/actions/workflows/ci.yml
 
-|pic_website| |pic_repository| |pic_chat| |pic_license| |pic_ci_status|
+|pic_website| |pic_repository| |pic_license| |pic_chat| |pic_ci_status|
 
 The hdl-modules project is a collection of reusable, high-quality, peer-reviewed VHDL
 building blocks.
