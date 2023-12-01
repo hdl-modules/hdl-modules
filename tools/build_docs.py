@@ -17,8 +17,10 @@ from typing import TYPE_CHECKING
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
+# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+import tools.tools_pythonpath  # noqa: F401
+
 # Third party libraries
-from hdl_modules.about import get_readme_rst, get_short_slogan
 from pybadges import badge
 from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
@@ -27,7 +29,7 @@ from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 
 # First party libraries
-import tools.tools_pythonpath  # noqa: F401
+from hdl_modules.about import get_readme_rst, get_short_slogan
 from tools import tools_env
 
 if TYPE_CHECKING:
