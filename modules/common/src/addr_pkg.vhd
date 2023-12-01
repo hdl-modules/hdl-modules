@@ -155,10 +155,34 @@ package body addr_pkg is
   function addr_bits_needed(addrs : addr_and_mask_vec_t) return positive is
     variable result : positive := 1;
   begin
+    assert sanity_check_address_and_mask(addrs)
+      report "Supplied address and mask are not valid. See printout above."
+      severity failure;
+
     for addr_idx in addrs'range loop
       result := maximum(result, num_bits_needed(addrs(addr_idx).mask));
     end loop;
-    return result;
+
+    -- Note that this function is used for e.g. AR/AW FIFO width calculations
+    -- in axi_lite_to_vec.vhd.
+    -- If the value returned is practically zero then there is no way to do register address
+    -- decoding.
+    -- Except for one special case, which is handled below.
+    if result > 1 then
+      return result;
+    end if;
+
+    -- We have, as in 'sanity_check_address_and_mask', the special case where there is only one
+    -- base address on address zero.
+    -- First of all, assert that we are actually in this special case, because if we ended up here
+    -- otherwise then that is an error.
+    assert addrs'length = 1 and addrs(0).addr = 0 and addrs(0).mask = 0
+      report "Got unreasonable result despite not being in the only allowed special case"
+      severity failure;
+
+    -- In this special case we know really nothing about the register address ranges used.
+    -- Hence do the default scenario and send all bits.
+    return addrs(0).addr'length;
   end function;
 
   function sanity_check_address_and_mask(

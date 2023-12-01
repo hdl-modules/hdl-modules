@@ -258,6 +258,9 @@ begin
       check_equal(addr_bits_needed(addrs), 16);
       check_equal(addr_bits_needed(addrs2), 25);
 
+      -- Default value in special case.
+      check_equal(addr_bits_needed(addrs_valid_mask_zero), 32);
+
     elsif run("test_decode_happy_path") then
       check_equal(decode(x"43C0_0000"), 0);
       check_equal(decode(x"43C0_1000"), 1);
