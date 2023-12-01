@@ -85,6 +85,15 @@ architecture tb of tb_addr_pkg is
     -- Mask zero is invalid, will always match.
     1 => (addr => x"0000_1000", mask => x"0000_0000")
   );
+  -- Only one base address on address zero can not have any other mask than zero because we do not
+  -- have any information to use.
+  constant addrs_valid_mask_zero : addr_and_mask_vec_t(0 to 0) := (
+    0 => (addr => x"0000_0000", mask => x"0000_0000")
+  );
+  -- If the address is non-zero however, it is still an error.
+  constant addrs_invalid_mask_zero : addr_and_mask_vec_t(0 to 0) := (
+    0 => (addr => x"0001_0000", mask => x"0000_0000")
+  );
 
   constant addrs_to_mask : addr_vec_t(0 to 5) := (
     0 => x"0000_0000",
@@ -266,9 +275,11 @@ begin
       assert not sanity_check_address_and_mask(addrs_overlap);
       assert not sanity_check_address_and_mask(addrs_overlap2);
       assert not sanity_check_address_and_mask(addrs_invalid_mask);
+      assert not sanity_check_address_and_mask(addrs_invalid_mask_zero);
 
       assert sanity_check_address_and_mask(addrs);
       assert sanity_check_address_and_mask(addrs2);
+      assert sanity_check_address_and_mask(addrs_valid_mask_zero);
 
     elsif run("test_calculate_mask") then
       addr_and_mask_got := calculate_mask(addrs_to_mask);
