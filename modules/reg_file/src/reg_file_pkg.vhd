@@ -104,6 +104,11 @@ package body reg_file_pkg is
       result(list_idx).addr := to_unsigned(4 * regs(list_idx).idx, result(list_idx).addr'length);
       result(list_idx).mask := mask;
     end loop;
+
+    assert sanity_check_address_and_mask(result)
+      report "Calculated address and mask are not valid. See printout above."
+      severity failure;
+
     return result;
   end function;
 
