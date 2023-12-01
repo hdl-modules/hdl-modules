@@ -177,7 +177,15 @@ package body addr_pkg is
             severity warning;
         end if;
 
-        return false;
+        -- Mask of zero is allowed only in the special case where we have only one base address
+        -- on address zero.
+        -- In this case, an automatic mask calculator has no information to go on and has to set
+        -- the mask to zero.
+        -- In this case it must be considered fine that every incoming address will match with this.
+        -- It is still a little bit odd, so we still want the warning printout above.
+        if data'length /= 1 or data(0).addr /= 0 then
+          return false;
+        end if;
       end if;
 
       -- The loop below aims to test for address/mask overlap.
