@@ -92,6 +92,7 @@ jobs:
           GitPython \
           pybadges \
           rtoml \
+          setuptools \
           sphinx \
           sphinx-rtd-theme \
           sphinx_sitemap \
