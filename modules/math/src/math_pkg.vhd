@@ -243,6 +243,8 @@ package body math_pkg is
         return bit_idx + 1;
       end if;
     end loop;
+
+    -- Special case when value is zero.
     return 1;
   end function;
 
@@ -265,6 +267,7 @@ package body math_pkg is
       end if;
     end loop;
 
+    -- Special case when value is zero.
     return 1;
   end function;
 
