@@ -29,7 +29,11 @@ entity axi_read_slave is
     data_width : positive;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural range 0 to axi_id_sz
+    id_width : natural range 0 to axi_id_sz;
+    -- Optionally limit the address width.
+    -- Is required of unused parts of the address field contains e.g. '-', since the VUnit BFM
+    -- converts the field to an integer.
+    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz
   );
   port (
     clk : in std_ulogic;
@@ -41,10 +45,10 @@ end entity;
 
 architecture a of axi_read_slave is
 
-  signal arid, rid : std_ulogic_vector(id_width - 1 downto 0);
-  signal araddr : std_ulogic_vector(axi_read_m2s.ar.addr'range );
-  signal arlen : std_ulogic_vector(axi_read_m2s.ar.len'range );
-  signal arsize : std_ulogic_vector(axi_read_m2s.ar.size'range );
+  signal arid, rid : std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
+  signal araddr : std_ulogic_vector(address_width - 1 downto 0) := (others => '0');
+  signal arlen : std_ulogic_vector(axi_read_m2s.ar.len'range) := (others => '0');
+  signal arsize : std_ulogic_vector(axi_read_m2s.ar.size'range) := (others => '0');
 
 begin
 
@@ -73,7 +77,7 @@ begin
     );
 
   arid <= std_logic_vector(axi_read_m2s.ar.id(arid'range));
-  araddr <= std_logic_vector(axi_read_m2s.ar.addr);
+  araddr <= std_logic_vector(axi_read_m2s.ar.addr(araddr'range));
   arlen <= std_logic_vector(axi_read_m2s.ar.len);
   arsize <= std_logic_vector(axi_read_m2s.ar.size);
 
