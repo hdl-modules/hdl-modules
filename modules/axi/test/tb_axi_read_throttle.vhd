@@ -53,7 +53,7 @@ architecture tb of tb_axi_read_throttle is
   constant data_width : positive := 32;
   constant bytes_per_beat : positive := data_width / 8;
 
-  constant max_burst_length_bytes : positive := data_width / 8 * max_burst_length_beats;
+  constant max_burst_length_bytes : positive := bytes_per_beat * max_burst_length_beats;
 
   constant clk_period : time := 5 ns;
 

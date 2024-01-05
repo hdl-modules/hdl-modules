@@ -15,15 +15,16 @@
 -- AXI write master interface being well behaved.
 -- It guarantees that not a single clock cycle is wasted on the ``throttled`` interface.
 --
--- 1. Should be used in conjunction with a data FIFO on the ``input.w`` side that has packet mode
---    enabled. This ensures that once ``WVALID`` has been asserted, it remains high until the
+-- 1. Should be used in conjunction with a data FIFO (:ref:`fifo.fifo`
+--    or :ref:`fifo.asynchronous_fifo`) on the ``input.w`` side that has packet mode enabled.
+--    This ensures that once ``WVALID`` has been asserted, it remains high until the
 --    ``WLAST`` transaction has occurred.
 --
 -- 2. The ``input.b.ready`` signal should be statically ``'1'``.
 --    This ensures that ``B`` master on the ``throttled`` side is never stalled.
 --
 -- The imagined use case for this entity is with an AXI crossbar where the throughput should not
--- be limited by one port starving out the others by being ill behaved.
+-- be limited by one port starving out the others by being ill-behaved.
 -- In this case it makes sense to use this throttler on each port.
 --
 -- However if a crossbar is not used, and the AXI bus goes directly to an AXI slave that has FIFOs
