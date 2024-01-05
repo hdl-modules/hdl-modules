@@ -31,7 +31,7 @@ entity axi_read_slave is
     -- value for id_width might crash your simulator.
     id_width : natural range 0 to axi_id_sz;
     -- Optionally limit the address width.
-    -- Is required of unused parts of the address field contains e.g. '-', since the VUnit BFM
+    -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
     -- converts the field to an integer.
     address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz
   );
