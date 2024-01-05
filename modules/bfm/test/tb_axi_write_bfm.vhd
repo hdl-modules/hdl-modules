@@ -187,7 +187,9 @@ begin
       clk => clk,
       --
       axi_write_m2s => axi_write_m2s,
-      axi_write_s2m => axi_write_s2m
+      axi_write_s2m => axi_write_s2m,
+      --
+      num_bursts_done => num_bursts_written
     );
 
 
@@ -203,9 +205,7 @@ begin
       clk => clk,
       --
       axi_write_m2s => axi_write_m2s,
-      axi_write_s2m => axi_write_s2m,
-      --
-      num_bursts_done => num_bursts_written
+      axi_write_s2m => axi_write_s2m
     );
 
 

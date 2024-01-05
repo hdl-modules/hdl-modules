@@ -180,8 +180,11 @@ begin
     )
     port map (
       clk => clk,
+      --
       axi_write_m2s => input_m2s,
-      axi_write_s2m => input_s2m
+      axi_write_s2m => input_s2m,
+      --
+      num_bursts_done => num_bursts_written
     );
 
 
@@ -199,9 +202,7 @@ begin
       clk => clk,
       --
       axi_write_m2s => throttled_m2s,
-      axi_write_s2m => throttled_s2m,
-      --
-      num_bursts_done => num_bursts_written
+      axi_write_s2m => throttled_s2m
     );
 
 
