@@ -34,6 +34,10 @@ entity axi_write_slave is
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
     id_width : natural range 0 to axi_id_sz;
+    -- Optionally limit the address width.
+    -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
+    -- converts the field to an integer.
+    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
     w_fifo_depth : natural := 0
@@ -58,7 +62,7 @@ architecture a of axi_write_slave is
   signal w_fifo_s2m : axi_s2m_w_t := axi_s2m_w_init;
 
   signal awid, bid : std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
-  signal awaddr : std_ulogic_vector(axi_write_m2s.aw.addr'range) := (others => '0');
+  signal awaddr : std_ulogic_vector(address_width - 1 downto 0) := (others => '0');
   signal awlen : std_ulogic_vector(axi_write_m2s.aw.len'range) := (others => '0');
   signal awsize : std_ulogic_vector(axi_write_m2s.aw.size'range) := (others => '0');
 
@@ -115,7 +119,7 @@ begin
     );
 
   awid <= std_logic_vector(axi_write_m2s.aw.id(awid'range));
-  awaddr <= std_logic_vector(axi_write_m2s.aw.addr);
+  awaddr <= std_logic_vector(axi_write_m2s.aw.addr(awaddr'range));
   awlen <= std_logic_vector(axi_write_m2s.aw.len);
   awsize <= std_logic_vector(axi_write_m2s.aw.size);
 
