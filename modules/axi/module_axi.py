@@ -136,7 +136,6 @@ class Module(BaseModule):
             id_width=6,
             addr_width=32,
             full_ar_throughput=False,
-            full_aw_throughput=False,
         )
 
         projects.append(
@@ -147,9 +146,9 @@ class Module(BaseModule):
                 top="axi_read_throttle",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(40)),
-                    Ffs(EqualTo(75)),
-                    MaximumLogicLevel(EqualTo(9)),
+                    TotalLuts(EqualTo(41)),
+                    Ffs(EqualTo(76)),
+                    MaximumLogicLevel(EqualTo(8)),
                 ],
             )
         )

@@ -9,13 +9,11 @@
 -- Performs throttling of an AXI read bus by limiting the number of outstanding
 -- transactions, which makes the AXI master well behaved.
 --
--- This entity is to be used in conjunction with a data FIFO on the ``input.r`` side.
+-- This entity is to be used in conjunction with a data FIFO (:ref:`fifo.fifo`
+-- or :ref:`fifo.asynchronous_fifo`) on the ``input.r`` side.
 -- Using the level from that FIFO, the throttling will make sure that address
 -- transactions are not made that would result in the FIFO becoming full. This
 -- avoids stalling on the ``throttled_s2m.r`` channel.
---
--- To achieve this it keeps track of the number of outstanding beats
--- that have been negotiated but not yet sent.
 --
 -- .. digraph:: my_graph
 --
@@ -41,6 +39,26 @@
 --   r_fifo -> axi_slave [dir="back"];
 --   r -> r_fifo [dir="back"];
 --   r_fifo:n -> axi_read_throttle:s [label="level"];
+--
+-- To achieve this it keeps track of the number of outstanding beats
+-- that have been negotiated but not yet sent.
+--
+-- .. warning::
+--
+--   The FIFO implementation must update the level counter on the same rising clock edge as the FIFO
+--   write transaction, i.e. the ``input.r`` transaction.
+--   Otherwise the throttling will not work correctly.
+--   This condition is fulfilled by :ref:`fifo.fifo`, :ref:`fifo.asynchronous_fifo` and most other
+--   FIFO implementations.
+--
+-- The imagined use case for this entity is with an AXI crossbar where the throughput should not
+-- be limited by one port starving out the others by being ill behaved.
+-- In this case it makes sense to use this throttler on each port.
+--
+-- However if a crossbar is not used, and the AXI bus goes directly to an AXI slave that has FIFOs
+-- on the ``AR`` and ``R`` channels, then there is no point to using this throttler.
+-- These FIFOs can be either in logic (in e.g. an AXI DDR4 controller) or in the "hard"
+-- AXI controller in e.g. a Xilinx Zynq device.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -88,15 +106,14 @@ architecture a of axi_read_throttle is
   signal pipelined_m2s_ar : axi_m2s_a_t := axi_m2s_a_init;
   signal pipelined_s2m_ar : axi_s2m_a_t := axi_s2m_a_init;
 
-  signal address_transaction, data_transaction : std_ulogic := '0';
+  signal address_transaction, data_transaction, data_transaction_p1 : std_ulogic := '0';
 
   -- The bits of the ARLEN field that shall be taken into account
   constant len_width : positive := num_bits_needed(max_burst_length_beats - 1);
   subtype len_range is natural range len_width - 1 downto 0;
 
-    -- +1 in range for sign bit
-  signal minus_burst_length_beats : u_signed(len_width + 1 - 1 downto 0) :=
-    (others => '0');
+  -- +1 in range for sign bit
+  signal minus_burst_length_beats : u_signed(len_width + 1 - 1 downto 0) := (others => '0');
 
   -- Number of data beats that have been negotiated via address transactions,
   -- but have not yet been sent by the master. Aka outstanding beats.
@@ -207,7 +224,7 @@ begin
   begin
     wait until rising_edge(clk);
 
-    -- This muxing results in a shorter critical path than doing
+    -- This multiplexing results in a shorter critical path than doing
     -- e.g. minus_burst_length_beats * to_int(address_transaction).
     -- LUT usage stayed the same.
     if address_transaction then
@@ -216,18 +233,31 @@ begin
       ar_term := (others => '0');
     end if;
 
-    num_beats_negotiated_but_not_sent_int := num_beats_negotiated_but_not_sent
+    -- This term is compared with 'data_fifo_level' below.
+    -- Since 'data_fifo_level' is updated on the rising edge where 'RREADY and RVALID' is
+    -- true, we need to delay 'data_transaction' by one clock cycle so that they match.
+    -- Otherwise 'ARVALID' could be raised when an 'R' transaction occurs, because we think we have
+    -- space in the FIFO, but then lowered again the next clock cycle when 'data_fifo_level'
+    -- is updated.
+    -- The 'AR' part of the arithmetic needs to be updated straight away however, so that we do not
+    -- send more transactions than we have space for.
+    -- Otherwise we could have pipelined the whole calculation.
+    num_beats_negotiated_but_not_sent_int := (
+      num_beats_negotiated_but_not_sent
       - to_integer(ar_term)
-      - to_int(data_transaction);
+      - to_int(data_transaction_p1)
+    );
 
     num_empty_words_in_fifo := data_fifo_depth - data_fifo_level;
     minus_num_empty_words_in_fifo_that_have_not_been_negotiated <=
       num_beats_negotiated_but_not_sent_int - num_empty_words_in_fifo;
 
     num_beats_negotiated_but_not_sent <= num_beats_negotiated_but_not_sent_int;
+
+    data_transaction_p1 <= data_transaction;
   end process;
 
-  address_transaction <= throttled_m2s.ar.valid and throttled_s2m.ar.ready;
+  address_transaction <= throttled_s2m.ar.ready and throttled_m2s.ar.valid;
   data_transaction <= throttled_m2s.r.ready and throttled_s2m.r.valid;
 
 end architecture;
