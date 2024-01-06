@@ -31,7 +31,7 @@ package axi_lite_pkg is
     -- These are typically not changed on a transfer-to-transfer basis.
   end record;
 
-  constant axi_lite_m2s_a_init : axi_lite_m2s_a_t := (valid => '0', others => (others => '0'));
+  constant axi_lite_m2s_a_init : axi_lite_m2s_a_t := (valid => '0', addr => (others => '0'));
   function axi_lite_m2s_a_sz(addr_width : positive) return positive;
 
   type axi_lite_s2m_a_t is record
@@ -58,7 +58,7 @@ package axi_lite_pkg is
   end record;
 
   constant axi_lite_m2s_w_init : axi_lite_m2s_w_t := (
-    valid => '0', data => (others => '-'), strb => (others => '-')
+    valid => '0', data => (others => '-'), strb => (others => '0')
   );
 
   function axi_lite_m2s_w_sz(data_width : positive) return positive;
@@ -90,7 +90,7 @@ package axi_lite_pkg is
     resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   end record;
 
-  constant axi_lite_s2m_b_init : axi_lite_s2m_b_t := (valid => '0', others => (others => '0'));
+  constant axi_lite_s2m_b_init : axi_lite_s2m_b_t := (valid => '0', resp => (others => '-'));
   -- Excluded member: valid
   constant axi_lite_s2m_b_sz : positive := axi_resp_sz;
 
@@ -112,7 +112,7 @@ package axi_lite_pkg is
   end record;
 
   constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (
-    valid => '0', data => (others => '0'), resp => (others => '0')
+    valid => '0', data => (others => '-'), resp => (others => '-')
   );
 
   function axi_lite_s2m_r_sz(data_width : positive) return positive;

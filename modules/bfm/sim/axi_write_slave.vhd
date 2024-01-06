@@ -69,6 +69,21 @@ architecture a of axi_write_slave is
 begin
 
   ------------------------------------------------------------------------------
+  check_strobe_zero_outside_of_data : process
+    constant expected : std_ulogic_vector(axi_write_m2s.w.strb'high downto strobe_width) := (
+      others => '0'
+    );
+  begin
+    wait until axi_write_m2s.w.valid and rising_edge(clk);
+
+    -- Must be explicitly zero, can not be '-'.
+    check_equal(
+      axi_write_m2s.w.strb(expected'range), expected, "WSTRB is non-zero outside of data"
+    );
+  end process;
+
+
+  ------------------------------------------------------------------------------
   -- Optionally use a FIFO for the data channel. This enables a data flow pattern where
   -- the AXI slave can accept a lot of data (many bursts) before a single address transaction
   -- occurs. This can affect the behavior of your AXI master, and is a case that needs to
