@@ -83,7 +83,7 @@ begin
     if read_slave_select = slave_not_selected_idx then
       -- Wait for the master to assert address valid so that we can select the correct slave
       axi_lite_s2m.read.ar <= (ready => '0');
-      axi_lite_s2m.read.r <= (valid => '0', others => (others => '-'));
+      axi_lite_s2m.read.r <= (valid => '0', data => (others => '-'), resp => (others => '-'));
 
     elsif read_slave_select = slave_decode_error_idx then
       -- Master requested a slave address that does not exist. Return decode error.

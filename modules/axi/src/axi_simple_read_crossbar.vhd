@@ -111,8 +111,11 @@ begin
   begin
     output_m2s.ar <= (
       valid => '0',
-      burst => (others => '-'),
-      others => (others => '-')
+      id => (others => '-'),
+      addr => (others => '-'),
+      len => (others => '-'),
+      size => (others => '-'),
+      burst => (others => '-')
     );
     output_m2s.r <= (ready => '0');
 

@@ -114,14 +114,18 @@ begin
   begin
     output_m2s.aw <= (
       valid => '0',
-      burst => (others => '-'),
-      others => (others => '-')
+      id => (others => '-'),
+      addr => (others => '-'),
+      len => (others => '-'),
+      size => (others => '-'),
+      burst => (others => '-')
     );
     output_m2s.w <= (
       valid => '0',
+      data => (others => '-'),
+      strb => (others => '-'),
       last => '-',
-      id=> (others => '-'),
-      others => (others => '-')
+      id => (others => '-')
     );
     output_m2s.b <= (ready => '0');
 

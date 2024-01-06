@@ -109,8 +109,11 @@ package axi_pkg is
 
   constant axi_m2s_a_init : axi_m2s_a_t := (
     valid => '0',
-    burst => (others => '0'),
-    others => (others => '0')
+    id => (others => '0'),
+    addr => (others => '0'),
+    len => (others => '0'),
+    size => (others => '0'),
+    burst => (others => '0')
   );
   function axi_m2s_a_sz(id_width : natural; addr_width : positive)  return positive;
   type axi_m2s_a_vec_t is array (integer range <>) of axi_m2s_a_t;
@@ -153,9 +156,9 @@ package axi_pkg is
   constant axi_m2s_w_init : axi_m2s_w_t := (
     valid => '0',
     data => (others => '-'),
+    strb => (others => '0'),
     last => '0',
-    id => (others => '-'),
-    others => (others => '0')
+    id => (others => '-')
   );
   function axi_m2s_w_sz(data_width : positive; id_width : natural := 0) return positive;
   type axi_m2s_w_vec_t is array (integer range <>) of axi_m2s_w_t;
@@ -235,9 +238,10 @@ package axi_pkg is
 
   constant axi_s2m_r_init : axi_s2m_r_t := (
     valid => '0',
-    last => '0',
     id => (others => '0'),
-    others => (others => '0')
+    data => (others => '0'),
+    resp => (others => '0'),
+    last => '0'
   );
   function axi_s2m_r_sz(data_width : positive; id_width : natural)  return positive;
   type axi_s2m_r_vec_t is array (integer range <>) of axi_s2m_r_t;
