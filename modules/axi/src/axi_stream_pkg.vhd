@@ -40,8 +40,10 @@ package axi_stream_pkg is
   type axi_stream_m2s_vec_t is array (integer range <>) of axi_stream_m2s_t;
 
   constant axi_stream_m2s_init : axi_stream_m2s_t := (
-    valid|last => '0',
-    data|user => (others => '-')
+    valid => '0',
+    last => '0',
+    data => (others => '-'),
+    user => (others => '-')
   );
 
   type axi_stream_s2m_t is record

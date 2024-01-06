@@ -57,7 +57,9 @@ package axi_lite_pkg is
     strb : std_ulogic_vector(axi_lite_w_strb_sz - 1 downto 0);
   end record;
 
-  constant axi_lite_m2s_w_init : axi_lite_m2s_w_t := (valid => '0', others => (others => '-'));
+  constant axi_lite_m2s_w_init : axi_lite_m2s_w_t := (
+    valid => '0', data => (others => '-'), strb => (others => '-')
+  );
 
   function axi_lite_m2s_w_sz(data_width : positive) return positive;
   function to_slv(data : axi_lite_m2s_w_t; data_width : positive) return std_ulogic_vector;
@@ -109,7 +111,10 @@ package axi_lite_pkg is
     resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
   end record;
 
-  constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (valid => '0', others => (others => '0'));
+  constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (
+    valid => '0', data => (others => '0'), resp => (others => '0')
+  );
+
   function axi_lite_s2m_r_sz(data_width : positive) return positive;
   function to_slv(data : axi_lite_s2m_r_t; data_width : positive) return std_ulogic_vector;
   function to_axi_lite_s2m_r(
