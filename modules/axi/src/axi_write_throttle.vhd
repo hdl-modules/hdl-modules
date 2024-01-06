@@ -23,6 +23,34 @@
 -- 2. The ``input.b.ready`` signal should be statically ``'1'``.
 --    This ensures that ``B`` master on the ``throttled`` side is never stalled.
 --
+-- .. digraph:: my_graph
+--
+--   graph [dpi = 300];
+--   rankdir="LR";
+--
+--   aw [shape=none label="AW"];
+--   w [shape=none label="W"];
+--   b [shape=none label="B"];
+--
+--   {
+--     rank=same;
+--     aw;
+--     w;
+--     b;
+--   }
+--
+--   w_fifo [label="" shape=none image="fifo.png"];
+--   w -> w_fifo;
+--
+--   axi_write_throttle [shape=box label="AXI write\nthrottle"];
+--   aw:e -> axi_write_throttle;
+--   w_fifo:e -> axi_write_throttle;
+--   b -> axi_write_throttle [dir="back"];
+--
+--   axi_slave [shape=box label="AXI slave" height=2];
+--
+--   axi_write_throttle -> axi_slave [dir="both" label="AXI\nwrite"];
+--
 -- The imagined use case for this entity is with an AXI crossbar where the throughput should not
 -- be limited by one port starving out the others by being ill-behaved.
 -- In this case it makes sense to use this throttler on each port.

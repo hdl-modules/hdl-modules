@@ -30,15 +30,16 @@
 --   }
 --
 --   r_fifo [label="" shape=none image="fifo.png"];
+--   r -> r_fifo [dir="back"];
+--
 --   axi_read_throttle [shape=box label="AXI read\nthrottle"];
---   ar -> axi_read_throttle;
+--   ar:e -> axi_read_throttle;
+--   r_fifo:e -> axi_read_throttle [dir="back"];
+--   r_fifo:s -> axi_read_throttle:s [label="level"];
 --
 --   axi_slave [shape=box label="AXI slave" height=2];
 --
---   axi_read_throttle -> axi_slave [label="AR"];
---   r_fifo -> axi_slave [dir="back"];
---   r -> r_fifo [dir="back"];
---   r_fifo:n -> axi_read_throttle:s [label="level"];
+--   axi_read_throttle -> axi_slave [dir="both" label="AXI\nread"];
 --
 -- To achieve this it keeps track of the number of outstanding beats
 -- that have been negotiated but not yet sent.
