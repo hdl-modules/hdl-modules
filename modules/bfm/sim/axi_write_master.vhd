@@ -225,8 +225,9 @@ begin
 
   ------------------------------------------------------------------------------
   b_block : block
-    signal b_slv : std_ulogic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0)
-      := (others => '0');
+    signal b_slv : std_ulogic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0) := (
+      others => '0'
+    );
   begin
 
     ------------------------------------------------------------------------------
@@ -239,7 +240,7 @@ begin
 
       -- Response code OKAY
       check_equal(axi_write_s2m.b.resp, 0);
-      check_equal(axi_write_s2m.b.id, id_reference);
+      check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), id_reference);
 
       num_bursts_done <= num_bursts_done + 1;
     end process;

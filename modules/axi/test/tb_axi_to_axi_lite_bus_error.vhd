@@ -42,10 +42,10 @@ end entity;
 architecture tb of tb_axi_to_axi_lite_bus_error is
   signal clk : std_ulogic := '0';
 
-  signal axi_m2s : axi_m2s_t;
-  signal axi_s2m : axi_s2m_t;
+  signal axi_m2s : axi_m2s_t := axi_m2s_init;
+  signal axi_s2m : axi_s2m_t := axi_s2m_init;
 
-  signal axi_lite_m2s : axi_lite_m2s_t;
+  signal axi_lite_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
   signal axi_lite_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
 
   constant correct_size : integer := log2(data_width / 8);
@@ -68,11 +68,19 @@ begin
       axi_m2s.read.ar.size <= to_unsigned(size, axi_m2s.read.ar.size'length);
 
       wait until axi_m2s.read.ar.valid and axi_s2m.read.ar.ready and rising_edge(clk);
+      axi_lite_s2m.read.ar.ready <= '0';
+      axi_m2s.read.ar.valid <= '0';
+
       axi_m2s.read.r.ready <= '1';
+
       axi_lite_s2m.read.r.valid <= '1';
+      axi_lite_s2m.read.r.resp <= axi_resp_okay;
 
       wait until axi_s2m.read.r.valid and axi_m2s.read.r.ready and rising_edge(clk);
       check_equal(axi_s2m.read.r.resp, resp);
+
+      axi_m2s.read.r.ready <= '0';
+      axi_lite_s2m.read.r.valid <= '0';
     end procedure;
 
     procedure test_aw(len, size : integer; resp : std_ulogic_vector) is
@@ -84,10 +92,18 @@ begin
       axi_m2s.write.aw.size <= to_unsigned(size, axi_m2s.write.aw.size'length);
 
       wait until axi_m2s.write.aw.valid and axi_s2m.write.aw.ready and rising_edge(clk);
+      axi_lite_s2m.write.aw.ready <= '0';
+      axi_m2s.write.aw.valid <= '0';
+
       axi_m2s.write.b.ready <= '1';
+
       axi_lite_s2m.write.b.valid <= '1';
+      axi_lite_s2m.write.b.resp <= axi_resp_okay;
 
       wait until axi_s2m.write.b.valid and axi_m2s.write.b.ready and rising_edge(clk);
+      axi_m2s.write.b.ready <= '0';
+      axi_lite_s2m.write.b.valid <= '0';
+
       check_equal(axi_s2m.write.b.resp, resp);
     end procedure;
 
@@ -100,12 +116,16 @@ begin
 
     if run("ar_len_error") then
       test_ar(correct_len + 1, correct_size, axi_resp_slverr);
+
     elsif run("ar_size_error") then
       test_ar(correct_len, correct_size + 1, axi_resp_slverr);
+
     elsif run("aw_len_error") then
       test_aw(correct_len + 1, correct_size, axi_resp_slverr);
+
     elsif run("aw_size_error") then
       test_aw(correct_len, correct_size + 1, axi_resp_slverr);
+
     end if;
 
     -- The upcoming transaction after an offending transaction should be all okay
@@ -123,10 +143,10 @@ begin
     )
     port map (
       clk => clk,
-
+      --
       axi_m2s => axi_m2s,
       axi_s2m => axi_s2m,
-
+      --
       axi_lite_m2s => axi_lite_m2s,
       axi_lite_s2m => axi_lite_s2m
     );

@@ -41,7 +41,7 @@ package axi_stream_pkg is
 
   constant axi_stream_m2s_init : axi_stream_m2s_t := (
     valid => '0',
-    last => '0',
+    last => '-',
     data => (others => '-'),
     user => (others => '-')
   );
@@ -74,7 +74,7 @@ package body axi_stream_pkg is
 
   function axi_stream_m2s_sz(data_width : positive; user_width : natural) return natural is
   begin
-    -- Exluded member: valid
+    -- Excluded member: valid
     -- The 1 is last
     return data_width + user_width + 1;
   end function;
@@ -96,7 +96,9 @@ package body axi_stream_pkg is
     lo := hi + 1;
     hi := lo + user_width - 1;
     result(hi downto lo) := data.user(user_width - 1 downto 0);
-    assert hi = result'high severity failure;
+
+    assert hi = result'high report "Something wrong with widths" severity failure;
+
     return result;
   end function;
 
@@ -119,8 +121,11 @@ package body axi_stream_pkg is
     lo := hi + 1;
     hi := lo + user_width - 1;
     result.user(user_width - 1 downto 0) := data(hi + offset downto lo + offset);
-    assert hi + offset = data'high severity failure;
+
+    assert hi + offset = data'high report "Something wrong with widths" severity failure;
+
     result.valid := valid;
+
     return result;
   end function;
 
