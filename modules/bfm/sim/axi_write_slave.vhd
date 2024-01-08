@@ -40,7 +40,11 @@ entity axi_write_slave is
     address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
-    w_fifo_depth : natural := 0
+    w_fifo_depth : natural := 0;
+    -- Optionally check the AXI3 'WID' signal against the previously negotiated 'AWID'.
+    -- Does NOT support write interleaving, and will fail if any 'W' transaction happens before
+    -- the corresponding 'AW' transaction.
+    enable_axi3 : boolean := false
   );
   port (
     clk : in std_ulogic;
@@ -57,6 +61,9 @@ end entity;
 architecture a of axi_write_slave is
 
   constant strobe_width : positive := data_width / 8;
+
+  -- Is present in AXI3 but not AXI4.
+  constant wid_width : natural := id_width * to_int(enable_axi3);
 
   signal w_fifo_m2s : axi_m2s_w_t := axi_m2s_w_init;
   signal w_fifo_s2m : axi_s2m_w_t := axi_s2m_w_init;
@@ -254,5 +261,45 @@ begin
       );
 
   end block;
+
+
+  ------------------------------------------------------------------------------
+  check_wid_gen : if wid_width > 0 generate
+    constant wid_queue : queue_t := new_queue;
+    signal is_first_beat_of_burst : std_ulogic := '1';
+  begin
+
+    ------------------------------------------------------------------------------
+    push_reference_wid : process
+    begin
+      wait until axi_write_s2m.aw.ready and axi_write_m2s.aw.valid and rising_edge(clk);
+
+      -- Set expected WID for this burst.
+      push(wid_queue, axi_write_m2s.aw.id(awid'range));
+    end process;
+
+
+    ------------------------------------------------------------------------------
+    check_wid : process
+      variable reference_wid : u_unsigned(awid'range) := (others => '0');
+    begin
+      wait until axi_write_s2m.w.ready and axi_write_m2s.w.valid and rising_edge(clk);
+
+      if is_first_beat_of_burst then
+        check_equal(
+          is_empty(wid_queue),
+          false,
+          "Must receive AW transaction before corresponding W transactions"
+        );
+
+        reference_wid := pop(wid_queue);
+      end if;
+
+      check_equal(axi_write_m2s.w.id(reference_wid'range), reference_wid);
+
+      is_first_beat_of_burst <= axi_write_m2s.w.last;
+    end process;
+
+  end generate;
 
 end architecture;
