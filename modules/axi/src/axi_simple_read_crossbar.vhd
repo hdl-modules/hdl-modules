@@ -12,7 +12,7 @@
 -- there is no separation of AXI ``AR`` and ``R`` channels with separate queues.
 -- After a port has been selected for address transaction, the crossbar is
 -- locked on that port until it has finished it's read response transactions.
--- After that the crossbar moves on to do a new address transaction on, possibly,
+-- After that, the crossbar moves on to do a new address transaction on, possibly,
 -- another port.
 --
 -- Due to this it has a very small logic footprint but will never reach full

@@ -12,7 +12,7 @@
 -- there is no separation of AXI ``AW``/``W``/``B`` channels with separate queues.
 -- After a port has been selected for address transaction, the crossbar is
 -- locked on that port until it has finished it's write (``W``) transactions and write
--- response (``B``) transaction. After that the crossbar moves on to do a new address transaction
+-- response (``B``) transaction. After that, the crossbar moves on to do a new address transaction
 -- on, possibly, another port.
 --
 -- Due to this it has a very small logic footprint but will never reach full
