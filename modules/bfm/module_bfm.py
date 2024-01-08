@@ -46,11 +46,11 @@ class Module(BaseModule):
 
         for data_width in [16, 32]:
             for data_before_address in [True, False]:
-                for set_axi3_w_id in [True, False]:
+                for enable_axi3 in [True, False]:
                     generics = dict(
                         data_width=data_width,
                         data_before_address=data_before_address,
-                        set_axi3_w_id=set_axi3_w_id,
+                        enable_axi3=enable_axi3,
                     )
                     self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
 

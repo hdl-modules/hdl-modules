@@ -15,3 +15,5 @@ Breaking changes
   to ``addr_vec_t``, i.e. a list of base addresses.
   Same for :ref:`axi.axi_lite_to_vec` generic ``axi_lite_slaves``.
   The address mask is now calculated internally.
+
+* Rename optional :ref:`bfm.axi_write_master` generic ``set_axi3_w_id`` to ``enable_axi3``.

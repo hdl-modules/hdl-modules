@@ -32,7 +32,7 @@ entity tb_axi_write_bfm is
   generic (
     data_width : positive;
     data_before_address : boolean;
-    set_axi3_w_id : boolean;
+    enable_axi3 : boolean;
     seed : natural;
     runner_cfg : string
   );
@@ -181,7 +181,7 @@ begin
       job_queue => job_queue,
       data_queue => data_queue,
       seed => seed,
-      set_axi3_w_id => set_axi3_w_id
+      enable_axi3 => enable_axi3
     )
     port map (
       clk => clk,
