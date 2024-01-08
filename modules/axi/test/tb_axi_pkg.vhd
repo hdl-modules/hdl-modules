@@ -100,7 +100,7 @@ begin
     end procedure;
 
     procedure test_combine_response is
-      variable resp, resp1, resp2, expected : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+      variable resp, resp1, resp2, expected : axi_resp_t := axi_resp_okay;
     begin
       for i in 0 to 1000 loop
         resp1 := rnd.RandSlv(resp'length);

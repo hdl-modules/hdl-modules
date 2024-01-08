@@ -24,6 +24,7 @@ package axi_lite_pkg is
   -- A (Address Read and Address Write) channels
   ------------------------------------------------------------------------------
 
+  -- Record for the AR/AW signals in the master-to-slave direction.
   type axi_lite_m2s_a_t is record
     valid : std_ulogic;
     addr : u_unsigned(axi_a_addr_sz - 1 downto 0);
@@ -34,6 +35,7 @@ package axi_lite_pkg is
   constant axi_lite_m2s_a_init : axi_lite_m2s_a_t := (valid => '0', addr => (others => '0'));
   function axi_lite_m2s_a_sz(addr_width : positive) return positive;
 
+  -- Record for the AR/AW signals in the slave-to-master direction.
   type axi_lite_s2m_a_t is record
     ready : std_ulogic;
   end record;
@@ -51,6 +53,7 @@ package axi_lite_pkg is
 
   function to_axi_lite_strb(data_width : positive) return std_ulogic_vector;
 
+  -- Record for the W signals in the master-to-slave direction.
   type axi_lite_m2s_w_t is record
     valid : std_ulogic;
     data : std_ulogic_vector(axi_lite_data_sz - 1 downto 0);
@@ -68,6 +71,7 @@ package axi_lite_pkg is
     data_width : positive
   ) return axi_lite_m2s_w_t;
 
+  -- Record for the W signals in the slave-to-master direction.
   type axi_lite_s2m_w_t is record
     ready : std_ulogic;
   end record;
@@ -79,15 +83,17 @@ package axi_lite_pkg is
   -- B (Write Response) channels
   ------------------------------------------------------------------------------
 
+  -- Record for the B signals in the master-to-slave direction.
   type axi_lite_m2s_b_t is record
     ready : std_ulogic;
   end record;
 
   constant axi_lite_m2s_b_init : axi_lite_m2s_b_t := (ready => '0');
 
+  -- Record for the B signals in the slave-to-master direction.
   type axi_lite_s2m_b_t is record
     valid : std_ulogic;
-    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+    resp : axi_resp_t;
   end record;
 
   constant axi_lite_s2m_b_init : axi_lite_s2m_b_t := (valid => '0', resp => (others => '-'));
@@ -99,16 +105,18 @@ package axi_lite_pkg is
   -- R (Read Data) channels
   ------------------------------------------------------------------------------
 
+  -- Record for the R signals in the master-to-slave direction.
   type axi_lite_m2s_r_t is record
     ready : std_ulogic;
   end record;
 
   constant axi_lite_m2s_r_init : axi_lite_m2s_r_t := (ready => '0');
 
+  -- Record for the R signals in the slave-to-master direction.
   type axi_lite_s2m_r_t is record
     valid : std_ulogic;
     data : std_ulogic_vector(axi_lite_data_sz - 1 downto 0);
-    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+    resp : axi_resp_t;
   end record;
 
   constant axi_lite_s2m_r_init : axi_lite_s2m_r_t := (
@@ -201,12 +209,15 @@ end;
 
 package body axi_lite_pkg is
 
+  ------------------------------------------------------------------------------
   function axi_lite_m2s_a_sz(addr_width : positive) return positive is
   begin
     -- Excluded member: valid.
     return addr_width;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function axi_lite_m2s_w_sz(data_width : positive) return positive is
   begin
     assert data_width = 32 or data_width = 64
@@ -252,7 +263,9 @@ package body axi_lite_pkg is
     assert hi = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function axi_lite_s2m_r_sz(data_width : positive)  return positive is
   begin
     -- Excluded member: valid
@@ -289,5 +302,6 @@ package body axi_lite_pkg is
     assert hi = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
 end;
