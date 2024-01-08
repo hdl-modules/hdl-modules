@@ -43,7 +43,7 @@ use work.axi_bfm_pkg.all;
 
 entity axi_write_master is
   generic (
-    -- The desired width of the 'AWID' and, possibly if using AXI3, 'WID' signals.
+    -- The desired width of the 'AWID' and 'BID' signals, as well as 'WID' if using AXI3.
     id_width : natural;
     -- The desired width of the 'WDATA' signal.
     data_width : positive;
@@ -240,7 +240,10 @@ begin
 
       -- Response code OKAY
       check_equal(axi_write_s2m.b.resp, 0);
-      check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), id_reference);
+
+      if id_width > 0 then
+        check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), id_reference);
+      end if;
 
       num_bursts_done <= num_bursts_done + 1;
     end process;
