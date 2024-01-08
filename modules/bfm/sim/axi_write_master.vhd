@@ -64,9 +64,11 @@ entity axi_write_master is
     seed : natural := 0;
     -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
-    -- When this generic is set, 'WID' will be assigned to same ID as corresponding AW transaction.
-    -- Also means that W data will never be sent before an AW transaction
-    set_axi3_w_id : boolean := false
+    -- When this generic is set, 'WID' will be assigned to same ID as corresponding
+    -- 'AW' transaction.
+    -- It also changes the transaction behavior, so that 'W' data will never be sent before
+    -- the 'AW' transaction
+    enable_axi3 : boolean := false
   );
   port (
     clk : in std_ulogic;
@@ -106,7 +108,7 @@ begin
       job_slv := pop(job_queue);
       job := to_axi_bfm_job(job_slv);
 
-      if set_axi3_w_id then
+      if enable_axi3 then
         push(w_id_queue, job.id);
       end if;
 
@@ -156,7 +158,7 @@ begin
     -- queue for the W data.
     impure function get_w_data_queue return queue_t is
     begin
-      if set_axi3_w_id then
+      if enable_axi3 then
         return new_queue;
       end if;
       return data_queue;
@@ -165,7 +167,7 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    handle_w_id : if set_axi3_w_id generate
+    handle_w_id : if enable_axi3 generate
       signal current_w_id : natural := 0;
     begin
 
