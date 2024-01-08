@@ -22,86 +22,101 @@ use math.math_pkg.all;
 
 package axi_pkg is
 
-  -- Max value
-  constant axi_id_sz : positive := 24;
-
-  constant axi_max_burst_length_beats : positive := 256;
-  constant axi3_max_burst_length_beats : positive := 16;
-
-
   ------------------------------------------------------------------------------
   -- A (Address Read and Address Write) channels
   ------------------------------------------------------------------------------
 
-  -- Max value
+  -- ID field (ARID, AWID, BID as well as RID if using AXI3)
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
+  constant axi_id_sz : positive := 24;
+
+  -- Address field (ARADDR or AWADDR).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_a_addr_sz : positive := 64;
-  -- Number of transfers = len + 1
+
+  -- Length field (ARLEN or AWLEN)
+  -- Number of beats (data transfers) in this burst = AxLEN + 1
   constant axi_a_len_sz : positive := 8;
-  -- Bytes per transfer = 2^size
-  constant axi_a_size_sz : positive := 3;
+  subtype axi_a_len_t is u_unsigned(axi_a_len_sz - 1 downto 0);
+
+  constant axi_max_burst_length_beats : positive := 256;
+  constant axi3_max_burst_length_beats : positive := 16;
 
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
-  ) return u_unsigned;
-  function to_size(data_width_bits : positive) return u_unsigned;
+  ) return axi_a_len_t;
 
+  -- Size field (ARSIZE or AWSIZE)
+  -- Bytes per beat (data transfer) in this burst = 2^AxSIZE
+  constant axi_a_size_sz : positive := 3;
+  subtype axi_a_size_t is u_unsigned(axi_a_size_sz - 1 downto 0);
+
+  function to_size(data_width_bits : positive) return axi_a_size_t;
+
+  -- Burst field (ARBURST or AWBURST)
   constant axi_a_burst_sz : positive := 2;
-  constant axi_a_burst_fixed : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "00";
-  constant axi_a_burst_incr : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "01";
-  constant axi_a_burst_wrap : std_ulogic_vector(axi_a_burst_sz - 1 downto 0) := "10";
+  subtype axi_a_burst_t is std_ulogic_vector(axi_a_burst_sz - 1 downto 0);
 
-  constant axi_a_lock_sz : positive := 1; -- Two bits in AXI3
-  constant axi_a_lock_normal : std_ulogic_vector(axi_a_lock_sz - 1 downto 0) := "0";
-  constant axi_a_lock_exclusive : std_ulogic_vector(axi_a_lock_sz - 1 downto 0) := "1";
-  constant axi3_a_lock_normal : std_ulogic_vector(2 - 1 downto 0) := "00";
-  constant axi3_a_lock_exclusive : std_ulogic_vector(2 - 1 downto 0) := "01";
-  constant axi3_a_lock_locked : std_ulogic_vector(2 - 1 downto 0) := "10";
+  constant axi_a_burst_fixed : axi_a_burst_t := "00";
+  constant axi_a_burst_incr : axi_a_burst_t := "01";
+  constant axi_a_burst_wrap : axi_a_burst_t := "10";
 
+  -- Lock field (ARLOCK or AWLOCK)
+  -- Note that this is two bits in AXI3. We use AXI4 as the default.
+  constant axi_a_lock_sz : positive := 1;
+  subtype axi_a_lock_t is std_ulogic_vector(axi_a_lock_sz - 1 downto 0);
+
+  constant axi_a_lock_normal : axi_a_lock_t := "0";
+  constant axi_a_lock_exclusive : axi_a_lock_t := "1";
+
+  subtype axi3_a_lock_t is std_ulogic_vector(2 - 1 downto 0);
+  constant axi3_a_lock_normal : axi3_a_lock_t := "00";
+  constant axi3_a_lock_exclusive : axi3_a_lock_t := "01";
+  constant axi3_a_lock_locked : axi3_a_lock_t := "10";
+
+  -- Cache field (ARCACHE or AWCACHE)
   constant axi_a_cache_sz : positive := 4;
-  constant axi_a_cache_device_non_bufferable : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "0000";
-  constant axi_a_cache_device_bufferable : std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0001";
-  constant axi_a_cache_normal_non_cacheable_non_bufferable :
-    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0010";
-  constant axi_a_cache_normal_non_cacheable_bufferable :
-    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "0011";
-  constant axi_ar_cache_write_through_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "1010";
-  constant axi_aw_cache_write_through_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "0110";
-  constant axi_a_cache_write_through_read_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "0110";
-  constant axi_a_cache_write_through_write_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "1010";
-  constant axi_a_cache_write_through_read_and_write_allocate :
-    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "1110";
-  constant axi_ar_cache_write_back_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "1011";
-  constant axi_aw_cache_write_back_no_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "0111";
-  constant axi_a_cache_write_back_read_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "0111";
-  constant axi_a_cache_write_back_write_allocate : std_ulogic_vector(axi_a_cache_sz - 1 downto 0)
-    := "1011";
-  constant axi_a_cache_write_back_read_and_write_allocate :
-    std_ulogic_vector(axi_a_cache_sz - 1 downto 0) := "1111";
+  subtype axi_a_cache_t is std_ulogic_vector(axi_a_cache_sz - 1 downto 0);
 
+  constant axi_a_cache_device_non_bufferable : axi_a_cache_t := "0000";
+  constant axi_a_cache_device_bufferable : axi_a_cache_t := "0001";
+  constant axi_a_cache_normal_non_cacheable_non_bufferable : axi_a_cache_t := "0010";
+  constant axi_a_cache_normal_non_cacheable_bufferable : axi_a_cache_t := "0011";
+  constant axi_ar_cache_write_through_no_allocate : axi_a_cache_t := "1010";
+  constant axi_aw_cache_write_through_no_allocate : axi_a_cache_t := "0110";
+  constant axi_a_cache_write_through_read_allocate : axi_a_cache_t := "0110";
+  constant axi_a_cache_write_through_write_allocate : axi_a_cache_t := "1010";
+  constant axi_a_cache_write_through_read_and_write_allocate : axi_a_cache_t := "1110";
+  constant axi_ar_cache_write_back_no_allocate : axi_a_cache_t := "1011";
+  constant axi_aw_cache_write_back_no_allocate : axi_a_cache_t := "0111";
+  constant axi_a_cache_write_back_read_allocate : axi_a_cache_t := "0111";
+  constant axi_a_cache_write_back_write_allocate : axi_a_cache_t := "1011";
+  constant axi_a_cache_write_back_read_and_write_allocate : axi_a_cache_t := "1111";
+
+  -- Protocol field (ARPROT or AWPROT)
   constant axi_a_prot_sz : positive := 3;
-  constant axi_a_prot_privileged : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "001";
-  constant axi_a_prot_unprivileged : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_secure : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_nonsecure : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "010";
-  constant axi_a_prot_data : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "000";
-  constant axi_a_prot_instruction : std_ulogic_vector(axi_a_prot_sz - 1 downto 0) := "100";
+  subtype axi_a_prot_t is std_ulogic_vector(axi_a_prot_sz - 1 downto 0);
 
+  constant axi_a_prot_privileged : axi_a_prot_t := "001";
+  constant axi_a_prot_unprivileged : axi_a_prot_t := "000";
+  constant axi_a_prot_secure : axi_a_prot_t := "000";
+  constant axi_a_prot_nonsecure : axi_a_prot_t := "010";
+  constant axi_a_prot_data : axi_a_prot_t := "000";
+  constant axi_a_prot_instruction : axi_a_prot_t := "100";
+
+  -- Region field (ARREGION or AWREGION)
   constant axi_a_region_sz : positive := 4;
+  subtype axi_a_region_t is std_ulogic_vector(axi_a_region_sz - 1 downto 0);
 
+  -- Record for the AR/AW signals in the master-to-slave direction.
   type axi_m2s_a_t is record
     valid : std_ulogic;
     id : u_unsigned(axi_id_sz - 1 downto 0);
     addr : u_unsigned(axi_a_addr_sz - 1 downto 0);
-    len : u_unsigned(axi_a_len_sz - 1 downto 0);
-    size : u_unsigned(axi_a_size_sz - 1 downto 0);
+    len : axi_a_len_t;
+    size : axi_a_size_t;
     burst : std_ulogic_vector(axi_a_burst_sz - 1 downto 0);
     -- Excluded members: lock, cache, prot, region.
     -- These are typically not changed on a transfer-to-transfer basis.
@@ -125,6 +140,7 @@ package axi_pkg is
     data : std_ulogic_vector; id_width : natural; addr_width : positive
   ) return axi_m2s_a_t;
 
+  -- Record for the AR/AW signals in the slave-to-master direction.
   type axi_s2m_a_t is record
     ready : std_ulogic;
   end record;
@@ -137,12 +153,20 @@ package axi_pkg is
   -- W (Write Data) channels
   ------------------------------------------------------------------------------
 
-  -- Max values
+  -- Data field (RDATA or WDATA).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_data_sz : positive := 128;
+
+  -- Write data strobe field (WSTRB).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_w_strb_sz : positive := axi_data_sz / 8;
 
   function to_strb(data_width : positive) return std_ulogic_vector;
+  function axi_w_strb_width(data_width : positive) return positive;
 
+  -- Record for the W signals in the master-to-slave direction.
   type axi_m2s_w_t is record
     valid : std_ulogic;
     data : std_ulogic_vector(axi_data_sz - 1 downto 0);
@@ -163,8 +187,6 @@ package axi_pkg is
   function axi_m2s_w_sz(data_width : positive; id_width : natural := 0) return positive;
   type axi_m2s_w_vec_t is array (integer range <>) of axi_m2s_w_t;
 
-  function axi_w_strb_width(data_width : positive) return positive;
-
   function to_slv(
     data : axi_m2s_w_t; data_width : positive; id_width : natural := 0
   ) return std_ulogic_vector;
@@ -172,6 +194,7 @@ package axi_pkg is
     data : std_ulogic_vector; data_width : positive; id_width : natural := 0
   ) return axi_m2s_w_t;
 
+  -- Record for the W signals in the slave-to-master direction.
   type axi_s2m_w_t is record
     ready : std_ulogic;
   end record;
@@ -184,25 +207,31 @@ package axi_pkg is
   -- B (Write Response) channels
   ------------------------------------------------------------------------------
 
+  -- Record for the W signals in the master-to-slave direction.
   type axi_m2s_b_t is record
     ready : std_ulogic;
   end record;
 
   constant axi_m2s_b_init : axi_m2s_b_t := (ready => '0');
 
+  -- Response field (RRESP or BRESP).
   constant axi_resp_sz : positive := 2;
-  constant axi_resp_okay : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "00";
-  -- Exclusive access okay.
-  constant axi_resp_exokay : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "01";
-  -- Slave error. Slave wishes to return error.
-  constant axi_resp_slverr : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "10";
-  -- Decode error. There is no slave at transaction address.
-  constant axi_resp_decerr : std_ulogic_vector(axi_resp_sz - 1 downto 0) := "11";
+  subtype axi_resp_t is std_ulogic_vector(axi_resp_sz - 1 downto 0);
 
+  -- Okay.
+  constant axi_resp_okay : axi_resp_t := "00";
+  -- Exclusive access okay.
+  constant axi_resp_exokay : axi_resp_t := "01";
+  -- Slave error. Slave wishes to return error.
+  constant axi_resp_slverr : axi_resp_t := "10";
+  -- Decode error. There is no slave at transaction address.
+  constant axi_resp_decerr : axi_resp_t := "11";
+
+  -- Record for the B signals in the slave-to-master direction.
   type axi_s2m_b_t is record
     valid : std_ulogic;
     id : u_unsigned(axi_id_sz - 1 downto 0);
-    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+    resp : axi_resp_t;
   end record;
 
   constant axi_s2m_b_init : axi_s2m_b_t := (
@@ -221,6 +250,7 @@ package axi_pkg is
   -- R (Read Data) channels
   ------------------------------------------------------------------------------
 
+  -- Record for the R signals in the master-to-slave direction.
   type axi_m2s_r_t is record
     ready : std_ulogic;
   end record;
@@ -228,11 +258,12 @@ package axi_pkg is
 
   constant axi_m2s_r_init : axi_m2s_r_t := (ready => '0');
 
+  -- Record for the R signals in the slave-to-master direction.
   type axi_s2m_r_t is record
     valid : std_ulogic;
     id : u_unsigned(axi_id_sz - 1 downto 0);
     data : std_ulogic_vector(axi_data_sz - 1 downto 0);
-    resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+    resp : axi_resp_t;
     last : std_ulogic;
   end record;
 
@@ -320,27 +351,25 @@ package axi_pkg is
 
   constant axi_s2m_init : axi_s2m_t := (read => axi_read_s2m_init, write => axi_write_s2m_init);
 
-  function combine_response(resp1, resp2 : std_ulogic_vector(axi_resp_sz - 1 downto 0))
-    return std_ulogic_vector;
+  function combine_response(resp1, resp2 : axi_resp_t) return axi_resp_t;
 
 end;
 
 package body axi_pkg is
 
+  ------------------------------------------------------------------------------
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
-  ) return u_unsigned is
-    variable result : u_unsigned(axi_a_len_sz - 1 downto 0);
-  begin
+  ) return axi_a_len_t is
     -- burst_length_beats is number of transfers
-    result := to_unsigned(burst_length_beats - 1, result'length);
+    constant result : axi_a_len_t := to_unsigned(burst_length_beats - 1, axi_a_len_sz);
+  begin
     return result;
   end function;
 
-  function to_size(data_width_bits : positive) return u_unsigned is
-    variable result : u_unsigned(axi_a_size_sz - 1 downto 0);
+  function to_size(data_width_bits : positive) return axi_a_size_t is
+    constant result : axi_a_size_t := to_unsigned(log2(data_width_bits / 8), axi_a_size_sz);
   begin
-    result := to_unsigned(log2(data_width_bits / 8), result'length);
     return result;
   end function;
 
@@ -404,7 +433,9 @@ package body axi_pkg is
     assert hi + offset = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function to_strb(data_width : positive) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_w_strb_sz - 1 downto 0) := (others => '0');
   begin
@@ -478,7 +509,9 @@ package body axi_pkg is
     assert hi + offset = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function axi_s2m_b_sz(id_width : natural) return positive is
   begin
     -- Excluded member: valid
@@ -517,7 +550,9 @@ package body axi_pkg is
     assert hi + offset = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   function axi_s2m_r_sz(data_width : positive; id_width : natural) return positive is
   begin
     -- Excluded member: valid.
@@ -577,13 +612,13 @@ package body axi_pkg is
     assert hi + offset = data'high severity failure;
     return result;
   end function;
+  ------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------
   -- Combine responses, with the "worst" response taking priority. OKAY may be considered
   -- an error if an exclusive access was desired, so OKAY takes priority over EXOKAY.
-  function combine_response(
-    resp1, resp2 : std_ulogic_vector(axi_resp_sz - 1 downto 0)
-  ) return std_ulogic_vector is
-    variable resp : std_ulogic_vector(axi_resp_sz - 1 downto 0);
+  function combine_response(resp1, resp2 : axi_resp_t) return axi_resp_t is
+    variable resp : axi_resp_t;
   begin
     resp := resp1;
 
@@ -615,4 +650,6 @@ package body axi_pkg is
 
     return resp;
   end function;
+  ------------------------------------------------------------------------------
+
 end;
