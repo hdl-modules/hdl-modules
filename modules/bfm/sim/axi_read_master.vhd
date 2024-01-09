@@ -228,7 +228,9 @@ begin
       wait until axi_read_s2m.r.valid and rising_edge(clk);
 
       -- Check response code OKAY (everything else is checked in the axi_stream_slave)
-      check_equal(axi_read_s2m.r.resp, 0);
+      check_equal(
+        axi_read_s2m.r.resp, 0, "'RRESP' check in burst_idx=" & to_string(num_bursts_checked)
+      );
     end process;
 
 
