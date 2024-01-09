@@ -6,17 +6,26 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- BFM for sending data on an AXI stream interface.
+-- BFM for sending data on an AXI-Stream interface.
 --
--- Data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>` to a
--- :doc:`VUnit queue <vunit:data_types/queue>`.
--- Each element in the ``integer_array`` should be an unsigned byte.
+-- Data is pushed to the ``data_queue`` :doc:`VUnit queue <vunit:data_types/queue>` as a
+-- :doc:`VUnit integer_array <vunit:data_types/integer_array>`.
+-- Each element in the integer array should be an unsigned byte.
 -- Little endian byte order is assumed.
 --
 -- The byte length of the packets (as indicated by the length of the ``data_queue`` arrays)
--- does not need to be aligned with the ``data`` width of the bus.
+-- does not need to be aligned with the ``data_width`` of the bus.
 -- If unaligned, the last data beat will not have all byte lanes set to valid
 -- ``data`` and ``strobe``.
+--
+-- .. note::
+--
+--   This BFM will inject random handshake jitter/stalling for good verification coverage.
+--   Modify the ``stall_config`` generic to change the behavior.
+--   You can also set ``seed`` to something unique in order to vary the randomization in each
+--   simulation run.
+--   This can be done conveniently with the
+--   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -75,10 +84,10 @@ architecture a of axi_stream_master is
 
   signal last_int : std_ulogic := drive_invalid_value;
   signal data_int : std_ulogic_vector(data'range) := (others => drive_invalid_value);
-  signal strobe_byte : std_ulogic_vector(data_width / 8 - 1 downto 0) :=
-    (others => '0');
-  signal strobe_int : std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
-    (others => '0');
+  signal strobe_byte : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+  signal strobe_int : std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) := (
+    others => '0'
+  );
 
   signal data_is_valid : std_ulogic := '0';
 

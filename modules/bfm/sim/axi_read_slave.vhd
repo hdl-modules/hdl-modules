@@ -6,10 +6,13 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
+-- Wrapper around VUnit ``axi_read_slave`` verification component.
+-- Uses convenient record types for the AXI signals.
+-- This BFM will also perform AXI-Stream protocol checking on the ``AR`` channels to verify that the
+-- upstream AXI master is performing everything correctly.
 --
--- Instantiates the VUnit ``axi_read_slave`` verification component, which acts as an AXI slave
--- and reads data from the :ref:`VUnit memory model <vunit:memory_model>`.
+-- The instantiated verification component will process the incoming AXI operations and
+-- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

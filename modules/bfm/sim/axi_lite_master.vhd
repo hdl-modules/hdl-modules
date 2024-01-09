@@ -6,13 +6,14 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper around VUnit BFM that uses convenient record types for the AXI-Lite signals.
+-- Wrapper around VUnit ``axi_lite_master`` verification component.
+-- Uses convenient record types for the AXI-Lite signals.
 --
--- Instantiates the VUnit ``axi_lite_master`` verification component, which creates AXI-Lite
--- read/write transactions.
--- Is used by performing VUnit VC calls, such as ``read_bus``,
--- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.
+-- The instantiated verification component will create AXI-Lite read/write transactions
+-- based on VUnit VC calls, such as ``read_bus``.
 --
+-- If this BFM is used for a register bus, the convenience methods in
+-- :ref:`reg_file.reg_operations_pkg` can be useful.
 -- Note that the default value for ``bus_handle`` is the same as the default bus handle for the
 -- procedures in :ref:`reg_file.reg_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
@@ -21,9 +22,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library math;
-use math.math_pkg.all;
-
 library axi;
 use axi.axi_lite_pkg.all;
 
@@ -31,7 +29,6 @@ library reg_file;
 use reg_file.reg_operations_pkg.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
 context vunit_lib.vc_context;
 
 
@@ -49,18 +46,22 @@ end entity;
 
 architecture a of axi_lite_master is
 
-  signal rdata, wdata : std_ulogic_vector(data_length(bus_handle) - 1 downto 0);
-  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0);
+  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0) := (
+    others => '0'
+  );
 
-  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0);
+  signal rdata, wdata : std_ulogic_vector(data_length(bus_handle) - 1 downto 0) := (others => '0');
+  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
   axi_lite_m2s.read.ar.addr(araddr'range) <= unsigned(araddr);
+
   rdata <= axi_lite_s2m.read.r.data(rdata'range);
 
   axi_lite_m2s.write.aw.addr(awaddr'range) <= unsigned(awaddr);
+
   axi_lite_m2s.write.w.data(wdata'range) <= wdata;
   axi_lite_m2s.write.w.strb(wstrb'range) <= wstrb;
 

@@ -6,22 +6,38 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- BFM that creates AXI write transactions based on a simple interface.
+-- BFM that creates AXI write transactions and checkers based on a simple interface.
+--
 -- ``AW`` transactions will be created based on jobs (``axi_master_bfm_job_t``) that the user
--- pushes to the ``job_queue``.
--- A ``W`` burst will be created based on the ``integer_array_t`` data
--- pushed by the user to the ``data_queue``.
+-- pushes to the ``job_queue`` :doc:`VUnit queue <vunit:data_types/queue>`.
+-- A ``W`` burst will be created based on the
+-- :doc:`integer_array_t <vunit:data_types/integer_array>` data pushed by the user to
+-- the ``data_queue``.
 -- Each ``AW`` transaction will result in a check that the eventually returned ``BID`` is correct.
 --
--- The job address is assumed to be aligned with bus data width.
+-- .. note::
 --
--- The byte length of the transactions (as set in the ``job_queue`` records, as well as indicated by
--- the length of the ``data_queue`` arrays) does not need to be aligned with the data width of
--- the bus.
+--   This BFM will inject random handshake jitter/stalling on the AXI channels for good
+--   verification coverage.
+--   Modify the ``aw_stall_config``, ``w_stall_config`` and ``b_stall_config`` generics to change
+--   the behavior.
+--   You can also set ``seed`` to something unique in order to vary the randomization in each
+--   simulation run.
+--   This can be done conveniently with the
+--   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+--
+-- The byte length of the transactions (as set in the ``job`` as well as by the length of the
+-- ``data_queue`` arrays) does not need to be aligned with the data width of the bus.
 -- If unaligned, the last AXI beat will have a strobe that is not '1' for all byte lanes.
 --
+-- The ``job`` address, however, is assumed to be aligned with bus data width.
+--
 -- Note that data can be pushed to ``data_queue`` before the corresponding job is pushed.
--- This data will be pushed to the AXI ``W`` channel straight away, unless in AXI3 mode.
+-- This data will be pushed to the AXI ``W`` channel straight away, possibly before the ``AW``
+-- transaction (unless in AXI3 mode).
+--
+-- This BFM will also perform AXI-Stream protocol checking on the ``B`` channels to verify that the
+-- downstream AXI slave is performing everything correctly.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -92,9 +108,12 @@ begin
   aw_block : block
     signal data_is_valid : std_ulogic := '0';
 
+    constant size_target : axi_a_size_t := to_size(data_width);
+    constant burst_target : axi_a_burst_t := axi_a_burst_incr;
+
     signal id_target : u_unsigned(axi_write_m2s.aw.id'range) := (others => 'X');
     signal addr_target : u_unsigned(axi_write_m2s.aw.addr'range) := (others => 'X');
-    signal len_target : u_unsigned(axi_write_m2s.aw.len'range) := (others => 'X');
+    signal len_target : axi_a_len_t := (others => 'X');
   begin
 
     ------------------------------------------------------------------------------
@@ -145,8 +164,8 @@ begin
     axi_write_m2s.aw.id <= id_target when axi_write_m2s.aw.valid else (others => 'X');
     axi_write_m2s.aw.addr <= addr_target when axi_write_m2s.aw.valid else (others => 'X');
     axi_write_m2s.aw.len <= len_target when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.size <= to_size(data_width) when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.burst <= axi_a_burst_incr when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.size <= size_target when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.burst <= burst_target when axi_write_m2s.aw.valid else (others => 'X');
 
   end block;
 

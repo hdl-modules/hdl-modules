@@ -7,19 +7,37 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- BFM that creates AXI read transactions and checkers based on a simple interface.
+--
 -- ``AR`` transactions will be created based on jobs (``axi_master_bfm_job_t``) that the user
--- pushes to the ``job_queue``.
--- The data returned on the ``R`` channel will be checked against the ``integer_array_t`` data
+-- pushes to the ``job_queue`` :doc:`VUnit queue <vunit:data_types/queue>`.
+-- The data returned on the ``R`` channel will be checked against the
+-- :doc:`integer_array_t <vunit:data_types/integer_array>` data
 -- pushed by the user to the ``reference_data_queue``.
 -- The returned ``RID`` will be checked that it is the same as the corresponding ``ARID``.
 --
--- The ``RID`` check is based on the assumption that ``R`` transactions are returned in the same
--- order as ``AR`` transactions are sent.
--- Also the job address is assumed to be aligned with the bus data width.
+-- .. note::
 --
--- The byte length of the transactions (as set in the job, as well as indicated by the
--- length of the data arrays) does not need to be aligned with the data width of the bus.
+--   This BFM will inject random handshake jitter/stalling on the AXI channels for good
+--   verification coverage.
+--   Modify the ``ar_stall_config`` and ``r_stall_config`` generics to change the behavior.
+--   You can also set ``seed`` to something unique in order to vary the randomization in each
+--   simulation run.
+--   This can be done conveniently with the
+--   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+--
+-- This BFM will also perform AXI-Stream protocol checking on the ``R`` channels to verify that the
+-- downstream AXI slave is performing everything correctly.
+--
+-- The byte length of the transactions (as set in the ``job`` as well as by the length of the
+-- ``reference_data`` arrays) does not need to be aligned with the data width of the bus.
 -- If unaligned, the last AXI beat will not have all byte lanes checked against reference data.
+--
+-- .. warning::
+--
+--   The ``RID`` check is based on the assumption that ``R`` transactions are returned in the same
+--   order as ``AR`` transactions are sent.
+--
+--   Also the ``job`` address is assumed to be aligned with the bus data width.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -84,9 +102,12 @@ begin
   ar_block : block
     signal data_is_valid : std_ulogic := '0';
 
-    signal id_target : u_unsigned(axi_read_m2s.ar.id'range) := (others => 'X');
-    signal addr_target : u_unsigned(axi_read_m2s.ar.addr'range) := (others => 'X');
-    signal len_target : u_unsigned(axi_read_m2s.ar.len'range) := (others => 'X');
+    constant size_target : axi_a_size_t := to_size(data_width);
+    constant burst_target : axi_a_burst_t := axi_a_burst_incr;
+
+    signal id_target : u_unsigned(axi_read_m2s.ar.id'range) := (others => '0');
+    signal addr_target : u_unsigned(axi_read_m2s.ar.addr'range) := (others => '0');
+    signal len_target : axi_a_len_t := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -135,16 +156,17 @@ begin
     axi_read_m2s.ar.id <= id_target when axi_read_m2s.ar.valid else (others => 'X');
     axi_read_m2s.ar.addr <= addr_target when axi_read_m2s.ar.valid else (others => 'X');
     axi_read_m2s.ar.len <= len_target when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.size <= to_size(data_width) when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.burst <= axi_a_burst_incr when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.size <= size_target when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.burst <= burst_target when axi_read_m2s.ar.valid else (others => 'X');
 
   end block;
 
 
   ------------------------------------------------------------------------------
   r_block : block
-    signal strobe, last_beat_strobe : std_ulogic_vector(bytes_per_beat - 1 downto 0)
-      := (others => '0');
+    signal strobe, last_beat_strobe : std_ulogic_vector(bytes_per_beat - 1 downto 0) := (
+      others => '0'
+    );
   begin
 
     ------------------------------------------------------------------------------
@@ -155,7 +177,7 @@ begin
     -- The last beat of the burst might not have all lanes assigned, so the strobe is needed.
     -- We re-create the strobe here in the BFM based on the burst length.
     set_last_beat_strobe : process
-      variable burst_length_bytes, last_beat_num_lanes_strobe : natural := 0;
+      variable burst_length_bytes, last_beat_num_lanes_strobed : natural := 0;
     begin
       while is_empty(r_length_bytes_queue) loop
         wait until rising_edge(clk);
@@ -163,13 +185,13 @@ begin
       burst_length_bytes := pop(r_length_bytes_queue);
 
       if burst_length_bytes mod bytes_per_beat = 0 then
-        last_beat_num_lanes_strobe := bytes_per_beat;
+        last_beat_num_lanes_strobed := bytes_per_beat;
       else
-        last_beat_num_lanes_strobe := burst_length_bytes mod bytes_per_beat;
+        last_beat_num_lanes_strobed := burst_length_bytes mod bytes_per_beat;
       end if;
 
       last_beat_strobe <= (others => '0');
-      last_beat_strobe(last_beat_num_lanes_strobe - 1 downto 0) <= (others => '1');
+      last_beat_strobe(last_beat_num_lanes_strobed - 1 downto 0) <= (others => '1');
 
       wait until
         (axi_read_m2s.r.ready and axi_read_s2m.r.valid and axi_read_s2m.r.last) = '1'
