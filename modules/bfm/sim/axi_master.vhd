@@ -6,31 +6,35 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper around VUnit BFM that uses convenient record types for the AXI signals.
+-- Creates AXI read/write transactions by wrapping the VUnit ``axi_lite_master``
+-- verification component.
+-- Uses convenient record types for the AXI signals.
 --
--- Instantiates the VUnit ``axi_lite_master`` verification component, which creates AXI-Lite
--- read/write transactions.
--- The AXI-Lite interface are then connected to the "full" AXI interface of this module.
--- The fact that the BFM uses AXI-Lite means that there is no burst support.
+-- .. note::
+--
+--   This AXI BFM wraps an AXI-Lite verification component, meaning it can not be used to produce
+--   burst transactions.
+--   If you want to create burst transactions, with built-in checkers, see the
+--   :ref:`bfm.axi_read_master` and :ref:`bfm.axi_write_master` BFMs instead.
+--
+-- The AXI-Lite interface of the wrapped verification component is connected to the "full" AXI
+-- interface of this BFM.
 -- This wrapper is typically only used for register read/write operations on the chip top level,
 -- where the register bus is still AXI.
 --
 -- It is used by performing VUnit VC calls, such as ``read_bus``,
--- or by using the register convenience methods in :ref:`reg_file.reg_operations_pkg`.
+-- or, preferably when operating on a register bus, by using the convenience methods
+-- in :ref:`reg_file.reg_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library math;
-use math.math_pkg.all;
-
 library axi;
 use axi.axi_pkg.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
 context vunit_lib.vc_context;
 
 
@@ -53,12 +57,14 @@ architecture a of axi_master is
 
   constant data_width : positive := data_length(bus_handle);
 
-  constant len : u_unsigned(axi_write_m2s.aw.len'range) := to_len(1);
-  constant size : u_unsigned(axi_write_m2s.aw.size'range) := to_size(data_width);
+  constant len : axi_a_len_t := to_len(1);
+  constant size : axi_a_size_t := to_size(data_width);
 
-  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0);
-  signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0);
-  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0);
+  signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0) := (
+    others => '0'
+  );
+  signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0) := (others => '0');
 
 begin
 
@@ -76,8 +82,8 @@ begin
   axi_write_m2s.aw.burst <= axi_a_burst_incr;
 
   axi_write_m2s.w.data(wdata'range) <= wdata;
-  axi_write_m2s.w.last <= '1';
   axi_write_m2s.w.strb(wstrb'range) <= wstrb;
+  axi_write_m2s.w.last <= '1';
 
 
   ------------------------------------------------------------------------------

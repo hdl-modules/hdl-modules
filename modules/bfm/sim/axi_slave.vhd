@@ -6,11 +6,15 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- AXI slave BFM that will perform read/write operations on the
--- :ref:`VUnit memory model <vunit:memory_model>`.
+-- Wrapper around VUnit ``axi_read_slave`` and ``axi_write_slave`` verification components.
+-- Uses convenient record types for the AXI signals.
+--
+-- The instantiated verification components will process the incoming AXI operations and
+-- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
 --
 -- This entity instantiates :ref:`bfm.axi_read_slave` and/or :ref:`bfm.axi_write_slave`
 -- based on what generics are provided.
+-- See those BFMs for more details.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
