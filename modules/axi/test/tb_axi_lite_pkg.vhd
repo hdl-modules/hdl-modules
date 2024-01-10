@@ -22,7 +22,7 @@ use work.axi_lite_pkg.all;
 
 entity tb_axi_lite_pkg is
   generic (
-    data_width : positive;
+    data_width : positive range 1 to axi_lite_data_sz;
     runner_cfg : string
   );
 end entity;
@@ -77,6 +77,22 @@ begin
 
     elsif run("test_axi_lite_strb") then
       test_axi_lite_strb;
+
+    elsif run("test_sanity_check_axi_lite_data_width") then
+      check_equal(sanity_check_axi_lite_data_width(32), true);
+      check_equal(sanity_check_axi_lite_data_width(64), true);
+
+      check_equal(sanity_check_axi_lite_data_width(-64), false);
+      check_equal(sanity_check_axi_lite_data_width(-32), false);
+      check_equal(sanity_check_axi_lite_data_width(-1), false);
+      check_equal(sanity_check_axi_lite_data_width(0), false);
+      check_equal(sanity_check_axi_lite_data_width(1), false);
+      check_equal(sanity_check_axi_lite_data_width(7), false);
+      check_equal(sanity_check_axi_lite_data_width(8), false);
+      check_equal(sanity_check_axi_lite_data_width(16), false);
+      check_equal(sanity_check_axi_lite_data_width(24), false);
+      check_equal(sanity_check_axi_lite_data_width(128), false);
+
     end if;
 
     test_runner_cleanup(runner);

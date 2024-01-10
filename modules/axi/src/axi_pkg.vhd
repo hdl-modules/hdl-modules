@@ -22,6 +22,11 @@ use math.math_pkg.all;
 
 package axi_pkg is
 
+  -- Data field (RDATA or WDATA).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
+  constant axi_data_sz : positive := 128;
+
   ------------------------------------------------------------------------------
   -- A (Address Read and Address Write) channels
   ------------------------------------------------------------------------------
@@ -53,7 +58,7 @@ package axi_pkg is
   constant axi_a_size_sz : positive := 3;
   subtype axi_a_size_t is u_unsigned(axi_a_size_sz - 1 downto 0);
 
-  function to_size(data_width_bits : positive) return axi_a_size_t;
+  function to_size(data_width_bits : positive range 8 to axi_data_sz) return axi_a_size_t;
 
   -- Burst field (ARBURST or AWBURST)
   constant axi_a_burst_sz : positive := 2;
@@ -130,14 +135,20 @@ package axi_pkg is
     size => (others => '-'),
     burst => (others => '-')
   );
-  function axi_m2s_a_sz(id_width : natural; addr_width : positive)  return positive;
+  function axi_m2s_a_sz(
+    id_width : natural range 0 to axi_id_sz; addr_width : positive range 1 to axi_a_addr_sz
+  ) return positive;
   type axi_m2s_a_vec_t is array (integer range <>) of axi_m2s_a_t;
 
   function to_slv(
-    data : axi_m2s_a_t; id_width : natural; addr_width : positive
+    data : axi_m2s_a_t;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz
   ) return std_ulogic_vector;
   function to_axi_m2s_a(
-    data : std_ulogic_vector; id_width : natural; addr_width : positive
+    data : std_ulogic_vector;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz
   ) return axi_m2s_a_t;
 
   -- Record for the AR/AW signals in the slave-to-master direction.
@@ -153,18 +164,17 @@ package axi_pkg is
   -- W (Write Data) channels
   ------------------------------------------------------------------------------
 
-  -- Data field (RDATA or WDATA).
-  -- The width value below is a max value, implementation should only take into regard the bits
-  -- that are actually used.
-  constant axi_data_sz : positive := 128;
+  -- Check that a provided data width is valid to be used with AXI.
+  -- Return 'true' if everything is okay, otherwise 'false'.
+  function sanity_check_axi_data_width(data_width : integer) return boolean;
 
   -- Write data strobe field (WSTRB).
   -- The width value below is a max value, implementation should only take into regard the bits
   -- that are actually used.
   constant axi_w_strb_sz : positive := axi_data_sz / 8;
 
-  function to_strb(data_width : positive) return std_ulogic_vector;
-  function axi_w_strb_width(data_width : positive) return positive;
+  function to_strb(data_width : positive range 8 to axi_data_sz) return std_ulogic_vector;
+  function axi_w_strb_width(data_width : positive range 8 to axi_data_sz) return positive;
 
   -- Record for the W signals in the master-to-slave direction.
   type axi_m2s_w_t is record
@@ -184,14 +194,20 @@ package axi_pkg is
     last => '-',
     id => (others => '-')
   );
-  function axi_m2s_w_sz(data_width : positive; id_width : natural := 0) return positive;
+  function axi_m2s_w_sz(
+    data_width : positive range 8 to axi_data_sz; id_width : natural range 0 to axi_id_sz := 0
+  ) return positive;
   type axi_m2s_w_vec_t is array (integer range <>) of axi_m2s_w_t;
 
   function to_slv(
-    data : axi_m2s_w_t; data_width : positive; id_width : natural := 0
+    data : axi_m2s_w_t;
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz := 0
   ) return std_ulogic_vector;
   function to_axi_m2s_w(
-    data : std_ulogic_vector; data_width : positive; id_width : natural := 0
+    data : std_ulogic_vector;
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz := 0
   ) return axi_m2s_w_t;
 
   -- Record for the W signals in the slave-to-master direction.
@@ -239,11 +255,15 @@ package axi_pkg is
     id => (others => '0'),
     resp => (others => '-')
   );
-  function axi_s2m_b_sz(id_width : natural) return positive;
+  function axi_s2m_b_sz(id_width : natural range 0 to axi_id_sz) return positive;
   type axi_s2m_b_vec_t is array (integer range <>) of axi_s2m_b_t;
 
-  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_ulogic_vector;
-  function to_axi_s2m_b(data : std_ulogic_vector; id_width : natural) return axi_s2m_b_t;
+  function to_slv(
+    data : axi_s2m_b_t; id_width : natural range 0 to axi_id_sz
+  ) return std_ulogic_vector;
+  function to_axi_s2m_b(
+    data : std_ulogic_vector; id_width : natural range 0 to axi_id_sz
+  ) return axi_s2m_b_t;
 
 
   ------------------------------------------------------------------------------
@@ -274,18 +294,20 @@ package axi_pkg is
     resp => (others => '-'),
     last => '-'
   );
-  function axi_s2m_r_sz(data_width : positive; id_width : natural)  return positive;
+  function axi_s2m_r_sz(
+    data_width : positive range 8 to axi_data_sz; id_width : natural range 0 to axi_id_sz
+  )  return positive;
   type axi_s2m_r_vec_t is array (integer range <>) of axi_s2m_r_t;
 
   function to_slv(
     data : axi_s2m_r_t;
-    data_width : positive;
-    id_width : natural
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz
   ) return std_ulogic_vector;
   function to_axi_s2m_r(
     data : std_ulogic_vector;
-    data_width : positive;
-    id_width : natural
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz
   ) return axi_s2m_r_t;
 
 
@@ -367,20 +389,28 @@ package body axi_pkg is
     return result;
   end function;
 
-  function to_size(data_width_bits : positive) return axi_a_size_t is
+  function to_size(data_width_bits : positive range 8 to axi_data_sz) return axi_a_size_t is
     constant result : axi_a_size_t := to_unsigned(log2(data_width_bits / 8), axi_a_size_sz);
   begin
+    assert sanity_check_axi_data_width(data_width_bits)
+      report "Invalid data width, see printout above"
+      severity failure;
+
     return result;
   end function;
 
-  function axi_m2s_a_sz(id_width : natural; addr_width : positive) return positive is
+  function axi_m2s_a_sz(
+    id_width : natural range 0 to axi_id_sz; addr_width : positive range 1 to axi_a_addr_sz
+  ) return positive is
   begin
     -- Excluded member: valid
     return id_width + addr_width + axi_a_len_sz + axi_a_size_sz + axi_a_burst_sz;
   end function;
 
   function to_slv(
-    data : axi_m2s_a_t; id_width : natural; addr_width : positive
+    data : axi_m2s_a_t;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz
   ) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_m2s_a_sz(id_width, addr_width) - 1 downto 0);
     variable lo, hi : natural := 0;
@@ -389,25 +419,33 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
     result(hi downto lo) := std_logic_vector(data.addr(addr_width - 1 downto 0));
+
     lo := hi + 1;
     hi := lo + data.len'length - 1;
     result(hi downto lo) := std_logic_vector(data.len);
+
     lo := hi + 1;
     hi := lo + data.size'length - 1;
     result(hi downto lo) := std_logic_vector(data.size);
+
     lo := hi + 1;
     hi := lo + data.burst'length - 1;
     result(hi downto lo) := data.burst;
+
     assert hi = result'high severity failure;
+
     return result;
   end function;
 
   function to_axi_m2s_a(
-    data : std_ulogic_vector; id_width : natural; addr_width : positive
+    data : std_ulogic_vector;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz
   ) return axi_m2s_a_t is
     constant offset : natural := data'low;
     variable result : axi_m2s_a_t := axi_m2s_a_init;
@@ -417,108 +455,166 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+
       lo := hi + 1;
     end if;
     hi := lo + addr_width - 1;
     result.addr(addr_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
+
     lo := hi + 1;
     hi := lo + result.len'length - 1;
     result.len := unsigned(data(hi + offset downto lo + offset));
+
     lo := hi + 1;
     hi := lo + result.size'length - 1;
     result.size := unsigned(data(hi + offset downto lo + offset));
+
     lo := hi + 1;
     hi := lo + result.burst'length - 1;
     result.burst := data(hi + offset downto lo + offset);
+
     assert hi + offset = data'high severity failure;
+
     return result;
   end function;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function to_strb(data_width : positive) return std_ulogic_vector is
+  function sanity_check_axi_data_width(data_width : integer) return boolean is
+    constant message : string := ". Got data_width=" & integer'image(data_width) & ".";
+  begin
+    if data_width <= 0 then
+      report "AXI data width must be greater than zero" & message;
+      return false;
+    end if;
+
+    if data_width > axi_data_sz then
+      report (
+        "AXI data width must not be greater than max value "
+        & integer'image(axi_data_sz)
+        & message
+      );
+      return false;
+    end if;
+
+    if data_width mod 8 /= 0 then
+      report "AXI data width must be a whole number of bytes" & message;
+      return false;
+    end if;
+
+    if not is_power_of_two(data_width / 8) then
+      report "AXI data byte width must be a power of two" & message;
+      return false;
+    end if;
+
+    return true;
+  end function;
+
+  function to_strb(data_width : positive range 8 to axi_data_sz) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_w_strb_sz - 1 downto 0) := (others => '0');
   begin
+    assert sanity_check_axi_data_width(data_width)
+      report "Invalid data width, see printout above"
+      severity failure;
+
     result(data_width / 8 - 1 downto 0) := (others => '1');
+
     return result;
   end function;
 
-  function axi_w_strb_width(data_width : positive) return positive is
+  function axi_w_strb_width(data_width : positive range 8 to axi_data_sz) return positive is
   begin
+    assert sanity_check_axi_data_width(data_width)
+      report "Invalid data width, see printout above"
+      severity failure;
+
     return data_width / 8;
   end function;
 
-  function axi_m2s_w_sz(data_width : positive; id_width : natural := 0) return positive is
+  function axi_m2s_w_sz(
+    data_width : positive range 8 to axi_data_sz; id_width : natural range 0 to axi_id_sz := 0
+  ) return positive is
   begin
+    assert sanity_check_axi_data_width(data_width)
+      report "Invalid data width, see printout above"
+      severity failure;
+
     -- Excluded member: valid.
-    -- The 1 is "last".
+    -- The 1 is for 'last'.
     return data_width + axi_w_strb_width(data_width) + 1 + id_width;
   end function;
 
   function to_slv(
-    data : axi_m2s_w_t; data_width : positive; id_width : natural := 0
+    data : axi_m2s_w_t;
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz := 0
   ) return std_ulogic_vector is
-    variable result :
-      std_ulogic_vector(axi_m2s_w_sz(data_width=>data_width, id_width=>id_width) - 1 downto 0) :=
-      (others => '0');
+    constant result_width : positive := axi_m2s_w_sz(data_width=>data_width, id_width=>id_width);
+    variable result : std_ulogic_vector(result_width - 1 downto 0) := (others => '0');
     variable lo, hi : natural := 0;
   begin
     lo := 0;
-
     hi := lo + data_width - 1;
     result(hi downto lo) := data.data(data_width - 1 downto 0);
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo + axi_w_strb_width(data_width) - 1;
     result(hi downto lo) := data.strb(axi_w_strb_width(data_width) - 1 downto 0);
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo + id_width - 1;
     result(hi downto lo) := std_logic_vector(data.id(id_width - 1 downto 0));
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo;
     result(hi) := data.last;
+
     assert hi = result'high severity failure;
+
     return result;
   end function;
 
   function to_axi_m2s_w(
-    data : std_ulogic_vector; data_width : positive; id_width : natural := 0
+    data : std_ulogic_vector;
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz := 0
   ) return axi_m2s_w_t is
     constant offset : natural := data'low;
     variable result : axi_m2s_w_t := axi_m2s_w_init;
     variable lo, hi : natural := 0;
   begin
     lo := 0;
-
     hi := lo + data_width - 1;
     result.data(data_width - 1 downto 0) := data(hi + offset downto lo + offset);
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo + axi_w_strb_width(data_width) - 1;
     result.strb(axi_w_strb_width(data_width) - 1 downto 0) := data(hi + offset downto lo + offset);
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo + id_width - 1;
     result.id(id_width - 1 downto 0) := unsigned(data(hi + offset downto lo + offset));
-    lo := hi + 1;
 
+    lo := hi + 1;
     hi := lo;
     result.last := data(hi + offset);
+
     assert hi + offset = data'high severity failure;
+
     return result;
   end function;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function axi_s2m_b_sz(id_width : natural) return positive is
+  function axi_s2m_b_sz(id_width : natural range 0 to axi_id_sz) return positive is
   begin
     -- Excluded member: valid
     return id_width + axi_resp_sz;
   end function;
 
-  function to_slv(data : axi_s2m_b_t; id_width : natural) return std_ulogic_vector is
+  function to_slv(
+    data : axi_s2m_b_t; id_width : natural range 0 to axi_id_sz
+  ) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_s2m_b_sz(id_width) - 1 downto 0);
     variable lo, hi : natural := 0;
   begin
@@ -526,15 +622,20 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
     result(hi downto lo) := data.resp;
+
     assert hi = result'high severity failure;
+
     return result;
   end function;
 
-  function to_axi_s2m_b(data : std_ulogic_vector; id_width : natural) return axi_s2m_b_t is
+  function to_axi_s2m_b(
+    data : std_ulogic_vector; id_width : natural range 0 to axi_id_sz
+  ) return axi_s2m_b_t is
     constant offset : natural := data'low;
     variable result : axi_s2m_b_t := axi_s2m_b_init;
     variable lo, hi : natural := 0;
@@ -543,27 +644,36 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+
       lo := hi + 1;
     end if;
     hi := lo + axi_resp_sz - 1;
     result.resp := data(hi + offset downto lo + offset);
+
     assert hi + offset = data'high severity failure;
+
     return result;
   end function;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function axi_s2m_r_sz(data_width : positive; id_width : natural) return positive is
+  function axi_s2m_r_sz(
+    data_width : positive range 8 to axi_data_sz; id_width : natural range 0 to axi_id_sz
+  ) return positive is
   begin
+    assert sanity_check_axi_data_width(data_width)
+      report "Invalid data width, see printout above"
+      severity failure;
+
     -- Excluded member: valid.
-    -- The 1 is "last".
+    -- The 1 is for 'last'.
     return data_width + id_width + axi_resp_sz + 1;
   end function;
 
   function to_slv(
     data : axi_s2m_r_t;
-    data_width : positive;
-    id_width : natural)
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz)
   return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_s2m_r_sz(data_width, id_width) - 1 downto 0);
     variable lo, hi : natural := 0;
@@ -572,24 +682,29 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result(hi downto lo) := std_logic_vector(data.id(hi downto lo));
+
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;
     result(hi downto lo) := data.data(data_width - 1 downto 0);
+
     lo := hi + 1;
     hi := lo + axi_resp_sz - 1;
     result(hi downto lo) := data.resp;
+
     lo := hi + 1;
     hi := lo;
     result(hi) := data.last;
+
     assert hi = result'high severity failure;
+
     return result;
   end function;
 
   function to_axi_s2m_r(
     data : std_ulogic_vector;
-    data_width : positive;
-    id_width : natural
+    data_width : positive range 8 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz
   ) return axi_s2m_r_t is
     constant offset : natural := data'low;
     variable result : axi_s2m_r_t := axi_s2m_r_init;
@@ -599,17 +714,22 @@ package body axi_pkg is
     if id_width > 0 then
       hi := id_width - 1;
       result.id(hi downto lo) := unsigned(data(hi + offset downto lo + offset));
+
       lo := hi + 1;
     end if;
     hi := lo + data_width - 1;
     result.data(data_width - 1 downto 0) := data(hi + offset downto lo + offset);
+
     lo := hi + 1;
     hi := lo + axi_resp_sz - 1;
     result.resp := data(hi + offset downto lo + offset);
+
     lo := hi + 1;
     hi := lo;
     result.last := data(hi + offset);
+
     assert hi + offset = data'high severity failure;
+
     return result;
   end function;
   ------------------------------------------------------------------------------

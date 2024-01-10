@@ -37,10 +37,12 @@ end entity;
 
 architecture a of axi_lite_simple_read_crossbar is
 
-  signal input_ports_axi_m2s : axi_read_m2s_vec_t(0 to num_inputs - 1) :=
-    (others => axi_read_m2s_init);
-  signal input_ports_axi_s2m : axi_read_s2m_vec_t(0 to num_inputs - 1) :=
-    (others => axi_read_s2m_init);
+  signal input_ports_axi_m2s : axi_read_m2s_vec_t(0 to num_inputs - 1) := (
+    others => axi_read_m2s_init
+  );
+  signal input_ports_axi_s2m : axi_read_s2m_vec_t(0 to num_inputs - 1) := (
+    others => axi_read_s2m_init
+  );
 
   signal output_axi_m2s : axi_read_m2s_t := axi_read_m2s_init;
   signal output_axi_s2m : axi_read_s2m_t := axi_read_s2m_init;
@@ -59,10 +61,10 @@ begin
     input_ports_axi_m2s(input_idx).r.ready <= input_ports_m2s(input_idx).r.ready;
 
     input_ports_s2m(input_idx).r.valid <= input_ports_axi_s2m(input_idx).r.valid;
-    input_ports_s2m(input_idx).r.data <=
-      input_ports_axi_s2m(input_idx).r.data(input_ports_s2m(input_idx).r.data'range);
-    input_ports_s2m(input_idx).r.resp <=
-      input_ports_axi_s2m(input_idx).r.resp(input_ports_s2m(input_idx).r.resp'range);
+    input_ports_s2m(input_idx).r.data <= input_ports_axi_s2m(input_idx).r.data(
+      input_ports_s2m(input_idx).r.data'range
+    );
+    input_ports_s2m(input_idx).r.resp <= input_ports_axi_s2m(input_idx).r.resp;
   end generate;
 
   output_m2s.ar.valid <= output_axi_m2s.ar.valid;
@@ -74,7 +76,7 @@ begin
 
   output_axi_s2m.r.valid <= output_s2m.r.valid;
   output_axi_s2m.r.data(output_s2m.r.data'range) <= output_s2m.r.data;
-  output_axi_s2m.r.resp(output_s2m.r.resp'range) <= output_s2m.r.resp;
+  output_axi_s2m.r.resp <= output_s2m.r.resp;
   -- AXI-Lite always burst length 1. Need to set last for the logic in axi_interconnect.
   output_axi_s2m.r.last <= '1';
 

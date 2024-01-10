@@ -25,7 +25,7 @@ entity tb_axi_stream_bfm is
   generic (
     master_stall_probability_percent : natural;
     slave_stall_probability_percent : natural;
-    data_width : natural;
+    data_width : positive;
     seed : natural;
     runner_cfg : string
   );

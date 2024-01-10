@@ -34,7 +34,7 @@ use work.axi_pkg.axi_resp_slverr;
 
 entity tb_axi_to_axi_lite_bus_error is
   generic (
-    data_width : integer;
+    data_width : positive range 1 to axi_lite_data_sz;
     runner_cfg : string
   );
 end entity;

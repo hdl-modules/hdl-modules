@@ -29,8 +29,8 @@ use work.axi_pkg.all;
 entity axi_r_fifo is
   generic (
     asynchronous : boolean;
-    id_width : natural;
-    data_width : positive;
+    id_width : natural range 0 to axi_id_sz;
+    data_width : positive range 1 to axi_data_sz;
     depth : natural := 16;
     enable_packet_mode : boolean := false;
     ram_type : ram_style_t := ram_style_auto
@@ -54,13 +54,16 @@ architecture a of axi_r_fifo is
 
 begin
 
+  ------------------------------------------------------------------------------
   passthrough_or_fifo : if depth = 0 generate
+
     output_m2s <= input_m2s;
     input_s2m <= output_s2m;
 
+  ------------------------------------------------------------------------------
   else generate
 
-    constant r_width : positive := axi_s2m_r_sz(data_width, id_width);
+    constant r_width : positive := axi_s2m_r_sz(data_width=>data_width, id_width=>id_width);
 
     signal read_valid : std_ulogic := '0';
     signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);
@@ -70,10 +73,10 @@ begin
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      input_s2m <= to_axi_s2m_r(read_data, data_width, id_width);
+      input_s2m <= to_axi_s2m_r(data=>read_data, data_width=>data_width, id_width=>id_width);
       input_s2m.valid <= read_valid;
 
-      write_data <= to_slv(output_s2m, data_width, id_width);
+      write_data <= to_slv(data=>output_s2m, data_width=>data_width, id_width=>id_width);
     end process;
 
 
@@ -81,7 +84,7 @@ begin
     fifo_wrapper_inst : entity fifo.fifo_wrapper
       generic map (
         use_asynchronous_fifo => asynchronous,
-        width => r_width,
+        width => write_data'length,
         depth => depth,
         enable_last => enable_packet_mode,
         enable_packet_mode => enable_packet_mode,
@@ -102,7 +105,6 @@ begin
         --
         write_level => output_level
       );
-
 
   end generate;
 

@@ -28,8 +28,8 @@ use work.axi_pkg.all;
 
 entity axi_address_fifo is
   generic (
-    id_width : natural;
-    addr_width : positive;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz;
     asynchronous : boolean;
     depth : natural := 16;
     ram_type : ram_style_t := ram_style_auto
@@ -51,13 +51,16 @@ architecture a of axi_address_fifo is
 
 begin
 
+  ------------------------------------------------------------------------------
   passthrough_or_fifo : if depth = 0 generate
+
     output_m2s <= input_m2s;
     input_s2m <= output_s2m;
 
+  ------------------------------------------------------------------------------
   else generate
 
-    constant ar_width : positive := axi_m2s_a_sz(id_width, addr_width);
+    constant ar_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width);
 
     signal read_valid : std_ulogic := '0';
     signal read_data, write_data : std_ulogic_vector(ar_width - 1 downto 0);

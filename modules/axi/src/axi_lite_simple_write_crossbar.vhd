@@ -25,10 +25,12 @@ entity axi_lite_simple_write_crossbar is
   port(
     clk : in std_ulogic;
     --# {{}}
-    input_ports_m2s : in axi_lite_write_m2s_vec_t(0 to num_inputs - 1) :=
-      (others => axi_lite_write_m2s_init);
-    input_ports_s2m : out axi_lite_write_s2m_vec_t(0 to num_inputs - 1) :=
-      (others => axi_lite_write_s2m_init);
+    input_ports_m2s : in axi_lite_write_m2s_vec_t(0 to num_inputs - 1) := (
+      others => axi_lite_write_m2s_init
+    );
+    input_ports_s2m : out axi_lite_write_s2m_vec_t(0 to num_inputs - 1) := (
+      others => axi_lite_write_s2m_init
+    );
     --# {{}}
     output_m2s : out axi_lite_write_m2s_t := axi_lite_write_m2s_init;
     output_s2m : in axi_lite_write_s2m_t := axi_lite_write_s2m_init
@@ -37,10 +39,12 @@ end entity;
 
 architecture a of axi_lite_simple_write_crossbar is
 
-  signal input_ports_axi_m2s : axi_write_m2s_vec_t(0 to num_inputs - 1) :=
-    (others => axi_write_m2s_init);
-  signal input_ports_axi_s2m : axi_write_s2m_vec_t(0 to num_inputs - 1) :=
-    (others => axi_write_s2m_init);
+  signal input_ports_axi_m2s : axi_write_m2s_vec_t(0 to num_inputs - 1) := (
+    others => axi_write_m2s_init
+  );
+  signal input_ports_axi_s2m : axi_write_s2m_vec_t(0 to num_inputs - 1) := (
+    others => axi_write_s2m_init
+  );
 
   signal output_axi_m2s : axi_write_m2s_t := axi_write_m2s_init;
   signal output_axi_s2m : axi_write_s2m_t := axi_write_s2m_init;
@@ -57,10 +61,12 @@ begin
     input_ports_s2m(input_idx).aw.ready <= input_ports_axi_s2m(input_idx).aw.ready;
 
     input_ports_axi_m2s(input_idx).w.valid <= input_ports_m2s(input_idx).w.valid;
-    input_ports_axi_m2s(input_idx).w.data(input_ports_m2s(0).w.data'range) <=
-      input_ports_m2s(input_idx).w.data;
-    input_ports_axi_m2s(input_idx).w.strb(input_ports_m2s(0).w.strb'range) <=
-      input_ports_m2s(input_idx).w.strb;
+    input_ports_axi_m2s(input_idx).w.data(
+      input_ports_m2s(0).w.data'range
+    ) <= input_ports_m2s(input_idx).w.data;
+    input_ports_axi_m2s(input_idx).w.strb(
+      input_ports_m2s(0).w.strb'range
+    ) <= input_ports_m2s(input_idx).w.strb;
 
     input_ports_s2m(input_idx).w.ready <= input_ports_axi_s2m(input_idx).w.ready;
 

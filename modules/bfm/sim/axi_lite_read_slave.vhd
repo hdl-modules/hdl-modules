@@ -27,7 +27,7 @@ context vunit_lib.vc_context;
 entity axi_lite_read_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive
+    data_width : positive range 1 to axi_lite_data_sz
   );
   port (
     clk : in std_ulogic;
@@ -48,6 +48,12 @@ architecture a of axi_lite_read_slave is
   signal araddr : std_ulogic_vector(axi_lite_read_m2s.ar.addr'range) := (others => '0');
 
 begin
+
+  ------------------------------------------------------------------------------
+  assert sanity_check_axi_lite_data_width(data_width)
+    report "Invalid AXI-Lite data width, see printout above"
+    severity failure;
+
 
   ------------------------------------------------------------------------------
   axi_read_slave_inst : entity vunit_lib.axi_read_slave
