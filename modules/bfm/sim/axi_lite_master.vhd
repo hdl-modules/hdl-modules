@@ -56,6 +56,12 @@ architecture a of axi_lite_master is
 begin
 
   ------------------------------------------------------------------------------
+  assert sanity_check_axi_lite_data_width(data_length(bus_handle))
+    report "Invalid AXI-Lite data width, see printout above"
+    severity failure;
+
+
+  ------------------------------------------------------------------------------
   axi_lite_m2s.read.ar.addr(araddr'range) <= unsigned(araddr);
 
   rdata <= axi_lite_s2m.read.r.data(rdata'range);

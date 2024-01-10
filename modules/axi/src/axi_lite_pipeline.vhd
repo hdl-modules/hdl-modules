@@ -27,8 +27,8 @@ use work.axi_pkg.all;
 
 entity axi_lite_pipeline is
   generic (
-    data_width : positive;
-    addr_width : positive;
+    data_width : positive range 1 to axi_lite_data_sz;
+    addr_width : positive range 1 to axi_a_addr_sz;
     -- Settings to the handshake_pipeline blocks. These default settings (the same as
     -- handshake_pipeline's defaults) give full throughput and the lowest logic depth.
     -- They can be changed from default in order to decrease logic utilization.
@@ -52,7 +52,8 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal input_data, output_data : std_ulogic_vector(addr_width - 1 downto 0);
+    constant a_width : positive := axi_lite_m2s_a_sz(addr_width=>addr_width);
+    signal input_data, output_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
     input_data <= std_logic_vector(master_m2s.write.aw.addr(input_data'range));
@@ -63,7 +64,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
-        data_width => axi_lite_m2s_a_sz(addr_width),
+        data_width => input_data'length,
         full_throughput => full_throughput,
         pipeline_control_signals => pipeline_control_signals
       )
@@ -84,14 +85,16 @@ begin
 
   ------------------------------------------------------------------------------
   w_block : block
-    constant packed_width : positive := axi_lite_m2s_w_sz(data_width);
-    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    constant w_width : positive := axi_lite_m2s_w_sz(data_width=>data_width);
+    signal input_data, output_data : std_ulogic_vector(w_width - 1 downto 0) := (others => '0');
+    signal output_record : axi_lite_m2s_w_t := axi_lite_m2s_w_init;
   begin
 
-    input_data <= to_slv(master_m2s.write.w, data_width);
+    input_data <= to_slv(data=>master_m2s.write.w, data_width=>data_width);
 
-    slave_m2s.write.w.data <= to_axi_lite_m2s_w(output_data, data_width).data;
-    slave_m2s.write.w.strb <= to_axi_lite_m2s_w(output_data, data_width).strb;
+    output_record <= to_axi_lite_m2s_w(data=>output_data, data_width=>data_width);
+    slave_m2s.write.w.data <= output_record.data;
+    slave_m2s.write.w.strb <= output_record.strb;
 
 
     ------------------------------------------------------------------------------
@@ -138,7 +141,8 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal input_data, output_data : std_ulogic_vector(addr_width - 1 downto 0);
+    constant a_width : positive := axi_lite_m2s_a_sz(addr_width=>addr_width);
+    signal input_data, output_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
     input_data <= std_logic_vector(master_m2s.read.ar.addr(input_data'range));
@@ -149,7 +153,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_pipeline_inst : entity common.handshake_pipeline
       generic map (
-        data_width => axi_lite_m2s_a_sz(addr_width),
+        data_width => input_data'length,
         full_throughput => full_throughput,
         pipeline_control_signals => pipeline_control_signals
       )
@@ -170,14 +174,16 @@ begin
 
   ------------------------------------------------------------------------------
   r_block : block
-    constant packed_width : positive := axi_lite_s2m_r_sz(data_width);
-    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    constant r_width : positive := axi_lite_s2m_r_sz(data_width);
+    signal input_data, output_data : std_ulogic_vector(r_width - 1 downto 0) := (others => '0');
+    signal output_record : axi_lite_s2m_r_t := axi_lite_s2m_r_init;
   begin
 
     input_data <= to_slv(slave_s2m.read.r, data_width);
 
-    master_s2m.read.r.data <= to_axi_lite_s2m_r(output_data, data_width).data;
-    master_s2m.read.r.resp <= to_axi_lite_s2m_r(output_data, data_width).resp;
+    output_record <= to_axi_lite_s2m_r(data=>output_data, data_width=>data_width);
+    master_s2m.read.r.data <= output_record.data;
+    master_s2m.read.r.resp <= output_record.resp;
 
 
     ------------------------------------------------------------------------------

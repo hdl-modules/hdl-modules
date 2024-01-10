@@ -28,8 +28,8 @@ use work.axi_stream_pkg.all;
 
 entity axi_stream_fifo is
   generic (
-    data_width : positive;
-    user_width : natural;
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz;
     asynchronous : boolean;
     depth : positive;
     ram_type : ram_style_t := ram_style_auto
@@ -58,13 +58,10 @@ architecture a of axi_stream_fifo is
 
 begin
 
-  write_data <= to_slv(input_m2s, data_width, user_width);
+  write_data <= to_slv(data=>input_m2s, data_width=>data_width, user_width=>user_width);
 
   output_m2s <= to_axi_stream_m2s(
-    data=>read_data,
-    data_width=>data_width,
-    user_width=>user_width,
-    valid=>read_valid
+    data=>read_data, data_width=>data_width, user_width=>user_width, valid=>read_valid
   );
 
 

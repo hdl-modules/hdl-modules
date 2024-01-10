@@ -22,9 +22,9 @@ use work.axi_pkg.all;
 
 entity tb_axi_pkg is
   generic (
-    data_width : integer;
-    id_width : integer;
-    addr_width : integer;
+    data_width : positive range 1 to axi_data_sz;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz;
     runner_cfg : string
   );
 end entity;
@@ -126,15 +126,34 @@ begin
     rnd.InitSeed(rnd'instance_name);
 
     if run("test_slv_conversion") then
-
       for iteration in 0 to 1000 loop
         -- Loop a couple of times to get good random coverage
         test_slv_conversion(iteration);
       end loop;
 
-
     elsif run("test_combine_response") then
       test_combine_response;
+
+    elsif run("test_sanity_check_axi_data_width") then
+      check_equal(sanity_check_axi_data_width(8), true);
+      check_equal(sanity_check_axi_data_width(16), true);
+      check_equal(sanity_check_axi_data_width(32), true);
+      check_equal(sanity_check_axi_data_width(64), true);
+      check_equal(sanity_check_axi_data_width(128), true);
+
+      -- Too small.
+      check_equal(sanity_check_axi_data_width(-8), false);
+      check_equal(sanity_check_axi_data_width(0), false);
+      check_equal(sanity_check_axi_data_width(1), false);
+      check_equal(sanity_check_axi_data_width(7), false);
+      -- Too large.
+      check_equal(sanity_check_axi_data_width(129), false);
+      -- Not multiple of eight.
+      check_equal(sanity_check_axi_data_width(12), false);
+      check_equal(sanity_check_axi_data_width(63), false);
+      -- Not power-of-two multiple of eight.
+      check_equal(sanity_check_axi_data_width(24), false);
+      check_equal(sanity_check_axi_data_width(72), false);
     end if;
 
     test_runner_cleanup(runner);

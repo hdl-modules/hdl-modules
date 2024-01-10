@@ -33,7 +33,7 @@ use common.types_pkg.all;
 entity axi_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive;
+    data_width : positive range 1 to axi_data_sz;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
     id_width : natural range 0 to axi_id_sz;
@@ -77,6 +77,12 @@ architecture a of axi_write_slave is
   signal awsize : std_ulogic_vector(axi_write_m2s.aw.size'range) := (others => '0');
 
 begin
+
+  ------------------------------------------------------------------------------
+  assert sanity_check_axi_data_width(data_width)
+    report "Invalid AXI data width, see printout above"
+    severity failure;
+
 
   ------------------------------------------------------------------------------
   check_strobe_zero_outside_of_data : process

@@ -30,8 +30,8 @@ use work.axi_pkg.all;
 
 entity axi_lite_cdc is
   generic (
-    data_width : positive;
-    addr_width : positive;
+    data_width : positive range 1 to axi_lite_data_sz;
+    addr_width : positive range 1 to axi_a_addr_sz;
     fifo_depth : positive := 16;
     ram_type : ram_style_t := ram_style_auto
   );
@@ -52,17 +52,19 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    signal read_data, write_data : std_ulogic_vector(addr_width - 1 downto 0);
+    constant a_width : positive := axi_lite_m2s_a_sz(addr_width=>addr_width);
+    signal write_data, read_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
-    slave_m2s.write.aw.addr(read_data'range) <= unsigned(read_data);
     write_data <= std_logic_vector(master_m2s.write.aw.addr(write_data'range));
+
+    slave_m2s.write.aw.addr(read_data'range) <= unsigned(read_data);
 
 
     ------------------------------------------------------------------------------
     aw_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
-        width => axi_lite_m2s_a_sz(addr_width),
+        width => write_data'length,
         depth => fifo_depth,
         ram_type => ram_type
       )
@@ -77,18 +79,22 @@ begin
         write_valid => master_m2s.write.aw.valid,
         write_data => write_data
       );
+
   end block;
 
 
   ------------------------------------------------------------------------------
   w_block : block
-    constant w_width : positive := axi_lite_m2s_w_sz(data_width);
-    signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0);
+    constant w_width : positive := axi_lite_m2s_w_sz(data_width=>data_width);
+    signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0) := (others => '0');
+    signal read_record : axi_lite_m2s_w_t := axi_lite_m2s_w_init;
   begin
 
-    slave_m2s.write.w.data <= to_axi_lite_m2s_w(read_data, data_width).data;
-    slave_m2s.write.w.strb <= to_axi_lite_m2s_w(read_data, data_width).strb;
-    write_data <= to_slv(master_m2s.write.w, data_width);
+    write_data <= to_slv(data=>master_m2s.write.w, data_width=>data_width);
+
+    read_record <= to_axi_lite_m2s_w(data=>read_data, data_width=>data_width);
+    slave_m2s.write.w.data <= read_record.data;
+    slave_m2s.write.w.strb <= read_record.strb;
 
 
     ------------------------------------------------------------------------------
@@ -109,6 +115,7 @@ begin
         write_valid => master_m2s.write.w.valid,
         write_data => write_data
       );
+
   end block;
 
 
@@ -134,17 +141,19 @@ begin
 
   ------------------------------------------------------------------------------
   ar_block : block
-    signal read_data, write_data : std_ulogic_vector(addr_width - 1 downto 0);
+    constant a_width : positive := axi_lite_m2s_a_sz(addr_width=>addr_width);
+    signal write_data, read_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
-    slave_m2s.read.ar.addr(read_data'range) <= unsigned(read_data);
     write_data <= std_logic_vector(master_m2s.read.ar.addr(write_data'range));
+
+    slave_m2s.read.ar.addr(read_data'range) <= unsigned(read_data);
 
 
     ------------------------------------------------------------------------------
     ar_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
-        width => axi_lite_m2s_a_sz(addr_width),
+        width => write_data'length,
         depth => fifo_depth,
         ram_type => ram_type
       )
@@ -159,24 +168,28 @@ begin
         write_valid => master_m2s.read.ar.valid,
         write_data => write_data
       );
+
   end block;
 
 
   ------------------------------------------------------------------------------
   r_block : block
-    constant r_width : positive := axi_lite_s2m_r_sz(data_width);
-    signal read_data, write_data : std_ulogic_vector(r_width - 1 downto 0);
+    constant r_width : positive := axi_lite_s2m_r_sz(data_width=>data_width);
+    signal write_data, read_data : std_ulogic_vector(r_width - 1 downto 0);
+    signal read_record : axi_lite_s2m_r_t := axi_lite_s2m_r_init;
   begin
 
-    master_s2m.read.r.data <= to_axi_lite_s2m_r(read_data, data_width).data;
-    master_s2m.read.r.resp <= to_axi_lite_s2m_r(read_data, data_width).resp;
     write_data <= to_slv(slave_s2m.read.r, data_width);
+
+    read_record <= to_axi_lite_s2m_r(data=>read_data, data_width=>data_width);
+    master_s2m.read.r.data <= read_record.data;
+    master_s2m.read.r.resp <= read_record.resp;
 
 
     ------------------------------------------------------------------------------
     r_asynchronous_fifo_inst : entity fifo.asynchronous_fifo
       generic map (
-        width => r_width,
+        width => write_data'length,
         depth => fifo_depth,
         ram_type => ram_type
       )
@@ -191,6 +204,7 @@ begin
         write_valid => slave_s2m.read.r.valid,
         write_data => write_data
       );
+
   end block;
 
 end architecture;

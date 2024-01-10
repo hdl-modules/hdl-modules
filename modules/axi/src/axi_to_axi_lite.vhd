@@ -34,7 +34,7 @@ use work.axi_lite_pkg.all;
 
 entity axi_to_axi_lite is
   generic (
-    data_width : positive
+    data_width : positive range 1 to axi_lite_data_sz
   );
   port (
     clk : in std_ulogic;
@@ -62,6 +62,12 @@ architecture a of axi_to_axi_lite is
   signal ar_done, aw_done, w_done : std_ulogic := '0';
 
 begin
+
+  ------------------------------------------------------------------------------
+  assert sanity_check_axi_data_width(data_width) and sanity_check_axi_lite_data_width(data_width)
+    report "Invalid AXI/AXI-Lite data width, see printout above"
+    severity failure;
+
 
   ------------------------------------------------------------------------------
   axi_lite_m2s.read.ar.valid <= axi_m2s.read.ar.valid and not ar_done;

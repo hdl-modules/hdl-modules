@@ -15,20 +15,9 @@ from tsfpga.vivado.project import VivadoNetlistProject
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+        self.setup_axi_pkg_tests(vunit_proj=vunit_proj)
         self.setup_axi_read_throttle_tests(vunit_proj=vunit_proj)
         self.setup_axi_write_throttle_tests(vunit_proj=vunit_proj)
-
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
-        for data_width in [32, 64]:
-            for id_width in [0, 5]:
-                for addr_width in [32, 40]:
-                    generics = dict(data_width=data_width, id_width=id_width, addr_width=addr_width)
-                    self.add_vunit_config(tb, generics=generics)
-
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_pkg")
-        for data_width in [32, 64]:
-            generics = dict(data_width=data_width)
-            self.add_vunit_config(tb, generics=generics)
 
         for tb_name in ["tb_axi_to_axi_lite", "tb_axi_to_axi_lite_bus_error"]:
             tb = vunit_proj.library(self.library_name).test_bench(tb_name)
@@ -79,6 +68,24 @@ class Module(BaseModule):
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pipeline")
         self.add_vunit_config(test=tb, set_random_seed=True)
+
+    def setup_axi_pkg_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
+        for test in tb.get_tests("test_slv_conversion"):
+            for data_width in [32, 64]:
+                for id_width in [0, 5]:
+                    for addr_width in [32, 40]:
+                        generics = dict(
+                            data_width=data_width, id_width=id_width, addr_width=addr_width
+                        )
+                        self.add_vunit_config(test=test, generics=generics)
+
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_pkg")
+        for test in tb.get_tests():
+            if test.name in ["test_slv_conversion", "test_axi_lite_strb"]:
+                for data_width in [32, 64]:
+                    generics = dict(data_width=data_width)
+                    self.add_vunit_config(test=test, generics=generics)
 
     def setup_axi_read_throttle_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_read_throttle")

@@ -80,8 +80,8 @@ entity axi_read_throttle is
   generic(
     data_fifo_depth : positive;
     max_burst_length_beats : positive;
-    id_width : natural;
-    addr_width : positive;
+    id_width : natural range 0 to axi_id_sz;
+    addr_width : positive range 1 to axi_a_addr_sz;
     -- The AR channel is pipelined one step to improve poor timing, mainly on ARVALID.
     -- If this generic is set to false, the pipelining will be of a simpler model that has lower
     -- logic footprint, but only allow a transaction every third clock cycle. If it is set to true,
@@ -133,8 +133,9 @@ begin
   ------------------------------------------------------------------------------
   pipeline : block
     constant m2s_length : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width);
-    signal input_m2s_ar_slv, pipelined_m2s_ar_slv :
-      std_ulogic_vector(m2s_length - 1 downto 0) := (others => '0');
+    signal input_m2s_ar_slv, pipelined_m2s_ar_slv : std_ulogic_vector(m2s_length - 1 downto 0) := (
+      others => '0'
+    );
     signal pipelined_valid : std_ulogic := '0';
   begin
 
@@ -168,9 +169,7 @@ begin
     assign_ar : process(all)
     begin
       pipelined_m2s_ar <= to_axi_m2s_a(
-        data=>pipelined_m2s_ar_slv,
-        id_width=>id_width,
-        addr_width=>addr_width
+        data=>pipelined_m2s_ar_slv, id_width=>id_width, addr_width=>addr_width
       );
       pipelined_m2s_ar.valid <= pipelined_valid;
     end process;

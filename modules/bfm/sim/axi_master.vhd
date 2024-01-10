@@ -69,6 +69,12 @@ architecture a of axi_master is
 begin
 
   ------------------------------------------------------------------------------
+  assert sanity_check_axi_data_width(data_length(bus_handle))
+    report "Invalid AXI data width, see printout above"
+    severity failure;
+
+
+  ------------------------------------------------------------------------------
   axi_read_m2s.ar.addr(araddr'range) <= unsigned(araddr);
   axi_read_m2s.ar.len <= len;
   axi_read_m2s.ar.size <= size;

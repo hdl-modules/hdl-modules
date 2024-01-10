@@ -21,9 +21,9 @@ use work.axi_pkg.all;
 
 entity axi_write_pipeline is
   generic (
-    addr_width : positive;
-    id_width : natural;
-    data_width : positive;
+    addr_width : positive range 1 to axi_a_addr_sz;
+    id_width : natural range 0 to axi_id_sz;
+    data_width : positive range 1 to axi_data_sz;
     -- Can be changed from default in order to decrease logic utilization, at the cost of lower
     -- throughput. See handshake_pipeline for details.
     full_address_throughput : boolean := true;
@@ -46,23 +46,20 @@ begin
 
   ------------------------------------------------------------------------------
   aw_block : block
-    constant packed_width : positive :=
-      axi_m2s_a_sz(id_width => id_width, addr_width => addr_width);
+    constant a_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>addr_width);
 
-    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
     signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      input_data <= to_slv(data => left_m2s.aw, id_width => id_width, addr_width => addr_width);
+      input_data <= to_slv(data=>left_m2s.aw, id_width=>id_width, addr_width=>addr_width);
 
-      right_m2s.aw <=
-        to_axi_m2s_a(data => output_data, id_width => id_width, addr_width => addr_width);
+      right_m2s.aw <= to_axi_m2s_a(data=>output_data, id_width=>id_width, addr_width=>addr_width);
       right_m2s.aw.valid <= output_valid;
     end process;
-
 
 
     ------------------------------------------------------------------------------
@@ -91,18 +88,18 @@ begin
   ------------------------------------------------------------------------------
   w_block : block
     -- Assume AXI4 (no WID)
-    constant packed_width : positive := axi_m2s_w_sz(data_width => data_width, id_width => 0);
+    constant w_width : positive := axi_m2s_w_sz(data_width=>data_width, id_width=>0);
 
-    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(w_width - 1 downto 0) := (others => '0');
     signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      input_data <= to_slv(data => left_m2s.w, data_width => data_width);
+      input_data <= to_slv(data=>left_m2s.w, data_width=>data_width);
 
-      right_m2s.w <= to_axi_m2s_w(data => output_data, data_width => data_width);
+      right_m2s.w <= to_axi_m2s_w(data=>output_data, data_width=>data_width);
       right_m2s.w.valid <= output_valid;
     end process;
 
@@ -132,19 +129,18 @@ begin
 
   ------------------------------------------------------------------------------
   b_block : block
-    constant packed_width : positive :=
-      axi_s2m_b_sz(id_width => id_width);
+    constant b_width : positive := axi_s2m_b_sz(id_width => id_width);
 
-    signal input_data, output_data : std_ulogic_vector(packed_width - 1 downto 0);
+    signal input_data, output_data : std_ulogic_vector(b_width - 1 downto 0) := (others => '0');
     signal output_valid : std_ulogic := '0';
   begin
 
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      input_data <= to_slv(data => right_s2m.b, id_width => id_width);
+      input_data <= to_slv(data=>right_s2m.b, id_width=>id_width);
 
-      left_s2m.b <= to_axi_s2m_b(data => output_data, id_width => id_width);
+      left_s2m.b <= to_axi_s2m_b(data=>output_data, id_width=>id_width);
       left_s2m.b.valid <= output_valid;
     end process;
 

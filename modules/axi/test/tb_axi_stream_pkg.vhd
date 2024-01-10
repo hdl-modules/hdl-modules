@@ -22,8 +22,8 @@ use work.axi_stream_pkg.all;
 
 entity tb_axi_stream_pkg is
   generic (
-    data_width : integer;
-    user_width : integer;
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz;
     runner_cfg : string
   );
 end entity;

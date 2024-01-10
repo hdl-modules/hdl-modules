@@ -29,7 +29,7 @@ use work.axi_pkg.all;
 entity axi_w_fifo is
   generic (
     asynchronous : boolean;
-    data_width : positive;
+    data_width : positive range 1 to axi_data_sz;
     depth : natural;
     enable_packet_mode : boolean := false;
     ram_type : ram_style_t := ram_style_auto
@@ -57,22 +57,24 @@ begin
     output_m2s <= input_m2s;
     input_s2m <= output_s2m;
 
+
+  ------------------------------------------------------------------------------
   else generate
 
-    constant w_width : natural := axi_m2s_w_sz(data_width);
+    constant w_width : natural := axi_m2s_w_sz(data_width=>data_width);
 
     signal read_valid : std_ulogic := '0';
-    signal read_data, write_data : std_ulogic_vector(w_width - 1 downto 0);
+    signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0) := (others => '0');
 
   begin
 
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      output_m2s <= to_axi_m2s_w(read_data, data_width);
+      output_m2s <= to_axi_m2s_w(data=>read_data, data_width=>data_width);
       output_m2s.valid <= read_valid;
 
-      write_data <= to_slv(input_m2s, data_width);
+      write_data <= to_slv(data=>input_m2s, data_width=>data_width);
     end process;
 
 
@@ -80,7 +82,7 @@ begin
     fifo_wrapper_inst : entity fifo.fifo_wrapper
       generic map (
         use_asynchronous_fifo => asynchronous,
-        width => w_width,
+        width => write_data'length,
         depth => depth,
         enable_last => enable_packet_mode,
         enable_packet_mode => enable_packet_mode,

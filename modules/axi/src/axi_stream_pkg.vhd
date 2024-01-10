@@ -18,17 +18,37 @@ use ieee.numeric_std.all;
 
 package axi_stream_pkg is
 
-  -- Max value
+  -- ID field (TID).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_stream_id_sz : positive := 8;
+
+  -- Destination field (TDEST).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_stream_dest_sz : positive := 4;
 
-  -- Data bus width in bytes, 128b seems reasonable at the moment.
+  -- Data field (TDATA).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_stream_data_sz : positive := 128;
-  -- Integer multiple of the width of the interface in bytes.
-  constant axi_stream_user_sz : positive := axi_stream_data_sz / 8;
+
+  -- Data strobe field (TSTRB).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_stream_strb_sz : positive := axi_stream_data_sz / 8;
+
+  -- Data keep field (TKEEP).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
   constant axi_stream_keep_sz : positive := axi_stream_data_sz / 8;
 
+  -- User field (TUSER).
+  -- The width value below is a max value, implementation should only take into regard the bits
+  -- that are actually used.
+  constant axi_stream_user_sz : positive := axi_stream_data_sz / 8;
+
+  -- Record for the AXI-Stream signals in the master-to-slave direction.
   type axi_stream_m2s_t is record
     valid : std_ulogic;
     data : std_ulogic_vector(axi_stream_data_sz - 1 downto 0);
@@ -46,6 +66,7 @@ package axi_stream_pkg is
     user => (others => '-')
   );
 
+  -- Record for the AXI-Stream signals in the slave-to-master direction.
   type axi_stream_s2m_t is record
     ready : std_ulogic;
   end record;
@@ -53,18 +74,21 @@ package axi_stream_pkg is
 
   constant axi_stream_s2m_init : axi_stream_s2m_t := (ready => '1');
 
-  function axi_stream_m2s_sz(data_width : positive; user_width : natural) return natural;
+  function axi_stream_m2s_sz(
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz
+  ) return natural;
 
   function to_slv(
     data : axi_stream_m2s_t;
-    data_width : positive;
-    user_width : natural
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz
   ) return std_ulogic_vector;
 
   function to_axi_stream_m2s(
     data : std_ulogic_vector;
-    data_width : positive;
-    user_width : natural;
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz;
     valid : std_ulogic
   ) return axi_stream_m2s_t;
 
@@ -72,17 +96,20 @@ end;
 
 package body axi_stream_pkg is
 
-  function axi_stream_m2s_sz(data_width : positive; user_width : natural) return natural is
+  function axi_stream_m2s_sz(
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz
+  ) return natural is
   begin
     -- Excluded member: valid
-    -- The 1 is last
+    -- The 1 is for 'last'.
     return data_width + user_width + 1;
   end function;
 
   function to_slv(
     data : axi_stream_m2s_t;
-    data_width : positive;
-    user_width : natural
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz
   ) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_stream_m2s_sz(data_width, user_width) - 1 downto 0);
     variable lo, hi : natural := 0;
@@ -90,9 +117,11 @@ package body axi_stream_pkg is
     lo := 0;
     hi := lo + data_width - 1;
     result(hi downto lo) := data.data(data_width - 1 downto 0);
+
     lo := hi + 1;
     hi := lo;
     result(hi) := data.last;
+
     lo := hi + 1;
     hi := lo + user_width - 1;
     result(hi downto lo) := data.user(user_width - 1 downto 0);
@@ -104,8 +133,8 @@ package body axi_stream_pkg is
 
   function to_axi_stream_m2s(
     data : std_ulogic_vector;
-    data_width : positive;
-    user_width : natural;
+    data_width : positive range 1 to axi_stream_data_sz;
+    user_width : natural range 0 to axi_stream_user_sz;
     valid : std_ulogic
   ) return axi_stream_m2s_t is
     variable offset : natural := data'low;
@@ -115,9 +144,11 @@ package body axi_stream_pkg is
     lo := 0;
     hi := lo + data_width - 1;
     result.data(data_width - 1 downto 0) := data(hi + offset downto lo + offset);
+
     lo := hi + 1;
     hi := lo;
     result.last := data(hi + offset);
+
     lo := hi + 1;
     hi := lo + user_width - 1;
     result.user(user_width - 1 downto 0) := data(hi + offset downto lo + offset);
