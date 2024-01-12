@@ -102,23 +102,20 @@ begin
     procedure test_combine_response is
       variable resp, resp1, resp2, expected : axi_resp_t := axi_resp_okay;
     begin
-      for i in 0 to 1000 loop
-        resp1 := rnd.RandSlv(resp'length);
-        resp2 := rnd.RandSlv(resp'length);
-        resp := combine_response(resp1, resp2);
+      resp1 := rnd.RandSlv(resp'length);
+      resp2 := rnd.RandSlv(resp'length);
+      resp := combine_response(resp1, resp2);
 
-        if resp1 = axi_resp_decerr or resp2 = axi_resp_decerr then
-          expected := axi_resp_decerr;
-        elsif resp1 = axi_resp_slverr or resp2 = axi_resp_slverr then
-          expected := axi_resp_slverr;
-        elsif resp1 = axi_resp_okay or resp2 = axi_resp_okay then
-          expected := axi_resp_okay;
-        else
-          expected := axi_resp_exokay;
-        end if;
-        check_equal(resp, expected, "resp1: " & to_string(resp1) & ", resp2: " & to_string(resp1));
-
-      end loop;
+      if resp1 = axi_resp_decerr or resp2 = axi_resp_decerr then
+        expected := axi_resp_decerr;
+      elsif resp1 = axi_resp_slverr or resp2 = axi_resp_slverr then
+        expected := axi_resp_slverr;
+      elsif resp1 = axi_resp_okay or resp2 = axi_resp_okay then
+        expected := axi_resp_okay;
+      else
+        expected := axi_resp_exokay;
+      end if;
+      check_equal(resp, expected, "resp1: " & to_string(resp1) & ", resp2: " & to_string(resp1));
     end procedure;
 
   begin
@@ -131,8 +128,17 @@ begin
         test_slv_conversion(iteration);
       end loop;
 
+    elsif run("test_get_a_len_width") then
+      -- 0-15 => 4 bits
+      check_equal(get_a_len_width(16), 4);
+
+      -- 0-255 => 8 bits
+      check_equal(get_a_len_width(256), 8);
+
     elsif run("test_combine_response") then
-      test_combine_response;
+      for i in 0 to 1000 loop
+        test_combine_response;
+      end loop;
 
     elsif run("test_sanity_check_axi_data_width") then
       check_equal(sanity_check_axi_data_width(8), true);

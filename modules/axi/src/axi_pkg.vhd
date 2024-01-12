@@ -49,6 +49,13 @@ package axi_pkg is
   constant axi_max_burst_length_beats : positive := 256;
   constant axi3_max_burst_length_beats : positive := 16;
 
+  -- Find the number of AxLEN bits that have to be taken into account, given the provided
+  -- max burst length.
+  function get_a_len_width(
+    max_burst_length_beats : positive range 1 to axi_max_burst_length_beats
+  ) return positive;
+
+  -- Convert a given burst length to the corresponding AxLEN value.
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
   ) return axi_a_len_t;
@@ -122,7 +129,7 @@ package axi_pkg is
     addr : u_unsigned(axi_a_addr_sz - 1 downto 0);
     len : axi_a_len_t;
     size : axi_a_size_t;
-    burst : std_ulogic_vector(axi_a_burst_sz - 1 downto 0);
+    burst : axi_a_burst_t;
     -- Excluded members: lock, cache, prot, region.
     -- These are typically not changed on a transfer-to-transfer basis.
   end record;
@@ -380,6 +387,22 @@ end;
 package body axi_pkg is
 
   ------------------------------------------------------------------------------
+  function get_a_len_width(
+    max_burst_length_beats : positive range 1 to axi_max_burst_length_beats
+  ) return positive is
+    constant max_a_len : positive := max_burst_length_beats - 1;
+    constant result : positive range 1 to axi_a_len_sz := num_bits_needed(max_a_len);
+  begin
+    assert (
+        max_burst_length_beats = axi_max_burst_length_beats
+        or max_burst_length_beats = axi3_max_burst_length_beats
+      )
+      report "Invalid max burst length"
+      severity failure;
+
+    return result;
+  end function;
+
   function to_len(
     burst_length_beats : positive range 1 to axi_max_burst_length_beats
   ) return axi_a_len_t is
