@@ -32,7 +32,7 @@ intersphinx_mapping = {
 symbolator_output_format = "png"
 
 # Base URL for generated sitemap.xml.
-html_baseurl = "https://hdl-modules.com"
+html_baseurl = "https://hdl-modules.com/"
 
 # To avoid "en" in the sitemap.xml URL.
 # https://sphinx-sitemap.readthedocs.io/en/latest/advanced-configuration.html
