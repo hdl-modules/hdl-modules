@@ -164,94 +164,36 @@ architecture a of width_conversion is
   subtype atom_strobe_t is std_ulogic_vector(atom_strobe_width - 1 downto 0);
   subtype atom_user_t is std_ulogic_vector(user_width - 1 downto 0);
 
-  -- Would usually be 'input_bytes_per_beat', but since the strobe width is variable
-  -- we can not call it 'byte'.
-  constant input_width_strobes : positive := input_width / strobe_unit_width;
   constant input_width_atoms : positive := input_width / atom_data_width;
   constant output_width_atoms : positive := output_width / atom_data_width;
+
+  type atom_t is record
+    last : std_ulogic;
+    data : atom_data_t;
+    strobe : atom_strobe_t;
+    user : atom_user_t;
+  end record;
+  constant atom_init : atom_t := (
+    last => '0',
+    data => (others => '0'),
+    strobe => (others => '0'),
+    user => (others => '0')
+  );
+  type atom_vec_t is array (integer range <>) of atom_t;
 
   constant packed_atom_width : positive := (
     atom_data_width + to_int(enable_last) + to_int(enable_strobe) * atom_strobe_width + user_width
   );
   subtype packed_atom_t is std_ulogic_vector(packed_atom_width - 1 downto 0);
 
+  constant packed_input_width : positive := input_width_atoms * packed_atom_width;
+  signal input_packed : std_ulogic_vector(packed_input_width - 1 downto 0) := (others => '0');
+
   constant stored_atom_count_max : positive := input_width_atoms + output_width_atoms;
   constant shift_reg_length : positive := stored_atom_count_max * packed_atom_width;
   signal shift_reg : std_ulogic_vector(shift_reg_length - 1 downto 0) := (others => '0');
 
   signal num_atoms_stored : natural range 0 to stored_atom_count_max := 0;
-
-  impure function pack(
-    atom_data : atom_data_t;
-    atom_strobe : atom_strobe_t;
-    atom_last : std_ulogic;
-    atom_user : atom_user_t
-  ) return std_ulogic_vector is
-    variable result : packed_atom_t := (others => '0');
-    variable hi, lo : natural := 0;
-  begin
-    hi := atom_data'length - 1;
-    result(hi downto lo) := atom_data;
-
-    if enable_strobe then
-      -- Could be more than one bit
-      lo := hi + 1;
-      hi := lo + atom_strobe'length - 1;
-      result(hi downto lo) := atom_strobe;
-    end if;
-
-    if enable_user then
-      -- Could be more than one bit
-      lo := hi + 1;
-      hi := lo + atom_user'length - 1;
-      result(hi downto lo) := atom_user;
-    end if;
-
-    if enable_last then
-      -- Only one bit
-      hi := hi + 1;
-      result(hi) := atom_last;
-    end if;
-
-    assert hi = result'high report "Something wrong with widths" severity failure;
-
-    return result;
-  end function;
-
-  procedure unpack(
-    packed : in packed_atom_t;
-    atom_data : out atom_data_t;
-    atom_strobe : out atom_strobe_t;
-    atom_last : out std_ulogic;
-    atom_user : out atom_user_t
-  ) is
-    variable hi, lo : natural := 0;
-  begin
-    hi := atom_data'length - 1;
-    atom_data := packed(hi downto lo);
-
-    if enable_strobe then
-      -- Could be more than one bit
-      lo := hi + 1;
-      hi := lo + atom_strobe'length - 1;
-      atom_strobe := packed(hi downto lo);
-    end if;
-
-    if enable_user then
-      -- Could be more than one bit
-      lo := hi + 1;
-      hi := lo + atom_user'length - 1;
-      atom_user := packed(hi downto lo);
-    end if;
-
-    if enable_last then
-      -- Only one bit
-      hi := hi + 1;
-      atom_last := packed(hi);
-    end if;
-
-    assert hi = packed'high report "Something wrong with widths" severity failure;
-  end procedure;
 
   signal padded_input_ready, padded_input_valid, padded_input_last : std_ulogic := '0';
   signal padded_input_data : std_ulogic_vector(input_data'range) := (others => '0');
@@ -300,12 +242,10 @@ begin
 
     if input_valid then
       assert enable_last or input_last = '0'
-        report "Must enable 'last' using generic"
-        severity failure;
+        report "Must enable 'last' using generic";
 
       assert enable_strobe or input_strobe = strobe_init
-        report "Must enable 'strobe' using generic"
-        severity failure;
+        report "Must enable 'strobe' using generic";
     end if;
   end process;
 
@@ -314,7 +254,6 @@ begin
   pad_input_data_generate : if is_upconversion and support_unaligned_packet_length generate
     type state_t is (let_data_pass, send_padding);
     signal state : state_t := let_data_pass;
-
 
     constant width_ratio : positive := output_width / input_width;
     signal beats_filled : natural range 0 to width_ratio - 1 := 0;
@@ -392,76 +331,103 @@ begin
 
 
   ------------------------------------------------------------------------------
+  pack_input_block : block
+    signal input_atoms : atom_vec_t(0 to input_width_atoms - 1) := (others => atom_init);
+  begin
+
+    ------------------------------------------------------------------------------
+    split_input_to_atoms : process(all)
+      variable is_last_atom : std_ulogic := '0';
+    begin
+      for atom_idx in input_atoms'range loop
+        input_atoms(atom_idx).data <= padded_input_data(
+          (atom_idx + 1) * atom_data_width - 1 downto atom_idx * atom_data_width
+        );
+        input_atoms(atom_idx).strobe <= padded_input_strobe(
+          (atom_idx + 1) * atom_strobe_width - 1 downto atom_idx * atom_strobe_width
+        );
+        input_atoms(atom_idx).user <= padded_input_user;
+      end loop;
+
+      for atom_idx in input_atoms'range loop
+        if is_downconversion and support_unaligned_packet_length then
+          -- Set 'last' only on the last strobed atom of the input word.
+          if atom_idx = input_atoms'high then
+            is_last_atom := input_atoms(atom_idx).strobe(0);
+          else
+            is_last_atom := (
+              input_atoms(atom_idx).strobe(0) and (not input_atoms(atom_idx + 1).strobe(0))
+            );
+          end if;
+        else
+          -- In regular mode, this last atom is simple the top one.
+          is_last_atom := to_sl(atom_idx = input_atoms'high);
+        end if;
+
+        input_atoms(atom_idx).last <= padded_input_last and is_last_atom;
+      end loop;
+    end process;
+
+
+    ------------------------------------------------------------------------------
+    pack_input : process(all)
+      variable packed_atom : packed_atom_t := (others => '0');
+      variable hi, lo : natural range packed_atom'range := 0;
+    begin
+      for input_atom_idx in input_atoms'range loop
+        lo := 0;
+        hi := input_atoms(0).data'length - 1;
+        packed_atom(hi downto lo) := input_atoms(input_atom_idx).data;
+
+        if enable_strobe then
+          -- Could be more than one bit
+          lo := hi + 1;
+          hi := lo + input_atoms(0).strobe'length - 1;
+          packed_atom(hi downto lo) := input_atoms(input_atom_idx).strobe;
+        end if;
+
+        if enable_user then
+          -- Could be more than one bit
+          lo := hi + 1;
+          hi := lo + input_atoms(0).user'length - 1;
+          packed_atom(hi downto lo) := input_atoms(input_atom_idx).user;
+        end if;
+
+        if enable_last then
+          -- Only one bit
+          hi := hi + 1;
+          packed_atom(hi) := input_atoms(input_atom_idx).last;
+        end if;
+
+        assert hi = packed_atom'high report "Something wrong with widths";
+
+        input_packed(
+          (input_atom_idx + 1) * packed_atom'length - 1 downto input_atom_idx * packed_atom'length
+        ) <= packed_atom;
+      end loop;
+    end process;
+
+  end block;
+
+
+  ------------------------------------------------------------------------------
   main : process
-    variable num_atoms_next : natural range 0 to stored_atom_count_max;
-
-    variable atom_last : std_ulogic := '0';
-    variable atom_data : atom_data_t := (others => '0');
-    variable atom_strobe : atom_strobe_t := (others => '0');
-    variable atom_user : atom_user_t := (others => '0');
-
-    variable strobe_idx_to_write_last : natural range 0 to input_width_strobes - 1 := 0;
-
-    -- Default value: highest strobe lane.
-    variable atom_idx_to_write_last : natural range 0 to input_width_atoms - 1 := (
-      input_width_atoms - 1
-    );
-
-    variable packed_data_to_shift_in : packed_atom_t := (others => '0');
-    variable shift_reg_next : std_ulogic_vector(shift_reg'range) := (others => '0');
+    variable num_atoms_next : natural range 0 to stored_atom_count_max := 0;
   begin
     wait until rising_edge(clk);
 
-    num_atoms_next := num_atoms_stored;
-
-    shift_reg_next := shift_reg;
     if padded_input_ready and padded_input_valid then
-      if is_downconversion and support_unaligned_packet_length then
-        -- In this mode we have to put the 'last' indicator on the very last atom that is strobed.
-        -- Atoms beyond that one will be stripped on the output.
-        -- In other modes, the default value constant will be used for this variable.
-        strobe_idx_to_write_last := count_ones(padded_input_strobe) - 1;
-        atom_idx_to_write_last := strobe_idx_to_write_last / atom_strobe_width;
-      end if;
-
-      num_atoms_next := num_atoms_next + input_width_atoms;
-
-      for input_atom_idx in 0 to input_width_atoms - 1 loop
-        -- Set 'last' only on the last strobed atom of the input word
-        -- (constant unless in 'unaligned' mode)
-        if input_atom_idx = atom_idx_to_write_last then
-          atom_last := padded_input_last;
-        else
-          atom_last := '0';
-        end if;
-
-        atom_data := padded_input_data(
-          (input_atom_idx + 1) * atom_data_width - 1 downto input_atom_idx * atom_data_width
-        );
-
-        atom_strobe := padded_input_strobe(
-          (input_atom_idx + 1) * atom_strobe_width - 1 downto input_atom_idx * atom_strobe_width
-        );
-
-        atom_user := padded_input_user;
-
-        packed_data_to_shift_in := pack(
-          atom_data=>atom_data,
-          atom_strobe=>atom_strobe,
-          atom_last=>atom_last,
-          atom_user=>atom_user
-        );
-        shift_reg_next := (
-          packed_data_to_shift_in
-          & shift_reg_next(shift_reg_next'left downto packed_data_to_shift_in'length)
-        );
-      end loop;
+      shift_reg <= (
+        input_packed
+        & shift_reg(shift_reg'left downto input_packed'length)
+      );
     end if;
-    shift_reg <= shift_reg_next;
 
-    if output_ready_int and output_valid_int then
-      num_atoms_next := num_atoms_next - output_width_atoms;
-    end if;
+    num_atoms_next := (
+      num_atoms_stored
+      + to_int(padded_input_ready and padded_input_valid) * input_width_atoms
+      - to_int(output_ready_int and output_valid_int) * output_width_atoms
+    );
 
     num_atoms_stored <= num_atoms_next;
 
@@ -472,66 +438,101 @@ begin
 
 
   ------------------------------------------------------------------------------
-  slice_output : process(all)
-    variable output_atoms_base : natural range 0 to stored_atom_count_max := 0;
-
-    variable packed_atom : packed_atom_t := (others => '0');
-
-    variable atoms_last : std_ulogic_vector(output_width_atoms - 1 downto 0) := (others => '0');
-    variable atom_data : atom_data_t := (others => '0');
-    variable atom_strobe : atom_strobe_t := (others => '0');
-    variable atom_user : atom_user_t := (others => '0');
+  unpack_output_block : block
+    signal output_atoms : atom_vec_t(0 to output_width_atoms - 1) := (others => atom_init);
   begin
 
-    output_atoms_base := stored_atom_count_max - num_atoms_stored;
+    ------------------------------------------------------------------------------
+    slice_output : process(all)
+      variable output_atoms_base : natural range 0 to stored_atom_count_max := 0;
 
-    for output_atom_idx in 0 to output_width_atoms - 1 loop
-      if output_atom_idx < num_atoms_stored then
-        packed_atom := shift_reg(
-          (output_atoms_base + output_atom_idx + 1) * packed_atom_width - 1
-          downto (output_atoms_base + output_atom_idx) * packed_atom_width
-        );
+      variable packed_atom : packed_atom_t := (others => '0');
+      variable hi, lo : natural range packed_atom'range := 0;
+    begin
+      output_atoms_base := stored_atom_count_max - num_atoms_stored;
 
-        unpack(
-          packed=>packed_atom,
-          atom_data=>atom_data,
-          atom_strobe=>atom_strobe,
-          atom_last=>atoms_last(output_atom_idx),
-          atom_user=>atom_user
-        );
+      for output_atom_idx in 0 to output_width_atoms - 1 loop
+        if output_atom_idx < num_atoms_stored then
+          packed_atom := shift_reg(
+            (output_atoms_base + output_atom_idx + 1) * packed_atom_width - 1
+            downto (output_atoms_base + output_atom_idx) * packed_atom_width
+          );
+        else
+          -- This is just so that the indexing does not go out of range.
+          -- When the condition for output_valid is met, we will not end up here for any atom.
+          -- Typically we would assign '-' here, to instruct Vivado that the 'if' logic can be
+          -- be stripped.
+          -- However, in this case that showed to increase the logic footprint quite considerably.
+          -- At this point it is unclear why, but it is a clear difference in the netlist builds.
+          -- Note that we have tried re-formulating this part of the code in A LOT of
+          -- different ways.
+          -- We have not found any way that is more efficient than this.
+          packed_atom := (others => '0');
+        end if;
+
+        lo := 0;
+        hi := output_atoms(0).data'length - 1;
+        output_atoms(output_atom_idx).data <= packed_atom(hi downto lo);
+
+        if enable_strobe then
+          -- Could be more than one bit
+          lo := hi + 1;
+          hi := lo + output_atoms(0).strobe'length - 1;
+          output_atoms(output_atom_idx).strobe <= packed_atom(hi downto lo);
+        end if;
+
+        if enable_user then
+          -- Could be more than one bit
+          lo := hi + 1;
+          hi := lo + output_atoms(0).user'length - 1;
+          output_atoms(output_atom_idx).user <= packed_atom(hi downto lo);
+        end if;
+
+        if enable_last then
+          -- Only one bit
+          hi := hi + 1;
+          output_atoms(output_atom_idx).last <= packed_atom(hi);
+        end if;
+
+        assert hi = packed_atom'high report "Something wrong with widths";
+      end loop;
+    end process;
+
+
+    ------------------------------------------------------------------------------
+    assign_output : process(all)
+      variable output_last_or : std_ulogic := '0';
+    begin
+      output_last_or := '0';
+
+      for output_atom_idx in 0 to output_width_atoms - 1 loop
+        output_data(
+          (output_atom_idx + 1) * atom_data_width - 1 downto output_atom_idx * atom_data_width
+        ) <= output_atoms(output_atom_idx).data;
+
+        output_strobe_int(
+          (output_atom_idx + 1) * atom_strobe_width - 1 downto output_atom_idx * atom_strobe_width
+        ) <= output_atoms(output_atom_idx).strobe;
+
+        output_user(
+          (output_atom_idx + 1) * atom_user_width - 1 downto output_atom_idx * atom_user_width
+        ) <= output_atoms(output_atom_idx).user;
+
+        output_last_or := output_last_or or output_atoms(output_atom_idx).last;
+      end loop;
+
+      if is_upconversion and support_unaligned_packet_length then
+        -- The top atom might be strobed out and not have 'last' set.
+        -- Instead it is found in one of the lower atoms.
+        output_last_int <= output_last_or;
 
       else
-
-        -- This is just so that the indexing does not go out of range. When the condition for
-        -- output_valid is met, we will not end up here for any atom.
-        atom_data := (others => '-');
-        atom_strobe := (others => '-');
-        atoms_last(output_atom_idx) := '-';
-        -- TODO
-        atom_user := (others => '-');
+        -- In the regular case though, the top atom is the one that has 'last' set.
+        output_last_int <= output_atoms(output_atoms'high).last;
       end if;
+    end process;
 
-      output_data(
-        (output_atom_idx + 1) * atom_data_width - 1 downto output_atom_idx * atom_data_width
-      ) <= atom_data;
-
-      output_strobe_int(
-        (output_atom_idx + 1) * atom_strobe_width - 1 downto output_atom_idx * atom_strobe_width
-      ) <= atom_strobe;
-
-      output_user(
-        (output_atom_idx + 1) * atom_user_width - 1 downto output_atom_idx * atom_user_width
-      ) <= atom_user;
-    end loop;
-
-    if is_upconversion and support_unaligned_packet_length then
-      -- The top atom might be strobed out and not have 'last' set.
-      -- Instead it is found in one of the lower atoms.
-      output_last_int <= or atoms_last;
-    else
-      output_last_int <= atoms_last(atoms_last'high);
-    end if;
-  end process;
+  end block;
 
 
   ------------------------------------------------------------------------------
@@ -555,13 +556,8 @@ begin
       -- Do not pass on strobed out words
       output_valid <= output_valid_int and to_sl(output_strobe_int /= strobe_all_zero);
 
-      if enable_last then
-        output_last <= output_last_int;
-      end if;
-
-      if enable_strobe then
-        output_strobe <= output_strobe_int;
-      end if;
+      output_last <= output_last_int;
+      output_strobe <= output_strobe_int;
     end process;
 
 

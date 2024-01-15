@@ -490,15 +490,15 @@ class Module(BaseModule):
         # Progressively adding more features from left to right.
         input_width = [32, 32, 32, 32] + [16, 16, 16, 16]
         output_width = [16, 16, 16, 16] + [32, 32, 32, 32]
-        user_width = [0, 0, 0, 5] + [0, 0, 0, 5]
         enable_last = [False, True, True, True] + [False, True, True, True]
         enable_strobe = [False, True, True, True] + [False, True, True, True]
+        user_width = [0, 0, 0, 5] + [0, 0, 0, 5]
         support_unaligned_packet_length = [False, False, True, True] + [False, False, True, True]
 
         # Resource utilization increases when more features are added.
-        total_luts = [20, 23, 27, 32] + [35, 40, 45, 54]
-        ffs = [51, 59, 60, 70] + [51, 60, 62, 77]
-        maximum_logic_level = [2, 2, 3, 3] + [2, 2, 3, 2]
+        total_luts = [20, 23, 27, 32] + [35, 40, 44, 54]
+        ffs = [51, 59, 60, 70] + [51, 59, 62, 77]
+        maximum_logic_level = [2, 2, 3, 3] + [2, 2, 2, 2]
 
         for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
             generics = dict(
