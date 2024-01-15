@@ -23,8 +23,6 @@ library common;
 
 entity tb_axi_stream_bfm is
   generic (
-    master_stall_probability_percent : natural;
-    slave_stall_probability_percent : natural;
     data_width : positive;
     seed : natural;
     runner_cfg : string
@@ -45,6 +43,23 @@ architecture tb of tb_axi_stream_bfm is
   signal strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
   -- Testbench stuff
+  shared variable rnd : RandomPType;
+
+  impure function get_stall_probability_percent return natural is
+  begin
+    return rnd.Uniform(0, 90);
+  end function;
+
+  impure function get_master_stall_probability_percent return natural is
+  begin
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(seed);
+
+    return get_stall_probability_percent;
+  end function;
+  constant master_stall_probability_percent : natural := get_master_stall_probability_percent;
+  constant slave_stall_probability_percent : natural := get_stall_probability_percent;
+
   constant master_stall_config : stall_config_t := (
     stall_probability => real(master_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
@@ -69,8 +84,6 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable rnd : RandomPType;
-
     variable num_packets_expected : natural := 0;
 
     procedure test_random_packet is
@@ -94,7 +107,9 @@ begin
   begin
     test_runner_setup(runner, runner_cfg);
 
-    rnd.InitSeed(seed);
+    -- Print the randomized generics.
+    report "master_stall_probability_percent = " & to_string(master_stall_probability_percent);
+    report "slave_stall_probability_percent = " & to_string(slave_stall_probability_percent);
 
     if run("test_random_data") then
       for idx in 0 to 100 loop

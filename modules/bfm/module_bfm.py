@@ -7,9 +7,6 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-import random
-
 # Third party libraries
 from tsfpga.module import BaseModule
 
@@ -55,43 +52,24 @@ class Module(BaseModule):
                     self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
 
     def setup_axi_stream_bfm_tests(self, vunit_proj):
-        test = vunit_proj.library(self.library_name).test_bench("tb_axi_stream_bfm")
-        random.seed()
-
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_stream_bfm")
         for data_width in [8, 16, 32]:
-            generics = dict(
-                data_width=data_width,
-                master_stall_probability_percent=random.randrange(90),
-                slave_stall_probability_percent=random.randrange(90),
-            )
-
-            self.add_vunit_config(test=test, set_random_seed=True, generics=generics)
+            generics = dict(data_width=data_width)
+            self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
     def setup_handshake_bfm_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_bfm")
 
-        test = tb.get_tests("test_full_master_throughput")[0]
-        self.add_vunit_config(
-            test,
-            generics=dict(
-                data_width=0, master_stall_probability_percent=0, slave_stall_probability_percent=50
-            ),
-        )
+        for test in tb.get_tests():
+            data_width = 16 if test.name == "test_random_data" else 0
+            master_stall_probability_percent = (
+                0 if test.name == "test_full_master_throughput" else 50
+            )
+            slave_stall_probability_percent = 0 if test.name == "test_full_slave_throughput" else 50
+            generics = dict(
+                data_width=data_width,
+                master_stall_probability_percent=master_stall_probability_percent,
+                slave_stall_probability_percent=slave_stall_probability_percent,
+            )
 
-        test = tb.get_tests("test_full_slave_throughput")[0]
-        self.add_vunit_config(
-            test,
-            generics=dict(
-                data_width=0, master_stall_probability_percent=50, slave_stall_probability_percent=0
-            ),
-        )
-
-        test = tb.get_tests("test_random_data")[0]
-        self.add_vunit_config(
-            test,
-            generics=dict(
-                data_width=16,
-                master_stall_probability_percent=50,
-                slave_stall_probability_percent=50,
-            ),
-        )
+            self.add_vunit_config(test, generics=generics, set_random_seed=True)

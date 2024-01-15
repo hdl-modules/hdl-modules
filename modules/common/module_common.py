@@ -193,9 +193,9 @@ class Module(BaseModule):
             if enable_strobe and enable_last:
                 for support_unaligned_packet_length in [True, False]:
                     generics["support_unaligned_packet_length"] = support_unaligned_packet_length
-                    self.add_vunit_config(test, generics=generics)
+                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
             else:
-                self.add_vunit_config(test, generics=generics)
+                self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
         test = tb.get_tests("test_full_throughput")[0]
         test.add_config(
@@ -488,23 +488,25 @@ class Module(BaseModule):
 
         # Downconversion in left array, upconversion on right.
         # Progressively adding more features from left to right.
-        input_width = [32, 32, 32] + [16, 16, 16]
-        output_width = [16, 16, 16] + [32, 32, 32]
-        enable_strobe = [False, True, True] + [False, True, True]
-        enable_last = [False, True, True] + [False, True, True]
-        support_unaligned_packet_length = [False, False, True] + [False, False, True]
+        input_width = [32, 32, 32, 32] + [16, 16, 16, 16]
+        output_width = [16, 16, 16, 16] + [32, 32, 32, 32]
+        user_width = [0, 0, 0, 5] + [0, 0, 0, 5]
+        enable_last = [False, True, True, True] + [False, True, True, True]
+        enable_strobe = [False, True, True, True] + [False, True, True, True]
+        support_unaligned_packet_length = [False, False, True, True] + [False, False, True, True]
 
         # Resource utilization increases when more features are added.
-        total_luts = [20, 23, 30] + [35, 40, 45]
-        ffs = [51, 59, 63] + [51, 60, 62]
-        maximum_logic_level = [2, 2, 3] + [2, 2, 3]
+        total_luts = [20, 23, 27, 32] + [35, 40, 45, 54]
+        ffs = [51, 59, 60, 70] + [51, 60, 62, 77]
+        maximum_logic_level = [2, 2, 3, 3] + [2, 2, 3, 2]
 
         for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
             generics = dict(
                 input_width=input_width[idx],
                 output_width=output_width[idx],
-                enable_strobe=enable_strobe[idx],
                 enable_last=enable_last[idx],
+                enable_strobe=enable_strobe[idx],
+                user_width=user_width[idx],
                 support_unaligned_packet_length=support_unaligned_packet_length[idx],
             )
 

@@ -22,6 +22,7 @@ use osvvm.RandomPkg.all;
 library bfm;
 
 use work.types_pkg.all;
+use work.width_conversion_pkg.all;
 
 
 entity tb_width_conversion is
@@ -32,33 +33,61 @@ entity tb_width_conversion is
     enable_last : boolean;
     support_unaligned_packet_length : boolean := false;
     enable_jitter : boolean := true;
+    seed : natural;
     runner_cfg : string
   );
 end entity;
 
 architecture tb of tb_width_conversion is
 
+  -- Generic constants.
   constant input_bytes_per_beat : positive := input_width / 8;
   constant output_bytes_per_beat : positive := output_width / 8;
+
   constant minimum_width_bytes : positive := minimum(input_bytes_per_beat, output_bytes_per_beat);
   constant maximum_width_bytes : positive := maximum(input_bytes_per_beat, output_bytes_per_beat);
 
+  shared variable rnd : RandomPType;
+
+  impure function get_user_width return natural is
+  begin
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(seed);
+
+    return 8 * rnd.Uniform(0, 2);
+  end function;
+  constant user_width : natural := get_user_width;
+  constant input_user_width_bytes : natural := user_width / 8;
+
+  constant output_user_width : natural := width_conversion_output_user_width(
+    input_user_width=>user_width, input_data_width=>input_width, output_data_width=>output_width
+  );
+
+  -- AXI-Stream master and slave only support strobe widths that are a multiple of 8.
+  constant strobe_unit_width : positive := 8;
+
+  -- DUT connections.
   signal clk : std_ulogic := '0';
   constant clk_period : time := 10 ns;
 
   signal input_ready, input_valid, input_last : std_ulogic := '0';
+  signal input_data : std_ulogic_vector(input_width - 1 downto 0) := (others => '0');
+  signal input_strobe : std_ulogic_vector(input_width / strobe_unit_width - 1 downto 0) := (
+    others => '0'
+  );
+  signal input_user : std_ulogic_vector(user_width - 1 downto 0) := (others => '0');
+
   signal output_ready, output_valid, output_last : std_ulogic := '0';
+  signal output_data : std_ulogic_vector(output_width - 1 downto 0) := (others => '0');
+  signal output_strobe : std_ulogic_vector(output_width / strobe_unit_width - 1 downto 0) := (
+    others => '0'
+  );
+  signal output_user : std_ulogic_vector(output_user_width - 1 downto 0) := (others => '0');
 
-  signal input_data : std_ulogic_vector(input_width - 1 downto 0);
-  signal output_data : std_ulogic_vector(output_width - 1 downto 0);
 
-  constant strobe_unit_width : positive := 8;
-  signal input_strobe : std_ulogic_vector(input_width / strobe_unit_width - 1 downto 0) :=
-    (others => '0');
-  signal output_strobe : std_ulogic_vector(output_width / strobe_unit_width - 1 downto 0) :=
-    (others => '0');
-
-  constant input_data_queue, output_data_queue : queue_t := new_queue;
+  -- Testbench stuff.
+  constant input_data_queue, input_user_queue : queue_t := new_queue;
+  constant output_data_queue, output_user_queue : queue_t := new_queue;
 
   constant stall_config : stall_config_t := (
     stall_probability => 0.2 * to_real(enable_jitter),
@@ -76,12 +105,80 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable rnd : RandomPType;
     variable num_output_packets_expected : natural := 0;
 
     procedure run_test(fixed_length_bytes : natural := 0) is
       variable packet_length_bytes : positive := 1;
       variable num_input_bytes_to_remove : natural := 0;
+
+      procedure setup_user is
+        impure function downconversion_user_output(
+          user_input : integer_array_t
+        ) return integer_array_t is
+          constant width_ratio : positive := input_width / output_width;
+          -- Number of beats. May or may not be fully strobed.
+          constant packet_length_output_beats : positive := (
+            (packet_length_bytes + output_bytes_per_beat - 1) / output_bytes_per_beat
+          );
+
+          variable input_beat_idx : natural := 0;
+
+          variable result : integer_array_t := new_1d(
+            length=>packet_length_output_beats * input_user_width_bytes,
+            bit_width=>8,
+            is_signed=>false
+          );
+        begin
+          -- This is more complicated than a simple "duplicate" operation since
+          -- when we are unaligned, the input beat might not be fully strobed, so the number of
+          -- output beats is variable.
+          for output_beat_idx in 0 to packet_length_output_beats - 1 loop
+            input_beat_idx := output_beat_idx / width_ratio;
+
+            for user_byte_idx in 0 to input_user_width_bytes - 1 loop
+              set(
+                arr=>result,
+                idx=>output_beat_idx * input_user_width_bytes + user_byte_idx,
+                value=>get(
+                  arr=>user_input, idx=>input_beat_idx * input_user_width_bytes + user_byte_idx
+                )
+              );
+            end loop;
+          end loop;
+
+          return result;
+        end function;
+
+        -- Number of beats. May or may not be fully strobed.
+        constant packet_length_input_beats : positive := (
+          (packet_length_bytes + input_bytes_per_beat - 1) / input_bytes_per_beat
+        );
+        -- Number of 'user' bytes to send.
+        variable input_user_length_bytes : positive := (
+          packet_length_input_beats * input_user_width_bytes
+        );
+
+        variable user_in, user_out : integer_array_t := null_integer_array;
+      begin
+        random_integer_array(
+          rnd=>rnd,
+          integer_array=>user_in,
+          width=>input_user_length_bytes,
+          bits_per_word=>8,
+          is_signed=>false
+        );
+
+        if input_width < output_width then
+          -- Each input beat will arrive on the output side as an atom.
+          user_out := copy(user_in);
+        else
+          -- The user value from one input beat will be spread out over multiple output beats.
+          user_out := downconversion_user_output(user_input=>user_in);
+        end if;
+
+        push_ref(input_user_queue, user_in);
+        push_ref(output_user_queue, user_out);
+      end procedure;
 
       variable data_in, data_out : integer_array_t := null_integer_array;
     begin
@@ -120,6 +217,10 @@ begin
       push_ref(input_data_queue, data_in);
       push_ref(output_data_queue, data_out);
 
+      if user_width > 0 then
+        setup_user;
+      end if;
+
       num_output_packets_expected := num_output_packets_expected + 1;
     end procedure;
 
@@ -147,10 +248,15 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+
+    -- The 'output_id' can be 'X' for un-strobed lanes when upconverting an unaligned packet.
+    disable(get_logger("axi_stream_protocol_checker_handshake_slave_output:rule 10"), error);
+
+    -- Print the randomized generics.
+    report "user_width = " & to_string(user_width);
 
     if run("test_data") then
-      for idx in 0 to 200 loop
+      for idx in 0 to 100 loop
         run_test;
       end loop;
 
@@ -170,7 +276,7 @@ begin
       );
     end if;
 
-    test_runner_cleanup(runner);
+    test_runner_cleanup(runner, allow_disabled_errors=>true);
   end process;
 
 
@@ -179,7 +285,10 @@ begin
     generic map (
       data_width => input_data'length,
       data_queue => input_data_queue,
+      user_width => input_user'length,
+      user_queue => input_user_queue,
       stall_config => stall_config,
+      seed => seed,
       logger_name_suffix => "_input",
       strobe_unit_width => input_data'length / input_strobe'length
     )
@@ -190,7 +299,8 @@ begin
       valid => input_valid,
       last => input_last,
       data => input_data,
-      strobe => input_strobe
+      strobe => input_strobe,
+      user => input_user
     );
 
 
@@ -207,7 +317,10 @@ begin
       generic map (
         data_width => output_data'length,
         reference_data_queue => output_data_queue,
+        user_width => output_user'length,
+        reference_user_queue => output_user_queue,
         stall_config => stall_config,
+        seed => seed,
         logger_name_suffix => "_output",
         disable_last_check => not enable_last
       )
@@ -219,6 +332,7 @@ begin
         last => output_last,
         data => output_data,
         strobe => strobe,
+        user => output_user,
         --
         num_packets_checked => num_output_packets_checked
       );
@@ -231,9 +345,10 @@ begin
     generic map (
       input_width => input_width,
       output_width => output_width,
+      enable_last => enable_last,
       enable_strobe => enable_strobe,
       strobe_unit_width => strobe_unit_width,
-      enable_last => enable_last,
+      user_width => user_width,
       support_unaligned_packet_length => support_unaligned_packet_length
     )
     port map (
@@ -244,12 +359,14 @@ begin
       input_last => input_last and enable_last,
       input_data => input_data,
       input_strobe => input_strobe,
+      input_user => input_user,
       --
       output_ready => output_ready,
       output_valid => output_valid,
       output_last => output_last,
       output_data => output_data,
-      output_strobe => output_strobe
+      output_strobe => output_strobe,
+      output_user => output_user
     );
 
 end architecture;

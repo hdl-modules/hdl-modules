@@ -51,17 +51,19 @@ entity handshake_slave is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
-    logger_name_suffix : string := "";
-    -- Assign a non-zero value in order to use the 'id' port for protocol checking.
-    id_width : natural := 0;
     -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking.
     data_width : natural := 0;
+    -- Assign a non-zero value in order to use the 'id' port for protocol checking.
+    id_width : natural := 0;
+    -- Assign a non-zero value in order to use the 'user' port for protocol checking.
+    user_width : natural := 0;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
     -- handshake has happened). Note that according to the AXI-Stream standard 'ready' may fall
     -- at any time (regardless of 'valid'). However, many modules are developed with this
     -- well-behavedness as a way of saving resources.
     well_behaved_stall : boolean := false;
+    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := "";
     -- This can be used to essentially disable the
     --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
     -- warning by setting a very high value for the limit.
@@ -80,13 +82,18 @@ entity handshake_slave is
     -- only for protocol checking.
     valid : in std_ulogic := '0';
     --# {{}}
-    -- The signals below are optional to connect. Only used for protocol checking.
+    -- Optional to connect. Only used for protocol checking.
     last : in std_ulogic := '1';
-    -- Must set 'id_width' generic in order to use this.
-    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
-    -- Must set 'data_width' generic in order to use these.
+    -- Optional to connect. Only used for protocol checking.
+    -- Must set a valid 'data_width' generic in order to use these two.
     data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1');
+    -- Optional to connect. Only used for protocol checking.
+    -- Must set a valid 'id_width' generic in order to use this.
+    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
+    -- Optional to connect. Only used for protocol checking.
+    -- Must set a valid 'user_width' generic in order to use this.
+    user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '0')
   );
 end entity;
 
@@ -120,6 +127,7 @@ begin
     generic map (
       data_width => data'length,
       id_width => id'length,
+      user_width => user'length,
       logger_name_suffix => "_handshake_slave" & logger_name_suffix,
       rule_4_performance_check_max_waits => rule_4_performance_check_max_waits
     )
@@ -129,9 +137,10 @@ begin
       ready => ready,
       valid => valid,
       last => last,
-      id => std_logic_vector(id),
       data => data,
-      strobe => strobe
+      strobe => strobe,
+      id => std_logic_vector(id),
+      user => user
     );
 
 end architecture;

@@ -23,12 +23,29 @@
 --   This can be done conveniently with the
 --   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
 --
--- An optional expected ID can be pushed as a ``natural`` to the ``reference_id_queue`` in order to
--- enable ID check of each beat.
+--
+-- Unaligned packet length
+-- _______________________
 --
 -- The byte length of the packets (as indicated by the length of the ``reference_data_queue``
 -- arrays) does not need to be aligned with the ``data`` width of the bus.
 -- If unaligned, the last beat will not have all ``data`` byte lanes checked against reference data.
+--
+--
+-- ID field check
+-- ______________
+--
+-- An optional expected ID can be pushed as a ``natural`` to the ``reference_id_queue`` in order to
+-- enable ID check of each beat.
+--
+--
+-- User field check
+-- ________________
+--
+-- Furthermore, and optional check of the ``user`` field can be enabled by setting the
+-- ``user_width`` to a non-zero value and pushing reference data to the ``reference_user_queue``.
+-- Reference user data should be a :doc:`VUnit integer_array <vunit:data_types/integer_array>` just
+-- as for the regular data.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -54,11 +71,20 @@ entity axi_stream_slave is
     -- Set to non-zero in order to enable 'id' check.
     -- In this case reference values have to be pushed to the 'reference_id_queue'.
     id_width : natural := 0;
-    -- Push reference 'id' for each data packet to this queue. All data beats in a packet must have
-    -- the same ID, and there may be no interleaving of data.
+    -- Push reference 'id' for each data packet to this queue.
+    -- One integer value per packet.
+    -- All data beats in a packet must have the same ID, and there may be no interleaving of data.
     -- If 'id_width' is zero, no check will be performed and nothing shall be pushed to
     -- this queue.
     reference_id_queue : queue_t := null_queue;
+    -- Set to non-zero in order to enable 'user' check.
+    -- In this case reference values have to be pushed to the 'reference_user_queue'.
+    user_width : natural := 0;
+    -- Push reference 'user' for each data beat to this queue.
+    -- One value for each 'user' byte in each beat.
+    -- If 'user_width' is zero, no check will be performed and nothing shall be pushed to
+    -- this queue.
+    reference_user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
     stall_config : stall_config_t := null_stall_config;
     -- Random seed for handshaking stall/jitter.
@@ -85,10 +111,12 @@ entity axi_stream_slave is
     ready : out std_ulogic := '0';
     valid : in std_ulogic;
     last : in std_ulogic := '1';
-    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
     data : in std_ulogic_vector(data_width - 1 downto 0);
-    strobe : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) :=
-      (others => '1');
+    strobe : in std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) := (
+      others => '1'
+    );
+    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
+    user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '0');
     --# {{}}
     -- Optionally, the consuming and checking of data can be disabled.
     -- Can be done between or in the middle of packets.
@@ -124,11 +152,10 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable reference_id : natural := 0;
     variable reference_data : integer_array_t := null_integer_array;
     variable packet_length_bytes, packet_length_beats : positive := 1;
 
-    variable byte_lane_idx : natural := 0;
+    variable byte_lane_idx : natural range 0 to bytes_per_beat - 1 := 0;
     variable is_last_beat : boolean := false;
   begin
     while is_empty(reference_data_queue) or enable /= '1' loop
@@ -151,26 +178,12 @@ begin
       if byte_lane_idx = 0 then
         wait until ready and valid and rising_edge(clk);
 
-        -- Pop reference ID once for this packet, if applicable.
-        if id'length > 0 and byte_idx = 0 then
-          reference_id := pop(reference_id_queue);
-        end if;
-
         if not disable_last_check then
           check_equal(
             last,
             is_last_beat,
             "'last' check at packet_idx=" & to_string(num_packets_checked)
               & ",byte_idx=" & to_string(byte_idx)
-          );
-        end if;
-
-        if id'length > 0 then
-          check_equal(
-            unsigned(id),
-            reference_id,
-            "'id' check at packet_idx="
-              & to_string(num_packets_checked) & ", byte_idx=" & to_string(byte_idx)
           );
         end if;
       end if;
@@ -234,6 +247,89 @@ begin
 
 
   ------------------------------------------------------------------------------
+  check_id_gen : if id_width > 0 generate
+    signal is_first_beat : std_ulogic := '1';
+  begin
+
+      assert reference_id_queue /= null_queue report "Must set ID reference queue";
+
+
+      ------------------------------------------------------------------------------
+      check_id : process
+        variable reference_id : natural := 0;
+      begin
+        wait until (ready and valid) = '1' and rising_edge(clk);
+
+        if is_first_beat = '1' then
+          -- Pop reference ID once for this packet.
+          reference_id := pop(reference_id_queue);
+        end if;
+
+        check_equal(
+          unsigned(id),
+          reference_id,
+          "'id' check in packet_idx=" & to_string(num_packets_checked)
+        );
+
+        is_first_beat <= last;
+      end process;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
+  check_user_gen : if user_width > 0 generate
+    constant user_bytes_per_beat : positive := user_width / 8;
+  begin
+
+    assert reference_user_queue /= null_queue report "Must set user reference queue";
+
+    assert user_width mod 8 = 0
+      report "This entity works on a byte-by-byte basis. User width must be a multiple of bytes.";
+
+
+    ------------------------------------------------------------------------------
+    check_id : process
+      variable user_packet : integer_array_t := null_integer_array;
+      variable packet_length_bytes : positive := 1;
+
+      variable byte_lane_idx : natural range 0 to user_bytes_per_beat - 1 := 0;
+    begin
+      while is_empty(reference_user_queue) loop
+        wait until rising_edge(clk);
+      end loop;
+
+      user_packet := pop_ref(reference_user_queue);
+      packet_length_bytes := length(user_packet);
+
+      for byte_idx in 0 to packet_length_bytes - 1 loop
+        byte_lane_idx := byte_idx mod user_bytes_per_beat;
+
+        if byte_lane_idx = 0 then
+          wait until ready and valid and rising_edge(clk);
+        end if;
+
+        check_equal(
+          unsigned(user((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+          get(arr=>user_packet, idx=>byte_idx),
+          "'user' check at packet_idx=" & to_string(num_packets_checked)
+        );
+
+        if (not disable_last_check) and byte_idx = packet_length_bytes - 1 then
+          check_equal(
+            last, true, "Length mismatch between data payload and user payload"
+          );
+        end if;
+      end loop;
+
+      -- Deallocate after we are done with the data.
+      deallocate(user_packet);
+    end process;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   handshake_slave_block : block
     signal last_int : std_ulogic := '0';
   begin
@@ -248,10 +344,11 @@ begin
       generic map(
         stall_config => stall_config,
         seed => seed,
-        logger_name_suffix => logger_name_suffix,
-        well_behaved_stall => well_behaved_stall,
         data_width => data'length,
-        id_width => id'length
+        id_width => id'length,
+        user_width => user'length,
+        well_behaved_stall => well_behaved_stall,
+        logger_name_suffix => logger_name_suffix
       )
       port map(
         clk => clk,
@@ -261,9 +358,10 @@ begin
         ready => ready,
         valid => valid,
         last => last_int,
-        id => id,
         data => data,
-        strobe => strobe_byte
+        strobe => strobe_byte,
+        id => id,
+        user => user
       );
 
     end block;
