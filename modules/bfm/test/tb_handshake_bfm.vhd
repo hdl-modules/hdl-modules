@@ -26,6 +26,7 @@ entity tb_handshake_bfm is
     master_stall_probability_percent : natural;
     slave_stall_probability_percent : natural;
     data_width : natural;
+    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -65,15 +66,14 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
+    variable rnd : RandomPType;
 
     variable stimuli_data : std_ulogic_vector(input_data'range) := (others => '0');
     variable stimuli_last : std_ulogic := '0';
-    variable rnd : RandomPType;
-
   begin
     test_runner_setup(runner, runner_cfg);
 
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(seed);
 
     wait until rising_edge(clk);
 
@@ -145,8 +145,9 @@ begin
     handshake_master_inst : entity work.handshake_master
       generic map (
         stall_config => master_stall_config,
-        logger_name_suffix => "_input",
+        seed => seed,
         data_width => input_data'length,
+        logger_name_suffix => "_input",
         rule_4_performance_check_max_waits => 16
       )
       port map (
@@ -166,8 +167,9 @@ begin
     handshake_slave_inst : entity work.handshake_slave
       generic map (
         stall_config => slave_stall_config,
-        logger_name_suffix => "_result",
+        seed => seed,
         data_width => result_data'length,
+        logger_name_suffix => "_result",
         rule_4_performance_check_max_waits => 16
       )
       port map (
@@ -202,7 +204,8 @@ begin
     ------------------------------------------------------------------------------
     handshake_master_inst : entity work.handshake_master
       generic map (
-        stall_config => master_stall_config
+        stall_config => master_stall_config,
+        seed => seed
       )
       port map (
         clk => clk,
@@ -217,7 +220,8 @@ begin
     ------------------------------------------------------------------------------
     handshake_slave_inst : entity work.handshake_slave
       generic map (
-        stall_config => slave_stall_config
+        stall_config => slave_stall_config,
+        seed => seed
       )
       port map (
         clk => clk,

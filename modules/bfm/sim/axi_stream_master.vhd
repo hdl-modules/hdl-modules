@@ -13,11 +13,6 @@
 -- Each element in the integer array should be an unsigned byte.
 -- Little endian byte order is assumed.
 --
--- The byte length of the packets (as indicated by the length of the ``data_queue`` arrays)
--- does not need to be aligned with the ``data_width`` of the bus.
--- If unaligned, the last data beat will not have all byte lanes set to valid
--- ``data`` and ``strobe``.
---
 -- .. note::
 --
 --   This BFM will inject random handshake jitter/stalling for good verification coverage.
@@ -26,6 +21,25 @@
 --   simulation run.
 --   This can be done conveniently with the
 --   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+--
+--
+-- Unaligned packet length
+-- _______________________
+--
+-- The byte length of the packets (as indicated by the length of the ``data_queue`` arrays)
+-- does not need to be aligned with the ``data_width`` of the bus.
+-- If unaligned, the last data beat will not have all byte lanes set to valid
+-- ``data`` and ``strobe``.
+--
+--
+-- User signalling
+-- _______________
+--
+-- This BFM optionally supports sending auxillary data on the ``user`` port also.
+-- Enable by setting a non-zero ``user_width`` and a valid ``user_queue``.
+-- User data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>`
+-- just as for the regular data.
+-- The length of packets must be the same as what is pushed to the ``data_queue``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -48,6 +62,13 @@ entity axi_stream_master is
     -- Push data (integer_array_t with push_ref()) to this queue.
     -- The integer arrays will be deallocated after this BFM is done with them.
     data_queue : queue_t;
+    -- Optionally enable the 'user' port by setting a non-zero width here.
+    -- Must also set the 'user_queue' generic to a valid queue.
+    user_width : natural := 0;
+    -- Push auxillary user data (integer_array_t with push_ref()) to this queue.
+    -- Must also se the 'user_width' generic to a non-zero value.
+    -- The integer arrays will be deallocated after this BFM is done with them.
+    user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
     stall_config : stall_config_t := null_stall_config;
     -- Random seed for handshaking stall/jitter.
@@ -72,6 +93,7 @@ entity axi_stream_master is
     strobe : out std_ulogic_vector(data_width / strobe_unit_width - 1 downto 0) := (
       others => drive_invalid_value
     );
+    user : out std_ulogic_vector(user_width - 1 downto 0) := (others => drive_invalid_value);
     --# {{}}
     num_packets_sent : out natural := 0
   );
@@ -112,7 +134,7 @@ begin
     variable packet_length_bytes : positive := 1;
     variable data_value : natural := 0;
 
-    variable byte_lane_idx : natural := 0;
+    variable byte_lane_idx : natural range 0 to bytes_per_beat - 1 := 0;
     variable is_last_byte : boolean := false;
   begin
     while is_empty(data_queue) loop
@@ -198,7 +220,7 @@ begin
   ------------------------------------------------------------------------------
   assign_invalid : process(all)
   begin
-    -- We should drive the 'invalid' value when bus is not valid
+    -- We should drive the 'invalid' value when bus is not valid.
 
     if valid then
       last <= last_int;
@@ -210,5 +232,67 @@ begin
       strobe <= (others => drive_invalid_value);
     end if;
   end process;
+
+
+  ------------------------------------------------------------------------------
+  user_signalling_gen : if user_width > 0 generate
+    constant user_bytes_per_beat : positive := user_width / 8;
+
+    signal user_int : std_ulogic_vector(user'range) := (others => drive_invalid_value);
+  begin
+
+    assert user_queue /= null_queue report "Must set user queue";
+
+    assert user_width mod 8 = 0
+      report "This entity works on a byte-by-byte basis. User width must be a multiple of bytes.";
+
+
+    ------------------------------------------------------------------------------
+    user_main : process
+      variable user_packet : integer_array_t := null_integer_array;
+      variable packet_length_bytes : positive := 1;
+      variable user_value : natural := 0;
+
+      variable byte_lane_idx : natural range 0 to user_bytes_per_beat - 1 := 0;
+    begin
+      while is_empty(user_queue) loop
+        wait until rising_edge(clk);
+      end loop;
+
+      user_packet := pop_ref(user_queue);
+      packet_length_bytes := length(user_packet);
+
+      assert packet_length_bytes mod user_bytes_per_beat = 0
+        report "Packet length must be a multiple of user width";
+
+      for byte_idx in 0 to packet_length_bytes - 1 loop
+        byte_lane_idx := byte_idx mod user_bytes_per_beat;
+
+        user_value := get(arr=>user_packet, idx=>byte_idx);
+        user_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <= std_logic_vector(
+          to_unsigned(user_value, 8)
+        );
+
+        if byte_lane_idx = user_bytes_per_beat - 1 then
+          wait until ready and valid and rising_edge(clk);
+
+          if last then
+            check_equal(
+              byte_idx,
+              packet_length_bytes - 1,
+              "Length mismatch between data payload and user payload"
+            );
+          end if;
+        end if;
+      end loop;
+
+      -- Deallocate after we are done with the data.
+      deallocate(user_packet);
+    end process;
+
+    -- We should drive the 'invalid' value when bus is not valid.
+    user <= user_int when valid else (others => drive_invalid_value);
+
+  end generate;
 
 end architecture;

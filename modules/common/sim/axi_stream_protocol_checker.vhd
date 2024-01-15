@@ -38,6 +38,9 @@ entity axi_stream_protocol_checker is
     data_width : natural := 0;
     -- Assign a non-zero value in order to use the 'id' port for protocol checking
     id_width : natural := 0;
+    -- Assign a non-zero value in order to use the 'user' port for protocol checking
+    user_width : natural := 0;
+    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- This can be used to essentially disable the
     --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
@@ -54,12 +57,15 @@ entity axi_stream_protocol_checker is
     -- Optional to connect.
     last : in std_ulogic := '1';
     -- Optional to connect.
-    -- Must set a valid 'id_width' generic value in order to use these.
-    id : in std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
-    -- Optional to connect.
     -- Must set a valid 'data_width' generic value in order to use these.
     data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1');
+    -- Optional to connect.
+    -- Must set a valid 'id_width' generic value in order to use this.
+    id : in std_ulogic_vector(id_width - 1 downto 0) := (others => '0');
+    -- Optional to connect.
+    -- Must set a valid 'id_width' generic value in order to use this.
+    user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '0')
   );
 end entity;
 
@@ -96,6 +102,7 @@ begin
       protocol_checker => new_axi_stream_protocol_checker(
         data_length => data'length,
         id_length => id'length,
+        user_length => user'length,
         logger => get_logger("axi_stream_protocol_checker" & logger_name_suffix),
         max_waits => rule_4_performance_check_max_waits
       )
@@ -108,7 +115,8 @@ begin
       tlast => last,
       tstrb => strobe,
       tkeep => strobe,
-      tid => id
+      tid => id,
+      tuser => user
     );
 
 end architecture;
