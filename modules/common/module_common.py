@@ -48,9 +48,9 @@ class Module(BaseModule):
 
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_handshake_merger_tests(vunit_proj=vunit_proj)
+        self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
         self._setup_handshake_splitter_tests(vunit_proj=vunit_proj)
-        self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
         self._setup_keep_remover_tests(vunit_proj=vunit_proj)
         self._setup_strobe_on_last_tests(vunit_proj=vunit_proj)
         self._setup_width_conversion_tests(vunit_proj=vunit_proj)
@@ -59,14 +59,24 @@ class Module(BaseModule):
         projects = []
         part = "xc7z020clg400-1"
 
+        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
+        # this module is used. Hence we can not import at the top of this file.
+        # This method is only called when running netlist builds in the hdl-modules repo from the
+        # bundled tools/build.py, where PYTHONPATH is correctly set up.
+        # pylint: disable=import-outside-toplevel
+        # First party libraries
+        from hdl_modules import get_hdl_modules
+
+        modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
+
+        self._get_clock_counter_build_projects(part, modules, projects)
+        self._get_frequency_conversion_build_projects(part, projects)
         self._get_handshake_pipeline_build_projects(part, projects)
         self._get_handshake_splitter_build_projects(part, projects)
-        self._get_width_conversion_build_projects(part, projects)
         self._get_keep_remover_build_projects(part, projects)
+        self._get_periodic_pulser_build_projects(part, modules, projects)
         self._get_strobe_on_last_build_projects(part, projects)
-        self._get_clock_counter_build_projects(part, projects)
-        self._get_periodic_pulser_build_projects(part, projects)
-        self._get_frequency_conversion_build_projects(part, projects)
+        self._get_width_conversion_build_projects(part, projects)
 
         return projects
 
@@ -87,6 +97,11 @@ class Module(BaseModule):
                 generics=dict(stall_probability_percent=stall_probability_percent),
                 set_random_seed=True,
             )
+
+    def _setup_handshake_mux_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_mux")
+        for _ in range(2):
+            self.add_vunit_config(test=tb, set_random_seed=True)
 
     def _setup_handshake_pipeline_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_pipeline")
@@ -116,42 +131,6 @@ class Module(BaseModule):
                 )
                 self.add_vunit_config(test=test, generics=generics)
 
-    def _get_handshake_pipeline_build_projects(self, part, projects):
-        # All sets of generics are supported except full throughput with pipeline of
-        # control signals but not data signals
-        full_throughput = [True, True, True, False, False, False, False]
-        pipeline_control_signals = [True, False, False, True, True, False, False]
-        pipeline_data_signals = [True, True, False, True, False, True, False]
-
-        total_luts = [41, 1, 0, 1, 2, 2, 0]
-        ffs = [78, 38, 0, 39, 3, 38, 0]
-        maximum_logic_level = [2, 2, 0, 2, 2, 2, 0]
-
-        for idx in range(len(total_luts)):  # pylint: disable=consider-using-enumerate
-            generics = dict(
-                data_width=32,
-                full_throughput=full_throughput[idx],
-                pipeline_control_signals=pipeline_control_signals[idx],
-                pipeline_data_signals=pipeline_data_signals[idx],
-            )
-
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.handshake_pipeline", generics=generics
-                    ),
-                    modules=[self],
-                    part=part,
-                    top="handshake_pipeline",
-                    generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(total_luts[idx])),
-                        Ffs(EqualTo(ffs[idx])),
-                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
-                    ],
-                )
-            )
-
     def _setup_handshake_splitter_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_splitter")
         for test in tb.get_tests():
@@ -162,29 +141,37 @@ class Module(BaseModule):
                 set_random_seed=True,
             )
 
-    def _get_handshake_splitter_build_projects(self, part, projects):
-        def get_build_configurations():
-            yield dict(num_interfaces=2), [TotalLuts(EqualTo(4)), Ffs(EqualTo(2))]
-            yield dict(num_interfaces=4), [TotalLuts(EqualTo(9)), Ffs(EqualTo(4))]
+    def _setup_keep_remover_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_keep_remover")
 
-        for generics, build_result_checkers in get_build_configurations():
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.handshake_splitter", generics=generics
-                    ),
-                    modules=[self],
-                    part=part,
-                    top="handshake_splitter",
-                    generics=generics,
-                    build_result_checkers=build_result_checkers,
-                )
+        test = tb.test("test_data")
+        for data_width in [8, 16, 32]:
+            for strobe_unit_width in [8, 16]:
+                if strobe_unit_width > data_width:
+                    continue
+
+                generics = dict(data_width=data_width, strobe_unit_width=strobe_unit_width)
+                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+
+        test = tb.test("test_full_throughput")
+        for data_width, strobe_unit_width in [(16, 8), (32, 16)]:
+            generics = dict(
+                data_width=data_width, strobe_unit_width=strobe_unit_width, enable_jitter=False
             )
+            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
-    def _setup_handshake_mux_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_mux")
-        for _ in range(2):
-            self.add_vunit_config(test=tb, set_random_seed=True)
+    def _setup_strobe_on_last_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_strobe_on_last")
+
+        for data_width in [8, 16, 32]:
+            for test_full_throughput in [False, True]:
+                generics = dict(data_width=data_width, test_full_throughput=test_full_throughput)
+
+                # The "full throughput" test is very static, so test only with one seed.
+                # The regular test though should be tested more exhaustively.
+                num_tests = 1 if test_full_throughput else 5
+                for _ in range(num_tests):
+                    self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
     def _setup_width_conversion_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_width_conversion")
@@ -232,150 +219,7 @@ class Module(BaseModule):
             ),
         )
 
-    def _get_width_conversion_build_projects(self, part, projects):
-        modules = [self]
-
-        # Downconversion in left array, upconversion on right.
-        # Progressively adding more features from left to right.
-        input_width = [32, 32, 32] + [16, 16, 16]
-        output_width = [16, 16, 16] + [32, 32, 32]
-        enable_strobe = [False, True, True] + [False, True, True]
-        enable_last = [False, True, True] + [False, True, True]
-        support_unaligned_packet_length = [False, False, True] + [False, False, True]
-
-        # Resource utilization increases when more features are added.
-        total_luts = [20, 23, 30] + [35, 40, 45]
-        ffs = [51, 59, 63] + [51, 60, 62]
-        maximum_logic_level = [2, 2, 3] + [2, 2, 3]
-
-        for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
-            generics = dict(
-                input_width=input_width[idx],
-                output_width=output_width[idx],
-                enable_strobe=enable_strobe[idx],
-                enable_last=enable_last[idx],
-                support_unaligned_packet_length=support_unaligned_packet_length[idx],
-            )
-
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.width_conversion", generics=generics
-                    ),
-                    modules=modules,
-                    part=part,
-                    top="width_conversion",
-                    generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(total_luts[idx])),
-                        Ffs(EqualTo(ffs[idx])),
-                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
-                    ],
-                )
-            )
-
-    def _setup_keep_remover_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_keep_remover")
-
-        test = tb.test("test_data")
-        for data_width in [8, 16, 32]:
-            for strobe_unit_width in [8, 16]:
-                if strobe_unit_width > data_width:
-                    continue
-
-                generics = dict(data_width=data_width, strobe_unit_width=strobe_unit_width)
-                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
-
-        test = tb.test("test_full_throughput")
-        for data_width, strobe_unit_width in [(16, 8), (32, 16)]:
-            generics = dict(
-                data_width=data_width, strobe_unit_width=strobe_unit_width, enable_jitter=False
-            )
-            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
-
-    def _get_keep_remover_build_projects(self, part, projects):
-        modules = [self]
-        generic_configurations = [
-            dict(data_width=32, strobe_unit_width=16),
-            dict(data_width=64, strobe_unit_width=8),
-            dict(data_width=16 * 8, strobe_unit_width=4 * 8),
-        ]
-        total_luts = [88, 410, 414]
-        ffs = [79, 175, 282]
-        maximum_logic_level = [3, 6, 5]
-
-        for idx, generics in enumerate(generic_configurations):
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.keep_remover", generics=generics
-                    ),
-                    modules=modules,
-                    part=part,
-                    top="keep_remover",
-                    generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(total_luts[idx])),
-                        Ffs(EqualTo(ffs[idx])),
-                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
-                        DspBlocks(EqualTo(0)),
-                    ],
-                )
-            )
-
-    def _setup_strobe_on_last_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_strobe_on_last")
-
-        for data_width in [8, 16, 32]:
-            for test_full_throughput in [False, True]:
-                generics = dict(data_width=data_width, test_full_throughput=test_full_throughput)
-
-                # The "full throughput" test is very static, so test only with one seed.
-                # The regular test though should be tested more exhaustively.
-                num_tests = 1 if test_full_throughput else 5
-                for _ in range(num_tests):
-                    self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
-
-    def _get_strobe_on_last_build_projects(self, part, projects):
-        modules = [self]
-        generic_configurations = [
-            dict(data_width=8),
-            dict(data_width=32),
-            dict(data_width=64),
-        ]
-        total_luts = [7, 8, 9]
-        ffs = [12, 39, 75]
-        maximum_logic_level = [3, 3, 3]
-
-        for idx, generics in enumerate(generic_configurations):
-            projects.append(
-                VivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.strobe_on_last", generics=generics
-                    ),
-                    modules=modules,
-                    part=part,
-                    top="strobe_on_last",
-                    generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(total_luts[idx])),
-                        Ffs(EqualTo(ffs[idx])),
-                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
-                    ],
-                )
-            )
-
-    def _get_clock_counter_build_projects(self, part, projects):
-        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
-        # this module is used. Hence we can not import at the top of this file.
-        # This method is only called when running netlist builds in the hdl-modules repo from the
-        # bundled tools/build.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
-        from hdl_modules import get_hdl_modules
-
-        modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
-
+    def _get_clock_counter_build_projects(self, part, modules, projects):
         generics = dict(resolution_bits=24, max_relation_bits=6)
         projects.append(
             VivadoNetlistProject(
@@ -412,17 +256,103 @@ class Module(BaseModule):
             )
         )
 
-    def _get_periodic_pulser_build_projects(self, part, projects):
-        # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
-        # this module is used. Hence we can not import at the top of this file.
-        # This method is only called when running netlist builds in the hdl-modules repo from the
-        # bundled tools/build.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
-        from hdl_modules import get_hdl_modules
+    def _get_frequency_conversion_build_projects(self, part, projects):
+        # No result checkers, but the entity contains a lot of assertions
+        projects.append(
+            VivadoNetlistProject(
+                name=f"{self.library_name}.test_frequency_conversion",
+                modules=[self],
+                part=part,
+                top="test_frequency_conversion",
+            )
+        )
 
-        modules = get_hdl_modules(names_include=[self.name, "math"])
+    def _get_handshake_pipeline_build_projects(self, part, projects):
+        # All sets of generics are supported except full throughput with pipeline of
+        # control signals but not data signals
+        full_throughput = [True, True, True, False, False, False, False]
+        pipeline_control_signals = [True, False, False, True, True, False, False]
+        pipeline_data_signals = [True, True, False, True, False, True, False]
 
+        total_luts = [41, 1, 0, 1, 2, 2, 0]
+        ffs = [78, 38, 0, 39, 3, 38, 0]
+        maximum_logic_level = [2, 2, 0, 2, 2, 2, 0]
+
+        for idx in range(len(total_luts)):  # pylint: disable=consider-using-enumerate
+            generics = dict(
+                data_width=32,
+                full_throughput=full_throughput[idx],
+                pipeline_control_signals=pipeline_control_signals[idx],
+                pipeline_data_signals=pipeline_data_signals[idx],
+            )
+
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.handshake_pipeline", generics=generics
+                    ),
+                    modules=[self],
+                    part=part,
+                    top="handshake_pipeline",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(total_luts[idx])),
+                        Ffs(EqualTo(ffs[idx])),
+                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
+                    ],
+                )
+            )
+
+    def _get_handshake_splitter_build_projects(self, part, projects):
+        def get_build_configurations():
+            yield dict(num_interfaces=2), [TotalLuts(EqualTo(4)), Ffs(EqualTo(2))]
+            yield dict(num_interfaces=4), [TotalLuts(EqualTo(9)), Ffs(EqualTo(4))]
+
+        for generics, build_result_checkers in get_build_configurations():
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.handshake_splitter", generics=generics
+                    ),
+                    modules=[self],
+                    part=part,
+                    top="handshake_splitter",
+                    generics=generics,
+                    build_result_checkers=build_result_checkers,
+                )
+            )
+
+    def _get_keep_remover_build_projects(self, part, projects):
+        modules = [self]
+        generic_configurations = [
+            dict(data_width=32, strobe_unit_width=16),
+            dict(data_width=64, strobe_unit_width=8),
+            dict(data_width=16 * 8, strobe_unit_width=4 * 8),
+        ]
+        total_luts = [88, 410, 414]
+        ffs = [79, 175, 282]
+        maximum_logic_level = [3, 6, 5]
+
+        for idx, generics in enumerate(generic_configurations):
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.keep_remover", generics=generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="keep_remover",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(total_luts[idx])),
+                        Ffs(EqualTo(ffs[idx])),
+                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
+                        DspBlocks(EqualTo(0)),
+                    ],
+                )
+            )
+
+    def _get_periodic_pulser_build_projects(self, part, modules, projects):
         # Returns: generics, checkers
         def generate_netlist_configurations():
             # A period of 33 fits within an srl and the succeeding ff
@@ -524,13 +454,73 @@ class Module(BaseModule):
                 )
             )
 
-    def _get_frequency_conversion_build_projects(self, part, projects):
-        # No result checkers, but the entity contains a lot of assertions
-        projects.append(
-            VivadoNetlistProject(
-                name=f"{self.library_name}.test_frequency_conversion",
-                modules=[self],
-                part=part,
-                top="test_frequency_conversion",
+    def _get_strobe_on_last_build_projects(self, part, projects):
+        modules = [self]
+        generic_configurations = [
+            dict(data_width=8),
+            dict(data_width=32),
+            dict(data_width=64),
+        ]
+        total_luts = [7, 8, 9]
+        ffs = [12, 39, 75]
+        maximum_logic_level = [3, 3, 3]
+
+        for idx, generics in enumerate(generic_configurations):
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.strobe_on_last", generics=generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="strobe_on_last",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(total_luts[idx])),
+                        Ffs(EqualTo(ffs[idx])),
+                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
+                    ],
+                )
             )
-        )
+
+    def _get_width_conversion_build_projects(self, part, projects):
+        modules = [self]
+
+        # Downconversion in left array, upconversion on right.
+        # Progressively adding more features from left to right.
+        input_width = [32, 32, 32] + [16, 16, 16]
+        output_width = [16, 16, 16] + [32, 32, 32]
+        enable_strobe = [False, True, True] + [False, True, True]
+        enable_last = [False, True, True] + [False, True, True]
+        support_unaligned_packet_length = [False, False, True] + [False, False, True]
+
+        # Resource utilization increases when more features are added.
+        total_luts = [20, 23, 30] + [35, 40, 45]
+        ffs = [51, 59, 63] + [51, 60, 62]
+        maximum_logic_level = [2, 2, 3] + [2, 2, 3]
+
+        for idx in range(len(input_width)):  # pylint: disable=consider-using-enumerate
+            generics = dict(
+                input_width=input_width[idx],
+                output_width=output_width[idx],
+                enable_strobe=enable_strobe[idx],
+                enable_last=enable_last[idx],
+                support_unaligned_packet_length=support_unaligned_packet_length[idx],
+            )
+
+            projects.append(
+                VivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.width_conversion", generics=generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="width_conversion",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(total_luts[idx])),
+                        Ffs(EqualTo(ffs[idx])),
+                        MaximumLogicLevel(EqualTo(maximum_logic_level[idx])),
+                    ],
+                )
+            )
