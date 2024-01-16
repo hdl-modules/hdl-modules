@@ -22,7 +22,7 @@ use work.axi_lite_pkg.all;
 
 entity tb_axi_lite_pkg is
   generic (
-    data_width : positive range 1 to axi_lite_data_sz;
+    data_width : positive range 1 to axi_lite_data_sz := 32;
     runner_cfg : string
   );
 end entity;

@@ -198,7 +198,8 @@ class Module(BaseModule):
                 self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
         test = tb.get_tests("test_full_throughput")[0]
-        test.add_config(
+        self.add_vunit_config(
+            test=test,
             name="input_16.output_8",
             generics=dict(
                 input_width=16,
@@ -207,8 +208,10 @@ class Module(BaseModule):
                 enable_last=True,
                 enable_jitter=False,
             ),
+            set_random_seed=True,
         )
-        test.add_config(
+        self.add_vunit_config(
+            test=test,
             name="input_8.output_16",
             generics=dict(
                 input_width=8,
@@ -217,6 +220,7 @@ class Module(BaseModule):
                 enable_last=True,
                 enable_jitter=False,
             ),
+            set_random_seed=True,
         )
 
     def _get_clock_counter_build_projects(self, part, modules, projects):

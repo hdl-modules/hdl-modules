@@ -22,9 +22,9 @@ use work.axi_pkg.all;
 
 entity tb_axi_pkg is
   generic (
-    data_width : positive range 1 to axi_data_sz;
-    id_width : natural range 0 to axi_id_sz;
-    addr_width : positive range 1 to axi_a_addr_sz;
+    data_width : positive range 1 to axi_data_sz := 8;
+    id_width : natural range 0 to axi_id_sz := 0;
+    addr_width : positive range 1 to axi_a_addr_sz := 1;
     runner_cfg : string
   );
 end entity;
