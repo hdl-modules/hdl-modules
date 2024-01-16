@@ -49,6 +49,8 @@ package axi_pkg is
   constant axi_max_burst_length_beats : positive := 256;
   constant axi3_max_burst_length_beats : positive := 16;
 
+  function get_max_burst_length_beats(enable_axi3 : boolean) return positive;
+
   -- Find the number of AxLEN bits that have to be taken into account, given the provided
   -- max burst length.
   function get_a_len_width(
@@ -387,6 +389,15 @@ end;
 package body axi_pkg is
 
   ------------------------------------------------------------------------------
+  function get_max_burst_length_beats(enable_axi3 : boolean) return positive is
+  begin
+    if enable_axi3 then
+      return axi3_max_burst_length_beats;
+    end if;
+
+    return axi_max_burst_length_beats;
+  end function;
+
   function get_a_len_width(
     max_burst_length_beats : positive range 1 to axi_max_burst_length_beats
   ) return positive is
