@@ -115,7 +115,7 @@ begin
         impure function downconversion_user_output(
           user_input : integer_array_t
         ) return integer_array_t is
-          constant width_ratio : positive := input_width / output_width;
+          constant width_ratio : natural := input_width / output_width;
           -- Number of beats. May or may not be fully strobed.
           constant packet_length_output_beats : positive := (
             (packet_length_bytes + output_bytes_per_beat - 1) / output_bytes_per_beat
