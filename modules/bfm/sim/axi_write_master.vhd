@@ -84,7 +84,11 @@ entity axi_write_master is
     -- 'AW' transaction.
     -- It also changes the transaction behavior, so that 'W' data will never be sent before
     -- the 'AW' transaction
-    enable_axi3 : boolean := false
+    enable_axi3 : boolean := false;
+    -- When 'AWVALID' or 'WVALID' is zero, the associated output ports will be driven with
+    -- this value.
+    -- This is to avoid a DUT sampling the values in the wrong clock cycle.
+    drive_invalid_value : std_ulogic := 'X'
   );
   port (
     clk : in std_ulogic;
@@ -117,9 +121,9 @@ begin
     constant size_target : axi_a_size_t := to_size(data_width);
     constant burst_target : axi_a_burst_t := axi_a_burst_incr;
 
-    signal id_target : u_unsigned(axi_write_m2s.aw.id'range) := (others => 'X');
-    signal addr_target : u_unsigned(axi_write_m2s.aw.addr'range) := (others => 'X');
-    signal len_target : axi_a_len_t := (others => 'X');
+    signal id_target : u_unsigned(axi_write_m2s.aw.id'range) := (others => '0');
+    signal addr_target : u_unsigned(axi_write_m2s.aw.addr'range) := (others => '0');
+    signal len_target : axi_a_len_t := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -167,11 +171,20 @@ begin
         valid => axi_write_m2s.aw.valid
       );
 
-    axi_write_m2s.aw.id <= id_target when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.addr <= addr_target when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.len <= len_target when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.size <= size_target when axi_write_m2s.aw.valid else (others => 'X');
-    axi_write_m2s.aw.burst <= burst_target when axi_write_m2s.aw.valid else (others => 'X');
+    axi_write_m2s.aw.id <=
+      id_target when axi_write_m2s.aw.valid else (others => drive_invalid_value);
+
+    axi_write_m2s.aw.addr <=
+      addr_target when axi_write_m2s.aw.valid else (others => drive_invalid_value);
+
+    axi_write_m2s.aw.len <=
+      len_target when axi_write_m2s.aw.valid else (others => drive_invalid_value);
+
+    axi_write_m2s.aw.size <=
+      size_target when axi_write_m2s.aw.valid else (others => drive_invalid_value);
+
+    axi_write_m2s.aw.burst <=
+      burst_target when axi_write_m2s.aw.valid else (others => drive_invalid_value);
 
   end block;
 
@@ -235,7 +248,8 @@ begin
         data_queue => w_data_queue,
         stall_config => w_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_write_master_w" & logger_name_suffix
+        logger_name_suffix => "_axi_write_master_w" & logger_name_suffix,
+        drive_invalid_value => drive_invalid_value
       )
       port map (
         clk => clk,

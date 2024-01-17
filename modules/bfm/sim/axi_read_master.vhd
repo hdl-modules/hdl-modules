@@ -78,7 +78,10 @@ entity axi_read_master is
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
     -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
-    logger_name_suffix : string := ""
+    logger_name_suffix : string := "";
+    -- When 'ARVALID' is zero, the associated output ports will be driven with this value.
+    -- This is to avoid a DUT sampling the values in the wrong clock cycle.
+    drive_invalid_value : std_ulogic := 'X'
   );
   port (
     clk : in std_ulogic;
@@ -159,11 +162,19 @@ begin
         valid => axi_read_m2s.ar.valid
       );
 
-    axi_read_m2s.ar.id <= id_target when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.addr <= addr_target when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.len <= len_target when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.size <= size_target when axi_read_m2s.ar.valid else (others => 'X');
-    axi_read_m2s.ar.burst <= burst_target when axi_read_m2s.ar.valid else (others => 'X');
+    axi_read_m2s.ar.id <= id_target when axi_read_m2s.ar.valid else (others => drive_invalid_value);
+
+    axi_read_m2s.ar.addr <=
+      addr_target when axi_read_m2s.ar.valid else (others => drive_invalid_value);
+
+    axi_read_m2s.ar.len <=
+      len_target when axi_read_m2s.ar.valid else (others => drive_invalid_value);
+
+    axi_read_m2s.ar.size <=
+      size_target when axi_read_m2s.ar.valid else (others => drive_invalid_value);
+
+    axi_read_m2s.ar.burst <=
+      burst_target when axi_read_m2s.ar.valid else (others => drive_invalid_value);
 
   end block;
 
