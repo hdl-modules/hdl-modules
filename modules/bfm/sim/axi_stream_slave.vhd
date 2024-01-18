@@ -90,7 +90,7 @@ entity axi_stream_slave is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
@@ -330,40 +330,28 @@ begin
 
 
   ------------------------------------------------------------------------------
-  handshake_slave_block : block
-    signal last_int : std_ulogic := '0';
-  begin
-
-    -- The VUnit protocol checker will give an error about "packet completion" unless 'last' arrives
-    -- for each packet. Hence when the master does not set 'last', we set it for each beat.
-    last_int <= '1' when disable_last_check else last;
-
-
-    ------------------------------------------------------------------------------
-    handshake_slave_inst : entity bfm.handshake_slave
-      generic map(
-        stall_config => stall_config,
-        seed => seed,
-        data_width => data'length,
-        id_width => id'length,
-        user_width => user'length,
-        well_behaved_stall => well_behaved_stall,
-        logger_name_suffix => logger_name_suffix
-      )
-      port map(
-        clk => clk,
-        --
-        data_is_ready => data_is_ready,
-        --
-        ready => ready,
-        valid => valid,
-        last => last_int,
-        data => data,
-        strobe => strobe_byte,
-        id => id,
-        user => user
-      );
-
-    end block;
+  handshake_slave_inst : entity bfm.handshake_slave
+    generic map(
+      stall_config => stall_config,
+      seed => seed,
+      data_width => data'length,
+      id_width => id'length,
+      user_width => user'length,
+      well_behaved_stall => well_behaved_stall,
+      logger_name_suffix => " - axi_stream_slave" & logger_name_suffix
+    )
+    port map(
+      clk => clk,
+      --
+      data_is_ready => data_is_ready,
+      --
+      ready => ready,
+      valid => valid,
+      last => last,
+      data => data,
+      strobe => strobe_byte,
+      id => id,
+      user => user
+    );
 
 end architecture;

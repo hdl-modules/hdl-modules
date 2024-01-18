@@ -241,7 +241,7 @@ begin
       generic map (
         stall_config => stall_config,
         seed => seed,
-        logger_name_suffix => "_input",
+        logger_name_suffix => " - input",
         data_width => input_data'length
       )
       port map (
@@ -266,7 +266,7 @@ begin
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => "_input"
+      logger_name_suffix => " - output"
     )
     port map (
       clk => clk,

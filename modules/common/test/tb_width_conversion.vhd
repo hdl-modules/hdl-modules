@@ -249,9 +249,6 @@ begin
   begin
     test_runner_setup(runner, runner_cfg);
 
-    -- The 'output_id' can be 'X' for un-strobed lanes when upconverting an unaligned packet.
-    disable(get_logger("axi_stream_protocol_checker_handshake_slave_output:rule 10"), error);
-
     -- Print the randomized generics.
     report "user_width = " & to_string(user_width);
 
@@ -276,7 +273,7 @@ begin
       );
     end if;
 
-    test_runner_cleanup(runner, allow_disabled_errors=>true);
+    test_runner_cleanup(runner);
   end process;
 
 
@@ -289,7 +286,7 @@ begin
       user_queue => input_user_queue,
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => "_input",
+      logger_name_suffix => " - input",
       strobe_unit_width => input_data'length / input_strobe'length
     )
     port map (
@@ -321,7 +318,7 @@ begin
         reference_user_queue => output_user_queue,
         stall_config => stall_config,
         seed => seed,
-        logger_name_suffix => "_output",
+        logger_name_suffix => " - output",
         disable_last_check => not enable_last
       )
       port map (

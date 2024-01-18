@@ -281,7 +281,7 @@ begin
         data_width => input_data'length,
         data_queue => input_data_queue,
         stall_config => stall_config,
-        logger_name_suffix => "_input",
+        logger_name_suffix => " - input",
         seed => seed
       )
       port map (
@@ -315,7 +315,7 @@ begin
         data_width => result_data'length,
         reference_data_queue => reference_data_queue,
         stall_config => stall_config,
-        logger_name_suffix => "_result",
+        logger_name_suffix => " - result",
         seed => seed
       )
       port map (

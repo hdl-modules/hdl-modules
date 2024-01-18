@@ -115,10 +115,6 @@ begin
     test_runner_setup(runner, runner_cfg);
     rnd.InitSeed(rnd'instance_name);
 
-    -- Decrease noise
-    disable(get_logger("input_master:rule 4"), warning);
-    disable(get_logger("output_slave:rule 4"), warning);
-
     if run("test_random_data") then
       for idx in 0 to 300 loop
         run_test;
@@ -146,7 +142,7 @@ begin
       data_width => input_data'length,
       data_queue => input_data_queue,
       stall_config => stall_config,
-      logger_name_suffix => "_input",
+      logger_name_suffix => " - input",
       strobe_unit_width => input_data'length / input_strobe'length
     )
     port map (
@@ -166,7 +162,7 @@ begin
       data_width => output_data'length,
       reference_data_queue => output_data_queue,
       stall_config => stall_config,
-      logger_name_suffix => "_output"
+      logger_name_suffix => " - output"
     )
     port map (
       clk => clk,

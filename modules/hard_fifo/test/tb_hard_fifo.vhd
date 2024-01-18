@@ -202,7 +202,7 @@ begin
     assert is_empty(write_data_queue);
     assert is_empty(read_data_queue);
 
-    test_runner_cleanup(runner, allow_disabled_errors=>true);
+    test_runner_cleanup(runner);
   end process;
 
 

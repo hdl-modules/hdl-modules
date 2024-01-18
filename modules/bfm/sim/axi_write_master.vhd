@@ -78,7 +78,7 @@ entity axi_write_master is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- When this generic is set, 'WID' will be assigned to same ID as corresponding
     -- 'AW' transaction.
@@ -160,7 +160,7 @@ begin
       generic map (
         stall_config => aw_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_write_master_aw" & logger_name_suffix
+        logger_name_suffix => " - axi_write_master - AW" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -248,7 +248,7 @@ begin
         data_queue => w_data_queue,
         stall_config => w_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_write_master_w" & logger_name_suffix,
+        logger_name_suffix => " - axi_write_master - W" & logger_name_suffix,
         drive_invalid_value => drive_invalid_value
       )
       port map (
@@ -295,7 +295,7 @@ begin
       generic map (
         stall_config => b_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_write_master_b" & logger_name_suffix,
+        logger_name_suffix => " - axi_write_master - B" & logger_name_suffix,
         data_width => b_slv'length
       )
       port map (

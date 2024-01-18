@@ -171,12 +171,6 @@ begin
     test_runner_setup(runner, runner_cfg);
     rnd.InitSeed(seed);
 
-    -- Decrease noise
-    disable(get_logger("read_slave:rule 4"), warning);
-    disable(get_logger("write_master:rule 4"), warning);
-    -- Some tests leave data unread in the FIFO
-    disable(get_logger("read_slave:rule 9"), error);
-
     if run("test_init_state") then
       check_equal(read_valid, '0');
       check_equal(write_ready, '1');
@@ -377,7 +371,7 @@ begin
 
     wait_until_done;
 
-    test_runner_cleanup(runner, allow_disabled_errors=>true);
+    test_runner_cleanup(runner);
   end process;
 
 
@@ -422,7 +416,7 @@ begin
       data_queue => write_queue,
       stall_config => write_stall_config,
       seed => seed,
-      logger_name_suffix => "_write"
+      logger_name_suffix => " - write"
     )
     port map (
       clk => clk_write,
@@ -443,7 +437,7 @@ begin
       reference_data_queue => read_queue,
       stall_config => read_stall_config,
       seed => seed,
-      logger_name_suffix => "_read",
+      logger_name_suffix => " - read",
       disable_last_check => not enable_last
     )
     port map (

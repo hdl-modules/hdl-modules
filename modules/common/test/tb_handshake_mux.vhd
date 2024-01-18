@@ -135,7 +135,7 @@ begin
           data_queue => input_data_queues(input_idx),
           stall_config => stall_config,
           seed => seed,
-          logger_name_suffix => "_input_" & to_string(input_idx)
+          logger_name_suffix => " - input #" & to_string(input_idx)
         )
         port map (
           clk => clk,
@@ -155,7 +155,7 @@ begin
           reference_data_queue => data_reference_queues(input_idx),
           stall_config => stall_config,
           seed => seed,
-          logger_name_suffix => "_result"
+          logger_name_suffix => " - result"
         )
         port map (
           clk => clk,

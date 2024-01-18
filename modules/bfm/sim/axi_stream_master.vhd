@@ -74,7 +74,7 @@ entity axi_stream_master is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Suffix for the VUnit logger name.
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
@@ -187,7 +187,7 @@ begin
     generic map(
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => logger_name_suffix
+      logger_name_suffix => " - axi_stream_master" & logger_name_suffix
     )
     port map(
       clk => clk,
