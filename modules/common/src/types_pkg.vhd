@@ -135,7 +135,7 @@ package body types_pkg is
     elsif value = '0' then
       return false;
     end if;
-    assert false report "Can not convert value: " & std_logic'image(value) severity failure;
+    assert false report "Can not convert value: " & std_logic'image(value);
     return false;
   end function;
 
@@ -148,7 +148,7 @@ package body types_pkg is
       return false;
     end if;
 
-    assert false report "Can not convert value: " & natural'image(value) severity failure;
+    assert false report "Can not convert value: " & natural'image(value);
     return false;
   end function;
 
@@ -185,8 +185,8 @@ package body types_pkg is
     -- Swap endianness of the input word.
     -- I.e., while maintaining the range and vector direction, swap the location of the data bytes.
 
-    assert data'left > data'right report "Only use with descending range" severity failure;
-    assert data'length mod 8 = 0 report "Must be a whole number of bytes" severity failure;
+    assert data'left > data'right report "Only use with descending range";
+    assert data'length mod 8 = 0 report "Must be a whole number of bytes";
 
     for input_byte_idx in 0 to num_bytes - 1 loop
       result_byte_idx := num_bytes - 1 - input_byte_idx;

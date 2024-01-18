@@ -126,7 +126,7 @@ package body axi_stream_pkg is
     hi := lo + user_width - 1;
     result(hi downto lo) := data.user(user_width - 1 downto 0);
 
-    assert hi = result'high report "Something wrong with widths" severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -153,7 +153,7 @@ package body axi_stream_pkg is
     hi := lo + user_width - 1;
     result.user(user_width - 1 downto 0) := data(hi + offset downto lo + offset);
 
-    assert hi + offset = data'high report "Something wrong with widths" severity failure;
+    assert hi + offset = data'high;
 
     result.valid := valid;
 

@@ -181,12 +181,10 @@ begin
     wait until rising_edge(clk);
 
     assert enable_peek_mode or read_peek_mode = '0'
-      report "Must enable 'peek_mode' using generic"
-      severity failure;
+      report "Must enable 'peek_mode' using generic";
 
     assert enable_drop_packet or drop_packet = '0'
-      report "Must enable 'drop_packet' using generic"
-      severity failure;
+      report "Must enable 'drop_packet' using generic";
   end process;
 
 
