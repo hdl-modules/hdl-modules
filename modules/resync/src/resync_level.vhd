@@ -95,8 +95,7 @@ begin
   ------------------------------------------------------------------------------
   assign_input : if enable_input_register generate
 
-    -- This check will trigger in simulation, but will probably not work in synthesis
-    assert clk_in /= 'U' report "Must assign clock when using input register" severity failure;
+    assert clk_in /= 'U' report "Must assign clock when using input register";
 
 
     ------------------------------------------------------------------------------

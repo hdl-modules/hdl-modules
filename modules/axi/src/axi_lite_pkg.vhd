@@ -283,7 +283,7 @@ package body axi_lite_pkg is
     hi := lo + axi_w_strb_width(data_width) - 1;
     result(hi downto lo) := data.strb(axi_w_strb_width(data_width) - 1 downto 0);
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -302,7 +302,7 @@ package body axi_lite_pkg is
     hi := lo + axi_w_strb_width(data_width) - 1;
     result.strb(axi_w_strb_width(data_width) - 1 downto 0) := data(hi downto lo);
 
-    assert hi = data'high severity failure;
+    assert hi = data'high;
 
     return result;
   end function;
@@ -333,7 +333,7 @@ package body axi_lite_pkg is
     hi := lo + axi_resp_sz - 1;
     result(hi downto lo) := data.resp;
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -352,7 +352,7 @@ package body axi_lite_pkg is
     hi := lo + axi_resp_sz - 1;
     result.resp := data(hi downto lo);
 
-    assert hi = data'high severity failure;
+    assert hi = data'high;
 
     return result;
   end function;

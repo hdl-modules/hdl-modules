@@ -105,7 +105,8 @@ architecture a of keep_remover is
 begin
 
   assert data_width mod strobe_unit_width = 0
-    report "Data width must be a multiple of strobe unit width." severity failure;
+    report "Data width must be a multiple of strobe unit width."
+    severity failure;
 
 
   ------------------------------------------------------------------------------

@@ -152,8 +152,7 @@ begin
     wait until rising_edge(clk_write);
 
     assert enable_drop_packet or drop_packet = '0'
-      report "Must enable 'drop_packet' using generic"
-      severity failure;
+      report "Must enable 'drop_packet' using generic";
   end process;
 
 

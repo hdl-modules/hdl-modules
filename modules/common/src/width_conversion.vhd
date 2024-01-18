@@ -399,7 +399,7 @@ begin
           packed_atom(hi) := input_atoms(input_atom_idx).last;
         end if;
 
-        assert hi = packed_atom'high report "Something wrong with widths";
+        assert hi = packed_atom'high;
 
         input_packed(
           (input_atom_idx + 1) * packed_atom'length - 1 downto input_atom_idx * packed_atom'length
@@ -494,7 +494,7 @@ begin
           output_atoms(output_atom_idx).last <= packed_atom(hi);
         end if;
 
-        assert hi = packed_atom'high report "Something wrong with widths";
+        assert hi = packed_atom'high;
       end loop;
     end process;
 

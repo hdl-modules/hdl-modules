@@ -471,7 +471,7 @@ package body axi_pkg is
     hi := lo + data.burst'length - 1;
     result(hi downto lo) := data.burst;
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -603,7 +603,7 @@ package body axi_pkg is
     hi := lo;
     result(hi) := data.last;
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -633,7 +633,7 @@ package body axi_pkg is
     hi := lo;
     result.last := data(hi + offset);
 
-    assert hi + offset = data'high severity failure;
+    assert hi + offset = data'high;
 
     return result;
   end function;
@@ -662,7 +662,7 @@ package body axi_pkg is
     hi := lo + axi_resp_sz - 1;
     result(hi downto lo) := data.resp;
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -684,7 +684,7 @@ package body axi_pkg is
     hi := lo + axi_resp_sz - 1;
     result.resp := data(hi + offset downto lo + offset);
 
-    assert hi + offset = data'high severity failure;
+    assert hi + offset = data'high;
 
     return result;
   end function;
@@ -730,7 +730,7 @@ package body axi_pkg is
     hi := lo;
     result(hi) := data.last;
 
-    assert hi = result'high severity failure;
+    assert hi = result'high;
 
     return result;
   end function;
@@ -762,7 +762,7 @@ package body axi_pkg is
     hi := lo;
     result.last := data(hi + offset);
 
-    assert hi + offset = data'high severity failure;
+    assert hi + offset = data'high;
 
     return result;
   end function;
