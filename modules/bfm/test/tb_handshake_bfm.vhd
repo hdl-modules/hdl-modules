@@ -147,8 +147,7 @@ begin
         stall_config => master_stall_config,
         seed => seed,
         data_width => input_data'length,
-        logger_name_suffix => "_input",
-        rule_4_performance_check_max_waits => 16
+        logger_name_suffix => " - input"
       )
       port map (
         clk => clk,
@@ -169,8 +168,7 @@ begin
         stall_config => slave_stall_config,
         seed => seed,
         data_width => result_data'length,
-        logger_name_suffix => "_result",
-        rule_4_performance_check_max_waits => 16
+        logger_name_suffix => " - result"
       )
       port map (
         clk => clk,

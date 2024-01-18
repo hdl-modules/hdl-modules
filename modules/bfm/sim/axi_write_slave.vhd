@@ -173,35 +173,20 @@ begin
   aw_axi_stream_protocol_checker_block : block
     constant packed_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>address_width);
     signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
-    constant strobe : std_ulogic_vector(packed'length / 8 - 1 downto 0) := (others => '1');
-
-    constant logger : logger_t := get_logger(
-      name=>get_name(get_logger(axi_slave)) & "_aw_axi_stream_protocol_checker"
-    );
-    constant protocol_checker : axi_stream_protocol_checker_t := new_axi_stream_protocol_checker(
-      data_length => packed_width,
-      logger => logger,
-      -- Suppress the
-      --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
-      -- warning by setting a very high value for the limit.
-      -- This warning is considered noise in most testbenches that exercise backpressure.
-      max_waits => natural'high
-    );
   begin
 
     ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
-        protocol_checker => protocol_checker
+        data_width => packed'length,
+        logger_name_suffix => " - axi_write_slave - AW"
       )
       port map (
-        aclk => clk,
-        tvalid => axi_write_m2s.aw.valid,
-        tready => axi_write_s2m.aw.ready,
-        tdata => packed,
-        tlast => '1',
-        tstrb => strobe,
-        tkeep => strobe
+        clk => clk,
+        --
+        ready => axi_write_s2m.aw.ready,
+        valid => axi_write_m2s.aw.valid,
+        data => packed
       );
 
     packed <= to_slv(data=>axi_write_m2s.aw, id_width=>id_width, addr_width=>address_width);
@@ -213,61 +198,24 @@ begin
   w_axi_stream_protocol_checker_block : block
     constant packed_width : positive := axi_m2s_w_sz(data_width=>data_width);
     signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
-    constant strobe : std_ulogic_vector(packed'length / 8 - 1 downto 0) := (others => '1');
-
-    constant logger : logger_t := get_logger(
-      name=>get_name(get_logger(axi_slave)) & "_w_axi_stream_protocol_checker"
-    );
-    constant protocol_checker : axi_stream_protocol_checker_t := new_axi_stream_protocol_checker(
-      data_length => packed_width,
-      logger => logger,
-      -- Suppress the
-      --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
-      -- warning by setting a very high value for the limit.
-      -- This warning is considered noise in most testbenches that exercise backpressure.
-      max_waits => natural'high
-    );
   begin
 
     ------------------------------------------------------------------------------
-    -- For protocol checking of WDATA.
-    -- The VUnit axi_stream_protocol_checker does not allow any bit in tdata to be e.g. '-' or 'X'
-    -- when tvalid is asserted. Even when that bit is strobed out by tstrb/tkeep.
-    -- This often becomes a problem, since many implementations assign don't care to strobed out
-    -- byte lanes as a way of minimizing LUT consumption. Also testbenches that use the AXI-Stream
-    -- master will often have 'X' assigned to input bytes that are strobed out, which can propagate
-    -- to this checker.
-    -- Hence the workaround is to assign '0' to all bits that are in strobed out lanes.
-    assign_data_without_invalid : process(all)
-      variable axi_m2s_w_strobed : axi_m2s_w_t := axi_m2s_w_init;
-    begin
-      axi_m2s_w_strobed := axi_write_m2s.w;
-
-      for byte_idx in 0 to strobe_width - 1 loop
-        if not axi_write_m2s.w.strb(byte_idx) then
-          axi_m2s_w_strobed.data((byte_idx + 1) * 8 - 1 downto byte_idx * 8 ) := (others => '0');
-        end if;
-      end loop;
-
-      -- TODO does not include WID when in AXI3 mode
-      packed <= to_slv(data=>axi_m2s_w_strobed, data_width=>data_width);
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
-        protocol_checker => protocol_checker
+        data_width => packed'length,
+        logger_name_suffix => " - axi_write_slave - W"
       )
       port map (
-        aclk => clk,
-        tvalid => axi_write_m2s.w.valid,
-        tready => axi_write_s2m.w.ready,
-        tdata => packed,
-        tlast => '1',
-        tstrb => strobe,
-        tkeep => strobe
+        clk => clk,
+        --
+        ready => axi_write_s2m.w.ready,
+        valid => axi_write_m2s.w.valid,
+        data => packed
       );
+
+    -- TODO does not include WID when in AXI3 mode
+    packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
 
   end block;
 

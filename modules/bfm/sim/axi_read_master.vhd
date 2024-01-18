@@ -77,7 +77,7 @@ entity axi_read_master is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- When 'ARVALID' is zero, the associated output ports will be driven with this value.
     -- This is to avoid a DUT sampling the values in the wrong clock cycle.
@@ -151,7 +151,7 @@ begin
       generic map (
         stall_config => ar_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_read_master_ar" & logger_name_suffix
+        logger_name_suffix => " - axi_read_master - AR" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -254,7 +254,7 @@ begin
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,
         seed => seed,
-        logger_name_suffix => "_axi_read_master_r" & logger_name_suffix
+        logger_name_suffix => " - axi_read_master - R" & logger_name_suffix
       )
       port map (
         clk => clk,

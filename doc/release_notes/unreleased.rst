@@ -1,3 +1,8 @@
+Added
+
+* Implement our own lightweight :ref:`common.axi_stream_protocol_checker` that greatly reduces CPU
+  cycles consumed during simulation.
+
 Fixes
 
 * Fix bug in :ref:`reg_file.axi_lite_reg_file` where a non-zero default value for a register of type
@@ -17,3 +22,7 @@ Breaking changes
   The address mask is now calculated internally.
 
 * Rename optional :ref:`bfm.axi_write_master` generic ``set_axi3_w_id`` to ``enable_axi3``.
+
+* Remove optional ``rule_4_performance_check_max_waits`` generic from :ref:`bfm.handshake_master`
+  and :ref:`bfm.handshake_slave` which is not needed by
+  new :ref:`common.axi_stream_protocol_checker`.

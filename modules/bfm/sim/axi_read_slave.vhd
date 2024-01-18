@@ -26,6 +26,8 @@ context vunit_lib.vunit_context;
 library axi;
 use axi.axi_pkg.all;
 
+library common;
+
 
 entity axi_read_slave is
   generic (
@@ -100,35 +102,20 @@ begin
   ar_axi_stream_protocol_checker_block : block
     constant packed_width : positive := axi_m2s_a_sz(id_width=>id_width, addr_width=>address_width);
     signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
-    constant strobe : std_ulogic_vector(packed'length / 8 - 1 downto 0) := (others => '1');
-
-    constant logger : logger_t := get_logger(
-      name=>get_name(get_logger(axi_slave)) & "_ar_axi_stream_protocol_checker"
-    );
-    constant protocol_checker : axi_stream_protocol_checker_t := new_axi_stream_protocol_checker(
-      data_length => packed_width,
-      logger => logger,
-      -- Suppress the
-      --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
-      -- warning by setting a very high value for the limit.
-      -- This warning is considered noise in most testbenches that exercise backpressure.
-      max_waits => natural'high
-    );
   begin
 
     ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity vunit_lib.axi_stream_protocol_checker
+    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
-        protocol_checker => protocol_checker
+        data_width => packed'length,
+        logger_name_suffix => " - axi_read_slave - AR"
       )
       port map (
-        aclk => clk,
-        tvalid => axi_read_m2s.ar.valid,
-        tready => axi_read_s2m.ar.ready,
-        tdata => packed,
-        tlast => '1',
-        tstrb => strobe,
-        tkeep => strobe
+        clk => clk,
+        --
+        ready => axi_read_s2m.ar.ready,
+        valid => axi_read_m2s.ar.valid,
+        data => packed
       );
 
     packed <= to_slv(data=>axi_read_m2s.ar, id_width=>id_width, addr_width=>address_width);

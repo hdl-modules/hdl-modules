@@ -120,7 +120,7 @@ begin
       data_queue => input_data_queue,
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => "_input"
+      logger_name_suffix => " - input"
     )
     port map(
       clk   => clk,
@@ -141,7 +141,7 @@ begin
         reference_data_queue => output_data_queue(output_index),
         stall_config => stall_config,
         seed => seed,
-        logger_name_suffix => "_output" & to_string(output_index),
+        logger_name_suffix => " - output #" & to_string(output_index),
         disable_last_check => true
       )
       port map(

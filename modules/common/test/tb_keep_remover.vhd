@@ -222,7 +222,7 @@ begin
     handshake_master_inst : entity bfm.handshake_master
       generic map (
         stall_config => stall_config,
-        logger_name_suffix => "_input",
+        logger_name_suffix => " - input",
         seed => seed,
         data_width => input_data'length
       )
@@ -257,7 +257,7 @@ begin
       data_width => output_data'length,
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
-      logger_name_suffix => "_output",
+      logger_name_suffix => " - output",
       seed => seed,
       strobe_unit_width => output_data'length / output_strobe'length
     )

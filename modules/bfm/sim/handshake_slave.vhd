@@ -62,14 +62,8 @@ entity handshake_slave is
     -- at any time (regardless of 'valid'). However, many modules are developed with this
     -- well-behavedness as a way of saving resources.
     well_behaved_stall : boolean := false;
-    -- Suffix for the VUnit logger name. Can be used to differentiate between multiple instances.
-    logger_name_suffix : string := "";
-    -- This can be used to essentially disable the
-    --   "rule 4: Check failed for performance - tready active N clock cycles after tvalid."
-    -- warning by setting a very high value for the limit.
-    -- This warning is considered noise in most testbenches that exercise backpressure.
-    -- Set to a lower value in order the enable the warning.
-    rule_4_performance_check_max_waits : natural := natural'high
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -128,8 +122,7 @@ begin
       data_width => data'length,
       id_width => id'length,
       user_width => user'length,
-      logger_name_suffix => "_handshake_slave" & logger_name_suffix,
-      rule_4_performance_check_max_waits => rule_4_performance_check_max_waits
+      logger_name_suffix => " - handshake_slave" & logger_name_suffix
     )
     port map (
       clk => clk,
@@ -139,7 +132,7 @@ begin
       last => last,
       data => data,
       strobe => strobe,
-      id => std_logic_vector(id),
+      id => id,
       user => user
     );
 

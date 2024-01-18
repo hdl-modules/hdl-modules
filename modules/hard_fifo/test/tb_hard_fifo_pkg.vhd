@@ -46,7 +46,7 @@ begin
 
     end if;
 
-    test_runner_cleanup(runner, allow_disabled_errors=>true);
+    test_runner_cleanup(runner);
   end process;
 
 end architecture;
