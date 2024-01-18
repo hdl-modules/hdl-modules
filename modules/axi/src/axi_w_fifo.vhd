@@ -32,6 +32,8 @@ entity axi_w_fifo is
     data_width : positive range 1 to axi_data_sz;
     depth : natural;
     enable_packet_mode : boolean := false;
+    -- Only used by AXI3.
+    id_width : natural range 0 to axi_id_sz := 0;
     ram_type : ram_style_t := ram_style_auto
   );
   port (
@@ -61,7 +63,7 @@ begin
   ------------------------------------------------------------------------------
   else generate
 
-    constant w_width : natural := axi_m2s_w_sz(data_width=>data_width);
+    constant w_width : natural := axi_m2s_w_sz(data_width=>data_width, id_width=>id_width);
 
     signal read_valid : std_ulogic := '0';
     signal write_data, read_data : std_ulogic_vector(w_width - 1 downto 0) := (others => '0');
@@ -71,10 +73,10 @@ begin
     ------------------------------------------------------------------------------
     assign : process(all)
     begin
-      output_m2s <= to_axi_m2s_w(data=>read_data, data_width=>data_width);
+      output_m2s <= to_axi_m2s_w(data=>read_data, data_width=>data_width, id_width=>id_width);
       output_m2s.valid <= read_valid;
 
-      write_data <= to_slv(data=>input_m2s, data_width=>data_width);
+      write_data <= to_slv(data=>input_m2s, data_width=>data_width, id_width=>id_width);
     end process;
 
 
