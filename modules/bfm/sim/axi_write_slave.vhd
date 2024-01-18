@@ -196,7 +196,7 @@ begin
 
   ------------------------------------------------------------------------------
   w_axi_stream_protocol_checker_block : block
-    constant packed_width : positive := axi_m2s_w_sz(data_width=>data_width);
+    constant packed_width : positive := axi_m2s_w_sz(data_width=>data_width, id_width=>wid_width);
     signal packed : std_ulogic_vector(packed_width - 1 downto 0) := (others => '0');
   begin
 
@@ -214,8 +214,7 @@ begin
         data => packed
       );
 
-    -- TODO does not include WID when in AXI3 mode
-    packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width);
+    packed <= to_slv(data=>axi_write_m2s.w, data_width=>data_width, id_width=>wid_width);
 
   end block;
 
