@@ -176,7 +176,7 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    aw_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
         logger_name_suffix => " - axi_write_slave - AW"
@@ -201,7 +201,7 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    w_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
         logger_name_suffix => " - axi_write_slave - W"
@@ -257,5 +257,18 @@ begin
     end process;
 
   end generate;
+
+
+  ------------------------------------------------------------------------------
+  b_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_write_slave - B"
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_write_m2s.b.ready,
+      valid => axi_write_s2m.b.valid
+    );
 
 end architecture;

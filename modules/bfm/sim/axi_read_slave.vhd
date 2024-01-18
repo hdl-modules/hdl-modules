@@ -105,7 +105,7 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    ar_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
         logger_name_suffix => " - axi_read_slave - AR"
@@ -122,5 +122,17 @@ begin
 
   end block;
 
+
+  ------------------------------------------------------------------------------
+  r_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_read_slave - R"
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_read_m2s.r.ready,
+      valid => axi_read_s2m.r.valid
+    );
 
 end architecture;
