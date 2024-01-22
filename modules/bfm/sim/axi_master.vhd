@@ -7,7 +7,7 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Creates AXI read/write transactions by wrapping the VUnit ``axi_lite_master``
--- verification component.
+-- verification component (VC).
 -- Uses convenient record types for the AXI signals.
 --
 -- .. note::
