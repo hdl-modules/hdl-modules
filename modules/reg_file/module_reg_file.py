@@ -41,7 +41,9 @@ class Module(BaseModule):
         from hdl_modules import get_hdl_modules
 
         projects = []
-        all_modules = get_hdl_modules(names_include=[self.name, "axi", "common", "math"])
+        all_modules = get_hdl_modules(
+            names_include=[self.name, "axi", "axi_lite", "common", "math"]
+        )
         part = "xc7z020clg400-1"
 
         projects.append(
