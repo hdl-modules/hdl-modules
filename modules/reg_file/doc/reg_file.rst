@@ -48,8 +48,8 @@ pulse resynchronization, etc.
   If this is not the case, AXI slave error (``SLVERR``) will be sent on the response
   channel (``R``/``B``).
 
-* :ref:`axi_lite.axi_lite_mux` is a 1-to-N AXI-Lite multiplexer that operates based on base addresses
-  and address masks specified via a generic.
+* :ref:`axi_lite.axi_lite_mux` is a 1-to-N AXI-Lite multiplexer that operates based on base
+  addresses specified via a generic.
   If the address requested by the master does not match any slave, AXI decode error (``DECERR``)
   will be sent on the response channel (``R``/``B``).
   There will still be proper AXI handshaking done, so the master will not be stalled.
