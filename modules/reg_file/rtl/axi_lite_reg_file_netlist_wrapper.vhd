@@ -18,7 +18,7 @@ use axi_lite.axi_lite_pkg.all;
 use work.reg_file_pkg.all;
 
 
-entity axi_lite_reg_file_wrapper is
+entity axi_lite_reg_file_netlist_wrapper is
   port (
     clk : in std_ulogic;
     --
@@ -33,7 +33,7 @@ entity axi_lite_reg_file_wrapper is
   );
 end entity;
 
-architecture a of axi_lite_reg_file_wrapper is
+architecture a of axi_lite_reg_file_netlist_wrapper is
 
   constant regs : reg_definition_vec_t(regs_up'range) := (
     (idx=>0, reg_type=>r),
