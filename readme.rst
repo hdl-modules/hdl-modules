@@ -38,7 +38,7 @@ efficient as possible.
 Using generics to enable/disable different features and modes means that resources can be saved when
 not all features are used.
 Some entities are very deliberately area optimized, such as the
-`FIFOs <https://hdl-modules.com/modules/fifo/fifo.html>`__, since they are used very frequently in
+`FIFOs <https://hdl-modules.com/modules/fifo/fifo.html>`_, since they are used very frequently in
 FPGA projects.
 
 More important than anything, however, is the quality.
@@ -48,26 +48,29 @@ All the code is written with readability and maintainability in mind.
 
 The following things can be found, at a glance, in the different modules:
 
-* Crossbars, FIFOs, CDCs, etc., for AXI/AXI-Lite/AXI-Stream in the
-  `axi module <https://hdl-modules.com/modules/axi/axi.html>`__.
+* `axi <https://hdl-modules.com/modules/axi/axi.html>`_:
+  AXI3/AXI4 Crossbars, FIFOs, CDCs, etc.
 
-* Many BFMs for simulating AXI/AXI-Lite/AXI-Stream in the
-  `bfm module <https://hdl-modules.com/modules/bfm/bfm.html>`__.
+* `axi_lite <https://hdl-modules.com/modules/axi_lite/axi_lite.html>`_:
+  AXI-Lite Crossbars, FIFOs, CDCs, etc.
 
-* Some miscellaneous, but useful, things that do not fit anywhere else in the
-  `common module <https://hdl-modules.com/modules/common/common.html>`__.
+* `bfm <https://hdl-modules.com/modules/bfm/bfm.html>`_:
+  Many BFMs for simulating AXI/AXI-Lite/AXI-Stream.
 
-* Synchronous and asynchronous FIFOs with AXI-stream-like handshake interface in the
-  `fifo module <https://hdl-modules.com/modules/fifo/fifo.html>`__.
+* `common <https://hdl-modules.com/modules/common/common.html>`_:
+  Miscellaneous, but useful, things that do not fit anywhere else.
 
-* Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives in the
-  `hard_fifo module <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`__.
+* `fifo <https://hdl-modules.com/modules/fifo/fifo.html>`_:
+  Synchronous and asynchronous FIFOs with AXI-stream-like handshake interface.
 
-* Some common math function implementations in the
-  `math module <https://hdl-modules.com/modules/math/math.html>`__.
+* `hard\_fifo <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`_:
+  Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives.
 
-* A generic register file, as well as a simulation package with register BFM operations, in the
-  `reg_file module <https://hdl-modules.com/modules/reg_file/reg_file.html>`__.
+* `math <https://hdl-modules.com/modules/math/math.html>`_:
+  Some common math function implementations.
 
-* Resynchronization implementations for different signals and buses, along with proper constraints,
-  in the `resync module <https://hdl-modules.com/modules/resync/resync.html>`__.
+* `reg\_file <https://hdl-modules.com/modules/reg_file/reg_file.html>`_:
+  A generic register file and a simulation support package for register operations.
+
+* `resync <https://hdl-modules.com/modules/resync/resync.html>`_:
+  Resynchronization implementations for different signals and buses, along with proper constraints.
