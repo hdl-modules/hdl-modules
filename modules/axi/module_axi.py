@@ -120,7 +120,7 @@ class Module(BaseModule):
         from hdl_modules import get_hdl_modules
 
         projects = []
-        modules = get_hdl_modules(names_include=[self.name, "common", "math"])
+        modules = get_hdl_modules(names_include=[self.name, "common", "fifo", "resync", "math"])
         part = "xc7z020clg400-1"
 
         projects.append(
