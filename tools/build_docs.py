@@ -22,6 +22,7 @@ import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
 from pybadges import badge
+from tsfpga import TSFPGA_DOC
 from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
@@ -150,6 +151,10 @@ def generate_documentation() -> None:
         for doc_file in module_doc_folder.glob("*"):
             if doc_file.is_file() and doc_file != module_doc_rst:
                 shutil.copy(doc_file, output_path)
+
+        # Copy image files that may or may not be used in the module documentation.
+        for image_file in (TSFPGA_DOC / "symbols").glob("*.png"):
+            shutil.copyfile(image_file, output_path / image_file.name)
 
     create_file(GENERATED_SPHINX / "index.rst", index_rst)
 
