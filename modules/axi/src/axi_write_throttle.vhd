@@ -25,7 +25,7 @@
 --
 -- .. digraph:: my_graph
 --
---   graph [dpi = 300];
+--   graph [dpi=300];
 --   rankdir="LR";
 --
 --   aw [shape=none label="AW"];
