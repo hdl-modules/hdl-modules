@@ -42,19 +42,19 @@ are used.
 This means that the module design does not have to worry about metastability, vector coherency,
 pulse resynchronization, etc.
 
-* :ref:`axi.axi_to_axi_lite` is a simple protocol converter between AXI and AXI-Lite.
+* :ref:`axi_lite.axi_to_axi_lite` is a simple protocol converter between AXI and AXI-Lite.
   It does not perform any burst splitting or handling of write strobes, but instead assumes the
   master to be well behaved.
   If this is not the case, AXI slave error (``SLVERR``) will be sent on the response
   channel (``R``/``B``).
 
-* :ref:`axi.axi_lite_mux` is a 1-to-N AXI-Lite multiplexer that operates based on base addresses
+* :ref:`axi_lite.axi_lite_mux` is a 1-to-N AXI-Lite multiplexer that operates based on base addresses
   and address masks specified via a generic.
   If the address requested by the master does not match any slave, AXI decode error (``DECERR``)
   will be sent on the response channel (``R``/``B``).
   There will still be proper AXI handshaking done, so the master will not be stalled.
 
-* :ref:`axi.axi_lite_cdc` is an asynchronous FIFO-based clock domain crossing (CDC) for
+* :ref:`axi_lite.axi_lite_cdc` is an asynchronous FIFO-based clock domain crossing (CDC) for
   AXI-Lite buses.
   It must be used in the cases where the ``axi_lite_reg_file`` (i.e. your module) is in a different
   clock domain than the CPU AXI master.
@@ -67,7 +67,7 @@ pulse resynchronization, etc.
   mode mismatch (e.g. write to a read-only register), AXI slave error (``SLVERR``) will be sent on
   the response channel (``R``/``B``).
 
-Note that there is also a convenience wrapper :ref:`axi.axi_to_axi_lite_vec` that instantiates
-:ref:`axi.axi_to_axi_lite`, :ref:`axi.axi_lite_mux` and any necessary :ref:`axi.axi_lite_cdc` based
-on the appropriate generics.
+Note that there is also a convenience wrapper :ref:`axi_lite.axi_to_axi_lite_vec` that instantiates
+:ref:`axi_lite.axi_to_axi_lite`, :ref:`axi_lite.axi_lite_mux` and any necessary
+:ref:`axi_lite.axi_lite_cdc` based on the appropriate generics.
 

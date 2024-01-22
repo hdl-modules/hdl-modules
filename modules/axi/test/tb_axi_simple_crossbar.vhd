@@ -18,11 +18,12 @@ context vunit_lib.vc_context;
 library osvvm;
 use osvvm.RandomPkg.all;
 
-library axi;
-use axi.axi_pkg.all;
-use axi.axi_lite_pkg.all;
+library axi_lite;
+use axi_lite.axi_lite_pkg.all;
 
 library bfm;
+
+use work.axi_pkg.all;
 
 
 entity tb_axi_simple_crossbar is
@@ -184,7 +185,7 @@ begin
 
 
     ------------------------------------------------------------------------------
-    dut_read : entity work.axi_lite_simple_read_crossbar
+    dut_read : entity axi_lite.axi_lite_simple_read_crossbar
       generic map(
         num_inputs => num_inputs
       )
@@ -199,7 +200,7 @@ begin
       );
 
     ------------------------------------------------------------------------------
-    dut_write : entity work.axi_lite_simple_write_crossbar
+    dut_write : entity axi_lite.axi_lite_simple_write_crossbar
       generic map(
         num_inputs => num_inputs
       )

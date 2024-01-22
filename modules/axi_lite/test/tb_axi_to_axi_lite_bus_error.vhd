@@ -20,6 +20,9 @@ context vunit_lib.com_context;
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 library math;
 use math.math_pkg.all;
 
@@ -27,9 +30,6 @@ library common;
 use common.types_pkg.all;
 
 use work.axi_lite_pkg.all;
-use work.axi_pkg.all;
-use work.axi_pkg.axi_resp_okay;
-use work.axi_pkg.axi_resp_slverr;
 
 
 entity tb_axi_to_axi_lite_bus_error is

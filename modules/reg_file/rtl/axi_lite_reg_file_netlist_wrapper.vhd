@@ -12,8 +12,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library axi;
-use axi.axi_lite_pkg.all;
+library axi_lite;
+use axi_lite.axi_lite_pkg.all;
 
 library reg_file;
 use reg_file.reg_file_pkg.all;
@@ -75,7 +75,7 @@ architecture a of axi_lite_reg_file_wrapper is
 begin
 
   ------------------------------------------------------------------------------
-  axi_lite_reg_file_inst : entity reg_file.axi_lite_reg_file
+  axi_lite_reg_file_inst : entity work.axi_lite_reg_file
     generic map (
       regs => regs,
       default_values => default_values

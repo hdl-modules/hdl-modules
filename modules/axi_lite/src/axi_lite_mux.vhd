@@ -23,7 +23,7 @@
 --
 --   If the AXI-Lite does queue up transactions it can lead to locking the bus.
 --
---   However, if you are using this entity then you probably have a :ref:`axi.axi_to_axi_lite`
+--   However, if you are using this entity then you probably have a :ref:`axi_lite.axi_to_axi_lite`
 --   instance upstream.
 --   This entity will by design not queue up transactions.
 -- -------------------------------------------------------------------------------------------------
@@ -32,6 +32,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 library math;
 use math.math_pkg.all;
 
@@ -39,7 +42,6 @@ library common;
 use common.addr_pkg.all;
 
 use work.axi_lite_pkg.all;
-use work.axi_pkg.all;
 
 
 entity axi_lite_mux is

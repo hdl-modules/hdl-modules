@@ -10,14 +10,11 @@
 -- The goal is to split a register bus, and have each resulting AXI-Lite bus in the same clock
 -- domain as the module that uses the registers. Typically used in chip top levels.
 --
--- Instantiates :ref:`axi.axi_lite_mux` and :ref:`axi.axi_lite_cdc`.
+-- Instantiates :ref:`axi_lite.axi_lite_mux` and :ref:`axi_lite.axi_lite_cdc`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
-
-library axi;
-use axi.axi_lite_pkg.all;
 
 library common;
 use common.addr_pkg.all;
@@ -25,6 +22,8 @@ use common.attribute_pkg.all;
 
 library reg_file;
 use reg_file.reg_file_pkg.all;
+
+use work.axi_lite_pkg.all;
 
 
 entity axi_lite_to_vec is
@@ -65,7 +64,7 @@ architecture a of axi_lite_to_vec is
 begin
 
   ------------------------------------------------------------------------------
-  axi_lite_mux_inst : entity axi.axi_lite_mux
+  axi_lite_mux_inst : entity work.axi_lite_mux
     generic map (
       base_addresses => base_addresses
     )
@@ -90,7 +89,7 @@ begin
       pipeline_or_passthrough : if pipeline_slaves generate
 
         ------------------------------------------------------------------------------
-        axi_lite_pipeline_inst : entity axi.axi_lite_pipeline
+        axi_lite_pipeline_inst : entity work.axi_lite_pipeline
           generic map (
             data_width => data_width,
             addr_width => addr_width,
@@ -122,7 +121,7 @@ begin
     else generate
 
       ------------------------------------------------------------------------------
-      axi_lite_cdc_inst : entity axi.axi_lite_cdc
+      axi_lite_cdc_inst : entity work.axi_lite_cdc
         generic map (
           data_width => data_width,
           addr_width => addr_width,

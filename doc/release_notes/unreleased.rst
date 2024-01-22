@@ -16,9 +16,9 @@ Breaking changes
 * Remove unused ``addr_width`` generic from :ref:`bfm.axi_read_master`
   and :ref:`bfm.axi_write_master`.
 
-* Rename :ref:`axi.axi_lite_mux` generic ``slave_addrs`` to ``base_addresses`` and change type
+* Rename :ref:`axi_lite.axi_lite_mux` generic ``slave_addrs`` to ``base_addresses`` and change type
   to ``addr_vec_t``, i.e. a list of base addresses.
-  Same for :ref:`axi.axi_lite_to_vec` generic ``axi_lite_slaves``.
+  Same for :ref:`axi_lite.axi_lite_to_vec` generic ``axi_lite_slaves``.
   The address mask is now calculated internally.
 
 * Rename optional :ref:`bfm.axi_write_master` generic ``set_axi3_w_id`` to ``enable_axi3``.
@@ -26,3 +26,23 @@ Breaking changes
 * Remove optional ``rule_4_performance_check_max_waits`` generic from :ref:`bfm.handshake_master`
   and :ref:`bfm.handshake_slave` which is not needed by
   new :ref:`common.axi_stream_protocol_checker`.
+
+* Break :ref:`axi <module_axi>` module into :ref:`axi_lite <module_axi_lite>` and
+  :ref:`axi_stream <module_axi_stream>`.
+
+  * Move from :ref:`axi <module_axi>` to :ref:`axi_lite <module_axi_lite>`:
+
+    * :ref:`axi_lite.axi_lite_cdc`.
+    * :ref:`axi_lite.axi_lite_mux`.
+    * :ref:`axi_lite.axi_lite_pipeline`.
+    * :ref:`axi_lite.axi_lite_pkg`.
+    * :ref:`axi_lite.axi_lite_simple_read_crossbar`.
+    * :ref:`axi_lite.axi_lite_simple_write_crossbar`.
+    * :ref:`axi_lite.axi_lite_to_vec`.
+    * :ref:`axi_lite.axi_to_axi_lite_vec`.
+    * :ref:`axi_lite.axi_to_axi_lite`.
+
+  * Move from :ref:`axi <module_axi>` to :ref:`axi_stream <module_axi_stream>`:
+
+    * :ref:`axi_stream.axi_stream_fifo`.
+    * :ref:`axi_stream.axi_stream_pkg`.
