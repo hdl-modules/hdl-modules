@@ -6,7 +6,7 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Wrapper around VUnit ``axi_lite_master`` verification component.
+-- Wrapper around VUnit ``axi_lite_master`` verification component (VC).
 -- Uses convenient record types for the AXI-Lite signals.
 --
 -- The instantiated verification component will create AXI-Lite read/write transactions
