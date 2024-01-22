@@ -15,8 +15,7 @@ use ieee.std_logic_1164.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
+use work.reg_file_pkg.all;
 
 
 entity axi_lite_reg_file_wrapper is
