@@ -19,10 +19,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 library common;
 
 use work.axi_lite_pkg.all;
-use work.axi_pkg.all;
 
 
 entity axi_lite_pipeline is

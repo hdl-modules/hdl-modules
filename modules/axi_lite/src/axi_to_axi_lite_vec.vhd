@@ -11,21 +11,23 @@
 -- The goal is to split a register bus, and have each resulting AXI-Lite bus in the same clock
 -- domain as the module that uses the registers. Typically used in chip top levels.
 --
--- Instantiates :ref:`axi.axi_to_axi_lite`, :ref:`axi.axi_lite_mux` and :ref:`axi.axi_lite_cdc`.
+-- Instantiates :ref:`axi_lite.axi_to_axi_lite`, :ref:`axi_lite.axi_lite_mux`
+-- and :ref:`axi_lite.axi_lite_cdc`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 library common;
 use common.addr_pkg.all;
 
-library axi;
-use axi.axi_pkg.all;
-use axi.axi_lite_pkg.all;
-
 library reg_file;
 use reg_file.reg_file_pkg.all;
+
+use work.axi_lite_pkg.all;
 
 
 entity axi_to_axi_lite_vec is

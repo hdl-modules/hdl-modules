@@ -19,9 +19,11 @@ context vunit_lib.vc_context;
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 library bfm;
 
-use work.axi_pkg.all;
 use work.axi_lite_pkg.all;
 
 

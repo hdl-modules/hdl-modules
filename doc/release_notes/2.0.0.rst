@@ -25,7 +25,7 @@ Breaking changes
 * Rework :ref:`common.handshake_splitter` to use ``std_logic_vector`` for ``output_ready``
   and ``output_valid``. Introduce mandatory generic ``num_interfaces``.
 
-* Change :ref:`common.handshake_pipeline` and :ref:`axi.axi_lite_pipeline` generics
+* Change :ref:`common.handshake_pipeline` and :ref:`axi_lite.axi_lite_pipeline` generics
   ``allow_poor_input_ready_timing`` with default value ``false`` to ``pipeline_control_signals``
   with default value ``True``.
 
@@ -47,4 +47,4 @@ Breaking changes
   It is simpler and more light weight now.
   The ``data_fifo_level`` port as well as all generics have been removed.
 
-* Rename generic ``pipeline`` to ``pipeline_axi_lite`` in :ref:`axi.axi_to_axi_lite_vec`.
+* Rename generic ``pipeline`` to ``pipeline_axi_lite`` in :ref:`axi_lite.axi_to_axi_lite_vec`.

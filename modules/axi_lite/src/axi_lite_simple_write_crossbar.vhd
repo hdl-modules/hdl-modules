@@ -15,7 +15,9 @@ use ieee.std_logic_1164.all;
 
 library axi;
 use axi.axi_pkg.all;
-use axi.axi_lite_pkg.all;
+
+library axi_lite;
+use axi_lite.axi_lite_pkg.all;
 
 
 entity axi_lite_simple_write_crossbar is
@@ -94,7 +96,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_simple_write_crossbar_inst : entity work.axi_simple_write_crossbar
+  axi_simple_write_crossbar_inst : entity axi.axi_simple_write_crossbar
     generic map (
       num_inputs => num_inputs
     )

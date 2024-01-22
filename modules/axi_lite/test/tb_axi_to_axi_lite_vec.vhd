@@ -15,6 +15,9 @@ context vunit_lib.vunit_context;
 context vunit_lib.com_context;
 context vunit_lib.vc_context;
 
+library axi;
+use axi.axi_pkg.all;
+
 library common;
 use common.addr_pkg.all;
 
@@ -22,11 +25,9 @@ library reg_file;
 use reg_file.reg_file_pkg.all;
 use reg_file.reg_operations_pkg.all;
 
-library axi;
-use axi.axi_pkg.all;
-use axi.axi_lite_pkg.all;
-
 library bfm;
+
+use work.axi_lite_pkg.all;
 
 
 entity tb_axi_to_axi_lite_vec is
