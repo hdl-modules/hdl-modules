@@ -61,18 +61,14 @@ entity axi_stream_protocol_checker is
   port (
     clk : in std_ulogic;
     --# {{}}
-    ready : in std_ulogic;
-    valid : in std_ulogic;
-    -- Optional to connect.
+    ready : in std_ulogic := '0';
+    valid : in std_ulogic := '0';
     last : in std_ulogic := '0';
-    -- Optional to connect.
     -- Must set a valid 'data_width' generic value in order to use these.
     data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
     strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
-    -- Optional to connect.
     -- Must set a valid 'id_width' generic value in order to use this.
     id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
-    -- Optional to connect.
     -- Must set a valid 'user_width' generic value in order to use this.
     user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '0')
   );

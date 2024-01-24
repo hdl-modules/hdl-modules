@@ -131,8 +131,7 @@ begin
     port map (
       clk => clk,
       --
-      ready => axi_read_m2s.r.ready,
-      valid => axi_read_s2m.r.valid
+      ready => axi_read_m2s.r.ready
     );
 
 end architecture;
