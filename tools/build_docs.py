@@ -164,7 +164,7 @@ def get_readme() -> str:
     Get the complete README.rst to be used on website.
 
     Will also verify that readme.rst in the project root is identical.
-    RST file inclusion in README.rst does not work on github unfortunately, hence this
+    RST file inclusion in README.rst does not work on GitHub unfortunately, hence this
     cumbersome handling where the README is duplicated in two places.
     """
     # First, verify readme.rst in repo root
@@ -194,7 +194,7 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         """
         Get reStructuredText documentation for a VHDL file.
 
-        Identical to the method in the super class, but also adds a link to github.
+        Identical to the method in the super class, but also adds a link to GitHub.
         """
         vhdl_file_documentation = VhdlFileDocumentation(vhdl_file_path)
 
