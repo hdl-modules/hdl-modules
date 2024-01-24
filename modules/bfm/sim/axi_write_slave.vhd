@@ -90,7 +90,7 @@ begin
       others => '0'
     );
   begin
-    wait until axi_write_m2s.w.valid and rising_edge(clk);
+    wait until axi_write_s2m.w.ready and axi_write_m2s.w.valid and rising_edge(clk);
 
     -- Must be explicitly zero, can not be '-'.
     check_equal(
