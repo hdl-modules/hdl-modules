@@ -78,7 +78,7 @@ jobs:
         packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev pkg-config
         version: 1.0
 
-    # Install symbolator and hdlparse from github forks that are maintained.
+    # Install symbolator and hdlparse from GitHub forks that are maintained.
     # The official versions do not work with newer setuptools or newer sphinx.
     # The pyHDLParser repo seems to be under active development and the current master did not
     # work, so peg to the latest revision that does work for us.

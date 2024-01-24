@@ -24,15 +24,15 @@ def get_readme_rst(
 ) -> str:
     """
     Get the complete README.rst (to be used on website).
-    RST file inclusion in README.rst does not work on github unfortunately, hence this
+    RST file inclusion in README.rst does not work on GitHub unfortunately, hence this
     cumbersome handling where the README is duplicated in two places.
 
     The arguments control some extra text that is included. This is mainly links to the
-    other places where you can find information on the project (website, github).
+    other places where you can find information on the project (website, GitHub).
 
     Arguments:
         include_extra_for_github (bool): Include the extra text that shall be included in the
-            github README.
+            GitHub README.
         include_extra_for_website (bool): Include the extra text that shall be included in the
             website main page.
     """
@@ -43,7 +43,7 @@ def get_readme_rst(
     elif include_extra_for_website:
         # The website needs the initial heading, in order for the landing page to get
         # the correct title.
-        # Github readme does not need this initial heading, it just makes it more clunky.
+        # GitHub readme does not need this initial heading, it just makes it more clunky.
         readme_rst = """\
 About hdl-modules
 =================
