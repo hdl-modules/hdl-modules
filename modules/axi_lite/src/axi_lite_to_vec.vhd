@@ -58,8 +58,12 @@ architecture a of axi_lite_to_vec is
 
   constant data_width : positive := reg_width;
 
-  signal axi_lite_m2s_vec_int : axi_lite_m2s_vec_t(base_addresses'range);
-  signal axi_lite_s2m_vec_int : axi_lite_s2m_vec_t(base_addresses'range);
+  signal axi_lite_m2s_vec_int : axi_lite_m2s_vec_t(base_addresses'range) := (
+    others => axi_lite_m2s_init
+  );
+  signal axi_lite_s2m_vec_int : axi_lite_s2m_vec_t(base_addresses'range) := (
+    others => axi_lite_s2m_init
+  );
 
 begin
 
