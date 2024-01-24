@@ -65,6 +65,7 @@ E.g. a ``std_logic`` signal can be attached to a hdl-modules port of type ``std_
 Feedback
 --------
 
-If you find any bugs or inconsistencies, please write in the
-`gitter channel <https://gitter.im/tsfpga/tsfpga>`__
-or create an `issue on GitHub <https://github.com/hdl-modules/hdl-modules/issues>`__.
+If you find any bugs or inconsistencies, please
+`start a discussion <https://github.com/hdl-modules/hdl-modules/discussions>`__
+or `create an issue <https://github.com/hdl-modules/hdl-modules/issues>`__
+on GitHub.
