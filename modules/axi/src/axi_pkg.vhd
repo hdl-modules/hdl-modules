@@ -507,7 +507,7 @@ package body axi_pkg is
     hi := lo + result.burst'length - 1;
     result.burst := data(hi + offset downto lo + offset);
 
-    assert hi + offset = data'high severity failure;
+    assert hi + offset = data'high;
 
     return result;
   end function;
