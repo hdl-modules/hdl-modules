@@ -17,7 +17,7 @@
 --   This entity is written to be used in a register bus, and is designed for simplicity and low
 --   resource utilization.
 --   An assumption is made that the AXI-Lite master does not queue up reads or writes.
---   I.e. after an ``AR`` transactions it does not send another ``ARVALID`` before the
+--   I.e. after an ``AR`` transaction, it does not send another ``ARVALID`` before the
 --   ``R`` transaction has happened.
 --   Same for ``AW`` and ``W``/``B``.
 --
