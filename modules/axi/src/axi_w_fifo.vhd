@@ -29,7 +29,7 @@ use work.axi_pkg.all;
 entity axi_w_fifo is
   generic (
     asynchronous : boolean;
-    data_width : positive range 1 to axi_data_sz;
+    data_width : positive range 8 to axi_data_sz;
     depth : natural;
     enable_packet_mode : boolean := false;
     -- Only used by AXI3.
