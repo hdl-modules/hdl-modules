@@ -267,8 +267,7 @@ begin
     port map (
       clk => clk,
       --
-      ready => axi_write_m2s.b.ready,
-      valid => axi_write_s2m.b.valid
+      ready => axi_write_m2s.b.ready
     );
 
 end architecture;
