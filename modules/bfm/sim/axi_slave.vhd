@@ -34,7 +34,7 @@ entity axi_slave is
   generic (
     axi_read_slave : axi_slave_t := axi_slave_init;
     axi_write_slave : axi_slave_t := axi_slave_init;
-    data_width : positive range 1 to axi_data_sz;
+    data_width : positive range 8 to axi_data_sz;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
     id_width : natural range 0 to axi_id_sz;
