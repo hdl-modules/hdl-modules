@@ -3,6 +3,10 @@ Added
 * Implement our own lightweight :ref:`common.axi_stream_protocol_checker` that greatly reduces CPU
   cycles consumed during simulation.
 
+* Add :ref:`axi.axi_read_range_checker` and :ref:`axi.axi_write_range_checker`.
+
+* Add ``user`` port to :ref:`common.width_conversion`.
+
 Fixes
 
 * Fix bug in :ref:`reg_file.axi_lite_reg_file` where a non-zero default value for a register of type
