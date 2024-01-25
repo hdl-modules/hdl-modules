@@ -60,17 +60,32 @@ where X.Y.Z is your new version number.
 The script will copy release notes to a new file, and commit and tag the changes.
 
 
-Push commit and tag
-___________________
+Push tag and commits
+____________________
+
+Assuming you have just performed a CI run, as instructed above, you can now push the tag.
 
 .. code-block:: shell
 
-    git push origin HEAD:refs/heads/release_branch
     git push origin vX.Y.Z
 
 **WARNING:** Avoid the "git push --tags" command, which is dangerous since it pushes all your
 local tags.
 
-Open a new pull request to ``main`` and wait for the CI pipeline to pass.
-If everything went well then you can merge your release commit via the GitHub pull
-request GUI.
+This next step is unnecessarily crude due to the fact that GitHub does not allow a fast-forward
+merge in their Pull Request web UI.
+A GitHub repo with linear history will use the "rebase and merge" strategy, which changes the SHA
+of the commits.
+Hence, the tag that we just pushed will not match any commit on the main branch, if we merge our
+release commit via the web UI.
+(See https://stackoverflow.com/questions/60597400).
+
+Instead, this has to be done manually on the command line, and can only be done by a user with
+complete privileges to the repository.
+
+.. code-block:: shell
+
+    git push origin HEAD:main
+
+**WARNING:** Be very careful with this command and inspect locally that you do not push anything
+else than intended.
