@@ -69,8 +69,8 @@ def main() -> None:
     os.environ["VUNIT_SHORT_TEST_OUTPUT_PATHS"] = "true"
 
     simulation_project = SimulationProject(args=args, enable_preprocessing=True)
-    simulation_project.add_modules(args=args, modules=modules)
-    simulation_project.add_vivado_simlib(args=args)
+    simulation_project.add_modules(modules=modules)
+    simulation_project.add_vivado_simlib()
 
     simulation_project.vunit_proj.main()
 
