@@ -10,7 +10,7 @@
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
-from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, Ramb36, TotalLuts
 
 
 class Module(BaseModule):
@@ -44,7 +44,7 @@ class Module(BaseModule):
 
     def get_build_projects(self):
         projects = []
-        part = "xc7z020clg400-1"
+        part = "xcku5p-ffva676-2-i"
 
         data_widths = [18, 32]
         enable_output_registers = [False, True]
@@ -65,6 +65,7 @@ class Module(BaseModule):
                         build_result_checkers=[
                             TotalLuts(EqualTo(3)),
                             Ffs(EqualTo(1)),
+                            Ramb36(EqualTo(1)),
                             MaximumLogicLevel(EqualTo(2)),
                         ],
                     )
