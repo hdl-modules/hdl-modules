@@ -8,6 +8,7 @@
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
+from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
     EqualTo,
@@ -17,7 +18,6 @@ from tsfpga.vivado.build_result_checker import (
     Ramb36,
     TotalLuts,
 )
-from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):
@@ -124,7 +124,7 @@ class Module(BaseModule):
             use_asynchronous_fifo=False, width=32, depth=1024, enable_output_register=False
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.minimal", generics),
                 modules=modules,
                 part=part,
@@ -144,7 +144,7 @@ class Module(BaseModule):
         # a minimal FIFO. This mode also adds an output register.
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.fifo.minimal_with_output_register", generics
                 ),
@@ -166,7 +166,7 @@ class Module(BaseModule):
         # increases resource utilization.
         generics = dict(width=32, depth=1024, almost_full_level=800)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_levels", generics),
                 modules=modules,
                 part=part,
@@ -185,7 +185,7 @@ class Module(BaseModule):
         # Enabling last should not increase resource utilization
         generics.update(enable_last=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_last", generics),
                 modules=modules,
                 part=part,
@@ -205,7 +205,7 @@ class Module(BaseModule):
         # and some further logic is introduced.
         generics.update(enable_packet_mode=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_packet_mode", generics),
                 modules=modules,
                 part=part,
@@ -225,7 +225,7 @@ class Module(BaseModule):
         # should be packed into the RAM output register
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.fifo.with_packet_mode_and_output_register", generics
                 ),
@@ -249,7 +249,7 @@ class Module(BaseModule):
             depth=generics["depth"] - 1, enable_output_register=False, enable_drop_packet=True
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_drop_packet", generics),
                 modules=modules,
                 part=part,
@@ -269,7 +269,7 @@ class Module(BaseModule):
         # since an extra address pointer and some further muxing is introduced.
         generics.update(enable_drop_packet=False, enable_peek_mode=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_peek_mode", generics),
                 modules=modules,
                 part=part,
@@ -295,7 +295,7 @@ class Module(BaseModule):
             enable_output_register=False,
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.lutram_minimal", generics),
                 modules=modules,
                 part=part,
@@ -317,7 +317,7 @@ class Module(BaseModule):
         # are available.
         generics = dict(use_asynchronous_fifo=True, width=16, depth=8, enable_output_register=False)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.resync_fifo", generics
                 ),
@@ -341,7 +341,7 @@ class Module(BaseModule):
             use_asynchronous_fifo=True, width=32, depth=1024, enable_output_register=False
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.minimal", generics
                 ),
@@ -365,7 +365,7 @@ class Module(BaseModule):
             use_asynchronous_fifo=True, depth=generics["depth"] + 1, enable_output_register=True
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.minimal_with_output_register", generics
                 ),
@@ -387,7 +387,7 @@ class Module(BaseModule):
         # increases resource utilization.
         generics = dict(width=32, depth=1024, almost_full_level=800)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.with_levels", generics
                 ),
@@ -408,7 +408,7 @@ class Module(BaseModule):
         # Enabling last should not increase resource utilization
         generics.update(enable_last=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.with_last", generics
                 ),
@@ -430,7 +430,7 @@ class Module(BaseModule):
         # resync_counter is added.
         generics.update(enable_packet_mode=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.with_packet_mode", generics
                 ),
@@ -452,7 +452,7 @@ class Module(BaseModule):
         # should be packed into the RAM output register
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.with_packet_mode_and_output_register",
                     generics,
@@ -478,7 +478,7 @@ class Module(BaseModule):
             depth=generics["depth"] - 1, enable_output_register=False, enable_drop_packet=True
         )
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.asynchronous_fifo.with_drop_packet", generics
                 ),
