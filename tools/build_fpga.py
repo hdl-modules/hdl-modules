@@ -20,7 +20,7 @@ import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
 from tsfpga.build_project_list import BuildProjectList
-from tsfpga.examples.build import arguments, setup_and_run
+from tsfpga.examples.build_fpga_utils import arguments, setup_and_run
 from tsfpga.module import get_modules
 
 # First party libraries
@@ -37,7 +37,11 @@ def main() -> None:
         no_color=args.no_color,
     )
 
-    sys.exit(setup_and_run(modules, projects, args))
+    sys.exit(
+        setup_and_run(
+            modules=modules, projects=projects, args=args, collect_artifacts_function=None
+        )
+    )
 
 
 if __name__ == "__main__":

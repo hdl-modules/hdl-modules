@@ -103,7 +103,7 @@ class Module(BaseModule):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
-        # bundled tools/build.py, where PYTHONPATH is correctly set up.
+        # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
         # pylint: disable=import-outside-toplevel
         # First party libraries
         from hdl_modules import get_hdl_modules
