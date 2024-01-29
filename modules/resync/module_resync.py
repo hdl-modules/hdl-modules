@@ -8,9 +8,9 @@
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
+from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, TotalLuts
-from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):
@@ -76,7 +76,7 @@ class Module(BaseModule):
         generics = dict(width=16)
 
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     f"{self.library_name}.resync_slv_level_coherent", generics
                 ),
@@ -92,7 +92,7 @@ class Module(BaseModule):
         )
 
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.resync_counter", generics),
                 modules=modules,
                 part=part,

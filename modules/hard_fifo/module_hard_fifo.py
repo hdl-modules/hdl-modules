@@ -8,9 +8,9 @@
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
+from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
-from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):
@@ -56,7 +56,7 @@ class Module(BaseModule):
 
             for name in ["hard_fifo", "asynchronous_hard_fifo"]:
                 projects.append(
-                    VivadoNetlistProject(
+                    TsfpgaExampleVivadoNetlistProject(
                         name=self.test_case_name(f"{self.library_name}.{name}", generics),
                         modules=[self],
                         part=part,

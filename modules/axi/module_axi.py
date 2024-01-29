@@ -8,9 +8,9 @@
 # --------------------------------------------------------------------------------------------------
 
 # Third party libraries
+from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
-from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):
@@ -84,7 +84,7 @@ class Module(BaseModule):
         part = "xc7z020clg400-1"
 
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=f"{self.library_name}.axi_write_throttle",
                 modules=modules,
                 part=part,
@@ -106,7 +106,7 @@ class Module(BaseModule):
         )
 
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=f"{self.library_name}.axi_read_throttle",
                 modules=modules,
                 part=part,

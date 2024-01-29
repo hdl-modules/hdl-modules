@@ -12,6 +12,7 @@ import itertools
 from random import randrange
 
 # Third party libraries
+from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
     DspBlocks,
@@ -21,7 +22,6 @@ from tsfpga.vivado.build_result_checker import (
     Srls,
     TotalLuts,
 )
-from tsfpga.vivado.project import VivadoNetlistProject
 
 
 class Module(BaseModule):
@@ -226,7 +226,7 @@ class Module(BaseModule):
     def _get_clock_counter_build_projects(self, part, modules, projects):
         generics = dict(resolution_bits=24, max_relation_bits=6)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     name=f"{self.library_name}.clock_counter", generics=generics
                 ),
@@ -244,7 +244,7 @@ class Module(BaseModule):
 
         generics = dict(resolution_bits=10, max_relation_bits=4)
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
                     name=f"{self.library_name}.clock_counter", generics=generics
                 ),
@@ -263,7 +263,7 @@ class Module(BaseModule):
     def _get_frequency_conversion_build_projects(self, part, projects):
         # No result checkers, but the entity contains a lot of assertions
         projects.append(
-            VivadoNetlistProject(
+            TsfpgaExampleVivadoNetlistProject(
                 name=f"{self.library_name}.test_frequency_conversion",
                 modules=[self],
                 part=part,
@@ -291,7 +291,7 @@ class Module(BaseModule):
             )
 
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
                         name=f"{self.library_name}.handshake_pipeline", generics=generics
                     ),
@@ -314,7 +314,7 @@ class Module(BaseModule):
 
         for generics, build_result_checkers in get_build_configurations():
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
                         name=f"{self.library_name}.handshake_splitter", generics=generics
                     ),
@@ -339,7 +339,7 @@ class Module(BaseModule):
 
         for idx, generics in enumerate(generic_configurations):
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
                         name=f"{self.library_name}.keep_remover", generics=generics
                     ),
@@ -448,7 +448,7 @@ class Module(BaseModule):
 
         for generics, checkers in generate_netlist_configurations():
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(f"{self.library_name}.periodic_pulser", generics),
                     modules=modules,
                     part=part,
@@ -471,7 +471,7 @@ class Module(BaseModule):
 
         for idx, generics in enumerate(generic_configurations):
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
                         name=f"{self.library_name}.strobe_on_last", generics=generics
                     ),
@@ -515,7 +515,7 @@ class Module(BaseModule):
             )
 
             projects.append(
-                VivadoNetlistProject(
+                TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
                         name=f"{self.library_name}.width_conversion", generics=generics
                     ),
