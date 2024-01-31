@@ -80,6 +80,12 @@ package attribute_pkg is
   -- Valid values: "true", "yes", "false", "no"
   attribute pulldown : string;
 
+  -- Instructs the synthesis tool whether to infer SRL for shift register structures
+  -- instead of chained flip-flops.
+  --
+  -- Valid values: "yes", "no"
+  attribute shreg_extract : string;
+
 end package;
 
 package body attribute_pkg is
