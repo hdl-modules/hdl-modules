@@ -204,13 +204,14 @@ class HdlModulesModuleDocumentation(ModuleDocumentation):
         symbolator_rst = self._get_symbolator_rst(vhdl_file_documentation)
         symbolator_rst = "" if symbolator_rst is None else symbolator_rst
 
+        entity_name = vhdl_file_path.stem
+
         resource_utilization_rst = self._get_resource_utilization_rst(
-            vhdl_file_path=vhdl_file_path,
+            entity_name=entity_name,
             heading_character=heading_character_2,
             netlist_builds=netlist_builds,
         )
 
-        entity_name = vhdl_file_path.stem
         heading = f"{vhdl_file_path.name}"
         heading_underline = heading_character * len(heading)
 
