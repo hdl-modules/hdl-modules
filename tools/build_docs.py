@@ -27,16 +27,15 @@ from tsfpga.module import get_modules
 from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
-from tsfpga.vhdl_file_documentation import VhdlFileDocumentation
 
 # First party libraries
-from hdl_modules.about import get_readme_rst, get_short_slogan
+from hdl_modules import REPO_ROOT
+from hdl_modules.about import REPOSITORY_URL, get_readme_rst, get_short_slogan
 from tools import tools_env
 
 if TYPE_CHECKING:
     # Third party libraries
     from tsfpga.module import BaseModule
-    from tsfpga.vivado.project import VivadoNetlistProject
 
 GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
 GENERATED_SPHINX_HTML = tools_env.HDL_MODULES_GENERATED / "sphinx_html"
@@ -139,9 +138,11 @@ def generate_documentation() -> None:
         # Exclude the "rtl/" folder within each module from documentation.
         # With our chosen module structure we only place netlist build wrappers there, which we
         # do not want included in the documentation.
-        HdlModulesModuleDocumentation(module).create_rst_document(
-            output_path=output_path, exclude_module_folders=["rtl"]
-        )
+        ModuleDocumentation(
+            module=module,
+            repository_url=f"{REPOSITORY_URL}/tree/main/{module.path.relative_to(REPO_ROOT)}",
+            repository_name="GitHub",
+        ).create_rst_document(output_path=output_path, exclude_module_folders=["rtl"])
 
         # Copy further files from the modules' "doc" folder that might be included.
         # For example an image in the "doc" folder might be included in the document.
@@ -176,64 +177,6 @@ def get_readme() -> str:
         ), f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
 
     return get_readme_rst(include_extra_for_website=True)
-
-
-class HdlModulesModuleDocumentation(ModuleDocumentation):
-    """
-    Custom documentation class for this project, overrides methods where we want to change
-    the behavior.
-    """
-
-    def _get_vhdl_file_rst(
-        self,
-        vhdl_file_path: Path,
-        heading_character: str,
-        heading_character_2: str,
-        netlist_builds: list["VivadoNetlistProject"],
-    ) -> str:
-        """
-        Get reStructuredText documentation for a VHDL file.
-
-        Identical to the method in the super class, but also adds a link to GitHub.
-        """
-        vhdl_file_documentation = VhdlFileDocumentation(vhdl_file_path)
-
-        file_rst = vhdl_file_documentation.get_header_rst()
-        file_rst = "" if file_rst is None else file_rst
-
-        symbolator_rst = self._get_symbolator_rst(vhdl_file_documentation)
-        symbolator_rst = "" if symbolator_rst is None else symbolator_rst
-
-        entity_name = vhdl_file_path.stem
-
-        resource_utilization_rst = self._get_resource_utilization_rst(
-            entity_name=entity_name,
-            heading_character=heading_character_2,
-            netlist_builds=netlist_builds,
-        )
-
-        heading = f"{vhdl_file_path.name}"
-        heading_underline = heading_character * len(heading)
-
-        base_url = "https://github.com/hdl-modules/hdl-modules/tree/main/modules"
-        relative_path = f"{self._module.name}/{vhdl_file_path.parent.name}/{vhdl_file_path.name}"
-
-        rst = f"""
-.. _{self._module.name}.{entity_name}:
-
-{heading}
-{heading_underline}
-
-`View source code on github.com <{base_url}/{relative_path}>`__.
-
-{symbolator_rst}
-
-{file_rst}
-
-{resource_utilization_rst}
-"""
-
-        return rst
 
 
 def build_information_badges() -> None:
