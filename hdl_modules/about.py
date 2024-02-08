@@ -8,6 +8,10 @@
 # --------------------------------------------------------------------------------------------------
 
 
+REPOSITORY_URL = "https://github.com/hdl-modules/hdl-modules"
+WEBSITE_URL = "https://hdl-modules.com"
+
+
 def get_short_slogan() -> str:
     """
     Short slogan used in e.g. Python documentation.
@@ -38,7 +42,7 @@ def get_readme_rst(
     """
     if include_extra_for_github:
         readme_rst = ""
-        extra_rst = "**See documentation on the website**: https://hdl-modules.com\n"
+        extra_rst = f"**See documentation on the website**: {WEBSITE_URL}\n"
 
     elif include_extra_for_website:
         # The website needs the initial heading, in order for the landing page to get
@@ -49,10 +53,10 @@ About hdl-modules
 =================
 
 """
-        extra_rst = """\
+        extra_rst = f"""\
 This website contains human-readable documentation of the modules.
 To check out the source code, go to the
-`GitHub page <https://github.com/hdl-modules/hdl-modules>`_.
+`GitHub page <{REPOSITORY_URL}>`_.
 """
 
     else:
@@ -60,32 +64,31 @@ To check out the source code, go to the
         extra_rst = ""
 
     readme_rst += f"""\
-.. image:: https://hdl-modules.com//logos/banner.png
+.. image:: {WEBSITE_URL}/logos/banner.png
   :alt: Project banner
   :align: center
 
 |
 
-.. |pic_website| image:: https://hdl-modules.com/badges/website.svg
+.. |pic_website| image:: {WEBSITE_URL}/badges/website.svg
   :alt: Website
-  :target: https://hdl-modules.com
+  :target: {WEBSITE_URL}
 
-.. |pic_repository| image:: https://hdl-modules.com/badges/repository.svg
+.. |pic_repository| image:: {WEBSITE_URL}/badges/repository.svg
   :alt: Repository
-  :target: https://github.com/hdl-modules/hdl-modules
+  :target: {REPOSITORY_URL}
 
-.. |pic_chat| image:: https://hdl-modules.com/badges/chat.svg
+.. |pic_chat| image:: {WEBSITE_URL}/badges/chat.svg
   :alt: Chat
-  :target: https://github.com/hdl-modules/hdl-modules/discussions
+  :target: {REPOSITORY_URL}/discussions
 
-.. |pic_license| image:: https://hdl-modules.com/badges/license.svg
+.. |pic_license| image:: {WEBSITE_URL}/badges/license.svg
   :alt: License
-  :target: https://hdl-modules.com/license_information.html
+  :target: {WEBSITE_URL}/license_information.html
 
-.. |pic_ci_status| image:: https://github.com/hdl-modules/hdl-modules/actions/workflows/ci.yml/\
-badge.svg?branch=main
+.. |pic_ci_status| image:: {REPOSITORY_URL}/actions/workflows/ci.yml/badge.svg?branch=main
   :alt: CI status
-  :target: https://github.com/hdl-modules/hdl-modules/actions/workflows/ci.yml
+  :target: {REPOSITORY_URL}/actions/workflows/ci.yml
 
 |pic_website| |pic_repository| |pic_license| |pic_chat| |pic_ci_status|
 
@@ -100,7 +103,7 @@ efficient as possible.
 Using generics to enable/disable different features and modes means that resources can be saved when
 not all features are used.
 Some entities are very deliberately area optimized, such as the
-`FIFOs <https://hdl-modules.com/modules/fifo/fifo.html>`_, since they are used very frequently in
+`FIFOs <{WEBSITE_URL}/modules/fifo/fifo.html>`_, since they are used very frequently in
 FPGA projects.
 
 More important than anything, however, is the quality.
@@ -110,31 +113,31 @@ All the code is written with readability and maintainability in mind.
 
 The following things can be found, at a glance, in the different modules:
 
-* `axi <https://hdl-modules.com/modules/axi/axi.html>`_:
+* `axi <{WEBSITE_URL}/modules/axi/axi.html>`_:
   AXI3/AXI4 Crossbars, FIFOs, CDCs, etc.
 
-* `axi_lite <https://hdl-modules.com/modules/axi_lite/axi_lite.html>`_:
+* `axi_lite <{WEBSITE_URL}/modules/axi_lite/axi_lite.html>`_:
   AXI-Lite Crossbars, FIFOs, CDCs, etc.
 
-* `bfm <https://hdl-modules.com/modules/bfm/bfm.html>`_:
+* `bfm <{WEBSITE_URL}/modules/bfm/bfm.html>`_:
   Many BFMs for simulating AXI/AXI-Lite/AXI-Stream.
 
-* `common <https://hdl-modules.com/modules/common/common.html>`_:
+* `common <{WEBSITE_URL}/modules/common/common.html>`_:
   Miscellaneous, but useful, things that do not fit anywhere else.
 
-* `fifo <https://hdl-modules.com/modules/fifo/fifo.html>`_:
+* `fifo <{WEBSITE_URL}/modules/fifo/fifo.html>`_:
   Synchronous and asynchronous FIFOs with AXI-stream-like handshake interface.
 
-* `hard\\_fifo <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`_:
+* `hard\\_fifo <{WEBSITE_URL}/modules/hard_fifo/hard_fifo.html>`_:
   Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives.
 
-* `math <https://hdl-modules.com/modules/math/math.html>`_:
+* `math <{WEBSITE_URL}/modules/math/math.html>`_:
   Some common math function implementations.
 
-* `reg\\_file <https://hdl-modules.com/modules/reg_file/reg_file.html>`_:
+* `reg\\_file <{WEBSITE_URL}/modules/reg_file/reg_file.html>`_:
   A generic register file and a simulation support package for register operations.
 
-* `resync <https://hdl-modules.com/modules/resync/resync.html>`_:
+* `resync <{WEBSITE_URL}/modules/resync/resync.html>`_:
   Resynchronization implementations for different signals and buses, along with proper constraints.
 """
 

@@ -13,14 +13,15 @@ from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.copyright_lint import CopyrightHeader
 
 # First party libraries
+from hdl_modules.about import REPOSITORY_URL, WEBSITE_URL
 from tools.tools_env import REPO_ROOT
 
 COPYRIGHT_HOLDER = "Lukas Vik"
 COPYRIGHT_TEXT = [
     "This file is part of the hdl-modules project, a collection of reusable, high-quality,",
     "peer-reviewed VHDL building blocks.",
-    "https://hdl-modules.com",
-    "https://github.com/hdl-modules/hdl-modules",
+    WEBSITE_URL,
+    REPOSITORY_URL,
 ]
 
 

@@ -1,4 +1,4 @@
-.. image:: https://hdl-modules.com//logos/banner.png
+.. image:: https://hdl-modules.com/logos/banner.png
   :alt: Project banner
   :align: center
 
