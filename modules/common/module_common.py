@@ -490,7 +490,7 @@ class Module(BaseModule):
     def _get_width_conversion_build_projects(self, part, projects):
         modules = [self]
 
-        # Downconversion in left array, upconversion on right.
+        # Downsizing in left array, upsizing on right.
         # Progressively adding more features from left to right.
         input_width = [32, 32, 32, 32] + [16, 16, 16, 16]
         output_width = [16, 16, 16, 16] + [32, 32, 32, 32]

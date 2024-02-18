@@ -24,13 +24,13 @@ package body width_conversion_pkg is
     input_user_width : natural; input_data_width : positive; output_data_width : positive
   ) return natural is
   begin
-    -- Downconversion, i.e. one 'input' beat will result in multiple 'output' beats.
+    -- Downsizing, i.e. one 'input' beat will result in multiple 'output' beats.
     -- The same input 'user' value will be sent on multiple 'output' beats.
     if input_data_width > output_data_width then
       return input_user_width;
     end if;
 
-    -- Upconversion, i.e. multiple 'input' beats will result in one 'output' beat.
+    -- Upsizing, i.e. multiple 'input' beats will result in one 'output' beat.
     -- The output 'user' value will be the concatenated input 'user' values of all the input beats
     -- that produced the output value.
     return input_user_width * (output_data_width / input_data_width);
