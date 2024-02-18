@@ -7,8 +7,7 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Width conversion of an AXI-Stream-like data bus.
--- Can handle downconversion (wide to thin) or upconversion (thin
--- to wide).
+-- Can handle downsizing (wide to thin) or upsizing (thin to wide).
 -- The data widths must be a power-of-two multiple of each other. E.g. 10->40 is
 -- supported while 8->24 is not.
 --
@@ -22,16 +21,16 @@
 -- generic will enable further processing of ``strobe``, but in barebone configuration the signal
 -- is merely passed on.
 -- This means, for example, that there might be output words where all strobe lanes are
--- zero when downconverting.
+-- zero when downsizing.
 --
 -- There are some limitations, and possible remedies, concerning packet length alignment, depending
--- on if we are doing upconversion or downconversion. See below.
+-- on if we are doing upsizing or downsizing. See below.
 --
 --
--- Downconversion behavior
--- _______________________
+-- Downsizing behavior
+-- ___________________
 --
--- When doing downconversion, one input beat will result in two or more output beats, depending
+-- When doing downsizing, one input beat will result in two or more output beats, depending
 -- on width configuration. This means that the output packet length is always aligned with the input
 -- data width. This is not always desirable when working with the ``strobe`` and ``last`` signals.
 -- Say for example that we are converting a bus from 16 to 8, and ``input_last`` is asserted on a
@@ -43,10 +42,10 @@
 -- be strobed out.
 --
 --
--- Upconversion behavior
--- _____________________
+-- Upsizing behavior
+-- _________________
 --
--- When upconverting, two or more ``input`` beats result in one ``output`` beat, depending on width
+-- When upsizing, two or more ``input`` beats result in one ``output`` beat, depending on width
 -- configuration. This means that the input packet length must be aligned with the output
 -- data width, so that each packet fills up a whole number of output words.
 -- If this can not be guaranteed, then the ``support_unaligned_packet_length`` mode can be used.
@@ -73,11 +72,11 @@
 -- By setting the ``user_width`` generic to a non-zero value, the ``input_user`` port can be used
 -- to pass auxillary data along the bus.
 --
--- When downconverting, i.e. when one input beat results in multiple output beats, the
+-- When downsizing, i.e. when one input beat results in multiple output beats, the
 -- ``output_user`` port will have the same width as the ``input_user`` port.
 -- Each output beat will have the same ``user`` value as the input beat that created it.
 --
--- When upconverting, i.e. when multiple input beats result in one output beat, the ``output_user``
+-- When upsizing, i.e. when multiple input beats result in one output beat, the ``output_user``
 -- port will have the same width as the ``input_user`` port multiplied by the conversion factor.
 -- The ``output_user`` port will have the concatenated ``input_user`` values from all the input
 -- beats that created the output beat.
@@ -149,8 +148,8 @@ end entity;
 
 architecture a of width_conversion is
 
-  constant is_upconversion : boolean := input_width < output_width;
-  constant is_downconversion : boolean := input_width > output_width;
+  constant is_upsizing : boolean := input_width < output_width;
+  constant is_downsizing : boolean := input_width > output_width;
 
   constant enable_user : boolean := user_width > 0;
 
@@ -251,7 +250,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  pad_input_data_generate : if is_upconversion and support_unaligned_packet_length generate
+  pad_input_data_generate : if is_upsizing and support_unaligned_packet_length generate
     type state_t is (let_data_pass, send_padding);
     signal state : state_t := let_data_pass;
 
@@ -350,7 +349,7 @@ begin
       end loop;
 
       for atom_idx in input_atoms'range loop
-        if is_downconversion and support_unaligned_packet_length then
+        if is_downsizing and support_unaligned_packet_length then
           -- Set 'last' only on the last strobed atom of the input word.
           if atom_idx = input_atoms'high then
             is_last_atom := input_atoms(atom_idx).strobe(0);
@@ -521,7 +520,7 @@ begin
         output_last_or := output_last_or or output_atoms(output_atom_idx).last;
       end loop;
 
-      if is_upconversion and support_unaligned_packet_length then
+      if is_upsizing and support_unaligned_packet_length then
         -- The top atom might be strobed out and not have 'last' set.
         -- Instead it is found in one of the lower atoms.
         output_last_int <= output_last_or;
@@ -536,12 +535,12 @@ begin
 
 
   ------------------------------------------------------------------------------
-  strip_output_data_generate : if is_downconversion and support_unaligned_packet_length generate
+  strip_output_data_generate : if is_downsizing and support_unaligned_packet_length generate
     signal strobe_all_zero : std_ulogic_vector(output_strobe'range) := (others => '0');
   begin
 
     -- The write processing will place 'last' indicator on the last atom that is strobed.
-    -- There might come atoms after that, since this is downconversion.
+    -- There might come atoms after that, since this is downsizing.
     -- If those atoms add up to an output beat, that is removed here.
     -- This is highly dependent on the input stream being well-behaved.
 

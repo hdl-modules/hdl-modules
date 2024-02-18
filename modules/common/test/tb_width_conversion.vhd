@@ -112,7 +112,7 @@ begin
       variable num_input_bytes_to_remove : natural := 0;
 
       procedure setup_user is
-        impure function downconversion_user_output(
+        impure function downsizing_user_output(
           user_input : integer_array_t
         ) return integer_array_t is
           constant width_ratio : natural := input_width / output_width;
@@ -173,7 +173,7 @@ begin
           user_out := copy(user_in);
         else
           -- The user value from one input beat will be spread out over multiple output beats.
-          user_out := downconversion_user_output(user_input=>user_in);
+          user_out := downsizing_user_output(user_input=>user_in);
         end if;
 
         push_ref(input_user_queue, user_in);
@@ -191,8 +191,8 @@ begin
 
         if support_unaligned_packet_length then
           -- In this case we can un-strobe/remove more than a whole word.
-          -- If upconverting, and we remove more than one whole input word, the entity will pad.
-          -- If downconverting, and we remove more than one whole output word, the entity
+          -- If upsizing, and we remove more than one whole input word, the entity will pad.
+          -- If downsizing, and we remove more than one whole output word, the entity
           -- will strip.
           num_input_bytes_to_remove := rnd.RandInt(0, maximum_width_bytes - 1);
 
