@@ -171,7 +171,7 @@ def get_readme() -> str:
     # First, verify readme.rst in repo root
     readme_rst = get_readme_rst(include_extra_for_github=True)
     if read_file(tools_env.REPO_ROOT / "readme.rst") != readme_rst:
-        file_path = create_file(GENERATED_SPHINX / "readme.rst", readme_rst)
+        file_path = create_file(GENERATED_SPHINX / "readme.txt", readme_rst)
         assert (
             False
         ), f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
