@@ -27,7 +27,7 @@ use vunit_lib.axi_slave_pkg.all;
 library axi;
 use axi.axi_pkg.all;
 
-use work.axi_slave_pkg.all;
+use work.axi_slave_bfm_pkg.all;
 
 
 entity axi_slave is

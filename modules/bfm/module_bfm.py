@@ -23,7 +23,7 @@ class Module(BaseModule):
         self.setup_handshake_bfm_tests(vunit_proj=vunit_proj)
 
     def setup_bfm_pkg_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_bfm_pkg")
+        tb = vunit_proj.library(self.library_name).test_bench("tb_integer_array_bfm_pkg")
         self.add_vunit_config(test=tb, set_random_seed=True)
 
     def setup_axi_bfm_pkg_tests(self, vunit_proj):

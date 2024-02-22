@@ -6,7 +6,7 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- TODO
+-- Types and methods for creating random stall in a testbench or BFM.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -16,29 +16,32 @@ library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 
-package bfm_stall_pkg is
+package stall_bfm_pkg is
 
-  type stall_t is record
+  -- This is a clone of the 'stall_config_t' from VUnit 'axi_stream_pkg'.
+  -- We use this type instead so that we don't have to include the huge 'axi_stream_pkg' in
+  -- small testbenches, thereby saving simulation startup time.
+  type stall_configuration_t is record
     stall_probability : real range 0.0 to 1.0;
     min_stall_cycles : natural;
     max_stall_cycles : natural;
   end record;
-  constant zero_stall : stall_t := (
+  constant zero_stall_configuration : stall_configuration_t := (
     stall_probability=>0.0, min_stall_cycles=>0, max_stall_cycles=>0
   );
 
   procedure random_stall(
-    stall_config : in stall_t;
+    stall_config : in stall_configuration_t;
     rnd : inout RandomPType;
     signal clk : in std_ulogic
   );
 
 end package;
 
-package body bfm_stall_pkg is
+package body stall_bfm_pkg is
 
   procedure random_stall(
-    stall_config : in stall_t;
+    stall_config : in stall_configuration_t;
     rnd : inout RandomPType;
     signal clk : in std_ulogic
   ) is

@@ -60,7 +60,7 @@ use vunit_lib.queue_pkg.all;
 library common;
 use common.types_pkg.all;
 
-use work.bfm_stall_pkg.all;
+use work.stall_bfm_pkg.all;
 
 
 entity axi_stream_slave is
@@ -88,7 +88,7 @@ entity axi_stream_slave is
     -- this queue.
     reference_user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
-    stall_config : stall_t := zero_stall;
+    stall_config : stall_configuration_t := zero_stall_configuration;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;

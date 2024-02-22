@@ -22,8 +22,8 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
-use bfm.bfm_pkg.get_new_queues;
+use bfm.stall_bfm_pkg.stall_configuration_t;
+use bfm.queue_bfm_pkg.get_new_queues;
 
 use work.types_pkg.all;
 
@@ -60,7 +60,7 @@ architecture tb of tb_handshake_mux is
   signal result_id : natural range input_valid'range := 0;
 
   -- Testbench stuff
-  constant stall_config : stall_t := (
+  constant stall_config : stall_configuration_t := (
     stall_probability => 0.2,
     min_stall_cycles => 1,
     max_stall_cycles => 3
