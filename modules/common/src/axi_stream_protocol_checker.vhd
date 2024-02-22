@@ -61,7 +61,7 @@ entity axi_stream_protocol_checker is
   port (
     clk : in std_ulogic;
     --# {{}}
-    ready : in std_ulogic := '0';
+    ready : in std_ulogic := '1';
     valid : in std_ulogic := '0';
     last : in std_ulogic := '0';
     -- Must set a valid 'data_width' generic value in order to use these.

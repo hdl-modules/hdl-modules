@@ -57,9 +57,9 @@ entity handshake_master is
     clk : in std_ulogic;
     --# {{}}
     -- Set by testbench when there is data available to push
-    data_is_valid : in std_ulogic;
+    data_is_valid : in std_ulogic := '1';
     --# {{}}
-    ready : in std_ulogic;
+    ready : in std_ulogic := '1';
     valid : out std_ulogic := '0';
     --# {{}}
     -- The signals below are optional to connect. Only used for protocol checking.
@@ -72,27 +72,32 @@ end entity;
 
 architecture a of handshake_master is
 
-  signal stall_data : std_ulogic := '1';
+  signal let_data_through : std_ulogic := '1';
 
 begin
 
-  valid <= data_is_valid and not stall_data;
+  valid <= data_is_valid and let_data_through;
 
 
   ------------------------------------------------------------------------------
-  toggle_stall : process
-    variable rnd : RandomPType;
-  begin
-    rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
+  toggle_stall_gen : if stall_config.stall_probability > 0.0 generate
 
-    loop
-      stall_data <= '1';
-      random_stall(stall_config, rnd, clk);
-      stall_data <= '0';
+    ------------------------------------------------------------------------------
+    toggle_stall : process
+      variable rnd : RandomPType;
+    begin
+      rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
 
-      wait until ready and valid and rising_edge(clk);
-    end loop;
-  end process;
+      loop
+        let_data_through <= '0';
+        random_stall(stall_config=>stall_config, rnd=>rnd, clk=>clk);
+        let_data_through <= '1';
+
+        wait until ready and valid and rising_edge(clk);
+      end loop;
+    end process;
+
+  end generate;
 
 
   ------------------------------------------------------------------------------
