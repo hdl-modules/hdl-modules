@@ -27,7 +27,8 @@ library axi;
 use axi.axi_pkg.all;
 
 library bfm;
-use bfm.bfm_pkg.all;
+use bfm.memory_bfm_pkg.all;
+use bfm.axi_slave_bfm_pkg.all;
 
 library common;
 use common.addr_pkg.all;

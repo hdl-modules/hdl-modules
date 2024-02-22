@@ -21,7 +21,7 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
+use bfm.stall_bfm_pkg.stall_configuration_t;
 
 library common;
 use common.types_pkg.all;
@@ -271,7 +271,7 @@ begin
 
   ------------------------------------------------------------------------------
   input_block : block
-    constant stall_config : stall_t := (
+    constant stall_config : stall_configuration_t := (
       stall_probability => 0.2,
       min_stall_cycles => 1,
       max_stall_cycles => 4
@@ -305,7 +305,7 @@ begin
     -- Use more stalling on the result side, so it is likely that there will be some packet
     -- build up in the FIFO.
     -- This will tests that packets that have already been written will not be dropped.
-    constant stall_config : stall_t := (
+    constant stall_config : stall_configuration_t := (
       stall_probability => 0.5,
       min_stall_cycles => 2,
       max_stall_cycles => 8

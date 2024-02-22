@@ -36,12 +36,12 @@ use osvvm.RandomPkg.RandomPType;
 library common;
 use common.types_pkg.all;
 
-use work.bfm_stall_pkg.all;
+use work.stall_bfm_pkg.all;
 
 
 entity handshake_master is
   generic (
-    stall_config : stall_t;
+    stall_config : stall_configuration_t;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;

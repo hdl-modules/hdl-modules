@@ -21,7 +21,7 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
+use bfm.stall_bfm_pkg.stall_configuration_t;
 
 library common;
 use common.types_pkg.all;
@@ -52,7 +52,7 @@ architecture tb of tb_strobe_on_last is
 
   constant input_data_queue, reference_data_queue : queue_t := new_queue;
 
-  constant stall_config : stall_t := (
+  constant stall_config : stall_configuration_t := (
     stall_probability => 0.2 * to_real(not test_full_throughput),
     min_stall_cycles => 1,
     max_stall_cycles => 4

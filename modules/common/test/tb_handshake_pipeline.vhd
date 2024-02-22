@@ -22,7 +22,7 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
+use bfm.stall_bfm_pkg.stall_configuration_t;
 
 use work.types_pkg.all;
 
@@ -54,7 +54,7 @@ architecture tb of tb_handshake_pipeline is
 
   constant input_data_queue, output_data_queue : queue_t := new_queue;
 
-  constant stall_config : stall_t := (
+  constant stall_config : stall_configuration_t := (
     stall_probability => 0.5 * real(to_int(data_jitter)),
     min_stall_cycles => 1,
     max_stall_cycles => 2

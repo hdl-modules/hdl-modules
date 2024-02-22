@@ -52,7 +52,7 @@ library axi;
 use axi.axi_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
+use bfm.stall_bfm_pkg.stall_configuration_t;
 
 library common;
 use common.types_pkg.all;
@@ -74,9 +74,9 @@ entity axi_read_master is
     -- The data returned on the R channel will be checked against this data.
     reference_data_queue : queue_t;
     -- Stall configuration for the AR channel master
-    ar_stall_config : stall_t := default_address_stall_config;
+    ar_stall_config : stall_configuration_t := default_address_stall_config;
     -- Stall configuration for the R channel slave
-    r_stall_config : stall_t := default_data_stall_config;
+    r_stall_config : stall_configuration_t := default_data_stall_config;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;

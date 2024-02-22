@@ -19,17 +19,17 @@ use vunit_lib.integer_array_pkg.all;
 use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
-use work.bfm_pkg.all;
+use work.integer_array_bfm_pkg.concatenate_integer_arrays;
 
 
-entity tb_bfm_pkg is
+entity tb_integer_array_bfm_pkg is
   generic (
     seed : natural;
     runner_cfg : string
   );
 end entity;
 
-architecture tb of tb_bfm_pkg is
+architecture tb of tb_integer_array_bfm_pkg is
 
 begin
 

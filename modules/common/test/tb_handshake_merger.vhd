@@ -21,8 +21,8 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
-use bfm.bfm_pkg.get_new_queues;
+use bfm.stall_bfm_pkg.stall_configuration_t;
+use bfm.queue_bfm_pkg.get_new_queues;
 
 use work.types_pkg.all;
 
@@ -57,7 +57,7 @@ architecture tb of tb_handshake_merger is
 
   signal num_packets_checked : natural := 0;
 
-  constant stall_config : stall_t := (
+  constant stall_config : stall_configuration_t := (
     stall_probability => real(stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 3

@@ -22,7 +22,7 @@ use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library bfm;
-use bfm.bfm_stall_pkg.stall_t;
+use bfm.stall_bfm_pkg.stall_configuration_t;
 
 library common;
 use common.types_pkg.all;
@@ -63,13 +63,13 @@ architecture tb of tb_asynchronous_fifo is
   signal drop_packet : std_ulogic := '0';
 
   -- Testbench stuff
-  constant read_stall_config : stall_t := (
+  constant read_stall_config : stall_configuration_t := (
     stall_probability => real(read_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 4
   );
 
-  constant write_stall_config : stall_t := (
+  constant write_stall_config : stall_configuration_t := (
     stall_probability => real(write_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 4
