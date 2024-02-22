@@ -93,27 +93,32 @@ end entity;
 
 architecture a of handshake_slave is
 
-  signal stall_data : std_ulogic := '1';
+  signal let_data_through : std_ulogic := '1';
 
 begin
 
-  ready <= data_is_ready and not stall_data;
+  ready <= data_is_ready and let_data_through;
 
 
   ------------------------------------------------------------------------------
-  toggle_stall : process
-    variable rnd : RandomPType;
-  begin
-    rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
+  toggle_stall_gen : if stall_config.stall_probability > 0.0 generate
 
-    loop
-      stall_data <= '1';
-      random_stall(stall_config, rnd, clk);
-      stall_data <= '0';
+    ------------------------------------------------------------------------------
+    toggle_stall : process
+      variable rnd : RandomPType;
+    begin
+      rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
 
-      wait until (valid = '1' or not well_behaved_stall) and rising_edge(clk);
-    end loop;
-  end process;
+      loop
+        let_data_through <= '0';
+        random_stall(stall_config=>stall_config, rnd=>rnd, clk=>clk);
+        let_data_through <= '1';
+
+        wait until (valid = '1' or not well_behaved_stall) and rising_edge(clk);
+      end loop;
+    end process;
+
+  end generate;
 
 
   ------------------------------------------------------------------------------
