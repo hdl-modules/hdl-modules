@@ -35,7 +35,7 @@ library axi;
 use axi.axi_pkg.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
+use vunit_lib.bus_master_pkg.all;
 
 
 entity axi_master is

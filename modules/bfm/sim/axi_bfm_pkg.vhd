@@ -13,8 +13,7 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
-library vunit_lib;
-context vunit_lib.vc_context;
+use work.bfm_stall_pkg.stall_t;
 
 
 package axi_bfm_pkg is
@@ -34,14 +33,14 @@ package axi_bfm_pkg is
   ) return axi_master_bfm_job_t;
 
   -- Stall in a way where it is probable that W data arrives a long while before AWVALID.
-  constant default_address_stall_config : stall_config_t := (
+  constant default_address_stall_config : stall_t := (
     stall_probability => 0.3,
     min_stall_cycles  => 1,
     max_stall_cycles  => 30
   );
 
   -- Stall just a little bit, to make sure handshaking works properly on all the channels.
-  constant default_data_stall_config : stall_config_t := (
+  constant default_data_stall_config : stall_t := (
     stall_probability => 0.3,
     min_stall_cycles  => 1,
     max_stall_cycles  => 4

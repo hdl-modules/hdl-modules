@@ -29,7 +29,7 @@ library reg_file;
 use reg_file.reg_operations_pkg.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
+use vunit_lib.bus_master_pkg.all;
 
 
 entity axi_lite_master is

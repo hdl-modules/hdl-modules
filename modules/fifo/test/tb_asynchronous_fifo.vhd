@@ -15,11 +15,14 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
 use vunit_lib.random_pkg.all;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+use vunit_lib.run_pkg.all;
 
 library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 library common;
 use common.types_pkg.all;
@@ -60,13 +63,13 @@ architecture tb of tb_asynchronous_fifo is
   signal drop_packet : std_ulogic := '0';
 
   -- Testbench stuff
-  constant read_stall_config : stall_config_t := new_stall_config(
+  constant read_stall_config : stall_t := (
     stall_probability => real(read_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 4
   );
 
-  constant write_stall_config : stall_config_t := new_stall_config(
+  constant write_stall_config : stall_t := (
     stall_probability => real(write_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 4

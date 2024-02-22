@@ -8,7 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 
 library vunit_lib;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.run_pkg.all;
 
 use work.time_pkg.all;
 

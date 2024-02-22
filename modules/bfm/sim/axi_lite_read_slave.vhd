@@ -23,7 +23,7 @@ library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
+use vunit_lib.axi_slave_pkg.all;
 
 
 entity axi_lite_read_slave is

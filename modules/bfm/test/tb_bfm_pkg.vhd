@@ -14,8 +14,10 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
 use vunit_lib.random_pkg.all;
-context vunit_lib.vunit_context;
+use vunit_lib.run_pkg.all;
 
 use work.bfm_pkg.all;
 

@@ -10,15 +10,18 @@
 library ieee;
 context ieee.ieee_std_context;
 
-library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
-
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
+use vunit_lib.run_pkg.all;
+
 library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 library common;
 use common.types_pkg.all;
@@ -268,7 +271,7 @@ begin
 
   ------------------------------------------------------------------------------
   input_block : block
-    constant stall_config : stall_config_t := (
+    constant stall_config : stall_t := (
       stall_probability => 0.2,
       min_stall_cycles => 1,
       max_stall_cycles => 4
@@ -302,7 +305,7 @@ begin
     -- Use more stalling on the result side, so it is likely that there will be some packet
     -- build up in the FIFO.
     -- This will tests that packets that have already been written will not be dropped.
-    constant stall_config : stall_config_t := (
+    constant stall_config : stall_t := (
       stall_probability => 0.5,
       min_stall_cycles => 2,
       max_stall_cycles => 8

@@ -11,15 +11,18 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
-library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vunit_context;
-context vunit_lib.vc_context;
-
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
+use vunit_lib.run_pkg.all;
+
 library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 use work.types_pkg.all;
 
@@ -51,7 +54,7 @@ architecture tb of tb_handshake_pipeline is
 
   constant input_data_queue, output_data_queue : queue_t := new_queue;
 
-  constant stall_config : stall_config_t := (
+  constant stall_config : stall_t := (
     stall_probability => 0.5 * real(to_int(data_jitter)),
     min_stall_cycles => 1,
     max_stall_cycles => 2

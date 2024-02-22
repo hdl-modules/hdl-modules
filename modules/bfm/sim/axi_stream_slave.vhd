@@ -49,16 +49,18 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-context ieee.ieee_std_context;
+use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
-
-library bfm;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
 
 library common;
 use common.types_pkg.all;
+
+use work.bfm_stall_pkg.all;
 
 
 entity axi_stream_slave is
@@ -86,7 +88,7 @@ entity axi_stream_slave is
     -- this queue.
     reference_user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
-    stall_config : stall_config_t := null_stall_config;
+    stall_config : stall_t := zero_stall;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
@@ -330,7 +332,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  handshake_slave_inst : entity bfm.handshake_slave
+  handshake_slave_inst : entity work.handshake_slave
     generic map(
       stall_config => stall_config,
       seed => seed,
