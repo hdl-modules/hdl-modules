@@ -15,7 +15,8 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.run_pkg.all;
 
 
 entity tb_periodic_pulser is

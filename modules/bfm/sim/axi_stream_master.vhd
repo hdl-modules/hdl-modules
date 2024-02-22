@@ -43,13 +43,15 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-context ieee.ieee_std_context;
+use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
 
-library bfm;
+use work.bfm_stall_pkg.all;
 
 library common;
 use common.types_pkg.all;
@@ -70,7 +72,7 @@ entity axi_stream_master is
     -- The integer arrays will be deallocated after this BFM is done with them.
     user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
-    stall_config : stall_config_t := null_stall_config;
+    stall_config : stall_t := zero_stall;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
@@ -183,7 +185,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  handshake_master_inst : entity bfm.handshake_master
+  handshake_master_inst : entity work.handshake_master
     generic map(
       stall_config => stall_config,
       seed => seed,

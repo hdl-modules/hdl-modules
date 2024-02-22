@@ -12,7 +12,8 @@ use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.run_pkg.all;
 
 library math;
 use math.math_pkg.all;

@@ -14,20 +14,19 @@ use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+use vunit_lib.axi_slave_pkg.all;
+use vunit_lib.axi_stream_pkg.all;
+use vunit_lib.bus_master_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.logger_pkg.all;
+use vunit_lib.memory_pkg.all;
+use vunit_lib.queue_pkg.all;
 
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 
 package bfm_pkg is
-
-  procedure random_stall(
-    stall_config : in stall_config_t;
-    rnd : inout RandomPType;
-    signal clk : in std_ulogic
-  );
 
   impure function concatenate_integer_arrays(
     base_array : integer_array_t;
@@ -74,27 +73,6 @@ package bfm_pkg is
 end package;
 
 package body bfm_pkg is
-
-  ------------------------------------------------------------------------------
-  procedure random_stall(
-    stall_config : in stall_config_t;
-    rnd : inout RandomPType;
-    signal clk : in std_ulogic
-  ) is
-    variable num_stall_cycles : natural := 0;
-  begin
-    if rnd.Uniform(0.0, 1.0) < stall_config.stall_probability then
-      num_stall_cycles := rnd.FavorSmall(
-        stall_config.min_stall_cycles,
-        stall_config.max_stall_cycles
-      );
-
-      for stall in 1 to num_stall_cycles loop
-        wait until rising_edge(clk);
-      end loop;
-    end if;
-  end procedure;
-  ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
   -- Concatenate two arrays with data.

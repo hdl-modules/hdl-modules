@@ -12,9 +12,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vunit_context;
-context vunit_lib.data_types_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.run_pkg.all;
 
 library common;
 use common.types_pkg.all;

@@ -14,8 +14,12 @@ library osvvm;
 use osvvm.RandomPkg.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.run_pkg.all;
+
+library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 library common;
 use common.types_pkg.all;
@@ -33,13 +37,13 @@ end entity;
 
 architecture tb of tb_handshake_bfm is
 
-  constant master_stall_config : stall_config_t := (
+  constant master_stall_config : stall_t := (
     stall_probability => real(master_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 5
   );
 
-  constant slave_stall_config : stall_config_t := (
+  constant slave_stall_config : stall_t := (
     stall_probability => real(slave_stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     max_stall_cycles => 5

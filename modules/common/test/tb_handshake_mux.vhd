@@ -11,16 +11,19 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
-library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
-
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
+use vunit_lib.run_pkg.all;
+
 library bfm;
-use bfm.bfm_pkg.all;
+use bfm.bfm_stall_pkg.stall_t;
+use bfm.bfm_pkg.get_new_queues;
 
 use work.types_pkg.all;
 
@@ -57,7 +60,7 @@ architecture tb of tb_handshake_mux is
   signal result_id : natural range input_valid'range := 0;
 
   -- Testbench stuff
-  constant stall_config : stall_config_t := (
+  constant stall_config : stall_t := (
     stall_probability => 0.2,
     min_stall_cycles => 1,
     max_stall_cycles => 3

@@ -12,13 +12,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vunit_context;
-context vunit_lib.vc_context;
-
 library osvvm;
 use osvvm.RandomPkg.all;
+
+library vunit_lib;
+use vunit_lib.axi_slave_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.logger_pkg.all;
+use vunit_lib.memory_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
+use vunit_lib.run_pkg.all;
 
 library axi;
 use axi.axi_pkg.all;

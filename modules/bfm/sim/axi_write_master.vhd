@@ -45,11 +45,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
 
 library axi;
 use axi.axi_pkg.all;
+
+library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 library common;
 use common.types_pkg.all;
@@ -70,11 +74,11 @@ entity axi_write_master is
     -- unsigned byte. Little endian byte order is assumed.
     data_queue : queue_t;
     -- Stall configuration for the AW channel master
-    aw_stall_config : stall_config_t := default_address_stall_config;
+    aw_stall_config : stall_t := default_address_stall_config;
     -- Stall configuration for the W channel master
-    w_stall_config : stall_config_t := default_data_stall_config;
+    w_stall_config : stall_t := default_data_stall_config;
     -- Stall configuration for the B channel slave
-    b_stall_config : stall_config_t := default_data_stall_config;
+    b_stall_config : stall_t := default_data_stall_config;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;

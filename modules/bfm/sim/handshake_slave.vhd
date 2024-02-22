@@ -37,17 +37,14 @@ context ieee.ieee_std_context;
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
-library vunit_lib;
-context vunit_lib.vc_context;
-
 library common;
 
-use work.bfm_pkg.all;
+use work.bfm_stall_pkg.all;
 
 
 entity handshake_slave is
   generic (
-    stall_config : stall_config_t;
+    stall_config : stall_t;
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;

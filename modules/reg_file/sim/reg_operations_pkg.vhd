@@ -30,9 +30,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+
 library vunit_lib;
-context vunit_lib.vunit_context;
-context vunit_lib.vc_context;
+use vunit_lib.bus_master_pkg.all;
+use vunit_lib.check_pkg.all;
+use vunit_lib.logger_pkg.all;
+use vunit_lib.com_types_pkg.all;
 
 library common;
 use common.addr_pkg.all;

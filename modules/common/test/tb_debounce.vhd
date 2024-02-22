@@ -11,7 +11,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vunit_context;
+use vunit_lib.check_pkg.all;
+use vunit_lib.run_pkg.all;
 
 use work.types_pkg.all;
 

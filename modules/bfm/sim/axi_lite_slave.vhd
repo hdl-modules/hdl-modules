@@ -21,7 +21,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 library vunit_lib;
-context vunit_lib.vc_context;
+use vunit_lib.axi_slave_pkg.all;
 
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;

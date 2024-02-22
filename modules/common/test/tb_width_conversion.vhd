@@ -11,15 +11,18 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library vunit_lib;
-use vunit_lib.random_pkg.all;
-context vunit_lib.vc_context;
-context vunit_lib.vunit_context;
-
 library osvvm;
 use osvvm.RandomPkg.all;
 
+library vunit_lib;
+use vunit_lib.check_pkg.all;
+use vunit_lib.integer_array_pkg.all;
+use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
+use vunit_lib.run_pkg.all;
+
 library bfm;
+use bfm.bfm_stall_pkg.stall_t;
 
 use work.types_pkg.all;
 use work.width_conversion_pkg.all;
@@ -89,7 +92,7 @@ architecture tb of tb_width_conversion is
   constant input_data_queue, input_user_queue : queue_t := new_queue;
   constant output_data_queue, output_user_queue : queue_t := new_queue;
 
-  constant stall_config : stall_config_t := (
+  constant stall_config : stall_t := (
     stall_probability => 0.2 * to_real(enable_jitter),
     min_stall_cycles => 1,
     max_stall_cycles => 4
