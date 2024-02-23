@@ -8,7 +8,7 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-context ieee.ieee_std_context;
+use ieee.std_logic_1164.all;
 
 library osvvm;
 use osvvm.RandomPkg.all;
