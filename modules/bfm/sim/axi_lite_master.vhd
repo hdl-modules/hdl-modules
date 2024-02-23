@@ -26,10 +26,12 @@ library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
 library reg_file;
-use reg_file.reg_operations_pkg.all;
+use reg_file.reg_operations_pkg.regs_bus_master;
 
 library vunit_lib;
-use vunit_lib.bus_master_pkg.all;
+use vunit_lib.bus_master_pkg.bus_master_t;
+use vunit_lib.bus_master_pkg.address_length;
+use vunit_lib.bus_master_pkg.data_length;
 
 
 entity axi_lite_master is
@@ -50,13 +52,14 @@ architecture a of axi_lite_master is
     others => '0'
   );
 
-  signal rdata, wdata : std_ulogic_vector(data_length(bus_handle) - 1 downto 0) := (others => '0');
-  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0) := (others => '0');
+  constant data_width : positive := data_length(bus_handle);
+  signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal wstrb : std_ulogic_vector(wdata'length / 8 - 1 downto 0) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
-  assert sanity_check_axi_lite_data_width(data_length(bus_handle))
+  assert sanity_check_axi_lite_data_width(data_width)
     report "Invalid AXI-Lite data width, see printout above"
     severity failure;
 
