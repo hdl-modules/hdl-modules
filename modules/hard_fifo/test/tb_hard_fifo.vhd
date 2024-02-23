@@ -14,7 +14,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library osvvm;
-use osvvm.RandomPkg.all;
+use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 use vunit_lib.check_pkg.all;

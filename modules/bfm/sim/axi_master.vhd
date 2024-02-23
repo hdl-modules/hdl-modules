@@ -31,11 +31,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library vunit_lib;
+use vunit_lib.bus_master_pkg.bus_master_t;
+use vunit_lib.bus_master_pkg.address_length;
+use vunit_lib.bus_master_pkg.data_length;
+
 library axi;
 use axi.axi_pkg.all;
-
-library vunit_lib;
-use vunit_lib.bus_master_pkg.all;
 
 
 entity axi_master is
@@ -57,19 +59,20 @@ architecture a of axi_master is
 
   constant data_width : positive := data_length(bus_handle);
 
-  constant len : axi_a_len_t := to_len(1);
-  constant size : axi_a_size_t := to_size(data_width);
+  constant len : axi_a_len_t := to_len(burst_length_beats=>1);
+  constant size : axi_a_size_t := to_size(data_width_bits=>data_width);
 
   signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0) := (
     others => '0'
   );
+
   signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-  signal wstrb : std_ulogic_vector(byte_enable_length(bus_handle) - 1 downto 0) := (others => '0');
+  signal wstrb : std_ulogic_vector(wdata'length / 8 - 1 downto 0) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
-  assert sanity_check_axi_data_width(data_length(bus_handle))
+  assert sanity_check_axi_data_width(data_width)
     report "Invalid AXI data width, see printout above"
     severity failure;
 

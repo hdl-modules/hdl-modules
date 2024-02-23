@@ -19,7 +19,7 @@ library common;
 use common.types_pkg.all;
 
 library osvvm;
-use osvvm.RandomPkg.all;
+use osvvm.RandomPkg.RandomPType;
 
 
 entity tb_unsigned_divider is

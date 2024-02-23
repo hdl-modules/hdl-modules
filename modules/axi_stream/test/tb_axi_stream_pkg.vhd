@@ -16,7 +16,7 @@ use vunit_lib.check_pkg.all;
 use vunit_lib.run_pkg.all;
 
 library osvvm;
-use osvvm.RandomPkg.all;
+use osvvm.RandomPkg.RandomPType;
 
 use work.axi_stream_pkg.all;
 

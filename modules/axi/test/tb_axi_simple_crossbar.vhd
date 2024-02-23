@@ -12,13 +12,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library osvvm;
-use osvvm.RandomPkg.all;
+use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;
 use vunit_lib.bus_master_pkg.all;
 use vunit_lib.check_pkg.all;
-use vunit_lib.com_pkg.all;
+use vunit_lib.com_pkg.net;
 use vunit_lib.com_types_pkg.all;
 use vunit_lib.logger_pkg.all;
 use vunit_lib.memory_pkg.all;

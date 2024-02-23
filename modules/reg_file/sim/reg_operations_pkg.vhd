@@ -30,19 +30,24 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-
 library vunit_lib;
-use vunit_lib.bus_master_pkg.all;
+use vunit_lib.bus_master_pkg.bus_master_t;
+use vunit_lib.bus_master_pkg.new_bus;
+use vunit_lib.bus_master_pkg.read_bus;
+use vunit_lib.bus_master_pkg.wait_until_read_equals;
+use vunit_lib.bus_master_pkg.write_bus;
 use vunit_lib.check_pkg.all;
+use vunit_lib.com_types_pkg.max_timeout;
+use vunit_lib.com_types_pkg.network_t;
 use vunit_lib.logger_pkg.all;
-use vunit_lib.com_types_pkg.all;
 
 library common;
-use common.addr_pkg.all;
-use common.types_pkg.all;
+use common.addr_pkg.addr_t;
+use common.types_pkg.natural_vec_t;
 
 library reg_file;
-use reg_file.reg_file_pkg.all;
+use reg_file.reg_file_pkg.reg_t;
+use reg_file.reg_file_pkg.reg_width;
 
 
 package reg_operations_pkg is
@@ -255,7 +260,7 @@ package body reg_operations_pkg is
     variable address : addr_t;
   begin
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    read_bus(net, bus_handle, std_logic_vector(address), value);
+    read_bus(net=>net, bus_handle=>bus_handle, address=>std_logic_vector(address), data=>value);
   end procedure;
 
   procedure read_reg(
@@ -284,7 +289,13 @@ package body reg_operations_pkg is
     -- Check that the register value equals the specified 'value'. Note that '-' can be used as a
     -- wildcard in 'value' since check_match is used to check for equality.
 
-    read_reg(net, reg_index, got, base_address, bus_handle);
+    read_reg(
+      net=>net,
+      reg_index=>reg_index,
+      value=>got,
+      base_address=>base_address,
+      bus_handle=>bus_handle
+    );
     check_match(got, value, get_error_message(reg_index, base_address, message));
   end procedure;
 
@@ -298,7 +309,13 @@ package body reg_operations_pkg is
   ) is
     variable got : integer := 0;
   begin
-    read_reg(net, reg_index, got, base_address, bus_handle);
+    read_reg(
+      net=>net,
+      reg_index=>reg_index,
+      value=>got,
+      base_address=>base_address,
+      bus_handle=>bus_handle
+    );
     check_equal(got, value, get_error_message(reg_index, base_address, message));
   end procedure;
 
@@ -482,7 +499,7 @@ package body reg_operations_pkg is
     -- Note that this call is non-blocking.
 
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    write_bus(net, bus_handle, std_logic_vector(address), value);
+    write_bus(net=>net, bus_handle=>bus_handle, address=>std_logic_vector(address), data=>value);
   end procedure;
 
   procedure write_reg(
@@ -496,11 +513,11 @@ package body reg_operations_pkg is
     -- Note that this call is non-blocking.
 
     write_reg(
-      net,
-      reg_index,
-      std_logic_vector(to_signed(value, reg_width)),
-      base_address,
-      bus_handle
+      net=>net,
+      reg_index=>reg_index,
+      value=>std_logic_vector(to_signed(value, reg_width)),
+      base_address=>base_address,
+      bus_handle=>bus_handle
     );
   end procedure;
 
@@ -514,7 +531,13 @@ package body reg_operations_pkg is
   begin
     -- Note that this call is non-blocking.
 
-    write_reg(net, reg_index, std_logic_vector(value), base_address, bus_handle);
+    write_reg(
+      net=>net,
+      reg_index=>reg_index,
+      value=>std_logic_vector(value),
+      base_address=>base_address,
+      bus_handle=>bus_handle
+    );
   end procedure;
 
   procedure write_reg_bits(
