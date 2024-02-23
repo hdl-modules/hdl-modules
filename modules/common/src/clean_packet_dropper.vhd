@@ -27,7 +27,7 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-context ieee.ieee_std_context;
+use ieee.std_logic_1164.all;
 
 library common;
 use common.types_pkg.all;
