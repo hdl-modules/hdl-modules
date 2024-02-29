@@ -131,6 +131,9 @@ The following things can be found, at a glance, in the different modules:
 * `hard\\_fifo <{WEBSITE_URL}/modules/hard_fifo/hard_fifo.html>`_:
   Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives.
 
+* `lfsr <{WEBSITE_URL}/modules/lfsr/lfsr.html>`_:
+  Maximum-length linear feedback shift registers for pseudo-random number generation.
+
 * `math <{WEBSITE_URL}/modules/math/math.html>`_:
   Some common math function implementations.
 

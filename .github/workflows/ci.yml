@@ -188,7 +188,9 @@ jobs:
       run: |
         python3 -m pip install \
           GitPython \
+          numpy \
           rtoml \
+          scipy \
           vunit-hdl
 
     - name: Setup GHDL
