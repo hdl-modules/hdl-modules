@@ -66,6 +66,9 @@ The following things can be found, at a glance, in the different modules:
 * `hard\_fifo <https://hdl-modules.com/modules/hard_fifo/hard_fifo.html>`_:
   Wrappers, with cleaner AXI-stream-like handshake interfaces, around hard FIFO primitives.
 
+* `lfsr <https://hdl-modules.com/modules/lfsr/lfsr.html>`_:
+  Maximum-length linear feedback shift registers for pseudo-random number generation.
+
 * `math <https://hdl-modules.com/modules/math/math.html>`_:
   Some common math function implementations.
 
