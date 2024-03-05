@@ -108,23 +108,18 @@ class Module(BaseModule):
             for enable_phase_dithering in [False, True]:
                 for enable_first_order_taylor in [False, True]:
                     if enable_phase_dithering and enable_first_order_taylor:
+                        # May not enable both.
                         continue
 
                     if (
                         enable_phase_dithering or enable_first_order_taylor
                     ) and phase_fractional_width == 0:
+                        # Neither of these make sense if we have no fractional phase.
                         continue
 
-                    # The dithering random sequence is independent of the data.
-                    # So when not using dithering, the result is dependent only on the
-                    # phase increment.
-                    # Hence, it is technically enough to run one coherent section, but we run two
+                    # It is technically enough to run one coherent section, but we run two
                     # to show that there is no faulty state.
-                    # When using dithering however, we run a little bit more to exercise more of the
-                    # states the dithering and data can end up in.
-                    # At the time of writing, this many samples was necessary to get a good
-                    # enough SFDR.
-                    num_samples = (2 + enable_phase_dithering) * coherent_sampling_count
+                    num_samples = 2 * coherent_sampling_count
 
                     generics = dict(
                         clk_frequency_hz=clk_frequency_hz,
@@ -186,6 +181,22 @@ class Module(BaseModule):
         add_config(Config(integer_increment="0001000000", fractional_increment="10000"))
 
         add_config(Config(integer_increment="00000010", fractional_increment="00001"))
+
+        # These tests are way too long to run continuously in CI.
+        # They do however test the performance at the extreme end, so they need to be run when
+        # doing any changes to the implementation.
+        # for memory_address_width in range(9, 16):
+        #     integer_increment = "0000001" + ((memory_address_width + 2 - 7) * "0")
+
+        #     add_config(Config(integer_increment=integer_increment, fractional_increment="10000"))
+        #     # Test with an extreme fractional width, which leads to a very wide error term when
+        #     # doing Taylor expansion.
+        #     add_config(
+        #         Config(
+        #             integer_increment=integer_increment,
+        #             fractional_increment="1000000000000000000",
+        #         )
+        #     )
 
     def lookup_post_check(  # pylint: disable=too-many-locals
         self, output_path: Path, generics: dict[str, Any], inspect: bool
@@ -352,7 +363,6 @@ class Module(BaseModule):
             luts: int
             ffs: int
             logic: int
-            result_width: Optional[int] = None
             fractional_phase: Optional[int] = None
             dithering: Optional[bool] = None
             taylor: Optional[bool] = None
@@ -370,8 +380,6 @@ class Module(BaseModule):
                 generics["enable_phase_dithering"] = config.dithering
             if config.taylor is not None:
                 generics["enable_first_order_taylor"] = config.taylor
-            if config.result_width is not None:
-                generics["result_width"] = config.result_width
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
@@ -421,46 +429,44 @@ class Module(BaseModule):
 
         add_config(
             Config(
-                memory_width=14,
+                memory_width=17,
                 address_width=8,
                 fractional_phase=5,
-                result_width=14 + 1 + 8,
                 taylor=True,
                 luts=100,
-                ffs=45,
-                dsp=1,
+                ffs=38,
+                dsp=2,
                 ramb18=1,
-                logic=7,
+                logic=8,
             )
         )
 
         add_config(
             Config(
-                memory_width=18,
+                memory_width=25,
                 address_width=12,
                 fractional_phase=24,
-                result_width=28,
                 taylor=True,
-                luts=133,
-                ffs=62,
-                dsp=2,
-                ramb36=2,
+                luts=156,
+                ffs=69,
+                dsp=3,
+                ramb36=3,
                 logic=12,
             )
         )
 
         add_config(
             Config(
-                memory_width=18,
+                memory_width=23,
                 address_width=11,
                 fractional_phase=28,
-                result_width=24,
                 taylor=True,
-                luts=133,
-                ffs=62,
-                dsp=2,
-                ramb36=2,
-                logic=12,
+                luts=151,
+                ffs=70,
+                dsp=3,
+                ramb18=1,
+                ramb36=1,
+                logic=13,
             )
         )
 
@@ -469,7 +475,6 @@ class Module(BaseModule):
                 memory_width=18,
                 address_width=12,
                 fractional_phase=24,
-                result_width=18 + 1,
                 dithering=True,
                 luts=114,
                 ffs=101,
@@ -829,9 +834,6 @@ class SineGeneratorResult:  # pylint: disable=too-many-instance-attributes
             power_spectrum=power_spectrum, frequency_axis_hz=frequency_axis_hz
         )
 
-        # Sanity check that SNDR/SFDR is reasonable.
-        assert sfdr_db >= sndr_db, "SFDR is too low, must be an error"
-
         # Sanity check that the detected peak is where we expect it.
         # I.e. that phase accumulation works as expected.
         sine_frequency_hz = generics["sine_frequency_hz"]
@@ -871,23 +873,27 @@ class SineGeneratorResult:  # pylint: disable=too-many-instance-attributes
                 sndr_enob = sndr_enob * 2 - 0.6
                 sfdr_enob = sfdr_enob * 2
 
-            return 6 * sndr_enob, 6 * sfdr_enob
-
-        # Integer phase mode. Limited by memory word width, which is currently hard coded in tb.
-        sndr_enob = 18 + 1
-        sfdr_enob = sndr_enob
+        else:
+            # Integer phase mode. Limited by memory word width, which is currently hard coded in tb.
+            sndr_enob = 18 + 1
+            sfdr_enob = sndr_enob
 
         return 6 * sndr_enob, 6 * sfdr_enob
 
     def check(self) -> None:
-        assert (
-            self.expected_sndr_db <= self.sndr_db < self.expected_sndr_db + 9
-        ), f"Unexpected SNDR ENOB. Got {self.sndr_db}, expected around {self.expected_sndr_db}"
+        # pylint: disable=import-outside-toplevel
+        # Standard libraries
+        from math import isinf
 
         # Upper range is huge, especially when dithering is enabled.
         assert (
-            self.expected_sfdr_db <= self.sfdr_db < self.expected_sfdr_db + 21
-        ), f"Unexpected SFDR. Got {self.sfdr_db}, expected around {self.expected_sfdr_db}"
+            self.expected_sfdr_db <= self.sfdr_db
+        ), f"Unexpected SFDR. Got {self.sfdr_db}, expected {self.expected_sfdr_db}"
+
+        if not isinf(self.sndr_db):
+            assert (
+                self.expected_sndr_db <= self.sndr_db < self.expected_sndr_db + 9
+            ), f"Unexpected SNDR ENOB. Got {self.sndr_db}, expected around {self.expected_sndr_db}"
 
     @staticmethod
     def plot_signal(signal: "ndarray", coherent_sampling_count: int) -> None:

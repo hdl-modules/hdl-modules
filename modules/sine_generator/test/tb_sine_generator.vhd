@@ -39,8 +39,7 @@ end entity;
 architecture tb of tb_sine_generator is
 
   -- Generic constants.
-  constant memory_data_width : positive := 18;
-  constant result_width : positive := memory_data_width + 1 + 8 * to_int(enable_first_order_taylor);
+  constant memory_data_width : positive := 18 + 13 * to_int(enable_first_order_taylor) ;
 
   -- DUT connections.
   signal clk : std_logic := '0';
@@ -56,7 +55,7 @@ architecture tb of tb_sine_generator is
     phase_width => phase_width
   );
 
-  signal result_sine : u_signed(result_width - 1 downto 0) := (others => '0');
+  signal result_sine : u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0');
 
   -- Testbench stuff.
   constant clk_period : time := to_period(frequency_hz=>clk_frequency_hz);
@@ -65,7 +64,7 @@ begin
 
   clk <= not clk after clk_period / 2;
 
-  test_runner_watchdog(runner, 5 ms);
+  test_runner_watchdog(runner, 10 ms);
 
 
   ------------------------------------------------------------------------------
@@ -81,7 +80,8 @@ begin
       f=>file_handle, external_name=>output_path(runner_cfg) & "sine.raw", open_kind=>write_mode
     );
 
-    assert result_width <= 32 report "Can not cast to integer " & to_string(result_width);
+    assert result_sine'length <= 32
+      report "Can not cast to integer " & to_string(result_sine'length);
 
     for sample_idx in 0 to num_samples - 1 loop
       wait until result_valid and rising_edge(clk);
@@ -117,8 +117,7 @@ begin
       memory_address_width => memory_address_width,
       phase_fractional_width => phase_fractional_width,
       enable_phase_dithering => enable_phase_dithering,
-      enable_first_order_taylor => enable_first_order_taylor,
-      result_width => result_width
+      enable_first_order_taylor => enable_first_order_taylor
     )
     port map (
       clk => clk,

@@ -116,10 +116,6 @@ entity sine_generator is
     -- When in fractional phase mode, improve SNDR and SFDR by using a first-order
     -- Taylor expansion of sinus samples.
     enable_first_order_taylor : boolean := false;
-    -- The width of the 'sine' output.
-    -- You might have to increase this if Taylor expansion is enabled, in order for the
-    -- quantization noise to not be limiting.
-    result_width : positive range memory_data_width + 1 to positive'high := memory_data_width + 1;
     -- Can optionally set the initial value of the phase counter.
     -- Useful when you want multiple sine generators to be in different phase.
     -- Note that the actual phase is slightly offset from the value specified here, see
@@ -139,7 +135,7 @@ entity sine_generator is
     input_phase_increment : in u_unsigned(initial_phase'range);
     --# {{}}
     result_valid : out std_ulogic := '0';
-    result_sine : out u_signed(result_width - 1 downto 0) := (others => '0')
+    result_sine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
   );
 end entity;
 
@@ -151,65 +147,45 @@ architecture a of sine_generator is
 begin
 
   assert not (enable_phase_dithering and enable_first_order_taylor)
-    report "Dithering will ruin the performance of Taylor expansion"
+    report "Dithering will ruin the performance of Taylor expansion. Do not enable both."
     severity failure;
 
 
   ------------------------------------------------------------------------------
-  assert_widths : process
-    constant lookup_quantization_enob : positive := memory_data_width + 1;
+  assert_widths_block : block
+    function get_result_enob return positive is
+    begin
+      -- Integer phase mode.
+      if phase_fractional_width = 0 then
+        return memory_data_width + 1;
+      end if;
 
-    constant integer_enob : positive := lookup_quantization_enob;
-    constant fractional_enob : positive := memory_address_width + 1;
-    constant dithering_enob : positive := memory_address_width + 4;
-    constant taylor_enob : positive := 2 * (memory_address_width + 1);
+      -- Fractional phase mode, with dithering.
+      if enable_phase_dithering then
+        return memory_address_width + 4;
+      end if;
+
+      -- Fractional phase mode, with Taylor.
+      if enable_first_order_taylor then
+        return 2 * (memory_address_width + 1);
+      end if;
+
+      -- Base fractional phase mode.
+      return memory_address_width + 1;
+    end function;
+    constant result_enob : positive := get_result_enob;
   begin
+
     -- Assert that we are not unnecessarily limiting the performance of the module.
     -- See module documentation for a background on the limits.
+    assert memory_data_width >= result_enob - 1
+      report (
+        "Memory data width is limiting performance. Need at least " &
+        integer'image(result_enob - 1) & " bits"
+      )
+      severity failure;
 
-    if phase_fractional_width = 0 then
-      -- Integer phase mode.
-      -- This assertion is currently moot due to the range of the result width generic.
-      assert result_width >= integer_enob
-        report "Result width is limiting performance"
-        severity failure;
-
-    else
-      -- Fractional phase mode.
-
-      if enable_phase_dithering then
-        assert lookup_quantization_enob >= dithering_enob
-          report "Memory data width is limiting performance"
-          severity failure;
-
-        assert result_width >= dithering_enob
-          report "Result width is limiting performance"
-          severity failure;
-
-      elsif enable_first_order_taylor then
-        assert lookup_quantization_enob >= taylor_enob / 2
-          report "Memory data width is limiting performance"
-          severity failure;
-
-        assert result_width >= taylor_enob
-          report "Result width is limiting performance"
-          severity failure;
-
-      else
-        -- Base fractional phase performance.
-        assert lookup_quantization_enob >= fractional_enob
-          report "Memory data width is limiting performance"
-          severity failure;
-
-        assert result_width >= fractional_enob
-          report "Result width is limiting performance"
-          severity failure;
-
-      end if;
-    end if;
-
-    wait;
-  end process;
+  end block;
 
 
   ------------------------------------------------------------------------------

@@ -4,6 +4,8 @@ a sine/sinus wave generator.
 
 This is a very common component when doing any kind of signal processing, signal analysis or
 modulation in an FPGA or ASIC.
+This implementation supports an SFDR of 192 dB in fractional phase mode, and theoretically
+unlimited SFDR in integer phase mode.
 
 The implementation is based around a quarter-wave lookup table in block RAM.
 It supports both integer and fractional phase modes, and can be parameterized
@@ -94,7 +96,8 @@ The SFDR of the output signal is at least
 
   \text{SFDR} = 6 \times (\text{memory_data_width} + 1) \text{ dB}.
 
-Hence, simply choose a generic value that fulfills your SFDR requirement.
+Use this equation to determine the ``memory_data_width`` generic value you need, given your
+SFDR requirement.
 There is no need to adjust any other generic value to the generator top level.
 
 
@@ -120,16 +123,16 @@ It can be improved by enabling :ref:`sine_phase_dithering` or :ref:`sine_phase_t
 See the performance equations below to determine your required ``memory_address_width`` generic
 value, and whether you want to set ``enable_phase_dithering`` or ``enable_first_order_taylor``.
 
-Note that that in all cases using fractional phase mode, the ``result_width`` generic must have
+Note that that in all cases using fractional phase mode, the ``memory_data_width`` generic must have
 a value of at least
 
 .. math::
 
-  \frac{\text{SFDR}}{6}
+  \frac{\text{SFDR}}{6} - 1
 
 in order for the performance to not be limited by quantization noise.
-This means in practice that the ``result_width`` should be left at its default value for all cases
-except for when Taylor expansion is enabled, in which case it might have to be increased.
+A value of 18 is typical, since it maps nicely to a BRAM primitive, but it might have to be
+increased in extreme performance scenarios.
 
 
 .. _sine_fractional_performance:
@@ -143,16 +146,8 @@ If neither dithering nor Taylor expansion is enabled, the SFDR of the output sig
 
   \text{SFDR} = 6 \times (\text{memory_address_width} + 1) \text{ dB}.
 
-Use this equation to determine the ``memory_address_width`` generic value, given your
+Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.
-In order to not be limited by memory sample fidelity, you must set the ``memory_data_width``
-generic to at least
-
-.. math::
-
-  \frac{\text{SFDR}}{6} - 1.
-
-A value of 18 is typical, since it maps nicely to a BRAM primitive.
 
 
 .. _sine_dithering_performance:
@@ -167,16 +162,8 @@ to at least
 
   \text{SFDR} = 6 \times (\text{memory_address_width} + 4) \text{ dB}.
 
-Use this equation to determine the ``memory_address_width`` generic value, given your
+Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.
-In order to not be limited by memory sample fidelity, you must set the ``memory_data_width``
-generic to at least
-
-.. math::
-
-  \frac{\text{SFDR}}{6} - 1.
-
-A value of 18 is typical, since it maps nicely to a BRAM primitive.
 
 
 .. _sine_taylor_performance:
@@ -191,16 +178,8 @@ to at least
 
   \text{SFDR} = 12 \times (\text{memory_address_width} + 1) \text{ dB}.
 
-Use this equation to determine the ``memory_address_width`` generic value, given your
+Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.
-In order to not be limited by memory sample fidelity, you must set the ``memory_data_width``
-generic to at least
-
-.. math::
-
-  \frac{\text{SFDR}}{12} - 1.
-
-A value of 18 is typical, since it maps nicely to a BRAM primitive.
 
 
 .. _sine_integer_phase_mode:
