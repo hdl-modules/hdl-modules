@@ -110,6 +110,7 @@ jobs:
           sphinx-rtd-theme \
           sphinx_sitemap \
           sphinxcontrib-wavedrom \
+          sphinxext-opengraph \
           vunit-hdl
 
     - name: Clone dependency repos
