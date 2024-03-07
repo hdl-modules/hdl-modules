@@ -142,6 +142,9 @@ The following things can be found, at a glance, in the different modules:
 
 * `resync <{WEBSITE_URL}/modules/resync/resync.html>`_:
   Resynchronization implementations for different signals and buses, along with proper constraints.
+
+* `sine_generator <{WEBSITE_URL}/modules/sine_generator/sine_generator.html>`_:
+  Professional sinusoid waveform generator (or DDS, NCO).
 """
 
     return readme_rst
