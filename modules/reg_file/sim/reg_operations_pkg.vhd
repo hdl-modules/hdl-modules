@@ -8,6 +8,12 @@
 -- -------------------------------------------------------------------------------------------------
 -- Various helper functions for reading/writing/checking registers.
 --
+-- .. note::
+--
+--   This file is largely unused, and replaced by simulation support packages produced
+--   by the ``hdl-registers`` register interface code generator: https://hdl-registers.com
+--   The file is kept for legacy reasons in case someone out there is still using it.
+--
 -- There is an intentional asymmetry in the default value for ``other_bits_value`` between
 -- ``check_reg_equal_bit(s)`` and ``wait_until_reg_equals_bit(s)``.
 -- For the former it is ``'0'`` while it is ``'-'`` for the latter.
