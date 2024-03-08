@@ -95,7 +95,14 @@ begin
   ------------------------------------------------------------------------------
   assign_input : if enable_input_register generate
 
-    assert clk_in /= 'U' report "Must assign clock when using input register";
+    ------------------------------------------------------------------------------
+    assertions : process
+    begin
+      -- Assert only once at the beginning of simulation.
+      assert clk_in /= 'U' report "Must assign clock when using input register";
+
+      wait;
+    end process;
 
 
     ------------------------------------------------------------------------------
