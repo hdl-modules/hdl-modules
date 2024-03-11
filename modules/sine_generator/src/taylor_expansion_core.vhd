@@ -35,7 +35,8 @@ entity taylor_expansion_core is
     sinusoid_width : positive;
     error_factor_width : positive;
     error_factor_fractional_width : positive;
-    result_width : positive
+    result_width : positive;
+    minus_derivative : boolean
   );
   port(
     clk : in std_ulogic;
@@ -247,7 +248,11 @@ begin
       -- we can't do that.
       -- Due to the way the internals of the DSP is constructed.
       -- And we would also not save anything by doing that.
-      sum <= resize(second_stage_value_term48, sum'length) + second_stage_derivative_term48;
+      if minus_derivative then
+        sum <= resize(second_stage_value_term48, sum'length) - second_stage_derivative_term48;
+      else
+        sum <= resize(second_stage_value_term48, sum'length) + second_stage_derivative_term48;
+      end if;
     end process;
 
 

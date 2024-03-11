@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
 
+# pylint: disable=too-many-lines
+
+
 class Module(BaseModule):
     def setup_vunit(  # pylint: disable=arguments-differ, unused-argument
         self, vunit_proj: Any, inspect: bool, **kwargs: Any
@@ -75,6 +78,8 @@ class Module(BaseModule):
         class Config:
             integer_increment: str
             fractional_increment: Optional[str] = None
+            enable_sine: Optional[bool] = None
+            enable_cosine: Optional[bool] = None
 
         def add_config(config: Config) -> None:
             integer_phase_width = len(config.integer_increment)
@@ -133,12 +138,29 @@ class Module(BaseModule):
                     # test case names mostly short, and make filtering easier.
                     if phase_fractional_width:
                         generics["phase_fractional_width"] = phase_fractional_width
+                    if config.enable_sine is not None:
+                        generics["enable_sine"] = config.enable_sine
+                    if config.enable_cosine is not None:
+                        generics["enable_cosine"] = config.enable_cosine
 
                     self.add_vunit_config(
                         test=tb,
                         generics=generics,
                         post_check=get_post_check(generics=generics),
                     )
+
+        def add_sine_cosine_config(config: Config) -> None:
+            """
+            Test sine/cosine enabled in different configurations.
+            """
+            for enable_sine in [False, True]:
+                for enable_cosine in [False, True]:
+                    if not enable_sine and not enable_cosine:
+                        continue
+
+                    config.enable_sine = enable_sine
+                    config.enable_cosine = enable_cosine
+                    add_config(config=config)
 
         # Performance plots in documentation are made from these two test cases.
         # add_config(Config(integer_increment="000111111", fractional_increment="000000"))
@@ -150,7 +172,6 @@ class Module(BaseModule):
         add_config(Config(integer_increment="000000001"))
         add_config(Config(integer_increment="000001000", fractional_increment="0000"))
         add_config(Config(integer_increment="000010000", fractional_increment="0000"))
-        add_config(Config(integer_increment="010010100"))
 
         # Test integer phase with a different memory depth.
         add_config(Config(integer_increment="00001"))
@@ -178,9 +199,12 @@ class Module(BaseModule):
 
         add_config(Config(integer_increment="00000001", fractional_increment="00001"))
 
-        add_config(Config(integer_increment="0001000000", fractional_increment="10000"))
-
         add_config(Config(integer_increment="00000010", fractional_increment="00001"))
+
+        # Test with different configurations of sine/cosine enabled.
+        # Both fractional and integer phase.
+        add_sine_cosine_config(Config(integer_increment="0001000000", fractional_increment="10000"))
+        add_sine_cosine_config(Config(integer_increment="010010100"))
 
         # These tests are way too long to run continuously in CI.
         # They do however test the performance at the extreme end, so they need to be run when
@@ -290,27 +314,42 @@ class Module(BaseModule):
         """
         Checking the result from a sine_generator test.
         """
-        sine = self.load_simulation_data(output_folder=output_path, file_name="sine")
-        assert sine.shape == (generics["num_samples"],)
+        enable_sine = generics.get("enable_sine", True)
+        enable_cosine = generics.get("enable_cosine", False)
 
-        result = SineGeneratorResult(
-            signal=sine, generics=generics, is_fractional_phase="1" in phase_fractional_increment
-        )
-        print(result)
+        signals = []
 
-        if inspect:
-            # pylint: disable=import-outside-toplevel
-            # Third party libraries
-            from matplotlib import pyplot as plt
+        if enable_sine:
+            sine = self.load_simulation_data(output_folder=output_path, file_name="sine")
+            assert sine.shape == (generics["num_samples"],)
+            signals.append(sine)
 
-            self.setup_plot_figure()
+        if enable_cosine:
+            cosine = self.load_simulation_data(output_folder=output_path, file_name="cosine")
+            assert cosine.shape == (generics["num_samples"],)
+            signals.append(cosine)
 
-            result.plot_signal(signal=sine, coherent_sampling_count=coherent_sampling_count)
-            result.plot_spectrum()
+        for signal in signals:
+            result = SineGeneratorResult(
+                signal=signal,
+                generics=generics,
+                is_fractional_phase="1" in phase_fractional_increment,
+            )
+            print(result)
 
-            plt.show()
+            if inspect:
+                # pylint: disable=import-outside-toplevel
+                # Third party libraries
+                from matplotlib import pyplot as plt
 
-        result.check()
+                self.setup_plot_figure()
+
+                result.plot_signal(signal=signal, coherent_sampling_count=coherent_sampling_count)
+                result.plot_spectrum()
+
+                plt.show()
+
+            result.check()
 
         return True
 
@@ -364,6 +403,8 @@ class Module(BaseModule):
             ffs: int
             logic: int
             fractional_phase: Optional[int] = None
+            sine: Optional[bool] = None
+            cosine: Optional[bool] = None
             dithering: Optional[bool] = None
             taylor: Optional[bool] = None
             dsp: int = 0
@@ -376,6 +417,10 @@ class Module(BaseModule):
             )
             if config.fractional_phase is not None:
                 generics["phase_fractional_width"] = config.fractional_phase
+            if config.sine is not None:
+                generics["enable_sine"] = config.sine
+            if config.cosine is not None:
+                generics["enable_cosine"] = config.cosine
             if config.dithering is not None:
                 generics["enable_phase_dithering"] = config.dithering
             if config.taylor is not None:
@@ -429,6 +474,19 @@ class Module(BaseModule):
 
         add_config(
             Config(
+                memory_width=18,
+                address_width=12,
+                fractional_phase=24,
+                dithering=True,
+                luts=114,
+                ffs=101,
+                ramb36=2,
+                logic=12,
+            )
+        )
+
+        add_config(
+            Config(
                 memory_width=17,
                 address_width=8,
                 fractional_phase=5,
@@ -470,16 +528,45 @@ class Module(BaseModule):
             )
         )
 
+        # Enabling cosine instead of sine.
+        # LUT count increases since more bits of the cosine are needed than the sine now,
+        # and the cosine calculation in sine_lookup is more complex.
+        # FF stays the same since the increase in cosine bits is compensated by the decrease in
+        # sine bits.
         add_config(
             Config(
-                memory_width=18,
-                address_width=12,
-                fractional_phase=24,
-                dithering=True,
-                luts=114,
-                ffs=101,
-                ramb36=2,
-                logic=12,
+                memory_width=23,
+                address_width=11,
+                fractional_phase=28,
+                sine=False,
+                cosine=True,
+                taylor=True,
+                luts=161,
+                ffs=70,
+                dsp=3,
+                ramb18=1,
+                ramb36=1,
+                logic=13,
+            )
+        )
+
+        # Enabling both.
+        # LUT count increases further since many bits of both sine and cosine are needed.
+        # FF increases since full width of both sine and cosine are needed.
+        add_config(
+            Config(
+                memory_width=23,
+                address_width=11,
+                fractional_phase=28,
+                sine=True,
+                cosine=True,
+                taylor=True,
+                luts=177,
+                ffs=94,
+                dsp=5,
+                ramb18=1,
+                ramb36=1,
+                logic=13,
             )
         )
 

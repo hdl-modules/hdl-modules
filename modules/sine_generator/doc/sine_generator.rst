@@ -6,6 +6,7 @@ This is a very common component when doing any kind of signal processing, signal
 modulation in an FPGA or ASIC.
 This implementation supports an SFDR of 192 dB in fractional phase mode, and theoretically
 unlimited SFDR in integer phase mode.
+Both sine and cosine outputs are available, for I/Q modulation and other applications.
 
 The implementation is based around a quarter-wave lookup table in block RAM.
 It supports both integer and fractional phase modes, and can be parameterized

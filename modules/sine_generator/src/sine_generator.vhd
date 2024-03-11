@@ -8,8 +8,11 @@
 -- -------------------------------------------------------------------------------------------------
 -- This sinus generator top level accumulates the incoming ``phase_increment`` to form a
 -- phase value.
--- The :ref:`sine_generator.sine_calculator` is instantiated to calculate the sine value
+-- The :ref:`sine_generator.sine_calculator` is instantiated to calculate sinusoid values
 -- based on this phase.
+--
+-- Set the ``enable_sine`` and ``enable_cosine`` generic parameters to enable sine and/or
+-- cosine output.
 --
 -- If fractional phase is enabled, the fractional part of the phase will be truncated in
 -- :ref:`sine_generator.sine_calculator` when forming the lookup address.
@@ -110,6 +113,10 @@ entity sine_generator is
     -- Set a non-zero value to enable fractional phase mode.
     -- Gives a better frequency resolution at the cost of worse performance due to phase truncation.
     phase_fractional_width : natural := 0;
+    -- Enable the sine output ('result_sine' port).
+    enable_sine : boolean := true;
+    -- Enable the cosine output ('result_cosine' port).
+    enable_cosine : boolean := false;
     -- When in fractional phase mode, improve SFDR (but worsen SNDR) by spreading out the phase
     -- error noise.
     enable_phase_dithering : boolean := false;
@@ -135,7 +142,8 @@ entity sine_generator is
     input_phase_increment : in u_unsigned(initial_phase'range);
     --# {{}}
     result_valid : out std_ulogic := '0';
-    result_sine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
+    result_sine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0');
+    result_cosine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
   );
 end entity;
 
@@ -276,6 +284,8 @@ begin
       memory_data_width => memory_data_width,
       memory_address_width => memory_address_width,
       phase_fractional_width => phase_fractional_width,
+      enable_sine => enable_sine,
+      enable_cosine => enable_cosine,
       enable_first_order_taylor => enable_first_order_taylor
     )
     port map (
@@ -285,7 +295,8 @@ begin
       input_phase => phase,
       --
       result_valid => result_valid,
-      result_sine => result_sine
+      result_sine => result_sine,
+      result_cosine => result_cosine
     );
 
 end architecture;
