@@ -241,6 +241,9 @@ begin
 
   ------------------------------------------------------------------------------
   taylor_expansion_gen : if enable_first_order_taylor generate
+    constant core_latency : positive := work.taylor_expansion_core'latency;
+    signal valid_pipe : std_ulogic_vector(1 to core_latency) := (others => '0');
+
     -- Referring to the documentation, we want to scale the fractional fixed-point
     -- 'phase_error' with the factor 'B'.
     -- Which is pi/2 / 2**memory_address_width.
@@ -268,97 +271,29 @@ begin
 
     -- +1 for unsigned -> signed.
     constant error_factor_width : positive := phase_error24_width + scale_factor'length + 1;
-    -- The sine term needs to be shifted up this many steps for the binal point to align with
-    -- the cosine term.
-    -- In this nomenclature we do not take into account any fraction width or fixed-point
-    -- representation of the lookup sine/cosine values, since that is the same for both terms.
-    -- This number is only the difference between the two terms.
-    constant error_factor_fractional_width : positive := (
-      phase_error24_width + scale_factor_fractional_width + memory_address_width
-    );
-
-    -- We might have to trim to make the 'cosine_term = error_factor * lookup_cosine' multiplication
-    -- fit in a DSP48.
+    -- We might have to trim to make the 'derivative_term = error_factor * derivative'
+    -- multiplication fit in a DSP48.
     constant error_factor25_width : positive := minimum(error_factor_width, 25);
-    -- Number of bits we trimmed in total to get to the desired width.
+    -- Number of bits we trimmed to get to the desired width.
     constant error_factor25_trim : natural := error_factor_width - error_factor25_width;
 
-    -- The 'memory_data_width' is very typically 18, yielding a 'lookup_cosine' of 19 bits.
-    -- In order to map to a DSP48 it would be lovely if it was just 18 bits.
-    -- We have assertions below that this trimming does not limit the performance of the output.
-    constant lookup_cosine18_width : positive := minimum(lookup_cosine'length, 18);
-    -- Number of bits we trimmed in total to get to the desired width.
-    constant lookup_cosine18_trim : natural := lookup_cosine'length - lookup_cosine18_width;
-
-    -- After trimming so that
-    -- 1. error factor multiplication fits in a DSP48,
-    -- 2. cosine term multiplication fits in a DSP48,
-    -- there are this many fractional bits left in the cosine term.
-    constant cosine_term_fractional_width : natural := (
-      error_factor_fractional_width - error_factor25_trim - lookup_cosine18_trim
+    -- The 'value' term needs to be shifted up this many steps for the binal point to align with
+    -- the 'derivative' term.
+    -- In this nomenclature we do not take into account any fraction width or fixed-point
+    -- representation of the lookup sinusoid values, since that is the same for both terms.
+    -- This number is only the difference between the two terms.
+    constant error_factor25_fractional_width : positive := (
+      phase_error24_width
+      + scale_factor_fractional_width
+      + memory_address_width
+      - error_factor25_trim
     );
-
-    -- We add two terms to the 48-bit accumulator.
-    constant sum_num_guard_bits : positive := 1;
-    -- Sine and cosine terms may not be wider than this in order to avoid overflow.
-    constant max_sum_term_width : positive := 48 - sum_num_guard_bits;
-    -- Maximum number of steps we can shift up the sine term.
-    constant max_sum_term_fractional_width : positive := max_sum_term_width - lookup_sine'length;
-
-    -- Number of fractional bits in the cosine term when we have trimmed it to make the
-    -- addition fit in a DSP48.
-    constant cosine_term48_fractional_width : natural := minimum(
-      cosine_term_fractional_width, max_sum_term_fractional_width
-    );
-    -- Number of bits we trimmed in total to get to the desired width.
-    -- When operands are small enough, this will be zero.
-    -- In that case, the 'cosine_term' multiplication and the addition with 'sine_term'
-    -- can fit in the same DSP48.
-    constant cosine_term48_trim : natural := (
-      cosine_term_fractional_width - cosine_term48_fractional_width
-    );
-
-    -- When adding the sine and cosine terms to form the result of Taylor expansion,
-    -- we must pad the sine value so that the binal points align.
-    -- Our words are aligned something like this, we don't really know:
-    --
-    -- Cosine term            |----------------------|
-    -- Sine term    |------------------10000000000000|
-    -- Sum         |---------------------------------|
-    -- Result       |------------------|
-    --
-    -- Cosine term                    |--------------|
-    -- Sine term    |------------------10000000000000|
-    -- Sum         |---------------------------------|
-    -- Result       |------------------|
-    --
-    -- The sine term padding has a '1' in the MSB in order to get +0.5 rounding of the result,
-    -- which yields greater performance.
-    function get_sine_term_padding return u_signed is
-      variable result : u_signed(cosine_term48_fractional_width - 1 downto 0) := (others => '0');
-    begin
-      result(result'high) := '1';
-      return result;
-    end function;
-    constant sine_term_padding : u_signed(
-      cosine_term48_fractional_width - 1 downto 0
-    ) := get_sine_term_padding;
 
     signal first_stage_error_factor25 : u_signed(error_factor25_width - 1 downto 0) := (
       others => '0'
     );
 
-    signal second_stage_valid : std_ulogic := '0';
-    signal second_stage_sine_term48 : u_signed(
-      lookup_sine'length + sine_term_padding'length - 1 downto 0
-    ) := (others => '0');
-    signal second_stage_cosine_term48 : u_signed(
-      lookup_cosine18_width + error_factor25_width - cosine_term48_trim - 1 downto 0
-    ) := (others => '0');
-
     attribute use_dsp of first_stage_error_factor25 : signal is "yes";
-    attribute use_dsp of second_stage_sine_term48 : signal is "yes";
-    attribute use_dsp of second_stage_cosine_term48 : signal is "yes";
   begin
 
     assert memory_address_width <= 15
@@ -375,32 +310,31 @@ begin
     begin
       report "======================================================================";
       report "scale_factor'length = " & integer'image(scale_factor'length);
+      report "input_phase_fractional'length = " & integer'image(input_phase_fractional'length);
 
       report "======================================================================";
-      report "input_phase_fractional'length = " & integer'image(input_phase_fractional'length);
       report "phase_error24_width = " & integer'image(phase_error24_width);
       report "phase_error24_trim = " & integer'image(phase_error24_trim);
 
       report "======================================================================";
       report "error_factor_width = " & integer'image(error_factor_width);
-      report "error_factor_fractional_width = " & integer'image(error_factor_fractional_width);
-
-      report "======================================================================";
       report "error_factor25_width = " & integer'image(error_factor25_width);
       report "error_factor25_trim = " & integer'image(error_factor25_trim);
-
-      report "======================================================================";
-      report "lookup_cosine18_width = " & integer'image(lookup_cosine18_width);
-      report "lookup_cosine18_trim = " & integer'image(lookup_cosine18_trim);
-
-      report "======================================================================";
-      report "max_sum_term_fractional_width = " & integer'image(max_sum_term_fractional_width);
-      report "cosine_term_fractional_width = " & integer'image(cosine_term_fractional_width);
-      report "cosine_term48_fractional_width = " & integer'image(cosine_term48_fractional_width);
-      report "cosine_term48_trim = " & integer'image(cosine_term48_trim);
+      report "error_factor25_fractional_width = " & integer'image(error_factor25_fractional_width);
 
       wait;
     end process;
+
+
+    ------------------------------------------------------------------------------
+    pipeline_valid : process
+    begin
+      wait until rising_edge(clk);
+
+      valid_pipe <= lookup_valid & valid_pipe(valid_pipe'left to valid_pipe'right - 1);
+    end process;
+
+    result_valid <= valid_pipe(valid_pipe'right);
 
 
     ------------------------------------------------------------------------------
@@ -411,10 +345,10 @@ begin
 
       -- We want to access the error value one cycle before we access the lookup result,
       -- hence the range of the pipe.
-      constant sine_lookup_latency : positive := work.sine_lookup'latency;
-      signal phase_error24_pipe : unsigned_vec_t(1 to sine_lookup_latency - 1)(
-        phase_error24'range
-      ) := (others => (others => '0'));
+      constant lookup_latency : positive := work.sine_lookup'latency;
+      signal phase_error24_pipe : unsigned_vec_t(1 to lookup_latency - 1)(phase_error24'range) := (
+        others => (others => '0')
+      );
 
       -- Full size.
       signal error_factor_unsigned : u_unsigned(error_factor_width - 1 - 1 downto 0) := (
@@ -472,150 +406,23 @@ begin
 
 
     ------------------------------------------------------------------------------
-    second_stage : block
-      signal lookup_cosine18 : u_signed(lookup_cosine18_width - 1 downto 0) := (others => '0');
-
-      signal cosine_term : u_signed(
-        lookup_cosine18_width + error_factor25_width - 1 downto 0
-      ) := (others => '0');
-
-      attribute use_dsp of cosine_term : signal is "yes";
-    begin
-
-      ------------------------------------------------------------------------------
-      assert lookup_cosine18'length <= 18
-        report "Will not map nicely to DSP48. Got " & integer'image(lookup_cosine18'length)
-        severity failure;
-
-      assert first_stage_error_factor25'length <= 25
-        report (
-          "Will not map nicely to DSP48. Got "
-          & integer'image(first_stage_error_factor25'length)
-        )
-        severity failure;
-
-
-      ------------------------------------------------------------------------------
-      calculate_second_stage : process
-      begin
-        wait until rising_edge(clk);
-
-        second_stage_valid <= lookup_valid;
-        cosine_term <= lookup_cosine18 * first_stage_error_factor25;
-
-        -- Hopefully this can use the input register of the DSP48.
-        second_stage_sine_term48 <= lookup_sine & sine_term_padding;
-      end process;
-
-      lookup_cosine18 <= lookup_cosine(lookup_cosine'high downto lookup_cosine18_trim);
-
-      second_stage_cosine_term48 <= cosine_term(
-        cosine_term'high downto cosine_term48_trim
+    taylor_expansion_core_inst : entity work.taylor_expansion_core
+      generic map (
+        sinusoid_width => lookup_sine'length,
+        error_factor_width => first_stage_error_factor25'length,
+        error_factor_fractional_width => error_factor25_fractional_width,
+        result_width => result_sine'length
+      )
+      port map (
+        clk => clk,
+        --
+        input_value => lookup_sine,
+        input_derivative => lookup_cosine,
+        input_error_factor => first_stage_error_factor25,
+        --
+        result_value => result_sine
       );
 
-    end block;
-
-
-    ------------------------------------------------------------------------------
-    third_stage : block
-      -- Assumes that the sine term is wider than the cosine term, which is checked below.
-      -- If cosine term is wider, we must take into account that it contains a redundant sign bit
-      -- due to unsigned -> signed conversion.
-      constant sum_width : positive := second_stage_sine_term48'length + sum_num_guard_bits;
-      signal sum : u_signed(sum_width - 1 downto 0) := (others => '0');
-
-      attribute use_dsp of sum : signal is "yes";
-    begin
-
-      ------------------------------------------------------------------------------
-      assert second_stage_cosine_term48'length >= sine_term_padding'length
-        report "Taylor addition is a null operation"
-        severity failure;
-
-      assert result_sine'length = lookup_sine'length
-        report "Some assumptions do not hold unless this is true"
-        severity failure;
-
-      assert second_stage_sine_term48'length > second_stage_cosine_term48'length
-        report "Some assumptions do not hold unless this is true"
-        severity failure;
-
-      assert second_stage_sine_term48'length < 48
-        report "Will not map nicely to DSP48. Got " & integer'image(second_stage_sine_term48'length)
-        severity failure;
-
-      assert second_stage_cosine_term48'length < 48
-        report (
-          "Will not map nicely to DSP48. Got " & integer'image(second_stage_cosine_term48'length)
-        )
-        severity failure;
-
-      assert sum'length <= 48
-        report "Will not map nicely to DSP48. Got " & integer'image(sum'length)
-        severity failure;
-
-      assert result_sine'length < sum'length
-        report (
-          "Result is too wide. Got "
-          & integer'image(result_sine'length)
-          & " "
-          & integer'image(sum'length)
-        )
-        severity failure;
-
-      -- Check that the fidelity after trimming does not limit the total performance.
-      assert lookup_cosine18_width >= memory_address_width + 1
-        report (
-          "We trim cosine value in a way that might limit performance. Got "
-          & integer'image(lookup_cosine18_width)
-        )
-        severity failure;
-
-
-      ------------------------------------------------------------------------------
-      calculate_third_stage : process
-      begin
-        wait until rising_edge(clk);
-
-        result_valid <= second_stage_valid;
-
-        -- Note that the cosine term contains a redundant sign bit due to
-        -- unsigned -> signed conversion.
-        -- If the addition were done in LUTs we would strip that bit, which would save some LUTs.
-        -- However, if we ever want the multiplication and addition to map to the same DSP48,
-        -- we can't do that.
-        -- Due to the way the internals of the DSP is constructed.
-        -- And we would also not save anything by doing that.
-        sum <= resize(second_stage_sine_term48, sum'length) + second_stage_cosine_term48;
-      end process;
-
-
-      ------------------------------------------------------------------------------
-      -- The sum overflows at almost every peak in every configuration.
-      -- We have to saturate the result so that the full range, or at least some well-defined range,
-      -- of the output word is used.
-      -- The overflow is so small that the SFDR of the result is still good enough in all
-      -- simulations even with saturation.
-      set_saturated_result : process(all)
-        variable guard_and_sign : u_signed(sum_num_guard_bits + 1 - 1 downto 0) := (
-          others => '0'
-        );
-      begin
-        guard_and_sign := sum(sum'high downto sum'length - guard_and_sign'length);
-
-        if (or guard_and_sign) = (and guard_and_sign) then
-          result_sine <= sum(
-            sum'high - sum_num_guard_bits
-            downto
-            sum'length - result_sine'length - sum_num_guard_bits
-          );
-        else
-          result_sine <= (others => not guard_and_sign(guard_and_sign'high));
-          result_sine(result_sine'high) <= guard_and_sign(guard_and_sign'high);
-        end if;
-      end process;
-
-    end block;
 
   else generate
 
