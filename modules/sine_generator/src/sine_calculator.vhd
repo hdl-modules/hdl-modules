@@ -173,6 +173,10 @@ entity sine_calculator is
     -- Affects the frequency resolution of the module, as well as the SNDR/SFDR when
     -- in fractional phase mode, see module documentation.
     memory_address_width : positive;
+    -- Enable the sine output ('result_sine' port).
+    enable_sine : boolean := true;
+    -- Enable the cosine output ('result_cosine' port).
+    enable_cosine : boolean := false;
     -- Set a non-zero value to enable fractional phase mode.
     -- Gives a better frequency resolution at the cost of worse performance due to phase truncation.
     phase_fractional_width : natural;
@@ -193,7 +197,8 @@ entity sine_calculator is
     );
     --# {{}}
     result_valid : out std_ulogic := '0';
-    result_sine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
+    result_sine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0');
+    result_cosine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
   );
 end entity;
 
@@ -218,8 +223,8 @@ begin
     generic map (
       memory_data_width => memory_data_width,
       memory_address_width => memory_address_width,
-      enable_sine => true,
-      enable_cosine => enable_first_order_taylor
+      enable_sine => enable_sine or enable_first_order_taylor,
+      enable_cosine => enable_cosine or enable_first_order_taylor
     )
     port map (
       clk => clk,
@@ -295,6 +300,10 @@ begin
 
     attribute use_dsp of first_stage_error_factor25 : signal is "yes";
   begin
+
+    assert enable_sine or enable_cosine
+      report "Enable at least one output signal"
+      severity failure;
 
     assert memory_address_width <= 15
       report "Performance has not been verified with this accuracy"
@@ -406,29 +415,70 @@ begin
 
 
     ------------------------------------------------------------------------------
-    taylor_expansion_core_inst : entity work.taylor_expansion_core
-      generic map (
-        sinusoid_width => lookup_sine'length,
-        error_factor_width => first_stage_error_factor25'length,
-        error_factor_fractional_width => error_factor25_fractional_width,
-        result_width => result_sine'length
-      )
-      port map (
-        clk => clk,
-        --
-        input_value => lookup_sine,
-        input_derivative => lookup_cosine,
-        input_error_factor => first_stage_error_factor25,
-        --
-        result_value => result_sine
-      );
+    sine_taylor_gen : if enable_sine generate
 
+      ------------------------------------------------------------------------------
+      sine_taylor_expansion_core_inst : entity work.taylor_expansion_core
+        generic map (
+          sinusoid_width => lookup_sine'length,
+          error_factor_width => first_stage_error_factor25'length,
+          error_factor_fractional_width => error_factor25_fractional_width,
+          result_width => result_sine'length,
+          minus_derivative => false
+        )
+        port map (
+          clk => clk,
+          --
+          input_value => lookup_sine,
+          input_derivative => lookup_cosine,
+          input_error_factor => first_stage_error_factor25,
+          --
+          result_value => result_sine
+        );
+
+    end generate;
+
+
+    ------------------------------------------------------------------------------
+    cosine_taylor_gen : if enable_cosine generate
+
+      ------------------------------------------------------------------------------
+      sine_taylor_expansion_core_inst : entity work.taylor_expansion_core
+        generic map (
+          sinusoid_width => lookup_sine'length,
+          error_factor_width => first_stage_error_factor25'length,
+          error_factor_fractional_width => error_factor25_fractional_width,
+          result_width => result_cosine'length,
+          minus_derivative => true
+        )
+        port map (
+          clk => clk,
+          --
+          input_value => lookup_cosine,
+          input_derivative => lookup_sine,
+          input_error_factor => first_stage_error_factor25,
+          --
+          result_value => result_cosine
+        );
+
+    end generate;
 
   else generate
 
     -- Simply assign output.
     result_valid <= lookup_valid;
-    result_sine <= lookup_sine;
+
+
+    ------------------------------------------------------------------------------
+    assign_sine : if enable_sine generate
+      result_sine <= lookup_sine;
+    end generate;
+
+
+    ------------------------------------------------------------------------------
+    assign_cosine : if enable_cosine generate
+      result_cosine <= lookup_cosine;
+    end generate;
 
   end generate;
 

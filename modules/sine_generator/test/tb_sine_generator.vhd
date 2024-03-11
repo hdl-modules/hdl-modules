@@ -29,6 +29,8 @@ entity tb_sine_generator is
     sine_frequency_hz : positive;
     memory_address_width : positive;
     phase_fractional_width : natural := 0;
+    enable_sine : boolean := true;
+    enable_cosine : boolean := false;
     enable_phase_dithering : boolean;
     enable_first_order_taylor : boolean;
     num_samples : positive;
@@ -55,7 +57,9 @@ architecture tb of tb_sine_generator is
     phase_width => phase_width
   );
 
-  signal result_sine : u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0');
+  signal result_sine, result_cosine : u_signed(memory_data_width + 1 - 1 downto 0) := (
+    others => '0'
+  );
 
   -- Testbench stuff.
   constant clk_period : time := to_period(frequency_hz=>clk_frequency_hz);
@@ -70,25 +74,47 @@ begin
   ------------------------------------------------------------------------------
   main : process
     type file_handle_t is file of integer;
-    file file_handle : file_handle_t;
+    file sine_file_handle, cosine_file_handle : file_handle_t;
   begin
     test_runner_setup(runner, runner_cfg);
 
     report "input_phase_increment = " & to_string(input_phase_increment);
 
-    file_open(
-      f=>file_handle, external_name=>output_path(runner_cfg) & "sine.raw", open_kind=>write_mode
-    );
+    if enable_sine then
+      file_open(
+        f=>sine_file_handle,
+        external_name=>output_path(runner_cfg) & "sine.raw",
+        open_kind=>write_mode
+      );
+    end if;
+    if enable_cosine then
+      file_open(
+        f=>cosine_file_handle,
+        external_name=>output_path(runner_cfg) & "cosine.raw",
+        open_kind=>write_mode
+      );
+    end if;
 
     assert result_sine'length <= 32
       report "Can not cast to integer " & to_string(result_sine'length);
 
     for sample_idx in 0 to num_samples - 1 loop
       wait until result_valid and rising_edge(clk);
-      write(f=>file_handle, value=>to_integer(result_sine));
+
+      if enable_sine then
+        write(f=>sine_file_handle, value=>to_integer(result_sine));
+      end if;
+      if enable_cosine then
+        write(f=>cosine_file_handle, value=>to_integer(result_cosine));
+      end if;
     end loop;
 
-    file_close(f=>file_handle);
+    if enable_sine then
+      file_close(f=>sine_file_handle);
+    end if;
+    if enable_cosine then
+      file_close(f=>cosine_file_handle);
+    end if;
 
     test_runner_cleanup(runner);
   end process;
@@ -116,6 +142,8 @@ begin
       memory_data_width => memory_data_width,
       memory_address_width => memory_address_width,
       phase_fractional_width => phase_fractional_width,
+      enable_sine => enable_sine,
+      enable_cosine => enable_cosine,
       enable_phase_dithering => enable_phase_dithering,
       enable_first_order_taylor => enable_first_order_taylor
     )
@@ -126,7 +154,8 @@ begin
       input_phase_increment => input_phase_increment,
       --
       result_valid => result_valid,
-      result_sine => result_sine
+      result_sine => result_sine,
+      result_cosine => result_cosine
     );
 
 end architecture;
