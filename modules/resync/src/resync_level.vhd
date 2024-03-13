@@ -17,10 +17,15 @@
 -- "pulse" type signals. Pulses can be missed and single-cycle pulse behavior
 -- will not work.
 --
--- The ``clk_in`` port does not necessarily have to be set. But if you want to have
--- a deterministic latency through the resync block (via a ``set_max_delay``
--- constraint) it has to be set. If not, a simple ``set_false_path`` constraint will
+--
+-- Deterministic latency
+-- _____________________
+--
+-- If you want a deterministic latency through this resync block, via a ``set_max_delay``
+-- constraint, the ``clk_in`` port must be assigned to the clock that drives the input data.
+-- If it is not, a simple ``set_false_path`` constraint will
 -- be used and the latency can be arbitrary, depending on the placer/router.
+--
 --
 -- Input register
 -- ______________
