@@ -192,7 +192,7 @@ jobs:
           numpy \
           rtoml \
           scipy \
-          vunit-hdl
+          vunit-hdl@git+https://github.com/VUnit/vunit.git
 
     - name: Setup GHDL
       uses: ghdl/setup-ghdl-ci@nightly
