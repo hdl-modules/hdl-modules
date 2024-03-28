@@ -7,20 +7,19 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+set clk_write [get_clocks -of_objects [get_ports clk_write]]
 set read_data [get_cells memory.memory_read_data_reg*]
-if {${read_data} != {}} {
-  # These registers exist when the RAM is implemented as distributed RAM.
-  # In this case there is a timing path from write clock to the read data registers which
-  # can be safely ignored in order for timing to pass.
-  # See discussion in https://gitlab.com/tsfpga/tsfpga/merge_requests/20
-  set clk_write [get_clocks -of_objects [get_ports clk_write]]
-  if {${clk_write} == {}} {
-    puts "WARNING tsfpga asynchronous_fifo.tcl: Could not find clock to constrain DistRAM."
-    # In some cases the clock might not be created yet, most likely during synthesis.
-    # Hopefully it will be defined when this constraint file is applied again during
-    # implementation. If not the build should fail timing.
-  } else {
-    puts "INFO tsfpga asynchronous_fifo.tcl: Setting false path from write clock to read data registers."
-    set_false_path -setup -hold -from ${clk_write} -to ${read_data}
-  }
+
+# These registers exist as FFs when the RAM is implemented as distributed RAM (LUTRAM).
+# In this case there is a timing path from write clock to the read data registers which
+# can be safely ignored in order for timing to pass.
+# If the RAM is implemented as BRAM, the read data registers are internal in the BRAM primitive.
+# See some old discussion in https://gitlab.com/tsfpga/tsfpga/merge_requests/20
+# This is also discussed in AMD UG903 and in various places in the forum.
+# In recent Vivado versions (at least 2023.2), the cells show up even when the RAM is implemented as
+# BRAM, but the constraint has no effect.
+# Hence it seems safe to apply it always.
+if {${read_data} != "" && ${clk_write} != ""} {
+  puts "INFO tsfpga asynchronous_fifo.tcl: Setting false path from write clock to read data registers."
+  set_false_path -setup -hold -from ${clk_write} -to ${read_data}
 }
