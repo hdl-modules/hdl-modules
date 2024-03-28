@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
 
+# pylint: disable=too-many-lines
+
+
 class Module(BaseModule):
     def setup_vunit(  # pylint: disable=arguments-differ, unused-argument
         self, vunit_proj: Any, inspect: bool, **kwargs: Any
@@ -364,6 +367,8 @@ class Module(BaseModule):
             ffs: int
             logic: int
             fractional_phase: Optional[int] = None
+            sine: Optional[bool] = None
+            cosine: Optional[bool] = None
             dithering: Optional[bool] = None
             taylor: Optional[bool] = None
             dsp: int = 0
@@ -376,6 +381,10 @@ class Module(BaseModule):
             )
             if config.fractional_phase is not None:
                 generics["phase_fractional_width"] = config.fractional_phase
+            if config.sine is not None:
+                generics["enable_sine"] = config.sine
+            if config.cosine is not None:
+                generics["enable_cosine"] = config.cosine
             if config.dithering is not None:
                 generics["enable_phase_dithering"] = config.dithering
             if config.taylor is not None:
@@ -429,6 +438,19 @@ class Module(BaseModule):
 
         add_config(
             Config(
+                memory_width=18,
+                address_width=12,
+                fractional_phase=24,
+                dithering=True,
+                luts=114,
+                ffs=101,
+                ramb36=2,
+                logic=12,
+            )
+        )
+
+        add_config(
+            Config(
                 memory_width=17,
                 address_width=8,
                 fractional_phase=5,
@@ -470,16 +492,45 @@ class Module(BaseModule):
             )
         )
 
+        # Enabling cosine instead of sine.
+        # LUT count increases since more bits of the cosine are needed than the sine now,
+        # and the cosine calculation in sine_lookup is more complex.
+        # FF stays the same since the increase in cosine bits is compensated by the decrease in
+        # sine bits.
         add_config(
             Config(
-                memory_width=18,
-                address_width=12,
-                fractional_phase=24,
-                dithering=True,
-                luts=114,
-                ffs=101,
-                ramb36=2,
-                logic=12,
+                memory_width=23,
+                address_width=11,
+                fractional_phase=28,
+                sine=False,
+                cosine=True,
+                taylor=True,
+                luts=161,
+                ffs=70,
+                dsp=3,
+                ramb18=1,
+                ramb36=1,
+                logic=13,
+            )
+        )
+
+        # Enabling both.
+        # LUT count increases further since many bits of both sine and cosine are needed.
+        # FF increases since full width of both sine and cosine are needed.
+        add_config(
+            Config(
+                memory_width=23,
+                address_width=11,
+                fractional_phase=28,
+                sine=True,
+                cosine=True,
+                taylor=True,
+                luts=177,
+                ffs=94,
+                dsp=5,
+                ramb18=1,
+                ramb36=1,
+                logic=13,
             )
         )
 
