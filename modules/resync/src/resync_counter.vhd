@@ -24,7 +24,7 @@
 --
 -- A ``set_bus_skew`` constraint is a applied to the Gray coded bits that are sampled in the
 -- output clock domain. That constraint imposes an upper limit for the difference in the
--- inter-word routing delay. This in turn means that the bits are always sampled coherently with
+-- intra-word routing delay. This in turn means that the bits are always sampled coherently with
 -- regards to changes on the input side. It is possible to sample while one bit is transitioning,
 -- but the meta-stability protection of an ``async_reg`` chain will resolve that to a "clean"
 -- ``'0'`` or ``'1'``.
@@ -51,7 +51,10 @@ entity resync_counter is
     -- value has propagated.
     default_value   : u_unsigned(width - 1 downto 0) := (others => '0');
     -- Optional pipeline step on the output after Gray conversion
-    pipeline_output : boolean := false
+    pipeline_output : boolean := false;
+    -- This CDC topology fails if the input counter jumps by more than one.
+    -- Optionally disable the assertion that this never happens.
+    assert_false_on_counter_jumps : boolean := true
   );
   port (
     clk_in : in std_ulogic;
@@ -78,14 +81,36 @@ architecture a of resync_counter is
 begin
 
   ------------------------------------------------------------------------------
+  assertions_gen : if assert_false_on_counter_jumps generate
+    signal is_first_cycle : std_ulogic := '1';
+    signal counter_in_p1 : u_unsigned(default_value'range) := default_value;
+  begin
+
+    ------------------------------------------------------------------------------
+    assertions : process
+    begin
+      wait until rising_edge(clk_in);
+
+      if is_first_cycle = '0' then
+        assert hamming_distance(to_gray(counter_in), counter_in_gray) <= 1
+          report "Counter jumped by more than one"
+          severity failure;
+      end if;
+
+      counter_in_p1 <= counter_in;
+      is_first_cycle <= '0';
+    end process;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   clk_in_process : process
   begin
     wait until rising_edge(clk_in);
 
     counter_in_gray <= to_gray(counter_in);
   end process;
-
-  -- TODO Assert jumps
 
 
   ------------------------------------------------------------------------------
