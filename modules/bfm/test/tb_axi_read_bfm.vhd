@@ -15,6 +15,7 @@ use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;
+use vunit_lib.check_pkg.all;
 use vunit_lib.integer_array_pkg.all;
 use vunit_lib.logger_pkg.all;
 use vunit_lib.memory_pkg.all;
@@ -176,6 +177,7 @@ begin
     )
     port map (
       clk => clk,
+      --
       axi_read_m2s => axi_read_m2s,
       axi_read_s2m => axi_read_s2m
     );
@@ -200,5 +202,25 @@ begin
       assert axi_read_m2s.ar = ar_all_x report "AR not all fields X";
     end if;
   end process;
+
+
+  ------------------------------------------------------------------------------
+  check_r_invalid_values : process
+    constant data_all_x : std_ulogic_vector(data_width - 1 downto 0) := (others => 'X');
+    constant id_all_x : std_ulogic_vector(id_width - 1 downto 0) := (others => 'X');
+    constant resp_all_x : axi_resp_t := (others => 'X');
+  begin
+    wait until rising_edge(clk);
+
+    -- The slave BFM should drive everything on the R channel with 'X' when the bus is not valid.
+
+    if not axi_read_s2m.r.valid then
+      check_equal(axi_read_s2m.r.data(data_all_x'range), data_all_x);
+      check_equal(std_ulogic_vector(axi_read_s2m.r.id(id_all_x'range)), id_all_x);
+      check_equal(axi_read_s2m.r.resp, resp_all_x);
+      check_equal(axi_read_s2m.r.last, 'X');
+    end if;
+  end process;
+
 
 end architecture;

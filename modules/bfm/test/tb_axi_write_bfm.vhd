@@ -252,4 +252,20 @@ begin
     end if;
   end process;
 
+
+  ------------------------------------------------------------------------------
+  check_b_invalid_values : process
+    constant id_all_x : std_ulogic_vector(id_width - 1 downto 0) := (others => 'X');
+    constant resp_all_x : axi_resp_t := (others => 'X');
+  begin
+    wait until rising_edge(clk);
+
+    -- The slave BFM should drive everything on the B channel with 'X' when the bus is not valid.
+
+    if not axi_write_s2m.b.valid then
+      check_equal(std_ulogic_vector(axi_write_s2m.b.id(id_all_x'range)), id_all_x);
+      check_equal(axi_write_s2m.b.resp, resp_all_x);
+    end if;
+  end process;
+
 end architecture;
