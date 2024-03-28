@@ -33,7 +33,9 @@ entity axi_lite_slave is
   generic (
     axi_read_slave : axi_slave_t := axi_slave_init;
     axi_write_slave : axi_slave_t := axi_slave_init;
-    data_width : positive range 1 to axi_lite_data_sz
+    data_width : positive range 1 to axi_lite_data_sz;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -56,7 +58,8 @@ begin
     axi_lite_read_slave_inst : entity work.axi_lite_read_slave
       generic map (
         axi_slave => axi_read_slave,
-        data_width => data_width
+        data_width => data_width,
+        logger_name_suffix => logger_name_suffix
       )
       port map (
         clk => clk,
@@ -73,7 +76,8 @@ begin
     axi_lite_write_slave_inst : entity work.axi_lite_write_slave
       generic map (
         axi_slave => axi_write_slave,
-        data_width => data_width
+        data_width => data_width,
+        logger_name_suffix => logger_name_suffix
       )
       port map (
         clk => clk,

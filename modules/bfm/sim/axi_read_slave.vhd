@@ -8,8 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit ``axi_read_slave`` verification component.
 -- Uses convenient record types for the AXI signals.
--- This BFM will also perform AXI-Stream protocol checking on the ``AR`` channels to verify that the
--- upstream AXI master is performing everything correctly.
+-- This BFM will also perform protocol to verify that the upstream AXI master is performing
+-- everything correctly.
 --
 -- The instantiated verification component will process the incoming AXI operations and
 -- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
@@ -38,7 +38,9 @@ entity axi_read_slave is
     -- Optionally limit the address width.
     -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
     -- converts the field to an integer.
-    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz
+    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -107,7 +109,7 @@ begin
     ar_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
-        logger_name_suffix => " - axi_read_slave - AR"
+        logger_name_suffix => " - axi_read_slave - AR" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -125,7 +127,7 @@ begin
   ------------------------------------------------------------------------------
   r_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      logger_name_suffix => " - axi_read_slave - R"
+      logger_name_suffix => " - axi_read_slave - R" & logger_name_suffix
     )
     port map (
       clk => clk,

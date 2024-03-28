@@ -8,6 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit ``axi_write_slave`` verification component.
 -- Uses convenient record types for the AXI-Lite signals.
+-- Performs protocol checking to verify that the upstream AXI-Lite master is performing
+-- everything correctly.
 --
 -- The instantiated verification component will process the incoming AXI-Lite operations and
 -- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
@@ -22,6 +24,8 @@ use axi.axi_pkg.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
+library common;
+
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;
 
@@ -29,7 +33,9 @@ use vunit_lib.axi_slave_pkg.all;
 entity axi_lite_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 1 to axi_lite_data_sz
+    data_width : positive range 1 to axi_lite_data_sz;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -48,6 +54,9 @@ architecture a of axi_lite_write_slave is
   signal bid, aid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
 
   signal awaddr : std_ulogic_vector(axi_lite_write_m2s.aw.addr'range);
+
+  signal wdata : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
+  signal wstrb : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
 begin
 
@@ -75,8 +84,8 @@ begin
       --
       wvalid => axi_lite_write_m2s.w.valid,
       wready => axi_lite_write_s2m.w.ready,
-      wdata => axi_lite_write_m2s.w.data(data_width - 1 downto 0),
-      wstrb => axi_lite_write_m2s.w.strb,
+      wdata => wdata,
+      wstrb => wstrb,
       wlast => '1',
       --
       bvalid => axi_lite_write_s2m.b.valid,
@@ -86,5 +95,51 @@ begin
     );
 
   awaddr <= std_logic_vector(axi_lite_write_m2s.aw.addr);
+
+  wdata <= axi_lite_write_m2s.w.data(wdata'range);
+  wstrb <= axi_lite_write_m2s.w.strb(wstrb'range);
+
+
+  ------------------------------------------------------------------------------
+  aw_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => awaddr'length,
+      logger_name_suffix => " - axi_lite_write_slave - AW" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_write_s2m.aw.ready,
+      valid => axi_lite_write_m2s.aw.valid,
+      data => awaddr
+    );
+
+
+  ------------------------------------------------------------------------------
+  w_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => wdata'length,
+      logger_name_suffix => " - axi_lite_write_slave - W" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_write_s2m.w.ready,
+      valid => axi_lite_write_m2s.w.valid,
+      data => wdata,
+      strobe => wstrb
+    );
+
+
+  ------------------------------------------------------------------------------
+  b_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_lite_write_slave - B" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_write_m2s.b.ready
+    );
 
 end architecture;

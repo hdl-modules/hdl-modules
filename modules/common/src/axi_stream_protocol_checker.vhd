@@ -13,6 +13,7 @@
 --    (not ``'X'``, ``'-'``, etc).
 -- 2. ``valid`` must not fall without a transaction (``ready and valid``).
 -- 3. No payload on the bus may change while ``valid`` is asserted, unless there is a transaction.
+-- 4. ``strobe`` must be well-defined when ``valid`` is asserted.
 --
 -- If any rule violation is detected, an assertion will be triggered.
 -- Use the ``logger_name_suffix`` generic to customize the error message.
@@ -22,6 +23,7 @@
 --   This entity can be instantiated in simulation code as well as in synthesis code.
 --   The code is simple and will be stripped by synthesis.
 --   Can be useful to check the behavior of a stream that is deep in a hierarchy.
+--
 --
 -- Comparison to VUnit checker
 -- ___________________________
@@ -46,6 +48,8 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
+use work.types_pkg.is_01;
+
 
 entity axi_stream_protocol_checker is
   generic (
@@ -66,7 +70,7 @@ entity axi_stream_protocol_checker is
     last : in std_ulogic := '0';
     -- Must set a valid 'data_width' generic value in order to use these.
     data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
+    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1');
     -- Must set a valid 'id_width' generic value in order to use this.
     id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
     -- Must set a valid 'user_width' generic value in order to use this.
@@ -84,7 +88,7 @@ architecture a of axi_stream_protocol_checker is
       base_error_message
       & "'"
       & signal_name
-      & "' changed without transaction while 'valid' was asserted."
+      & "' changed without transaction while bus was 'valid'."
     );
   end function;
 
@@ -102,7 +106,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      assert ready = '0' or ready = '1' report error_message;
+      assert is_01(ready) report error_message;
     end process;
 
   end block;
@@ -118,7 +122,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      assert valid = '0' or valid = '1' report error_message;
+      assert is_01(valid) report error_message;
     end process;
 
   end block;
@@ -131,12 +135,12 @@ begin
 
     ------------------------------------------------------------------------------
     handshaking_check : process
+      constant error_message : string := base_error_message & "'valid' fell without transaction.";
     begin
       wait until rising_edge(clk);
 
       if valid = '0' and valid_p1 = '1' then
-        assert ready_p1
-          report base_error_message & "'valid' fell without transaction.";
+        assert ready_p1 report error_message;
       end if;
 
       ready_p1 <= ready;
@@ -194,7 +198,11 @@ begin
 
   ------------------------------------------------------------------------------
   strobe_gen : if strobe'length > 0 generate
-    constant error_message : string := get_unstable_error_message("strobe");
+    constant unstable_error_message : string := get_unstable_error_message("strobe");
+    constant undefined_error_message : string := (
+      base_error_message & "'strobe' has undefined value while bus is 'valid'."
+    );
+
     signal strobe_p1 : std_ulogic_vector(strobe'range) := (others => '0');
   begin
 
@@ -204,7 +212,11 @@ begin
       wait until rising_edge(clk);
 
       if bus_must_be_same_as_previous then
-        assert strobe = strobe_p1 report error_message;
+        assert strobe = strobe_p1 report unstable_error_message;
+      end if;
+
+      if ready and valid then
+        assert is_01(strobe) report undefined_error_message;
       end if;
 
       strobe_p1 <= strobe;

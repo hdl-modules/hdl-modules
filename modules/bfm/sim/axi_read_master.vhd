@@ -100,7 +100,7 @@ architecture a of axi_read_master is
 
   constant bytes_per_beat : positive := data_width / 8;
 
-  constant r_id_queue, r_length_bytes_queue : queue_t := new_queue;
+  constant r_id_queue : queue_t := new_queue;
 
 begin
 
@@ -135,7 +135,6 @@ begin
       job := to_axi_bfm_job(job_slv);
 
       push(r_id_queue, job.id);
-      push(r_length_bytes_queue, job.length_bytes);
 
       id_target <= to_unsigned(job.id, id_target'length);
       addr_target <= to_unsigned(job.address, addr_target'length);
@@ -184,67 +183,24 @@ begin
 
   ------------------------------------------------------------------------------
   r_block : block
-    signal strobe, last_beat_strobe : std_ulogic_vector(bytes_per_beat - 1 downto 0) := (
-      others => '0'
-    );
   begin
 
     ------------------------------------------------------------------------------
-    -- The R data checker uses an axi_stream_slave (which checks data,
-    -- but also ensures that ready/valid behave the way they should, and that none of the fields
-    -- change their value unless a transaction has occurred).
-    -- The AXI Stream checker requires a strobe, which is not included in AXI R.
-    -- The last beat of the burst might not have all lanes assigned, so the strobe is needed.
-    -- We re-create the strobe here in the BFM based on the burst length.
-    set_last_beat_strobe : process
-      variable burst_length_bytes, last_beat_num_lanes_strobed : natural := 0;
+    check_r : process
+      constant error_message_base : string := (
+        "axi_read_master - R"  & logger_name_suffix & ": 'RRESP' check in burst_idx="
+      );
     begin
-      while is_empty(r_length_bytes_queue) loop
-        wait until rising_edge(clk);
-      end loop;
-      burst_length_bytes := pop(r_length_bytes_queue);
-
-      if burst_length_bytes mod bytes_per_beat = 0 then
-        last_beat_num_lanes_strobed := bytes_per_beat;
-      else
-        last_beat_num_lanes_strobed := burst_length_bytes mod bytes_per_beat;
-      end if;
-
-      last_beat_strobe <= (others => '0');
-      last_beat_strobe(last_beat_num_lanes_strobed - 1 downto 0) <= (others => '1');
-
-      wait until
-        (axi_read_m2s.r.ready and axi_read_s2m.r.valid and axi_read_s2m.r.last) = '1'
-        and rising_edge(clk);
-
-      num_bursts_checked <= num_bursts_checked + 1;
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    set_strobe : process(all)
-    begin
-      strobe <= (others => 'X');
-
-      if axi_read_s2m.r.valid then
-        if axi_read_s2m.r.last then
-          strobe <= last_beat_strobe;
-        else
-          strobe <= (others => '1');
-        end if;
-      end if;
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    check_resp : process
-    begin
-      wait until axi_read_s2m.r.valid and rising_edge(clk);
+      wait until axi_read_m2s.r.ready and axi_read_s2m.r.valid and rising_edge(clk);
 
       -- Check response code OKAY (everything else is checked in the axi_stream_slave)
       check_equal(
-        axi_read_s2m.r.resp, 0, "'RRESP' check in burst_idx=" & to_string(num_bursts_checked)
+        axi_read_s2m.r.resp,
+        axi_resp_okay,
+        error_message_base & to_string(num_bursts_checked)
       );
+
+      num_bursts_checked <= num_bursts_checked + to_int(axi_read_s2m.r.last);
     end process;
 
 
@@ -257,7 +213,8 @@ begin
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,
         seed => seed,
-        logger_name_suffix => " - axi_read_master - R" & logger_name_suffix
+        logger_name_suffix => " - axi_read_master - R" & logger_name_suffix,
+        enable_strobe => false
       )
       port map (
         clk => clk,
@@ -266,8 +223,7 @@ begin
         valid => axi_read_s2m.r.valid,
         last => axi_read_s2m.r.last,
         id => axi_read_s2m.r.id(id_width - 1 downto 0),
-        data => axi_read_s2m.r.data(data_width - 1 downto 0),
-        strobe => strobe
+        data => axi_read_s2m.r.data(data_width - 1 downto 0)
       );
 
   end block;

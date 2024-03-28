@@ -8,6 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit ``axi_read_slave`` verification component.
 -- Uses convenient record types for the AXI-Lite signals.
+-- Performs protocol checking to verify that the upstream AXI-Lite master is performing
+-- everything correctly.
 --
 -- The instantiated verification component will process the incoming AXI-Lite operations and
 -- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
@@ -22,6 +24,8 @@ use axi.axi_pkg.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
+library common;
+
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;
 
@@ -29,7 +33,9 @@ use vunit_lib.axi_slave_pkg.all;
 entity axi_lite_read_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 1 to axi_lite_data_sz
+    data_width : positive range 1 to axi_lite_data_sz;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -45,7 +51,7 @@ architecture a of axi_lite_read_slave is
   constant size : axi_a_size_t := to_size(data_width);
 
   -- Using "open" not ok in GHDL: unconstrained port "rid" must be connected
-  signal rid, aid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
+  signal rid, arid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
 
   signal araddr : std_ulogic_vector(axi_lite_read_m2s.ar.addr'range) := (others => '0');
 
@@ -67,7 +73,7 @@ begin
       --
       arvalid => axi_lite_read_m2s.ar.valid,
       arready => axi_lite_read_s2m.ar.ready,
-      arid => aid,
+      arid => arid,
       araddr => araddr,
       arlen => std_ulogic_vector(len),
       arsize => std_ulogic_vector(size),
@@ -82,5 +88,32 @@ begin
     );
 
   araddr <= std_logic_vector(axi_lite_read_m2s.ar.addr);
+
+
+  ------------------------------------------------------------------------------
+  ar_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => araddr'length,
+      logger_name_suffix => " - axi_lite_read_slave - AR" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_read_s2m.ar.ready,
+      valid => axi_lite_read_m2s.ar.valid,
+      data => araddr
+    );
+
+
+  ------------------------------------------------------------------------------
+  r_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_lite_read_slave - R" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_read_m2s.r.ready
+    );
 
 end architecture;

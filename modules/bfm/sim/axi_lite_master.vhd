@@ -8,6 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit ``axi_lite_master`` verification component (VC).
 -- Uses convenient record types for the AXI-Lite signals.
+-- Performs protocol checking on the ``R`` and ``B`` channels to
+-- verify that the downstream AXI-Lite slave is performing everything correctly.
 --
 -- The instantiated verification component will create AXI-Lite read/write transactions
 -- based on VUnit VC calls, such as ``read_bus``.
@@ -25,6 +27,8 @@ use ieee.numeric_std.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
+library common;
+
 library reg_file;
 use reg_file.reg_operations_pkg.regs_bus_master;
 
@@ -36,7 +40,9 @@ use vunit_lib.bus_master_pkg.data_length;
 
 entity axi_lite_master is
   generic (
-    bus_handle : bus_master_t := regs_bus_master
+    bus_handle : bus_master_t := regs_bus_master;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -104,6 +110,74 @@ begin
       bready => axi_lite_m2s.write.b.ready,
       bvalid => axi_lite_s2m.write.b.valid,
       bresp => axi_lite_s2m.write.b.resp
+    );
+
+
+  ------------------------------------------------------------------------------
+  ar_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_lite_master - AR" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_s2m.read.ar.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  r_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => rdata'length,
+      user_width => axi_lite_s2m.read.r.resp'length,
+      logger_name_suffix => " - axi_lite_master - R" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_m2s.read.r.ready,
+      valid => axi_lite_s2m.read.r.valid,
+      data => rdata,
+      user => axi_lite_s2m.read.r.resp
+    );
+
+
+  ------------------------------------------------------------------------------
+  aw_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_lite_master - AW" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_s2m.write.aw.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  w_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_lite_master - W" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_s2m.write.w.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  b_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => axi_lite_s2m.write.b.resp'length,
+      logger_name_suffix => " - axi_lite_master - B" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_lite_m2s.write.b.ready,
+      valid => axi_lite_s2m.write.b.valid,
+      data => axi_lite_s2m.write.b.resp
     );
 
 end architecture;

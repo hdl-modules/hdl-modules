@@ -9,6 +9,8 @@
 -- Creates AXI read/write transactions by wrapping the VUnit ``axi_lite_master``
 -- verification component (VC).
 -- Uses convenient record types for the AXI signals.
+-- Performs protocol checking to verify that the downstream AXI slave is performing
+-- everything correctly.
 --
 -- .. note::
 --
@@ -39,10 +41,17 @@ use vunit_lib.bus_master_pkg.data_length;
 library axi;
 use axi.axi_pkg.all;
 
+library common;
+
 
 entity axi_master is
   generic (
-    bus_handle : bus_master_t
+    bus_handle : bus_master_t;
+    -- Width of the ARID/RID/AWID/BID fields.
+    -- Only used for protocol checking of the R and B channels.
+    id_width : natural range 0 to axi_id_sz := 0;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -124,6 +133,79 @@ begin
       bready => axi_write_m2s.b.ready,
       bvalid => axi_write_s2m.b.valid,
       bresp => axi_write_s2m.b.resp
+    );
+
+
+  ------------------------------------------------------------------------------
+  ar_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_master - AR" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_read_s2m.ar.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  r_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => rdata'length,
+      id_width => id_width,
+      user_width => axi_read_s2m.r.resp'length,
+      logger_name_suffix => " - axi_master - R" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_read_m2s.r.ready,
+      valid => axi_read_s2m.r.valid,
+      last => axi_read_s2m.r.last,
+      data => rdata,
+      id => axi_read_s2m.r.id(id_width - 1 downto 0),
+      user => axi_read_s2m.r.resp
+    );
+
+
+  ------------------------------------------------------------------------------
+  aw_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_master - AW" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_write_s2m.aw.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  w_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      logger_name_suffix => " - axi_master - W" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_write_s2m.w.ready
+    );
+
+
+  ------------------------------------------------------------------------------
+  b_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      id_width => id_width,
+      user_width => axi_write_s2m.b.resp'length,
+      logger_name_suffix => " - axi_master - B" & logger_name_suffix
+    )
+    port map (
+      clk => clk,
+      --
+      ready => axi_write_m2s.b.ready,
+      valid => axi_write_s2m.b.valid,
+      id => axi_write_s2m.b.id(id_width - 1 downto 0),
+      user => axi_write_s2m.b.resp
     );
 
 end architecture;

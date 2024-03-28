@@ -8,8 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper around VUnit ``axi_write_slave`` verification component.
 -- Uses convenient record types for the AXI signals.
--- This BFM will also perform AXI-Stream protocol checking on the ``AW`` and ``W`` channels to
--- verify that the upstream AXI master is performing everything correctly.
+-- This BFM will also perform protocol checking to verify that the upstream AXI master is
+-- performing everything correctly.
 --
 -- The instantiated verification component will process the incoming AXI operations and
 -- apply them to the :ref:`VUnit memory model <vunit:memory_model>`.
@@ -48,7 +48,9 @@ entity axi_write_slave is
     -- Optionally check the AXI3 'WID' signal against the previously negotiated 'AWID'.
     -- Does NOT support write interleaving, and will fail if any 'W' transaction happens before
     -- the corresponding 'AW' transaction.
-    enable_axi3 : boolean := false
+    enable_axi3 : boolean := false;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
@@ -90,13 +92,14 @@ begin
     constant expected : std_ulogic_vector(axi_write_m2s.w.strb'high downto strobe_width) := (
       others => '0'
     );
+    constant error_message : string := (
+      " - axi_write_slave - B" & logger_name_suffix & ": WSTRB is non-zero outside of data"
+    );
   begin
     wait until axi_write_s2m.w.ready and axi_write_m2s.w.valid and rising_edge(clk);
 
     -- Must be explicitly zero, can not be '-'.
-    check_equal(
-      axi_write_m2s.w.strb(expected'range), expected, "WSTRB is non-zero outside of data"
-    );
+    check_equal(axi_write_m2s.w.strb(expected'range), expected, error_message);
   end process;
 
 
@@ -163,8 +166,9 @@ begin
   begin
     wait until rising_edge(clk);
 
-    num_bursts_done <=
-      num_bursts_done + to_int(axi_write_m2s.b.ready and axi_write_s2m.b.valid);
+    num_bursts_done <= (
+      num_bursts_done + to_int(axi_write_m2s.b.ready and axi_write_s2m.b.valid)
+    );
   end process;
 
 
@@ -180,7 +184,7 @@ begin
     aw_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
-        logger_name_suffix => " - axi_write_slave - AW"
+        logger_name_suffix => " - axi_write_slave - AW" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -205,7 +209,7 @@ begin
     w_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
-        logger_name_suffix => " - axi_write_slave - W"
+        logger_name_suffix => " - axi_write_slave - W" & logger_name_suffix
       )
       port map (
         clk => clk,
@@ -238,17 +242,17 @@ begin
 
     ------------------------------------------------------------------------------
     check_wid : process
+      constant error_message : string := (
+        " - axi_write_slave - B"
+        & logger_name_suffix
+        & ": Must receive AW transaction before corresponding W transactions"
+      );
       variable reference_wid : u_unsigned(awid'range) := (others => '0');
     begin
       wait until axi_write_s2m.w.ready and axi_write_m2s.w.valid and rising_edge(clk);
 
       if is_first_beat_of_burst then
-        check_equal(
-          is_empty(wid_queue),
-          false,
-          "Must receive AW transaction before corresponding W transactions"
-        );
-
+        check_equal(is_empty(wid_queue), false, error_message);
         reference_wid := pop(wid_queue);
       end if;
 
@@ -263,7 +267,7 @@ begin
   ------------------------------------------------------------------------------
   b_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      logger_name_suffix => " - axi_write_slave - B"
+      logger_name_suffix => " - axi_write_slave - B" & logger_name_suffix
     )
     port map (
       clk => clk,

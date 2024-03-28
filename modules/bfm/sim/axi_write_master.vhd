@@ -36,8 +36,8 @@
 -- This data will be pushed to the AXI ``W`` channel straight away, possibly before the ``AW``
 -- transaction (unless in AXI3 mode).
 --
--- This BFM will also perform AXI-Stream protocol checking on the ``B`` channels to verify that the
--- downstream AXI slave is performing everything correctly.
+-- This BFM will also perform protocol checking to verify that the downstream AXI slave is
+-- performing everything correctly.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -270,9 +270,6 @@ begin
 
   ------------------------------------------------------------------------------
   b_block : block
-    signal b_slv : std_ulogic_vector(axi_s2m_b_sz(id_width=>id_width) - 1 downto 0) := (
-      others => '0'
-    );
   begin
 
     ------------------------------------------------------------------------------
@@ -281,11 +278,9 @@ begin
     begin
       wait until axi_write_m2s.b.ready and axi_write_s2m.b.valid and rising_edge(clk);
 
+      check_equal(axi_write_s2m.b.resp, axi_resp_okay);
+
       id_reference := pop(b_id_queue);
-
-      -- Response code OKAY
-      check_equal(axi_write_s2m.b.resp, 0);
-
       if id_width > 0 then
         check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), id_reference);
       end if;
@@ -299,18 +294,31 @@ begin
       generic map (
         stall_config => b_stall_config,
         seed => seed,
-        logger_name_suffix => " - axi_write_master - B" & logger_name_suffix,
-        data_width => b_slv'length
+        logger_name_suffix => " - axi_write_master - B" & logger_name_suffix
+      )
+      port map (
+        clk => clk,
+        --
+        ready => axi_write_m2s.b.ready,
+        valid => axi_write_s2m.b.valid
+      );
+
+
+    ------------------------------------------------------------------------------
+    b_protocol_checker_inst : entity common.axi_stream_protocol_checker
+      generic map (
+        id_width => id_width,
+        user_width => axi_write_s2m.b.resp'length,
+        logger_name_suffix => " - axi_write_master - B"
       )
       port map (
         clk => clk,
         --
         ready => axi_write_m2s.b.ready,
         valid => axi_write_s2m.b.valid,
-        data => b_slv
+        id => axi_write_s2m.b.id(id_width - 1 downto 0),
+        user => axi_write_s2m.b.resp
       );
-
-    b_slv <= to_slv(axi_write_s2m.b, id_width=>id_width);
 
   end block;
 
