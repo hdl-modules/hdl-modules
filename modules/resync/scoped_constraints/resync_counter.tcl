@@ -33,4 +33,5 @@ if {${clk_in} != {} && ${clk_out} != {}} {
 set_bus_skew -from ${stable_registers} -to ${first_resync_registers} ${min_period}
 
 # Set max delay to impose a latency limit
+# TODO comment datapath
 set_max_delay -datapath_only -from ${stable_registers} -to ${first_resync_registers} ${min_period}
