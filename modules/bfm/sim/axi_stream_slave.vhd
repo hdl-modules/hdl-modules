@@ -380,9 +380,6 @@ begin
     generic map(
       stall_config => stall_config,
       seed => seed,
-      data_width => data'length,
-      id_width => id'length,
-      user_width => user'length,
       well_behaved_stall => well_behaved_stall,
       logger_name_suffix => base_error_message
     )
@@ -390,6 +387,22 @@ begin
       clk => clk,
       --
       data_is_ready => data_is_ready,
+      --
+      ready => ready,
+      valid => valid
+    );
+
+
+  ------------------------------------------------------------------------------
+  axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => data'length,
+      id_width => id'length,
+      user_width => user'length,
+      logger_name_suffix => base_error_message
+    )
+    port map (
+      clk => clk,
       --
       ready => ready,
       valid => valid,

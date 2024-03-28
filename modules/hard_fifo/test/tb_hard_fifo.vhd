@@ -251,8 +251,7 @@ begin
   ------------------------------------------------------------------------------
   handshake_slave_inst : entity bfm.handshake_slave
     generic map (
-      stall_config => read_stall_config,
-      data_width => read_data'length
+      stall_config => read_stall_config
     )
     port map (
       clk => clk_read,
@@ -260,8 +259,20 @@ begin
       data_is_ready => read_is_ready,
       --
       ready => read_ready,
+      valid => read_valid
+    );
+
+
+  ------------------------------------------------------------------------------
+  axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
+    generic map (
+      data_width => read_data'length
+    )
+    port map (
+      clk => clk_read,
+      --
+      ready => read_ready,
       valid => read_valid,
-      last => '1',
       data => read_data
     );
 

@@ -18,11 +18,6 @@
 -- the data can be handled as records in the testbench with no conversion necessary.
 --
 -- See the testbench ``tb_handshake_bfm`` for example usage.
---
--- This entity can also optionally perform protocol checking on the handshaking data interface.
--- This will verify that the AXI-Stream standard is followed.
--- Assign the ``last``/``data``/``strobe`` ports and set the correct ``data_width`` generic in
--- order to use this.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,9 +25,6 @@ use ieee.std_logic_1164.all;
 
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
-
-library common;
-use common.types_pkg.all;
 
 use work.stall_bfm_pkg.all;
 
@@ -43,25 +35,17 @@ entity handshake_master is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking
-    data_width : natural := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
   port (
     clk : in std_ulogic;
     --# {{}}
-    -- Set by testbench when there is data available to push
+    -- Set by testbench when there is data available.
     data_is_valid : in std_ulogic := '1';
     --# {{}}
     ready : in std_ulogic := '1';
-    valid : out std_ulogic := '0';
-    --# {{}}
-    -- The signals below are optional to connect. Only used for protocol checking.
-    last : in std_ulogic := '1';
-    -- Must set 'data_width' generic in order to use these ports.
-    data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1')
+    valid : out std_ulogic := '0'
   );
 end entity;
 
@@ -88,27 +72,10 @@ begin
         random_stall(stall_config=>stall_config, rnd=>rnd, clk=>clk);
         let_data_through <= '1';
 
-        wait until ready and valid and rising_edge(clk);
+        wait until (ready and valid) = '1' and rising_edge(clk);
       end loop;
     end process;
 
   end generate;
-
-
-  ------------------------------------------------------------------------------
-  axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
-    generic map (
-      data_width => data'length,
-      logger_name_suffix => " - handshake_master" & logger_name_suffix
-    )
-    port map (
-      clk => clk,
-      --
-      ready => ready,
-      valid => valid,
-      data => data,
-      last => last,
-      strobe => strobe
-    );
 
 end architecture;

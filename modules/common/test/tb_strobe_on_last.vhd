@@ -245,8 +245,7 @@ begin
       generic map (
         stall_config => stall_config,
         seed => seed,
-        logger_name_suffix => " - input",
-        data_width => input_data'length
+        logger_name_suffix => " - input"
       )
       port map (
         clk => clk,
@@ -254,10 +253,7 @@ begin
         data_is_valid => data_is_valid,
         --
         ready => input_ready,
-        valid => input_valid,
-        last => input_last,
-        data => input_data,
-        strobe => input_strobe
+        valid => input_valid
       );
 
   end block;

@@ -61,13 +61,11 @@ class Module(BaseModule):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_bfm")
 
         for test in tb.get_tests():
-            data_width = 16 if test.name == "test_random_data" else 0
             master_stall_probability_percent = (
                 0 if test.name == "test_full_master_throughput" else 50
             )
             slave_stall_probability_percent = 0 if test.name == "test_full_slave_throughput" else 50
             generics = dict(
-                data_width=data_width,
                 master_stall_probability_percent=master_stall_probability_percent,
                 slave_stall_probability_percent=slave_stall_probability_percent,
             )
