@@ -97,6 +97,8 @@ entity axi_stream_slave is
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
     -- when the strobe lanes are wider than bytes.
     strobe_unit_width : positive := 8;
+    -- Optionally, disable the checking of 'strobe' bits.
+    enable_strobe : boolean := true;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
     -- handshake has happened).
     -- Note that according to the AXI-Stream standard 'ready' may fall at any
@@ -130,6 +132,8 @@ end entity;
 
 architecture a of axi_stream_slave is
 
+  constant base_error_message : string := " - axi_stream_master" & logger_name_suffix;
+
   constant bytes_per_beat : positive := data_width / 8;
   constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
@@ -139,17 +143,22 @@ architecture a of axi_stream_slave is
 
 begin
 
-  assert data_width mod 8 = 0
-    report "This entity works on a byte-by-byte basis. Data width must be a multiple of bytes.";
+  assert data_width mod 8 = 0 report (
+    base_error_message
+    & ": This entity works on a byte-by-byte basis. Data width must be a multiple of bytes."
+  );
 
-  assert data_width mod strobe_unit_width = 0
-    report "A whole number of strobes must fit in each beat.";
+  assert data_width mod strobe_unit_width = 0 or not enable_strobe
+    report base_error_message & ": A whole number of strobes must fit in each beat.";
 
-  assert data_width >= strobe_unit_width report "Strobe unit can not be greater than data width.";
+  assert data_width >= strobe_unit_width or not enable_strobe
+    report base_error_message & "Strobe unit can not be greater than data width.";
 
-  assert strobe_unit_width mod 8 = 0 report "Strobe unit must be a byte multiple";
+  assert strobe_unit_width mod 8 = 0 or not enable_strobe
+    report base_error_message & ": Strobe unit must be a byte multiple";
 
-  assert strobe_unit_width >= 8 report "Strobe unit must be one byte or wider";
+  assert strobe_unit_width >= 8 or not enable_strobe
+    report base_error_message & ": Strobe unit must be one byte or wider";
 
 
   ------------------------------------------------------------------------------
@@ -168,53 +177,78 @@ begin
     packet_length_bytes := length(reference_data);
     packet_length_beats := (packet_length_bytes + bytes_per_beat - 1) / bytes_per_beat;
 
-    assert packet_length_bytes mod bytes_per_strobe_unit = 0
-      report "Packet length must be a multiple of strobe unit";
+    assert packet_length_bytes mod bytes_per_strobe_unit = 0 or not enable_strobe
+      report base_error_message & ": Packet length must be a multiple of strobe unit";
 
     checker_is_ready <= '1';
 
     for byte_idx in 0 to packet_length_bytes - 1 loop
       byte_lane_idx := byte_idx mod bytes_per_beat;
-      is_last_beat := byte_idx / bytes_per_beat = packet_length_beats - 1;
 
       if byte_lane_idx = 0 then
         wait until ready and valid and rising_edge(clk);
 
         if not disable_last_check then
+          is_last_beat := byte_idx / bytes_per_beat = packet_length_beats - 1;
           check_equal(
             last,
             is_last_beat,
-            "'last' check at packet_idx=" & to_string(num_packets_checked)
-              & ",byte_idx=" & to_string(byte_idx)
+            (
+              base_error_message
+              & ": 'last' check at packet_idx="
+              & to_string(num_packets_checked)
+              & ",byte_idx="
+              & to_string(byte_idx)
+            )
           );
         end if;
       end if;
 
-      check_equal(
-        strobe_byte(byte_lane_idx),
-        '1',
-        "'strobe' check at packet_idx=" & to_string(num_packets_checked)
-          & ", byte_idx=" & to_string(byte_idx)
-      );
+      if enable_strobe then
+        check_equal(
+          strobe_byte(byte_lane_idx),
+          '1',
+          (
+            base_error_message
+            & ": 'strobe' check at packet_idx="
+            & to_string(num_packets_checked)
+            & ", byte_idx="
+            & to_string(byte_idx)
+          )
+        );
+      end if;
+
       check_equal(
         unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
         get(arr=>reference_data, idx=>byte_idx),
-        "'data' check at packet_idx="
-          & to_string(num_packets_checked) & ", byte_idx=" & to_string(byte_idx)
+        (
+          base_error_message
+          & ": 'data' check at packet_idx="
+          & to_string(num_packets_checked)
+          & ", byte_idx="
+          & to_string(byte_idx)
+        )
       );
     end loop;
 
-    -- Check strobe for last data beat. If packet length aligns with the bus width, all lanes will
-    -- have been checked as '1' above. If packet is not aligned, one or more byte lanes at the top
-    -- shall be strobed out.
-    for byte_idx in byte_lane_idx + 1 to bytes_per_beat - 1 loop
-      check_equal(
-        strobe_byte(byte_idx),
-        '0',
-        "'strobe' check at packet_idx=" & to_string(num_packets_checked)
-          & ", byte_idx=" & to_string(byte_idx)
-      );
-    end loop;
+    if enable_strobe then
+      -- Check strobe for last data beat. If packet length aligns with the bus width, all lanes will
+      -- have been checked as '1' above. If packet is not aligned, one or more byte lanes at the top
+      -- shall be strobed out.
+      for byte_idx in byte_lane_idx + 1 to bytes_per_beat - 1 loop
+        check_equal(
+          strobe_byte(byte_idx),
+          '0',
+          (
+            base_error_message
+            & ": 'strobe' check at packet_idx="
+            & to_string(num_packets_checked)
+            & ", byte_idx="
+            & to_string(byte_idx)
+          )
+        );
+      end loop;
+    end if;
 
     -- Deallocate after we are done with the data.
     deallocate(reference_data);
@@ -231,19 +265,24 @@ begin
 
 
   ------------------------------------------------------------------------------
-  assign_byte_strobe : if strobe_unit_width = 8 generate
-
-    strobe_byte <= strobe;
-
-  else generate
+  assign_strobe_gen : if enable_strobe generate
 
     ------------------------------------------------------------------------------
-    assign : process(all)
-    begin
-      for byte_idx in strobe_byte'range loop
-        strobe_byte(byte_idx) <= strobe(byte_idx / bytes_per_strobe_unit);
-      end loop;
-    end process;
+    assign_byte_strobe_gen : if strobe_unit_width = 8 generate
+
+      strobe_byte <= strobe;
+
+    else generate
+
+      ------------------------------------------------------------------------------
+      assign : process(all)
+      begin
+        for byte_idx in strobe_byte'range loop
+          strobe_byte(byte_idx) <= strobe(byte_idx / bytes_per_strobe_unit);
+        end loop;
+      end process;
+
+    end generate;
 
   end generate;
 
@@ -253,7 +292,8 @@ begin
     signal is_first_beat : std_ulogic := '1';
   begin
 
-      assert reference_id_queue /= null_queue report "Must set ID reference queue";
+      assert reference_id_queue /= null_queue
+        report base_error_message & ": Must set ID reference queue";
 
 
       ------------------------------------------------------------------------------
@@ -270,7 +310,7 @@ begin
         check_equal(
           unsigned(id),
           reference_id,
-          "'id' check in packet_idx=" & to_string(num_packets_checked)
+          base_error_message & ": 'id' check in packet_idx=" & to_string(num_packets_checked)
         );
 
         is_first_beat <= last;
@@ -286,8 +326,10 @@ begin
 
     assert reference_user_queue /= null_queue report "Must set user reference queue";
 
-    assert user_width mod 8 = 0
-      report "This entity works on a byte-by-byte basis. User width must be a multiple of bytes.";
+    assert user_width mod 8 = 0 report (
+      base_error_message
+      & ": This entity works on a byte-by-byte basis. User width must be a multiple of bytes."
+    );
 
 
     ------------------------------------------------------------------------------
@@ -314,12 +356,14 @@ begin
         check_equal(
           unsigned(user((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
           get(arr=>user_packet, idx=>byte_idx),
-          "'user' check at packet_idx=" & to_string(num_packets_checked)
+          base_error_message & ": 'user' check at packet_idx=" & to_string(num_packets_checked)
         );
 
         if (not disable_last_check) and byte_idx = packet_length_bytes - 1 then
           check_equal(
-            last, true, "Length mismatch between data payload and user payload"
+            last,
+            true,
+            base_error_message & ": Length mismatch between data payload and user payload"
           );
         end if;
       end loop;
@@ -340,7 +384,7 @@ begin
       id_width => id'length,
       user_width => user'length,
       well_behaved_stall => well_behaved_stall,
-      logger_name_suffix => " - axi_stream_slave" & logger_name_suffix
+      logger_name_suffix => base_error_message
     )
     port map(
       clk => clk,

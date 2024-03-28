@@ -160,7 +160,8 @@ begin
     begin
       axi_lite_master_inst : entity bfm.axi_lite_master
         generic map (
-          bus_handle => input_masters(idx)
+          bus_handle => input_masters(idx),
+          logger_name_suffix => " - input " & to_string(idx)
         )
         port map (
           clk => clk,
@@ -174,7 +175,7 @@ begin
 
 
     ------------------------------------------------------------------------------
-    axi_slave_inst : entity bfm.axi_lite_slave
+    axi_lite_slave_inst : entity bfm.axi_lite_slave
       generic map (
         axi_read_slave => axi_read_slave,
         axi_write_slave => axi_write_slave,
@@ -241,7 +242,8 @@ begin
     begin
       axi_master_inst : entity bfm.axi_master
         generic map (
-          bus_handle => input_masters(idx)
+          bus_handle => input_masters(idx),
+          logger_name_suffix => " - input " & to_string(idx)
         )
         port map (
           clk => clk,
@@ -253,6 +255,7 @@ begin
           axi_write_s2m => inputs_write_s2m(idx)
         );
     end generate;
+
 
     ------------------------------------------------------------------------------
     axi_slave_inst : entity bfm.axi_slave

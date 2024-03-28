@@ -145,6 +145,23 @@ begin
       check_equal(count_ones(bit_data3), 3);
       check_equal(count_ones(byte_data1), 12);
 
+    elsif run("test_is_01") then
+      check_true(is_01('0'));
+      check_true(is_01('1'));
+      check_false(is_01('U'));
+
+      check_true(is_01(bit_data0));
+      bit_data0(3) := 'L';
+      check_false(is_01(bit_data0));
+
+      check_true(is_01(unsigned(bit_data1)));
+      bit_data1(3) := 'H';
+      check_false(is_01(unsigned(bit_data1)));
+
+      check_true(is_01(signed(bit_data2)));
+      bit_data2(8) := 'X';
+      check_false(is_01(signed(bit_data2)));
+
     elsif run("test_boolean_and_std_logic_to_boolean_operator") then
       my_boolean := true;
       my_std_logic := '1';

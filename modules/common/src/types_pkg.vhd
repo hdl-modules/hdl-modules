@@ -54,6 +54,16 @@ package types_pkg is
   function count_ones(data : u_unsigned) return natural;
 
   --------------------------------------------------------------------------------------------------
+  -- Check that the value is well-defined, meaning '0' or '1'.
+  -- No 'X', 'U', '-', etc.
+  -- Roughly the inverse of 'is_x' in std_logic_1164 package, but it does not accept 'L' and 'H'.
+  function is_01(value : std_ulogic) return boolean;
+  function is_01(value : std_ulogic_vector) return boolean;
+  function is_01(value : u_unsigned) return boolean;
+  function is_01(value : u_signed) return boolean;
+  --------------------------------------------------------------------------------------------------
+
+  --------------------------------------------------------------------------------------------------
   -- Instead of e.g. writing
   --
   --   wait until (ready and valid) = '1' and rising_edge(clk);
@@ -224,6 +234,34 @@ package body types_pkg is
   begin
     return result;
   end function;
+
+  --------------------------------------------------------------------------------------------------
+  function is_01(value : std_ulogic) return boolean is
+  begin
+    return value = '0' or value = '1';
+  end function;
+
+  function is_01(value : std_ulogic_vector) return boolean is
+  begin
+    for idx in value'range loop
+      if value(idx) /= '0' and value(idx) /= '1' then
+        return false;
+      end if;
+    end loop;
+
+    return true;
+  end function;
+
+  function is_01(value : u_unsigned) return boolean is
+  begin
+    return is_01(std_logic_vector(value));
+  end function;
+
+  function is_01(value : u_signed) return boolean is
+  begin
+    return is_01(std_logic_vector(value));
+  end function;
+  --------------------------------------------------------------------------------------------------
 
   --------------------------------------------------------------------------------------------------
   function "and" (left : boolean; right: std_ulogic) return boolean is

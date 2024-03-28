@@ -103,6 +103,8 @@ end entity;
 
 architecture a of axi_stream_master is
 
+  constant base_error_message : string := " - axi_stream_master" & logger_name_suffix;
+
   constant bytes_per_beat : positive := data_width / 8;
   constant bytes_per_strobe_unit : positive := strobe_unit_width / 8;
 
@@ -117,17 +119,22 @@ architecture a of axi_stream_master is
 
 begin
 
-  assert data_width mod 8 = 0
-    report "This entity works on a byte-by-byte basis. Data width must be a multiple of bytes.";
+  assert data_width mod 8 = 0 report (
+    base_error_message
+    & ": This entity works on a byte-by-byte basis. Data width must be a multiple of bytes."
+  );
 
   assert data_width mod strobe_unit_width = 0
-    report "A whole number of strobes must fit in each beat.";
+    report base_error_message & ": A whole number of strobes must fit in each beat.";
 
-  assert data_width >= strobe_unit_width report "Strobe unit can not be greater than data width.";
+  assert data_width >= strobe_unit_width
+    report base_error_message & "Strobe unit can not be greater than data width.";
 
-  assert strobe_unit_width mod 8 = 0 report "Strobe unit must be a byte multiple";
+  assert strobe_unit_width mod 8 = 0
+    report base_error_message & ": Strobe unit must be a byte multiple";
 
-  assert strobe_unit_width >= 8 report "Strobe unit must be one byte or wider";
+  assert strobe_unit_width >= 8
+    report base_error_message & ": Strobe unit must be one byte or wider";
 
 
   ------------------------------------------------------------------------------
@@ -147,7 +154,7 @@ begin
     packet_length_bytes := length(data_packet);
 
     assert packet_length_bytes mod bytes_per_strobe_unit = 0
-      report "Packet length must be a multiple of strobe unit";
+      report base_error_message & ": Packet length must be a multiple of strobe unit";
 
     data_is_valid <= '1';
 
@@ -189,7 +196,7 @@ begin
     generic map(
       stall_config => stall_config,
       seed => seed,
-      logger_name_suffix => " - axi_stream_master" & logger_name_suffix
+      logger_name_suffix => base_error_message
     )
     port map(
       clk => clk,
@@ -243,10 +250,12 @@ begin
     signal user_int : std_ulogic_vector(user'range) := (others => drive_invalid_value);
   begin
 
-    assert user_queue /= null_queue report "Must set user queue";
+    assert user_queue /= null_queue report base_error_message & ": Must set user queue";
 
-    assert user_width mod 8 = 0
-      report "This entity works on a byte-by-byte basis. User width must be a multiple of bytes.";
+    assert user_width mod 8 = 0 report (
+      base_error_message
+      & ": This entity works on a byte-by-byte basis. User width must be a multiple of bytes."
+    );
 
 
     ------------------------------------------------------------------------------
@@ -265,7 +274,7 @@ begin
       packet_length_bytes := length(user_packet);
 
       assert packet_length_bytes mod user_bytes_per_beat = 0
-        report "Packet length must be a multiple of user width";
+        report base_error_message & ": Packet length must be a multiple of user width";
 
       for byte_idx in 0 to packet_length_bytes - 1 loop
         byte_lane_idx := byte_idx mod user_bytes_per_beat;
@@ -282,7 +291,7 @@ begin
             check_equal(
               byte_idx,
               packet_length_bytes - 1,
-              "Length mismatch between data payload and user payload"
+              base_error_message & ": Length mismatch between data payload and user payload"
             );
           end if;
         end if;

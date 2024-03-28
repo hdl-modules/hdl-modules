@@ -10,14 +10,12 @@
 -- This realizes a handshake master with jitter that is compliant with the AXI-Stream standard.
 -- According to the standard, ``valid`` may be lowered only after a transaction.
 --
--- This BFM can be more convenient to use than the VUnit ``axi_stream_master`` BFM in some cases.
+-- This BFM can be more convenient to use than the :ref:`bfm.axi_stream_master` BFM in
+-- some cases.
 -- Specifically when the data is not an SLV, but instead a record.
--- When using VUnit BFMs we would need to have conversion functions to and from SLV.
+-- When using AXI-Stream BFMs we would need to have conversion functions to and from SLV.
 -- When using this BFM instead for the handshaking,
 -- the data can be handled as records in the testbench with no conversion necessary.
--- Using this simple BFM is also significantly faster.
--- A drawback of this BFM is that the testbench code becomes more "RTL"-like compared to the VUnit
--- BFM, which results in more "high level" code.
 --
 -- See the testbench ``tb_handshake_bfm`` for example usage.
 --
