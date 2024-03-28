@@ -81,33 +81,14 @@ architecture a of resync_counter is
 begin
 
   ------------------------------------------------------------------------------
-  assertions_gen : if assert_false_on_counter_jumps generate
-    signal is_first_cycle : std_ulogic := '1';
-    signal counter_in_p1 : u_unsigned(default_value'range) := default_value;
-  begin
-
-    ------------------------------------------------------------------------------
-    assertions : process
-    begin
-      wait until rising_edge(clk_in);
-
-      if is_first_cycle = '0' then
-        assert hamming_distance(to_gray(counter_in), counter_in_gray) <= 1
-          report "Counter jumped by more than one"
-          severity failure;
-      end if;
-
-      counter_in_p1 <= counter_in;
-      is_first_cycle <= '0';
-    end process;
-
-  end generate;
-
-
-  ------------------------------------------------------------------------------
   clk_in_process : process
   begin
     wait until rising_edge(clk_in);
+
+    if assert_false_on_counter_jumps then
+      assert hamming_distance(to_gray(counter_in), counter_in_gray) <= 1
+        report "Counter jumped by more than one";
+    end if;
 
     counter_in_gray <= to_gray(counter_in);
   end process;
