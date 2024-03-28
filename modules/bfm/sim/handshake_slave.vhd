@@ -17,11 +17,6 @@
 -- the data can be handled as records in the testbench with no conversion necessary.
 --
 -- See the testbench 'tb_handshake_bfm' for example usage.
---
--- This entity can also optionally perform protocol checking on the handshaking data interface.
--- This will verify that the AXI-Stream standard is followed.
--- Assign the ``valid``/``last``/``data``/``strobe`` ports and set the correct ``data_width``
--- generic in order to use this.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,8 +25,6 @@ use ieee.std_logic_1164.all;
 
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
-
-library common;
 
 use work.stall_bfm_pkg.all;
 
@@ -42,12 +35,6 @@ entity handshake_slave is
     -- Random seed for handshaking stall/jitter.
     -- Set to something unique in order to vary the random sequence.
     seed : natural := 0;
-    -- Assign a non-zero value in order to use the 'data'/'strobe' ports for protocol checking.
-    data_width : natural := 0;
-    -- Assign a non-zero value in order to use the 'id' port for protocol checking.
-    id_width : natural := 0;
-    -- Assign a non-zero value in order to use the 'user' port for protocol checking.
-    user_width : natural := 0;
     -- If true: Once asserted, 'ready' will not fall until valid has been asserted (i.e. a
     -- handshake has happened). Note that according to the AXI-Stream standard 'ready' may fall
     -- at any time (regardless of 'valid'). However, many modules are developed with this
@@ -59,26 +46,12 @@ entity handshake_slave is
   port (
     clk : in std_ulogic;
     --# {{}}
-    -- Can be set to '0' by testbench when it is not yet ready to receive data
+    -- Can be set to '0' by testbench when it is not yet ready to receive data.
     data_is_ready : in std_ulogic := '1';
     --# {{}}
     ready : out std_ulogic := '0';
-    -- Must be connected if 'well_behaved_stall' is true. Otherwise it is optional and
-    -- only for protocol checking.
-    valid : in std_ulogic := '0';
-    --# {{}}
-    -- Optional to connect. Only used for protocol checking.
-    last : in std_ulogic := '1';
-    -- Optional to connect. Only used for protocol checking.
-    -- Must set a valid 'data_width' generic in order to use these two.
-    data : in std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-    strobe : in std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '1');
-    -- Optional to connect. Only used for protocol checking.
-    -- Must set a valid 'id_width' generic in order to use this.
-    id : in u_unsigned(id_width - 1 downto 0) := (others => '0');
-    -- Optional to connect. Only used for protocol checking.
-    -- Must set a valid 'user_width' generic in order to use this.
-    user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '0')
+    -- Must be connected if 'well_behaved_stall' is true. Otherwise it has no effect.
+    valid : in std_ulogic := '0'
   );
 end entity;
 
@@ -110,26 +83,5 @@ begin
     end process;
 
   end generate;
-
-
-  ------------------------------------------------------------------------------
-  axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
-    generic map (
-      data_width => data'length,
-      id_width => id'length,
-      user_width => user'length,
-      logger_name_suffix => " - handshake_slave" & logger_name_suffix
-    )
-    port map (
-      clk => clk,
-      --
-      ready => ready,
-      valid => valid,
-      last => last,
-      data => data,
-      strobe => strobe,
-      id => id,
-      user => user
-    );
 
 end architecture;
