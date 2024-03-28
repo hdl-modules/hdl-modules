@@ -41,9 +41,12 @@ entity resync_level_on_signal is
 end entity;
 
 architecture a of resync_level_on_signal is
-  -- Keep net so that we can apply constraint
-  signal data_in_int : std_ulogic;
+
+  signal data_in_int : std_ulogic := '0';
+
+  -- Keep net so we can apply constraints.
   attribute dont_touch of data_in_int : signal is "true";
+
 begin
 
   data_in_int <= data_in;
@@ -53,6 +56,7 @@ begin
   main : process
   begin
     wait until rising_edge(clk_out);
+
     if sample_value then
       data_out <= data_in_int;
     end if;

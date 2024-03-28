@@ -438,8 +438,12 @@ begin
     signal mem : mem_t(0 to memory_depth - 1) := (others => (others => '0'));
     attribute ram_style of mem : signal is to_attribute(ram_type);
 
-    signal memory_read_data, memory_write_data : word_t;
+    signal memory_read_data, memory_write_data : word_t := (others => '0');
   begin
+
+    assert ram_type /= ram_style_registers
+      report "Timing constraints will not work for a register implementation"
+      severity failure;
 
     read_data_ram <= memory_read_data(read_data_ram'range);
     memory_write_data(write_data'range) <= write_data;

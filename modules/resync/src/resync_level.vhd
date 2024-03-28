@@ -83,15 +83,17 @@ entity resync_level is
 end entity;
 
 architecture a of resync_level is
+
   signal data_in_int, data_in_p1, data_out_int : std_ulogic := default_value;
 
-  -- This register may not be optimized away, and logic may not be moved to after the register.
-  -- That is, if the register exists via the generic. Otherwise it is just a passthrough net.
+  -- Make sure the input register is not optimized away and that logic is not moved around.
+  -- That is, if the register exists via the generic, otherwise it is just a passthrough net.
   attribute dont_touch of data_in_int : signal is "true";
 
   -- Ensure placement in same slice.
   attribute async_reg of data_in_p1 : signal is "true";
   attribute async_reg of data_out_int : signal is "true";
+
 begin
 
   data_out <= data_out_int;

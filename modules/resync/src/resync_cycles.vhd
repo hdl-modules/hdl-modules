@@ -49,8 +49,11 @@ entity resync_cycles is
 end entity;
 
 architecture a of resync_cycles is
-  signal counter_in, counter_in_resync, counter_out : u_unsigned(counter_width - 1 downto 0)
-    := (others => '0');
+
+  signal counter_in, counter_in_resync, counter_out : u_unsigned(counter_width - 1 downto 0) := (
+    others => '0'
+  );
+
 begin
 
   ------------------------------------------------------------------------------
@@ -59,7 +62,7 @@ begin
     wait until rising_edge(clk_in);
 
     if data_in = active_level then
-      counter_in <= (counter_in + 1);
+      counter_in <= counter_in + 1;
     end if;
   end process;
 
@@ -85,7 +88,7 @@ begin
 
     if counter_out /= counter_in_resync then
       data_out <= active_level;
-      counter_out <= (counter_out + 1);
+      counter_out <= counter_out + 1;
     else
       data_out <= not active_level;
     end if;
@@ -93,7 +96,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  check_counter_wrapping : process
+  assertions : process
     variable counter_in_p1 : u_unsigned(counter_in'range) := (others => '0');
   begin
     wait until rising_edge(clk_out);

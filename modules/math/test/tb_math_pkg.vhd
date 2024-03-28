@@ -68,23 +68,6 @@ begin
     ------------------------------------------------------------------------------
 
     ------------------------------------------------------------------------------
-    -- This function calculates the number of bits pars that differs
-    -- in the two input vectors.
-    function hamming_distance(in1, in2 : std_ulogic_vector) return integer is
-      variable tmp : std_ulogic_vector(in1'range);
-      variable ret : integer := 0;
-    begin
-      tmp := in1 xor in2;
-      for i in tmp'range loop
-        if tmp(i) = '1' then
-          ret := ret + 1;
-        end if;
-      end loop;
-      return ret;
-    end function;
-    ------------------------------------------------------------------------------
-
-    ------------------------------------------------------------------------------
     variable value : u_signed(5 - 1 downto 0);
     variable value_slv : u_unsigned(8 - 1 downto 0);
     constant some_integer_vector : integer_vector(0 to 3) := (-1, 4, 0, -7);
@@ -94,8 +77,7 @@ begin
   begin
     test_runner_setup(runner, runner_cfg);
 
-
-    if run("get_min_max_signed_integer") then
+    if run("test_get_min_max_signed_integer") then
       -- Since get_min/max_signed_integer calls get_min/max_signed, only testing like this
       -- is enough.
 
@@ -136,7 +118,7 @@ begin
       check_equal(clamp_signed(clamp_max_value), clamp_max_value);
       check_equal(clamp_signed(clamp_max_value + 1), clamp_max_value);
 
-    elsif run("ceil_log2") then
+    elsif run("test_ceil_log2") then
       check_equal(ceil_log2(1), 0);
 
       check_equal(ceil_log2(2), 1);
@@ -150,14 +132,14 @@ begin
 
       check_equal(ceil_log2(9), 4);
 
-    elsif run("log2") then
+    elsif run("test_log2") then
       check_equal(log2(1), 0);
       check_equal(log2(2), 1);
       check_equal(log2(32), 5);
       check_equal(log2(64), 6);
       check_equal(log2(128), 7);
 
-    elsif run("num_bits_needed_unsigned_integer") then
+    elsif run("test_num_bits_needed_unsigned_integer") then
       check_equal(num_bits_needed(0), 1);
       check_equal(num_bits_needed(1), 1);
       check_equal(num_bits_needed(2), 2);
@@ -201,7 +183,7 @@ begin
       matrix := ((-7, 6, -1), (1, -9, -1));
       check_equal(num_bits_needed_signed(matrix), 5);
 
-    elsif run("round_up_to_power_of_two") then
+    elsif run("test_round_up_to_power_of_two") then
       check_equal(round_up_to_power_of_two(1), 1);
       check_equal(round_up_to_power_of_two(1.0), 1.0);
 
@@ -223,7 +205,7 @@ begin
       check_equal(round_up_to_power_of_two(128.0), 128.0);
       check_equal(round_up_to_power_of_two(129.0), 256.0);
 
-    elsif run("num_bits_needed_vector") then
+    elsif run("test_num_bits_needed_vector") then
       value_slv := "00000000";
       check_equal(num_bits_needed(value_slv), 1);
 
@@ -239,7 +221,7 @@ begin
       value_slv := "00000100";
       check_equal(num_bits_needed(value_slv), 3);
 
-    elsif run("lt_0") then
+    elsif run("test_lt_0") then
       value := to_signed(-3, value'length);
       check_true(lt_0(value));
       value := to_signed(0, value'length);
@@ -247,7 +229,7 @@ begin
       value := to_signed(3, value'length);
       check_false(lt_0(value));
 
-    elsif run("geq_0") then
+    elsif run("test_geq_0") then
       value := to_signed(-3, value'length);
       check_false(geq_0(value));
       value := to_signed(0, value'length);
@@ -255,7 +237,7 @@ begin
       value := to_signed(3, value'length);
       check_true(geq_0(value));
 
-    elsif run("to_and_from_gray") then
+    elsif run("test_to_and_from_gray") then
       for i in 1 to 2 ** value_slv'length - 2 loop
         value_slv := to_unsigned(i, value_slv'length);
         check_equal(from_gray(to_gray(value_slv)), value_slv);
@@ -266,7 +248,13 @@ begin
         check_equal(hamming_distance(to_gray(value_slv - 1), to_gray(value_slv + 1)), 2);
       end loop;
 
-    elsif run("is_power_of_two") then
+    elsif run("test_hamming_distance") then
+      check_equal(hamming_distance("0010", "0010"), 0);
+      check_equal(hamming_distance("1110", "0010"), 2);
+      check_equal(hamming_distance("0010", "0011"), 1);
+      check_equal(hamming_distance("1010", "0011"), 2);
+
+    elsif run("test_is_power_of_two") then
       check_true(is_power_of_two(2));
       check_true(is_power_of_two(4));
       check_true(is_power_of_two(16));
@@ -274,23 +262,23 @@ begin
       check_false(is_power_of_two(15));
       check_false(is_power_of_two(17));
 
-    elsif run("abs_vector") then
+    elsif run("test_abs_vector") then
       abs_vector_output := abs_vector(some_integer_vector);
       for idx in some_integer_vector'range loop
         check_equal(abs_vector_output(idx), abs(some_integer_vector(idx)));
       end loop;
 
-    elsif run("vector_sum") then
+    elsif run("test_vector_sum") then
       check_equal(vector_sum((0, 1, -4)), -3);
       check_equal(vector_sum((4, 1, 3)), 8);
 
-    elsif run("greatest_common_divisor") then
+    elsif run("test_greatest_common_divisor") then
       check_equal(greatest_common_divisor(6, 3), 3);
       check_equal(greatest_common_divisor(7, 3), 1);
       check_equal(greatest_common_divisor(7, 1), 1);
       check_equal(greatest_common_divisor(8, 15), 1);
 
-    elsif run("is_mutual_prime") then
+    elsif run("test_is_mutual_prime") then
       check_equal(is_mutual_prime(6, (3, 7)), false);
       check_equal(is_mutual_prime(7, (3, 6)), true);
       check_equal(is_mutual_prime(7, (1, 5)), true);

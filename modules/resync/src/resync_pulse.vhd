@@ -42,7 +42,9 @@ entity resync_pulse is
 end entity;
 
 architecture a of resync_pulse is
+
   signal level_in, level_out, level_out_p1, level_out_feedback : std_ulogic := '0';
+
 begin
 
   ------------------------------------------------------------------------------

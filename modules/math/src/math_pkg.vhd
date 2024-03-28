@@ -80,6 +80,9 @@ package math_pkg is
   ------------------------------------------------------------------------------
   function to_gray(value : u_unsigned) return std_ulogic_vector;
   function from_gray(code : std_ulogic_vector) return u_unsigned;
+
+  -- The number of bits that differ when comparing the two vectors.
+  function hamming_distance(data1, data2 : std_ulogic_vector) return natural;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
@@ -296,7 +299,7 @@ package body math_pkg is
 
   ------------------------------------------------------------------------------
   function to_gray(value : u_unsigned) return std_ulogic_vector is
-    variable value_slv, result : std_ulogic_vector(value'range);
+    variable value_slv, result : std_ulogic_vector(value'range) := (others => '0');
   begin
     value_slv := std_logic_vector(value);
     result := value_slv xor "0" & value_slv(value_slv'high downto 1);
@@ -304,13 +307,21 @@ package body math_pkg is
   end function;
 
   function from_gray(code : std_ulogic_vector) return u_unsigned is
-    variable result : u_unsigned(code'range);
+    variable result : u_unsigned(code'range) := (others => '0');
   begin
     result(code'high) := code(code'high);
-    for bit_num in code'high -1 downto 0 loop
+    for bit_num in code'high - 1 downto 0 loop
       result(bit_num) := result(bit_num + 1) xor code(bit_num);
     end loop;
 
+    return result;
+  end function;
+
+  function hamming_distance(data1, data2 : std_ulogic_vector) return natural is
+    constant xor_value : std_ulogic_vector(data1'range) := data1 xor data2;
+    constant result : natural range 0 to data1'length := count_ones(xor_value);
+  begin
+    assert data1'length = data2'length report "Arguments must be of equal length" severity failure;
     return result;
   end function;
   ------------------------------------------------------------------------------
