@@ -2,7 +2,7 @@ Breaking changes
 
 * Remove protocol checking from :ref:`bfm.handshake_master` and :ref:`bfm.handshake_slave`.
   If protocol checking is still wanted in places where these are instantiated,
-  a :ref:`common.axi_stream_protocol_checker` instance alongside is recommended.
+  an :ref:`common.axi_stream_protocol_checker` instance alongside is recommended.
 
 * Split ``bfm.bfm_pkg`` into
 
