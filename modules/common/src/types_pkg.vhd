@@ -188,7 +188,7 @@ package body types_pkg is
   end function;
 
   function swap_byte_order(data : std_ulogic_vector) return std_ulogic_vector is
-    variable result : std_ulogic_vector(data'range);
+    variable result : std_ulogic_vector(data'range) := (others => '0');
     constant num_bytes : positive := data'length / 8;
     variable result_byte_idx : natural := 0;
   begin
@@ -209,7 +209,7 @@ package body types_pkg is
 
   function swap_bit_order(data : std_ulogic_vector) return std_ulogic_vector is
     constant length : positive := data'length;
-    variable result : std_ulogic_vector(data'range);
+    variable result : std_ulogic_vector(data'range) := (others => '0');
   begin
     -- While maintaining the range and vector direction, swap the location of the data bits.
 
