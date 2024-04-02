@@ -291,7 +291,6 @@ class Module(BaseModule):
             use_asynchronous_fifo=False,
             width=8,
             depth=32,
-            enable_last=True,
             enable_output_register=False,
         )
         projects.append(
