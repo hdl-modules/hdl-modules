@@ -229,7 +229,7 @@ package body math_pkg is
   function geq_0(value : u_signed) return boolean is
   begin
     -- The Vivado synthesis engine has been shown to produce a lot of logic (20-30 LUTs) when
-    -- doing simply "if value <= 0 then ...", hence this bit operation is used instead.
+    -- doing simply "if value >= 0 then ...", hence this bit operation is used instead.
     return value(value'left) = '0';
   end function;
   ------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ package body math_pkg is
 
   ------------------------------------------------------------------------------
   function abs_vector(vector : integer_vector) return integer_vector is
-    variable result : integer_vector(vector'range);
+    variable result : integer_vector(vector'range) := (others => 0);
   begin
     for idx in vector'range loop
       result(idx) := abs(vector(idx));
@@ -348,7 +348,7 @@ package body math_pkg is
 
   ------------------------------------------------------------------------------
   function greatest_common_divisor(value1, value2 : positive) return positive is
-    variable tmp, smaller_value, larger_value : natural;
+    variable tmp, smaller_value, larger_value : natural := 0;
   begin
     -- Calculate the greatest_common_divisor between two values.
     -- Uses the euclidean algorithm
