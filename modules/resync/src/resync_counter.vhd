@@ -66,6 +66,7 @@ entity resync_counter is
 end entity;
 
 architecture a of resync_counter is
+
   signal counter_in_gray, counter_in_gray_p1, counter_out_gray : std_ulogic_vector(
     counter_in'range
   ) := to_gray(default_value);
