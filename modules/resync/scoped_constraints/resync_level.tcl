@@ -18,8 +18,10 @@ set first_resync_register [get_cells data_in_p1_reg]
 if {${clk_in} != "" && ${clk_out} != ""} {
   # If we have both clocks we can set a max delay constraint in order
   # to get deterministic delay through the resync block.
-  set max_delay [get_property PERIOD ${clk_out}]
-  puts "INFO hdl-modules resync_level.tcl: Using calculated max delay ${max_delay}."
+  set clk_in_period [get_property -min PERIOD ${clk_in}]
+  set clk_out_period [get_property -min PERIOD ${clk_out}]
+  set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
+  puts "INFO hdl-modules resync_level.tcl: Using calculated max delay: ${min_period}."
 
   # The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
   # constraining asynchronous clock domain crossings.
@@ -43,7 +45,7 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   # If we did this as a traditional TCL constraint script instead, it would work.
   # But that comes with it's drawbacks, namely it would be harder to find our cells in the
   # whole design hierarchy.
-  set_max_delay -datapath_only -from ${clk_in} -to ${first_resync_register} ${max_delay}
+  set_max_delay -datapath_only -from ${clk_in} -to ${first_resync_register} ${min_period}
 } else {
   # Could not find both clocks.
   # Could be that 'clk_in' is not connected, or the clocks have not been created yet.
