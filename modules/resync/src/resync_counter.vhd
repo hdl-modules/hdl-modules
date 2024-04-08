@@ -6,31 +6,27 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Synchronize a counter value between two domains, using Gray coded values.
+-- Synchronize a counter value between two domains using Gray-coded values.
+-- Converts the binary input counter word to Gray code, resynchronizes it to the
+-- output clock domain with an ``async_reg`` chain, and converts it back to a binary number.
 --
--- .. note::
---   This entity has a scoped constraint file that must be used.
+-- .. figure:: resync_counter_transparent.png
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with LUTs as well as FFs.
+--
+-- .. note::
+--   This entity has a scoped constraint file that must be used.
+--   See the ``scoped_constraints`` folder for the file with the same name.
 --
 -- .. warning::
 --   This entity assumes that the input counter value only increments and decrements in steps
 --   of one.
 --   Erroneous values can appear on the output if this is not followed.
 --
--- This entity converts the binary input counter word to Gray code, resynchronizes it to the
--- output clock domain with an ``async_reg`` chain, and converts it back to a binary number.
---
--- A ``set_bus_skew`` constraint is a applied to the Gray coded bits that are sampled in the
--- output clock domain. That constraint imposes an upper limit for the difference in the
--- intra-word routing delay. This in turn means that the bits are always sampled coherently with
--- regards to changes on the input side. It is possible to sample while one bit is transitioning,
--- but the meta-stability protection of an ``async_reg`` chain will resolve that to a "clean"
--- ``'0'`` or ``'1'``.
--- Since the value is Gray coded, there will never be more than one bit transitioning for each value
--- change, which means that it does not matter if the transitioning value is resolved
--- to ``'0'`` or ``'1'``.
+-- See the corresponding constraint file and
+-- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-2-counters-fifos-lukas-vik-ist5c>`__
+-- for information about timing constraints and how this CDC topology is made reliable.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

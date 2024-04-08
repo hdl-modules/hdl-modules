@@ -6,7 +6,9 @@
 # https://hdl-modules.com
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
-# Xilinx User Guide UG903 provides a good example of this type of constraints
+# See this article for background and discussion about these constraints:
+# https://www.linkedin.com/pulse/reliable-cdc-constraints-2-counters-fifos-lukas-vik-ist5c
+# Also AMD document UG903 provides some examples.
 # --------------------------------------------------------------------------------------------------
 
 set stable_registers [get_cells counter_in_gray_reg*]
@@ -18,14 +20,14 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   set clk_out_period [get_property -min PERIOD ${clk_out}]
   set clk_in_period [get_property -min PERIOD ${clk_in}]
   set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
-  puts "INFO tsfpga resync_counter.tcl: Using calculated min period: ${min_period}."
+  puts "INFO hdl-modules resync_counter.tcl: Using calculated min period: ${min_period}."
 } else {
   # In some cases the clock might not be created yet, most likely during synthesis.
   # Use 2 nanosecond (500 MHz) as default, which should be safe for all FPGA applications.
   # Hopefully the clocks are defined when this constraint file is applied again during
   # implementation. That would make the constraint more correct.
   set min_period 2
-  puts "WARNING tsfpga resync_counter.tcl: Could not auto detect frequencies. Using default value."
+  puts "WARNING hdl-modules resync_counter.tcl: Could not auto detect frequencies. Using default value."
 }
 
 # Add bus skew constraint to make sure that multiple bit changes on one 'clk_in' cycle are detected

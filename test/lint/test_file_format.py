@@ -95,9 +95,8 @@ def test_no_checked_in_files_have_too_long_lines():
         REPO_ROOT / "license.txt",
         # Impossible to break RST syntax
         HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_counter.vhd",
         # Impossible to break TCL syntax
-        HDL_MODULES_DIRECTORY / "fifo" / "scoped_constraints" / "asynchronous_fifo.tcl",
-        HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_counter.tcl",
         HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_slv_level_coherent.tcl",
     ]
     for file_path in files_to_test(excludes=excludes):

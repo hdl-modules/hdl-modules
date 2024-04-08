@@ -6,6 +6,10 @@
 # https://hdl-modules.com
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
+# See this article for background and discussion about these constraints:
+# https://www.linkedin.com/pulse/reliable-cdc-constraints-1-lukas-vik-copcf/
+# Also AMD document UG903 provides some background.
+# --------------------------------------------------------------------------------------------------
 
 set clk_in [get_clocks -of_objects [get_ports clk_in]]
 set clk_out [get_clocks -of_objects [get_ports clk_out]]
@@ -15,7 +19,7 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   # If we have both clocks we can set a max delay constraint in order
   # to get deterministic delay through the resync block.
   set max_delay [get_property PERIOD ${clk_out}]
-  puts "INFO tsfpga resync_level.tcl: Using calculated value ${max_delay} for constraint."
+  puts "INFO hdl-modules resync_level.tcl: Using calculated max delay ${max_delay}."
 
   # The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
   # constraining asynchronous clock domain crossings.
@@ -44,6 +48,6 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   # Could not find both clocks.
   # Could be that 'clk_in' is not connected, or the clocks have not been created yet.
   # In this case, fall back to simple false path constraint.
-  puts "WARNING tsfpga resync_level.tcl: Could not find both clocks. Setting false path constraint."
+  puts "WARNING hdl-modules resync_level.tcl: Could not find both clocks."
   set_false_path -setup -hold -to ${first_resync_register}
 }

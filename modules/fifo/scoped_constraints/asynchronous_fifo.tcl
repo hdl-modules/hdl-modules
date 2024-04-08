@@ -20,6 +20,6 @@ set read_data [get_cells memory.memory_read_data_reg*]
 # BRAM, but the constraint has no effect.
 # Hence it seems safe to apply it always.
 if {${read_data} != "" && ${clk_write} != ""} {
-  puts "INFO tsfpga asynchronous_fifo.tcl: Setting false path from write clock to read data registers."
+  puts "INFO hdl-modules asynchronous_fifo.tcl: Setting false path to read data registers."
   set_false_path -setup -hold -from ${clk_write} -to ${read_data}
 }

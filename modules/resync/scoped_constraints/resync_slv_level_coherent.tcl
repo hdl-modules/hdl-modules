@@ -16,14 +16,14 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   set clk_out_period [get_property -min PERIOD ${clk_out}]
   set clk_in_period [get_property -min PERIOD ${clk_in}]
   set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
-  puts "INFO tsfpga resync_slv_level_coherent.tcl: Using calculated min period: ${min_period}."
+  puts "INFO hdl-modules resync_slv_level_coherent.tcl: Using calculated min period: ${min_period}."
 } else {
   # In some cases the clock might not be created yet, most likely during synthesis.
   # Use 2 nanosecond (500 MHz) as default, which should be safe for all FPGA applications.
   # Hopefully the clocks are defined when this constraint file is applied again during
   # implementation. That would make the constraint more correct.
   set min_period 2
-  puts "WARNING tsfpga resync_slv_level_coherent.tcl: Could not auto detect frequencies. Using default value."
+  puts "WARNING hdl-modules resync_slv_level_coherent.tcl: Could not find both clocks."
 }
 
 # Set max delay to impose a latency limit.
