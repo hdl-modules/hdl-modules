@@ -30,8 +30,8 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   puts "WARNING hdl-modules resync_counter.tcl: Could not find clocks, using default value."
 }
 
-# Add bus skew constraint to make sure that multiple bit changes on one 'clk_in' cycle are detected
-# with maximum one 'clk_out' cycle skew.
+# Add intra-word skew constraint so that when a value is sampled in the output domain, a maximum of
+# one bit might be in a transitioning state.
 set_bus_skew -from ${stable_registers} -to ${first_resync_registers} ${min_period}
 
 # Set max delay to impose a latency limit.
