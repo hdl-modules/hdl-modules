@@ -13,26 +13,34 @@
 
 set stable_registers [get_cells counter_in_gray_reg*]
 set first_resync_registers [get_cells counter_in_gray_p1_reg*]
-set clk_in [get_clocks -of_objects [get_ports clk_in]]
-set clk_out [get_clocks -of_objects [get_ports clk_out]]
 
-if {${clk_in} != "" && ${clk_out} != ""} {
-  set clk_out_period [get_property -min PERIOD ${clk_out}]
+# Try to find the period of the input clock.
+# Use either the actual value, or a safe default value (500 MHz => 2 ns) if the clock can
+# not be found at this stage.
+set clk_in [get_clocks -of_objects [get_ports clk_in]]
+if {${clk_in} != ""} {
   set clk_in_period [get_property -min PERIOD ${clk_in}]
-  set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
-  puts "INFO hdl-modules resync_counter.tcl: Using calculated min period: ${min_period}."
+  puts "INFO hdl-modules resync_counter.tcl: Using clk_in period: ${clk_in_period}."
 } else {
-  # In some cases the clock might not be created yet, most likely during synthesis.
-  # Use 2 nanosecond (500 MHz) as default, which should be safe for all FPGA applications.
-  # Hopefully the clocks are defined when this constraint file is applied again during
-  # implementation. That would make the constraint more correct.
-  set min_period 2
-  puts "WARNING hdl-modules resync_counter.tcl: Could not find clocks, using default value."
+  set clk_in_period 2
+  puts "WARNING hdl-modules resync_counter.tcl: Could not find clk_in."
 }
 
 # Add intra-word skew constraint so that when a value is sampled in the output domain, a maximum of
 # one bit might be in a transitioning state.
-set_bus_skew -from ${stable_registers} -to ${first_resync_registers} ${min_period}
+set_bus_skew -from ${stable_registers} -to ${first_resync_registers} ${clk_in_period}
+
+# Try to find output clock period in a similar way.
+set clk_out [get_clocks -of_objects [get_ports clk_out]]
+if {${clk_out} != ""} {
+  set clk_out_period [get_property -min PERIOD ${clk_out}]
+  puts "INFO hdl-modules resync_counter.tcl: Using clk_out period: ${clk_out_period}."
+} else {
+  set clk_out_period 2
+  puts "WARNING hdl-modules resync_counter.tcl: Could not find clk_out."
+}
+
+set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
 
 # Set max delay to impose a latency limit.
 # The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
