@@ -27,7 +27,7 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   # Hopefully the clocks are defined when this constraint file is applied again during
   # implementation. That would make the constraint more correct.
   set min_period 2
-  puts "WARNING hdl-modules resync_counter.tcl: Could not auto detect frequencies. Using default value."
+  puts "WARNING hdl-modules resync_counter.tcl: Could not find clocks, using default value."
 }
 
 # Add bus skew constraint to make sure that multiple bit changes on one 'clk_in' cycle are detected
