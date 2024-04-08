@@ -8,15 +8,25 @@
 -- -------------------------------------------------------------------------------------------------
 -- Resync a single bit from one clock domain to another, using two ``async_reg`` registers.
 --
+-- .. figure:: resync_level_transparent.png
+--
+-- The two registers will be placed in the same slice, in order to maximize metastability recovery,
+-- which minimizes mean time between failure (MTBF).
+-- This enables proper resynchronization of semi-static "level"-type signals without meta stability
+-- on rising/falling edges.
+--
 -- .. note::
 --   This entity has a scoped constraint file that must be used.
+--   See the ``scoped_constraints`` folder for the file with the same name.
 --
--- The two registers will be placed in the same slice, in order to minimize Mean Time Between
--- Failure (MTBF). This guarantees proper resynchronization of semi-static "level"-type
--- signals without meta stability on rising/falling edges. It can not handle
--- "pulse" type signals. Pulses can be missed and single-cycle pulse behavior
--- will not work.
+-- .. warning::
+--   This entity works only for semi-static "level"-type input signals.
+--   This entity can not handle "pulse"-type signals.
+--   Pulses can be missed and single-cycle pulse behavior will not work.
 --
+-- See the corresponding constraint file and
+-- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-1-lukas-vik-copcf/>`__
+-- for information about timing constraints and how this CDC topology is made reliable.
 --
 -- Deterministic latency
 -- _____________________
@@ -38,22 +48,6 @@
 -- Note that this is a separate issue from meta-stability; they can happen independently of
 -- each other.
 -- When this option is enabled, the ``clk_in`` port must be driven with the correct clock.
---
--- Some motivation why the input needs to be driven by a register:
--- While LUTs are designed to be glitch-free in order to save switching power, this can only be
--- achieved as long as only one LUT input value changes state.
--- When more than one input changes state per clock cycle, glitches will almost certainly appear on
--- the LUT output before reaching its steady state.
--- This is partly due to difference in propagation delay between the inputs, and partly due to
--- the electrical structure of a LUT. In a regular synchronous design, the Vivado timing engine
--- guarantees that all these glitches have been resolved and LUT output has reached its
--- steady state before the value is sampled by a FF. When the value is fed to our ``async_reg`` FF
--- chain however there is no control over this, and we may very well sample an erroneous
--- glitch value.
--- So given this knowledge the rule of thumb is to always drive ``resync_level`` input by a FF.
--- However since LUTs are glitch-free in some scenarios, exceptions can be made if we are sure
--- of what we are doing. For example if the value is inverted in a LUT before being fed to
--- ``resync_level``, then that is a scenario where we do not actually need the extra FF.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

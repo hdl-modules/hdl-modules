@@ -14,8 +14,10 @@
 -- are not enabled.
 --
 -- .. note::
---   This entity has a scoped constraint file that must be used. It further instantiates
---   :ref:`resync.resync_counter` which also has a constraint file.
+--   This entity has a scoped constraint file that must be used.
+--   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity also instantiates :ref:`resync.resync_counter` which has a further constraint file
+--   that must be used.
 --
 -- .. warning::
 --   In case ``enable_output_register`` is set, the implementation does not keep track of
