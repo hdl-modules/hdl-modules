@@ -46,12 +46,7 @@ BADGE_COLOR_RIGHT = "#2db84d"
 
 
 def main() -> None:
-    rst = generate_release_notes(
-        repo_root=tools_env.REPO_ROOT,
-        release_notes_directory=tools_env.HDL_MODULES_DOC / "release_notes",
-        project_name="hdl-modules",
-    )
-    create_file(GENERATED_SPHINX / "generated_release_notes.rst", rst)
+    generate_and_create_release_notes()
 
     generate_bibtex()
 
@@ -70,6 +65,25 @@ def main() -> None:
     build_sphinx(build_path=GENERATED_SPHINX, output_path=GENERATED_SPHINX_HTML)
 
     build_information_badges()
+
+
+def generate_and_create_release_notes() -> None:
+    release_notes_rst = generate_release_notes(
+        repo_root=tools_env.REPO_ROOT,
+        release_notes_directory=tools_env.HDL_MODULES_DOC / "release_notes",
+        project_name="hdl-modules",
+    )
+
+    rst = f"""
+Release notes
+=============
+
+Release history and changelog for the ``hdl-modules`` project.
+
+{release_notes_rst}
+"""
+
+    create_file(GENERATED_SPHINX / "release_notes.rst", rst)
 
 
 def generate_bibtex() -> None:
