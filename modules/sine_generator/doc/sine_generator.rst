@@ -1,19 +1,23 @@
 This module contains a flexible and robust sinusoidal waveform generator written in VHDL.
 Also known as a direct digital synthesizer (DDS), numerically-controlled oscillator (NCO), or
 a sine/sinus wave generator.
-
 This is a very common component when doing any kind of signal processing, signal analysis or
 modulation in an FPGA or ASIC.
-This implementation supports an SFDR of 192 dB in fractional phase mode, and theoretically
-unlimited SFDR in integer phase mode.
-Both sine and cosine outputs are available, for I/Q modulation and other applications.
+
+Key features
+
+* SFDR of 192 dB in fractional phase mode.
+* Theoretically unlimited SFDR in integer phase mode.
+* Both sine and cosine outputs, for I/Q modulation and other applications.
+* Synthesizes frequencies all the way up to Nyquist.
+* Written in pure VHDL. Needs no separate Matlab/Python tools to pre-calculate anything.
+* Better performance and lower resource footprint compared to other implementations.
 
 The implementation is based around a quarter-wave lookup table in block RAM.
 It supports both integer and fractional phase modes, and can be parameterized
 to use dithering and Taylor expansion to increase the performance, when necessary.
-It is well-tested and well-analyzed, and the performance has been properly simulated.
-
-It is written purely in VHDL, and needs no separate Matlab/Python tools to pre-calculate anything.
+It is well-tested and well-analyzed.
+The performance is proven by theory as well as simulation and on-device tests.
 
 
 Quick start guide
