@@ -67,4 +67,4 @@ html_css_files = [
 
 # OpenGraph settings.
 ogp_site_url = "https://hdl-modules.com"
-ogp_image = "_static/sine_launch.png"
+ogp_image = "_static/social_media_preview.png"
