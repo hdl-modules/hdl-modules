@@ -11,6 +11,20 @@
 Configuration file for the Sphinx documentation builder.
 """
 
+# Standard libraries
+import sys
+from pathlib import Path
+
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+sys.path.insert(0, str(REPO_ROOT))
+
+# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+import tools.tools_pythonpath  # noqa: F401
+
+# First party libraries
+from hdl_modules.about import WEBSITE_URL
+
 project = "hdl-modules"
 copyright = "Lukas Vik"
 author = "Lukas Vik"
@@ -33,7 +47,8 @@ intersphinx_mapping = {
 symbolator_output_format = "png"
 
 # Base URL for generated sitemap.xml.
-html_baseurl = "https://hdl-modules.com/"
+# Note that this must end with a trailing slash, otherwise the sitemap.xml will be incorrect.
+html_baseurl = f"{WEBSITE_URL}/"
 
 # To avoid "en" in the sitemap.xml URL.
 # https://sphinx-sitemap.readthedocs.io/en/latest/advanced-configuration.html
@@ -52,7 +67,6 @@ html_theme_options = {
 
 html_logo = "hdl_modules_sphinx.png"
 
-
 # These folders are copied to the documentation's HTML output
 html_static_path = ["css", "opengraph"]
 
@@ -66,5 +80,5 @@ html_css_files = [
 ]
 
 # OpenGraph settings.
-ogp_site_url = "https://hdl-modules.com"
+ogp_site_url = WEBSITE_URL
 ogp_image = "_static/social_media_preview.png"
