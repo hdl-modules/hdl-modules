@@ -166,6 +166,7 @@ entity sine_lookup is
     result_minus_cosine : out u_signed(memory_data_width + 1 - 1 downto 0) := (others => '0')
   );
 
+  -- 'result' is valid this many clock cycles after 'input' is valid.
   attribute latency : positive;
   attribute latency of sine_lookup : entity is 3;
 end entity;
