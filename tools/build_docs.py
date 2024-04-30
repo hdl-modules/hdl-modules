@@ -30,7 +30,7 @@ from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
 # First party libraries
 from hdl_modules import REPO_ROOT
-from hdl_modules.about import REPOSITORY_URL, get_readme_rst, get_short_slogan
+from hdl_modules.about import REPOSITORY_URL, WEBSITE_URL, get_readme_rst, get_short_slogan
 from tools import tools_env
 
 if TYPE_CHECKING:
@@ -100,9 +100,9 @@ def generate_bibtex() -> None:
     author = {Vik, Lukas},
     title  = {{hdl-modules: """
 
-    rst_after = """}},
-    url    = {https://hdl-modules.com},
-  }
+    rst_after = f"""}}}},
+    url    = {{{WEBSITE_URL}}},
+  }}
 """
 
     rst = f"{rst_before}{get_short_slogan()}{rst_after}"
