@@ -29,6 +29,8 @@ use ieee.std_logic_1164.all;
 library common;
 use common.attribute_pkg.all;
 
+library math;
+
 
 entity taylor_expansion_core is
   generic (
@@ -196,6 +198,11 @@ begin
     constant sum_width : positive := second_stage_value_term48'length + sum_num_guard_bits;
     signal sum : u_signed(sum_width - 1 downto 0) := (others => '0');
 
+    -- After addition, some LSBs are removed.
+    signal sum_result_range : u_signed(result_value'length + sum_num_guard_bits - 1 downto 0) := (
+      others => '0'
+    );
+
     attribute use_dsp of sum : signal is "yes";
   begin
 
@@ -255,6 +262,9 @@ begin
       end if;
     end process;
 
+    -- Strip LSBs.
+    sum_result_range <= sum(sum'high downto sum'length - sum_result_range'length);
+
 
     ------------------------------------------------------------------------------
     -- The sum overflows at almost every peak in every configuration.
@@ -262,24 +272,17 @@ begin
     -- of the output word is used.
     -- The overflow is so small that the SFDR of the result is still good enough in all
     -- simulations even with saturation.
-    set_saturated_result : process(all)
-      variable guard_and_sign : u_signed(sum_num_guard_bits + 1 - 1 downto 0) := (
-        others => '0'
+    saturate_signed_inst : entity math.saturate_signed
+      generic map(
+        input_width => sum_result_range'length,
+        result_width => result_value'length
+      )
+      port map(
+        clk => clk,
+        --
+        input_value => sum_result_range,
+        result_value => result_value
       );
-    begin
-      guard_and_sign := sum(sum'high downto sum'length - guard_and_sign'length);
-
-      if (or guard_and_sign) = (and guard_and_sign) then
-        result_value <= sum(
-          sum'high - sum_num_guard_bits
-          downto
-          sum'length - result_value'length - sum_num_guard_bits
-        );
-      else
-        result_value <= (others => not guard_and_sign(guard_and_sign'high));
-        result_value(result_value'high) <= guard_and_sign(guard_and_sign'high);
-      end if;
-    end process;
 
   end block;
 
