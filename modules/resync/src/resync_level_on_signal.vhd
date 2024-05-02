@@ -16,7 +16,7 @@
 -- It is up to the user to ensure that ``data_in`` is stable when ``sample_value`` is asserted.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
--- with LUTs as well as FFs.
+-- with a LUT as well as an FF.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

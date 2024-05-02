@@ -16,11 +16,17 @@
 -- This module counts each ``clk_in`` cycle the input bit is asserted.
 -- The counter is resynchronized to ``clk_out``, and used as a reference to know
 -- how many ``clk_out`` cycles the output bit should be asserted.
--- The module may fail when ``clk_out`` is slower than ``clk_in`` and the input is
--- asserted many cycles in a row. An assertion is made to check for this case.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with LUTs as well as FFs.
+--
+--
+-- Counter width
+-- _____________
+--
+-- The module may fail when ``clk_out`` is slower than ``clk_in`` and the input is
+-- asserted many cycles in a row.
+-- An RTL assertion is made to check for this error in simulation.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
