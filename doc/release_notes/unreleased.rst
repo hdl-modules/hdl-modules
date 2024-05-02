@@ -1,3 +1,13 @@
+Added
+
+* Add :ref:`module_sine_generator`.
+* Add :ref:`math.saturate_signed`.
+
+Internal changes
+
+* Optimize library and package imports in a way that decreases simulation time by 20-40% for small
+  testbenches using GHDL.
+
 Breaking changes
 
 * Remove protocol checking from :ref:`bfm.handshake_master` and :ref:`bfm.handshake_slave`.
@@ -22,8 +32,3 @@ Breaking changes
   * :ref:`bfm.axi_write_master`
 
   to use type ``stall_configuration_t`` from :ref:`bfm.stall_bfm_pkg`.
-
-Internal changes
-
-* Optimize library and package imports in a way that decreases simulation time by 20-40% for small
-  testbenches using GHDL.
