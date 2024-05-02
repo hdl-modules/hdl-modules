@@ -31,17 +31,22 @@ class Module(BaseModule):
                     self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
-        for input_pulse_overload in [True, False]:
-            name = "pulse_gating." if input_pulse_overload else ""
 
-            generics = dict(input_pulse_overload=input_pulse_overload, output_clock_is_faster=True)
-            tb.add_config(name=name + "output_clock_is_faster", generics=generics)
-
-            generics = dict(input_pulse_overload=input_pulse_overload)
-            tb.add_config(name=name + "output_clock_is_same", generics=generics)
-
-            generics = dict(input_pulse_overload=input_pulse_overload, output_clock_is_slower=True)
-            tb.add_config(name=name + "output_clock_is_slower", generics=generics)
+        for enable_feedback in [True, False]:
+            for active_level in [True, False]:
+                for input_pulse_overload in [True, False]:
+                    for mode in [
+                        "output_clock_is_faster",
+                        "output_clock_is_slower",
+                        "clocks_are_same",
+                    ]:
+                        generics = dict(
+                            enable_feedback=enable_feedback,
+                            input_pulse_overload=input_pulse_overload,
+                            active_level=active_level,
+                        )
+                        generics[mode] = True
+                        self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
         for pipeline_output in [True, False]:
@@ -73,8 +78,26 @@ class Module(BaseModule):
         projects = []
         modules = get_hdl_modules(names_include=[self.name, "common", "math"])
         part = "xc7z020clg400-1"
-        generics = dict(width=16)
 
+        for enable_feedback in [False, True]:
+            generics = dict(enable_feedback=enable_feedback)
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        f"{self.library_name}.resync_pulse", generics=generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="resync_pulse",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(2 + 1 * enable_feedback)),
+                        Ffs(EqualTo(4 + 3 * enable_feedback)),
+                    ],
+                )
+            )
+
+        generics = dict(width=16)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
