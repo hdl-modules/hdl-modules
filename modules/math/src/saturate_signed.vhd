@@ -23,7 +23,7 @@
 --
 --
 -- Pseudo code
--- -----------
+-- ___________
 --
 -- This entity performs the following operation, which is equivalent to a range clamping with
 -- power-of-two limits:
@@ -40,7 +40,7 @@
 --
 --
 -- Fixed-point implementation
--- --------------------------
+-- __________________________
 --
 -- The pseudo code above is efficiently implemented in digital logic by looking at the guard bits
 -- and the sign bit.
