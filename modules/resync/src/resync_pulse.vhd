@@ -17,6 +17,10 @@
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with a LUT as well as an FF.
 --
+-- See the
+-- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-3-pulses-lukas-vik-31tif/>`__
+-- for detailed information about timing constraints and how this CDC topology can be used reliably.
+--
 --
 -- Pulse overload
 -- ______________
