@@ -96,6 +96,7 @@ def test_no_checked_in_files_have_too_long_lines():
         # Impossible to break RST syntax
         HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_counter.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_pulse.vhd",
         # Impossible to break TCL syntax
         HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_slv_level_coherent.tcl",
     ]
