@@ -57,6 +57,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library common;
+use common.attribute_pkg.dont_touch;
+
 
 entity resync_slv_level_coherent is
   generic (
@@ -77,6 +80,11 @@ end entity;
 architecture a of resync_slv_level_coherent is
 
   signal data_in_sampled, data_out_int : std_ulogic_vector(data_in'range) := default_value;
+
+  -- We apply constraints to these two signals, and they are crucial for the function of the CDC.
+  -- Do not allow the tool to optimize these or move any logic.
+  attribute dont_touch of data_in_sampled : signal is "true";
+  attribute dont_touch of data_out_int : signal is "true";
 
   constant level_default_value : std_ulogic := '0';
   signal input_level, input_level_m1, input_level_m1_not_inverted, output_level, output_level_m1
