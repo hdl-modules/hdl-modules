@@ -6,8 +6,7 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Resynchronizes a bit, so that the output bit is asserted as many
--- clock cycles as the input bit.
+-- Resynchronizes a bit, so that the output bit is asserted as many clock cycles as the input bit.
 --
 -- .. note::
 --   This entity instantiates :ref:`resync.resync_counter` which has a scoped constraint file
@@ -27,6 +26,7 @@
 -- The module may fail when ``clk_out`` is slower than ``clk_in`` and the input is
 -- asserted many cycles in a row.
 -- An RTL assertion is made to check for this error in simulation.
+-- Increasing ``counter_width`` increases the tolerance for this error.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -34,6 +34,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library common;
+use common.common_pkg.in_simulation;
 use common.types_pkg.all;
 
 library math;
@@ -102,17 +103,23 @@ begin
 
 
   ------------------------------------------------------------------------------
-  assertions : process
-    variable counter_in_p1 : u_unsigned(counter_in'range) := (others => '0');
+  assertions_gen : if in_simulation generate
+    signal counter_in_p1 : u_unsigned(counter_in'range) := (others => '0');
   begin
-    wait until rising_edge(clk_out);
 
-    if counter_in = counter_out then
-      assert counter_in_p1 = counter_in
-        report "Too many input cycles, outputs will be lost!";
-    end if;
+    ------------------------------------------------------------------------------
+    assertions : process
+    begin
+      wait until rising_edge(clk_out);
 
-    counter_in_p1 := counter_in;
-  end process;
+      if counter_in = counter_out then
+        assert counter_in_p1 = counter_in
+          report "Too dense inputs, outputs will be lost!";
+      end if;
+
+      counter_in_p1 <= counter_in;
+    end process;
+
+end generate;
 
 end architecture;

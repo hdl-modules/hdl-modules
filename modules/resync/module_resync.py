@@ -97,6 +97,21 @@ class Module(BaseModule):
                 )
             )
 
+        generics = dict(counter_width=8)
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=self.test_case_name(f"{self.library_name}.resync_cycles", generics),
+                modules=modules,
+                part=part,
+                top="resync_cycles",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(26)),
+                    Ffs(EqualTo(41)),
+                ],
+            )
+        )
+
         generics = dict(width=16)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
