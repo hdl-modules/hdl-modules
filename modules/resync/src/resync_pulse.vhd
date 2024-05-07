@@ -128,13 +128,13 @@ begin
           if assert_false_on_pulse_overload then
             assert false report "Pulse overload";
           end if;
+        end if;
 
-        else
-          -- No feedback level.
-          -- Check for pulse overload only in simulation.
-          if level_in /= level_out and assert_false_on_pulse_overload then
-            assert false report "Pulse overload";
-          end if;
+      else
+        -- No feedback level.
+        -- Check for pulse overload only in simulation.
+        if level_in /= level_out and assert_false_on_pulse_overload then
+          assert false report "Pulse overload";
         end if;
       end if;
     end if;
