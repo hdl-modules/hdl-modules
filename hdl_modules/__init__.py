@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
-__version__ = "5.0.0"
+__version__ = "5.0.1-dev"
 __doc__ = get_short_slogan()  # pylint: disable=redefined-builtin
 
 
