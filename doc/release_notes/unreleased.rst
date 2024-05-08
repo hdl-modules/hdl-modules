@@ -1,6 +1,7 @@
 Added
 
 * Add :ref:`module_sine_generator`.
+* Add :ref:`module_lfsr`.
 * Add :ref:`math.saturate_signed`.
 
 Internal changes
