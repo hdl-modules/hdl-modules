@@ -29,7 +29,7 @@ from tools import tools_env
 
 def main() -> None:
     args = arguments(default_temp_dir=tools_env.HDL_MODULES_GENERATED)
-    modules = get_modules([tools_env.HDL_MODULES_DIRECTORY])
+    modules = get_modules(modules_folder=tools_env.HDL_MODULES_DIRECTORY)
     projects = BuildProjectList(
         modules=modules,
         project_filters=args.project_filters,
