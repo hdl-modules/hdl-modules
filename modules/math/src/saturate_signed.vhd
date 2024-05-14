@@ -52,8 +52,8 @@
 --
 -- Note that you have to choose your number of guard bits carefully in any upstream arithmetic
 -- operation.
--- If you have too few guard bits, the value already have wrapped around, and the saturation will
--- not work as expected.
+-- If you have too few guard bits, the value might already have wrapped around, and the saturation
+-- will not work as expected.
 -- This is all dependent on the details of your application.
 -- -------------------------------------------------------------------------------------------------
 

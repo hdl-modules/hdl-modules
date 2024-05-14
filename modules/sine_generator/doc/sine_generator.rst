@@ -36,7 +36,7 @@ guide to utilizing the module.
    b. :ref:`sine_parameterize_fractional_phase_mode`.
 
 4. Determine your phase increment value based on :ref:`sine_calculate_increment`.
-5. Instantiate the :ref:`sine_generator.sine_generator` entity in your design.
+5. Instantiate the :ref:`sine_generator.sine_generator` entity in your design and start oscillating.
 
 .. note::
 
