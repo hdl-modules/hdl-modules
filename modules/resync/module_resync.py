@@ -67,20 +67,23 @@ class Module(BaseModule):
             generics = dict(active_high=active_high, output_clock_is_slower=True)
             self.add_vunit_config(tb, generics=generics)
 
-        test = (
+        for test in (
             vunit_proj.library(self.library_name)
             .test_bench("tb_resync_slv_handshake")
-            .get_tests("test_random_data")[0]
-        )
-        for data_width in [8, 16]:
-            generics = dict(data_width=data_width)
-            self.add_vunit_config(test, generics=generics)
+            .get_tests("test_random_data")
+        ):
+            if test.name == "test_init_state":
+                continue
 
-            generics = dict(data_width=data_width, input_clock_is_faster=True)
-            self.add_vunit_config(test, generics=generics)
+            for data_width in [8, 16]:
+                generics = dict(data_width=data_width)
+                self.add_vunit_config(test, generics=generics)
 
-            generics = dict(data_width=data_width, result_clock_is_faster=True)
-            self.add_vunit_config(test, generics=generics)
+                generics = dict(data_width=data_width, input_clock_is_faster=True)
+                self.add_vunit_config(test, generics=generics)
+
+                generics = dict(data_width=data_width, result_clock_is_faster=True)
+                self.add_vunit_config(test, generics=generics)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
