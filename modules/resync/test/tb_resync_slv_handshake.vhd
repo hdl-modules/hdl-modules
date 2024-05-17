@@ -146,7 +146,7 @@ begin
       check_relation(time_diff < expected_time_diff);
       check_relation(time_diff > 0.88 * expected_time_diff);
 
-      report "time_diff " & time'image(time_diff) severity note;
+      report to_string(time_diff / expected_time_diff) severity error;
     end if;
 
 
