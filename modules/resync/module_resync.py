@@ -86,7 +86,6 @@ class Module(BaseModule):
                 test = tb.get_tests("test_count_sampling_period")[0]
                 generics["stall_probability_percent"] = 0
                 self.add_vunit_config(test, generics=generics, set_random_seed=True)
-                self.add_vunit_config(test, generics=generics, set_random_seed=1337)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where

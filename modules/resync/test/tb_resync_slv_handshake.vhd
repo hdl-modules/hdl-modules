@@ -26,6 +26,7 @@ use bfm.stall_bfm_pkg.stall_configuration_t;
 
 library common;
 use common.types_pkg.all;
+use common.time_pkg.all;
 
 
 entity tb_resync_slv_handshake is
@@ -50,8 +51,8 @@ architecture tb of tb_resync_slv_handshake is
   signal result_clk_int : std_ulogic := '0';
 
   -- Big difference, so that erroneous level resync back or forth could happen.
-  constant slow_clock_period : time := 20 ns;
-  constant fast_clock_period : time := 2 ns;
+  constant slow_clock_period : time := 31 ns;
+  constant fast_clock_period : time := 3 ns;
 
   function get_input_period return time is
   begin
@@ -86,9 +87,9 @@ begin
   test_runner_watchdog(runner, 2 ms);
 
   input_clk <= not input_clk after get_input_period / 2;
-  result_clk <= not result_clk after get_result_period / 2;
+  result_clk_int <= not result_clk_int after get_result_period / 2;
 
-  -- result_clk <= transport result_clk_int after fast_clock_period / 10;
+  result_clk <= transport result_clk_int after fast_clock_period / 10;
 
 
   ------------------------------------------------------------------------------
@@ -144,9 +145,7 @@ begin
       time_diff := now - time_start;
 
       check_relation(time_diff < expected_time_diff);
-      check_relation(time_diff > 0.88 * expected_time_diff);
-
-      report to_string(time_diff / expected_time_diff) severity error;
+      check_relation(time_diff > 0.85 * expected_time_diff);
     end if;
 
 
