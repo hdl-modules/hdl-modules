@@ -6,52 +6,7 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Resynchronize a data vector from one clock domain to another.
--- Unlike e.g. :ref:`resync.resync_slv_level`, this entity contains a mechanism that guarantees
--- bit coherency.
---
--- .. note::
---   This entity has a scoped constraint file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
---
--- This entity is great for resynchronizing e.g. a control/status register or a counter value,
--- which are scenarios where bit coherency is crucial.
--- It will not be able to handle pulses in the input data, it is very likely that pulses will
--- be missed. Hence the "level" in the name.
---
--- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
--- with LUTs as well as FFs.
---
--- A level signal is rotated around between input and output side, with three registers in each
--- direction. The level toggles for each roundtrip, and data is sampled on each side upon a level
--- transition.
--- This ensures that data is sampled on the output side only when we know that the sampled
--- input data is stable. Conversely, input data is only sampled when we know that data has been
--- sampled on the output in a stable fashion.
---
---
--- Latency and resource utilization
--- ________________________________
---
--- The latency is less than or equal to
---
---   3 * period(clk_in) + 3 * period(clk_out)
---
--- This is also the sampling period of the signal. As such this resync is not suitable for signals
--- that change quickly. It is instead typically used for e.g. monotonic counters, slow moving status
--- words, and other data where the different bits are correlated.
---
--- The LUT utilization is always 3. The FF utilization increases linearly at a rate
--- of ``2 * width``.
---
--- Compared to :ref:`resync.resync_counter` this entity has lower LUT and FF usage in all scenarios.
--- It does however have higher latency.
---
--- Another way of achieving the same functionality is to use a shallow :ref:`fifo.asynchronous_fifo`
--- with ``write_valid`` and ``read_ready`` statically set to ``1``.
--- This entity will however have lower LUT usage.
--- FF usage is lower up to around width 32 where this entity will consume more FF.
--- Latency is about the same for both.
+-- TODO
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -91,72 +46,110 @@ architecture a of resync_slv_handshake is
   attribute dont_touch of result_data_int : signal is "true";
 
   constant level_default_value : std_ulogic := '0';
-  signal input_level, input_level_m1, input_level_m1_not_inverted, output_level, output_level_m1
-    : std_ulogic := level_default_value;
+
+  signal input_level, result_level : std_ulogic := level_default_value;
+  signal input_level_resync, input_level_resync_p1 : std_ulogic := level_default_value;
+  signal result_level_resync, result_level_resync_p1 : std_ulogic := level_default_value;
 
 begin
 
   ------------------------------------------------------------------------------
-  resync_level_to_output_inst : entity work.resync_level
+  resync_input_level_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
       enable_input_register => false,
       default_value => level_default_value
     )
     port map (
-      clk_in => clk_in,
+      clk_in => input_clk,
       data_in => input_level,
       --
-      clk_out => clk_out,
-      data_out => output_level_m1
+      clk_out => result_clk,
+      data_out => input_level_resync
     );
 
 
   ------------------------------------------------------------------------------
-  resync_level_to_input_inst : entity work.resync_level
+  resync_result_level_input_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
       enable_input_register => false,
       default_value => level_default_value
     )
     port map (
-      clk_in => clk_out,
-      data_in => output_level,
+      clk_in => result_clk,
+      data_in => result_level,
       --
-      clk_out => clk_in,
-      data_out => input_level_m1_not_inverted
+      clk_out => input_clk,
+      data_out => result_level_resync
     );
 
-  -- Invert here, before the last input level register, so that the output level async_reg is
-  -- driven by an FF and not a LUT.
-  input_level_m1 <= not input_level_m1_not_inverted;
+
+  ------------------------------------------------------------------------------
+  input_block : block
+    signal may_sample_input, may_sample_input_sticky : std_ulogic := '1';
+  begin
+
+    -- Asserted for one clock cycle when the resynced result level toggles.
+    may_sample_input <= result_level_resync xor result_level_resync_p1;
+
+    -- Set combinatorially to minimize stall in the upstream handshake master.
+    input_ready <= may_sample_input or may_sample_input_sticky;
+
+
+    ------------------------------------------------------------------------------
+    handle_input : process
+    begin
+      wait until rising_edge(input_clk);
+
+      assert not (may_sample_input and may_sample_input_sticky) report "Control flow error";
+      may_sample_input_sticky <= may_sample_input or may_sample_input_sticky;
+
+      if input_ready and input_valid then
+        input_data_sampled <= input_data;
+        may_sample_input_sticky <= '0';
+
+        input_level <= result_level_resync;
+      end if;
+
+      result_level_resync_p1 <= result_level_resync;
+    end process;
+
+  end block;
 
 
   ------------------------------------------------------------------------------
-  handle_input : process
+  result_block : block
+    signal new_data : std_ulogic := '0';
   begin
-    wait until rising_edge(clk_in);
 
-    if input_level /= input_level_m1 then
-      data_in_sampled <= data_in;
-    end if;
+    -- Asserted for one clock cycle when the resynced input level toggles.
+    new_data <= input_level_resync xor input_level_resync_p1;
 
-    input_level <= input_level_m1;
-  end process;
+    ------------------------------------------------------------------------------
+    handle_result : process
+    begin
+      wait until rising_edge(result_clk);
 
+      if result_ready and result_valid then
+        result_valid <= '0';
 
-  ------------------------------------------------------------------------------
-  handle_output : process
-  begin
-    wait until rising_edge(clk_out);
+        -- Toggle the feedback level only when we are done with the data.
+        result_level <= input_level_resync_p1;
+      end if;
 
-    if output_level /= output_level_m1 then
-      data_out_int <= data_in_sampled;
-    end if;
+      if new_data then
+        result_valid <= '1';
+        assert not result_valid report "Control flow error";
 
-    output_level <= output_level_m1;
-  end process;
+        result_data_int <= input_data_sampled;
+      end if;
 
-  data_out <= data_out_int;
+      input_level_resync_p1 <= input_level_resync;
+    end process;
+
+    result_data <= result_data_int;
+
+  end block;
 
 end architecture;
