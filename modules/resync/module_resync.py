@@ -77,13 +77,15 @@ class Module(BaseModule):
 
             for data_width in [8, 16]:
                 generics = dict(data_width=data_width)
-                self.add_vunit_config(test, generics=generics)
+                self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
                 generics = dict(data_width=data_width, input_clock_is_faster=True)
-                self.add_vunit_config(test, generics=generics)
+                self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
                 generics = dict(data_width=data_width, result_clock_is_faster=True)
-                self.add_vunit_config(test, generics=generics)
+                self.add_vunit_config(test, generics=generics, set_random_seed=True)
+
+                self.add_vunit_config(test, generics=generics, set_random_seed=1337)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where

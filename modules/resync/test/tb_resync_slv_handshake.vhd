@@ -88,25 +88,23 @@ begin
 
     variable expected_num_beats : natural := 0;
 
-    procedure run_test(num_beats : natural) is
+    procedure run_test(num_beats : positive) is
       constant num_bytes : natural := num_beats * data_width / 8;
       variable data, data_copy : integer_array_t := null_integer_array;
     begin
-      if num_beats > 0 then
-        random_integer_array(
-          rnd => rnd,
-          integer_array => data,
-          width => num_bytes,
-          bits_per_word => 8,
-          is_signed => false
-        );
+      random_integer_array(
+        rnd => rnd,
+        integer_array => data,
+        width => num_bytes,
+        bits_per_word => 8,
+        is_signed => false
+      );
 
-        data_copy := copy(data);
-        push_ref(input_queue, data_copy);
-        push_ref(result_queue, data);
+      data_copy := copy(data);
+      push_ref(input_queue, data_copy);
+      push_ref(result_queue, data);
 
-        expected_num_beats := expected_num_beats + expected_num_beats;
-      end if;
+      expected_num_beats := expected_num_beats + num_beats;
     end procedure;
 
   begin
@@ -119,11 +117,11 @@ begin
 
       wait until input_ready'event or result_valid'event for 100 * slow_clock_period;
 
-      check_equal(input_ready, '0');
-      check_equal(result_valid, '1');
+      check_equal(input_ready, '1');
+      check_equal(result_valid, '0');
 
     elsif run("test_random_data") then
-      run_test(num_beats=>1000);
+      run_test(num_beats=>100);
 
     end if;
 

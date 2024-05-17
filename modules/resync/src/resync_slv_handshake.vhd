@@ -108,7 +108,8 @@ begin
         input_data_sampled <= input_data;
         may_sample_input_sticky <= '0';
 
-        input_level <= result_level_resync;
+        -- Toggle level when we have sampled input data.
+        input_level <= not result_level_resync;
       end if;
 
       result_level_resync_p1 <= result_level_resync;
