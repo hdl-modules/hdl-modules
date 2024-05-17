@@ -44,11 +44,10 @@ architecture a of resync_slv_handshake is
   attribute dont_touch of input_data_sampled : signal is "true";
   attribute dont_touch of result_data_int : signal is "true";
 
-  constant level_default_value : std_ulogic := '0';
-
-  signal input_level, result_level : std_ulogic := level_default_value;
-  signal input_level_resync, input_level_resync_p1 : std_ulogic := level_default_value;
-  signal result_level_resync, result_level_resync_p1 : std_ulogic := level_default_value;
+  signal input_level, input_level_resync, input_level_resync_p1 : std_ulogic := '0';
+  signal result_level, result_level_resync : std_ulogic := '0';
+  -- Different value than the others, to trigger the first 'input_ready' event.
+  signal result_level_resync_p1 : std_ulogic := '1';
 
 begin
 
@@ -56,8 +55,7 @@ begin
   resync_input_level_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
-      enable_input_register => false,
-      default_value => level_default_value
+      enable_input_register => false
     )
     port map (
       clk_in => input_clk,
@@ -72,12 +70,11 @@ begin
   resync_result_level_input_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
-      enable_input_register => false,
-      default_value => level_default_value
+      enable_input_register => false
     )
     port map (
       clk_in => result_clk,
-      data_in => result_level,
+      data_in => input_level_resync_p1,
       --
       clk_out => input_clk,
       data_out => result_level_resync
@@ -85,72 +82,46 @@ begin
 
 
   ------------------------------------------------------------------------------
-  input_block : block
-    signal may_sample_input, may_sample_input_sticky : std_ulogic := '1';
+  handle_input : process
   begin
+    wait until rising_edge(input_clk);
 
-    -- Asserted for one clock cycle when the resynced result level toggles.
-    may_sample_input <= result_level_resync xor result_level_resync_p1;
+    if input_ready then
+      input_data_sampled <= input_data;
+    end if;
 
-    -- Set combinatorially to minimize stall in the upstream handshake master.
-    input_ready <= may_sample_input or may_sample_input_sticky;
-
-
-    ------------------------------------------------------------------------------
-    handle_input : process
-    begin
-      wait until rising_edge(input_clk);
-
-      assert not (may_sample_input and may_sample_input_sticky) report "Control flow error";
-      may_sample_input_sticky <= may_sample_input or may_sample_input_sticky;
-
-      if input_ready and input_valid then
-        input_data_sampled <= input_data;
-        may_sample_input_sticky <= '0';
-
-        -- Toggle level when we have sampled input data.
-        input_level <= not result_level_resync;
-      end if;
-
+    if input_valid then
+      -- If we have 'input_ready', this assignment will lower it.
+      -- If we do not, this assignment does nothing.
       result_level_resync_p1 <= result_level_resync;
-    end process;
 
-  end block;
+      if input_ready then
+        -- Let through the toggled level to indicate that we have a new sample of data.
+        input_level <= result_level_resync_p1; -- not result_level_resync;
+      end if;
+    end if;
+  end process;
+
+  input_ready <= result_level_resync xor result_level_resync_p1;
 
 
   ------------------------------------------------------------------------------
-  result_block : block
-    signal new_data : std_ulogic := '0';
+  handle_result : process
   begin
+    wait until rising_edge(result_clk);
 
-    -- Asserted for one clock cycle when the resynced input level toggles.
-    new_data <= input_level_resync xor input_level_resync_p1;
+    if input_level_resync xor input_level_resync_p1 then -- and not result_valid then
+      result_valid <= '1';
+      result_data_int <= input_data_sampled;
+    end if;
 
-    ------------------------------------------------------------------------------
-    handle_result : process
-    begin
-      wait until rising_edge(result_clk);
-
-      if result_ready and result_valid then
-        result_valid <= '0';
-
-        -- Toggle the feedback level only when we are done with the data.
-        -- Using the _p1 since it has slightly lower fanout. Both would work.
-        result_level <= input_level_resync_p1;
-      end if;
-
-      if new_data then
-        result_valid <= '1';
-        assert not result_valid report "Control flow error";
-
-        result_data_int <= input_data_sampled;
-      end if;
-
+    if result_ready and result_valid then
       input_level_resync_p1 <= input_level_resync;
-    end process;
+      result_valid <= '0';
+    end if;
+  end process;
 
-    result_data <= result_data_int;
 
-  end block;
+  result_data <= result_data_int;
 
 end architecture;

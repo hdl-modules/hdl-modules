@@ -82,6 +82,7 @@ class Module(BaseModule):
                 for data_width in [8, 16]:
                     generics["data_width"] = data_width
                     self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                    self.add_vunit_config(test, generics=generics, set_random_seed=1337)
 
                 test = tb.get_tests("test_count_sampling_period")[0]
                 generics["stall_probability_percent"] = 0
@@ -125,11 +126,14 @@ class Module(BaseModule):
             ff: int
             logic: int
             width: Optional[int] = None
+            data_width: Optional[int] = None
             counter_width: Optional[int] = None
 
         def add_config(config: Config):
             if config.width is not None:
                 generics = dict(width=config.width)
+            elif config.data_width is not None:
+                generics = dict(data_width=config.data_width)
             elif config.counter_width is not None:
                 generics = dict(counter_width=config.counter_width)
 
@@ -152,12 +156,16 @@ class Module(BaseModule):
         add_config(Config(name="resync_cycles", lut=31, ff=81, logic=7, counter_width=16))
         add_config(Config(name="resync_cycles", lut=69, ff=161, logic=9, counter_width=32))
 
+        add_config(Config(name="resync_counter", lut=11, ff=24, logic=3, width=8))
+        add_config(Config(name="resync_counter", lut=23, ff=48, logic=4, width=16))
+        add_config(Config(name="resync_counter", lut=59, ff=96, logic=3, width=32))
+
         add_config(Config(name="resync_slv_level_coherent", lut=3, ff=22, logic=2, width=8))
         add_config(Config(name="resync_slv_level_coherent", lut=3, ff=38, logic=2, width=16))
         add_config(Config(name="resync_slv_level_coherent", lut=3, ff=70, logic=2, width=32))
 
-        add_config(Config(name="resync_counter", lut=11, ff=24, logic=3, width=8))
-        add_config(Config(name="resync_counter", lut=23, ff=48, logic=4, width=16))
-        add_config(Config(name="resync_counter", lut=59, ff=96, logic=3, width=32))
+        add_config(Config(name="resync_slv_handshake", lut=6, ff=26, logic=2, data_width=8))
+        add_config(Config(name="resync_slv_handshake", lut=6, ff=42, logic=2, data_width=16))
+        add_config(Config(name="resync_slv_handshake", lut=6, ff=74, logic=2, data_width=32))
 
         return projects

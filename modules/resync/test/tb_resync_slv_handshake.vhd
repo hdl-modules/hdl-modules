@@ -87,9 +87,9 @@ begin
   test_runner_watchdog(runner, 2 ms);
 
   input_clk <= not input_clk after get_input_period / 2;
-  result_clk_int <= not result_clk_int after get_result_period / 2;
+  result_clk <= not result_clk after get_result_period / 2;
 
-  result_clk <= transport result_clk_int after fast_clock_period / 10;
+  -- result_clk <= transport result_clk_int after fast_clock_period / 10;
 
 
   ------------------------------------------------------------------------------
@@ -146,6 +146,8 @@ begin
 
       check_relation(time_diff < expected_time_diff);
       check_relation(time_diff > 0.85 * expected_time_diff);
+
+      -- report to_string(to_real_s(time_diff) / to_real_s(expected_time_diff)) severity error;
     end if;
 
 
