@@ -32,6 +32,7 @@ entity tb_resync_slv_handshake is
   generic (
     seed : natural;
     data_width : positive := 8;
+    stall_probability_percent : natural := 20;
     input_clock_is_faster : boolean;
     result_clock_is_faster : boolean;
     runner_cfg : string
@@ -40,18 +41,36 @@ end entity;
 
 architecture tb of tb_resync_slv_handshake is
 
+  -- DUT connections.
   signal input_clk, input_ready, input_valid : std_ulogic := '0';
   signal result_clk, result_ready, result_valid : std_ulogic := '0';
   signal input_data, result_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
 
-  -- Testbench stuff
+  -- Testbench stuff.
+  signal result_clk_int : std_ulogic := '0';
 
   -- Big difference, so that erroneous level resync back or forth could happen.
   constant slow_clock_period : time := 20 ns;
   constant fast_clock_period : time := 2 ns;
 
+  function get_input_period return time is
+  begin
+    if input_clock_is_faster then
+      return fast_clock_period;
+    end if;
+    return slow_clock_period;
+  end function;
+
+  function get_result_period return time is
+  begin
+    if result_clock_is_faster then
+      return fast_clock_period;
+    end if;
+    return slow_clock_period;
+  end function;
+
   constant stall_config : stall_configuration_t := (
-    stall_probability => 0.2,
+    stall_probability => real(stall_probability_percent) / 100.0,
     min_stall_cycles => 1,
     -- Very high, so that erroneous level resync back or forth could happen.
     -- Note that the slow clock is ten times slower than the fast clock.
@@ -66,19 +85,10 @@ begin
 
   test_runner_watchdog(runner, 2 ms);
 
-  clocks_gen : if input_clock_is_faster generate
-    input_clk <= not input_clk after fast_clock_period / 2;
-    result_clk <= not result_clk after slow_clock_period / 2;
+  input_clk <= not input_clk after get_input_period / 2;
+  result_clk <= not result_clk after get_result_period / 2;
 
-  elsif result_clock_is_faster generate
-    input_clk <= not input_clk after slow_clock_period / 2;
-    result_clk <= not result_clk after fast_clock_period / 2;
-
-  else generate
-    input_clk <= not input_clk after fast_clock_period / 2;
-    result_clk <= not result_clk after fast_clock_period / 2;
-
-  end generate;
+  -- result_clk <= transport result_clk_int after fast_clock_period / 10;
 
 
   ------------------------------------------------------------------------------
@@ -86,9 +96,9 @@ begin
 
     variable rnd : RandomPType;
 
-    variable expected_num_beats : natural := 0;
+    constant num_beats : positive := 1000;
 
-    procedure run_test(num_beats : positive) is
+    procedure run_test is
       constant num_bytes : natural := num_beats * data_width / 8;
       variable data, data_copy : integer_array_t := null_integer_array;
     begin
@@ -104,8 +114,13 @@ begin
       push_ref(input_queue, data_copy);
       push_ref(result_queue, data);
 
-      expected_num_beats := expected_num_beats + num_beats;
+      wait until num_beats_checked = num_beats and rising_edge(result_clk);
     end procedure;
+
+    variable time_start, time_diff : time := 0 fs;
+    constant expected_time_diff : time := (
+      num_beats * (3 * get_input_period + 4 * get_result_period)
+    );
 
   begin
     test_runner_setup(runner, runner_cfg);
@@ -121,11 +136,19 @@ begin
       check_equal(result_valid, '0');
 
     elsif run("test_random_data") then
-      run_test(num_beats=>100);
+      run_test;
 
+    elsif run("test_count_sampling_period") then
+      time_start := now;
+      run_test;
+      time_diff := now - time_start;
+
+      check_relation(time_diff < expected_time_diff);
+      check_relation(time_diff > 0.88 * expected_time_diff);
+
+      report "time_diff " & time'image(time_diff) severity note;
     end if;
 
-    wait until num_beats_checked = expected_num_beats and rising_edge(result_clk);
 
     test_runner_cleanup(runner);
   end process;
