@@ -14,7 +14,7 @@ from typing import Optional
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
-from tsfpga.vivado.build_result_checker import EqualTo, Ffs, TotalLuts
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 
 
 class Module(BaseModule):
@@ -126,14 +126,21 @@ class Module(BaseModule):
                     build_result_checkers=[
                         TotalLuts(EqualTo(config.lut)),
                         Ffs(EqualTo(config.ff)),
+                        MaximumLogicLevel(EqualTo(config.logic)),
                     ],
                 )
             )
 
-        add_config(Config(name="resync_cycles", lut=26, ff=41, logic=3, counter_width=8))
+        add_config(Config(name="resync_cycles", lut=26, ff=41, logic=5, counter_width=8))
+        add_config(Config(name="resync_cycles", lut=31, ff=81, logic=7, counter_width=16))
+        add_config(Config(name="resync_cycles", lut=69, ff=161, logic=9, counter_width=32))
 
-        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=38, logic=3, width=16))
+        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=22, logic=2, width=8))
+        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=38, logic=2, width=16))
+        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=70, logic=2, width=32))
 
-        add_config(Config(name="resync_counter", lut=23, ff=48, logic=3, width=16))
+        add_config(Config(name="resync_counter", lut=11, ff=24, logic=3, width=8))
+        add_config(Config(name="resync_counter", lut=23, ff=48, logic=4, width=16))
+        add_config(Config(name="resync_counter", lut=59, ff=96, logic=3, width=32))
 
         return projects
