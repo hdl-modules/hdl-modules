@@ -18,27 +18,26 @@ use common.attribute_pkg.dont_touch;
 
 entity resync_slv_handshake is
   generic (
-    data_width : positive;
-    -- Initial value for the result data that will be set for a few cycles before the first input
-    -- value has propagated.
-    default_value : std_ulogic_vector(data_width - 1 downto 0) := (others => '0')
+    data_width : positive
   );
   port (
     input_clk : in std_ulogic;
     input_ready : out std_ulogic := '0';
     input_valid : in std_ulogic;
-    input_data : in std_ulogic_vector(default_value'range);
+    input_data : in std_ulogic_vector(data_width - 1 downto 0);
     --# {{}}
     result_clk : in std_ulogic;
     result_ready : in std_ulogic;
     result_valid : out std_ulogic := '0';
-    result_data : out std_ulogic_vector(default_value'range) := default_value
+    result_data : out std_ulogic_vector(data_width - 1 downto 0) := (others => '0')
   );
 end entity;
 
 architecture a of resync_slv_handshake is
 
-  signal input_data_sampled, result_data_int : std_ulogic_vector(input_data'range) := default_value;
+  signal input_data_sampled, result_data_int : std_ulogic_vector(input_data'range) := (
+    others => '0'
+  );
 
   -- We apply constraints to these two signals, and they are crucial for the function of the CDC.
   -- Do not allow the tool to optimize these or move any logic.
@@ -135,6 +134,7 @@ begin
         result_valid <= '0';
 
         -- Toggle the feedback level only when we are done with the data.
+        -- Using the _p1 since it has slightly lower fanout. Both would work.
         result_level <= input_level_resync_p1;
       end if;
 
