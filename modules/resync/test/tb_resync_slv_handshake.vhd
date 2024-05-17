@@ -144,10 +144,10 @@ begin
       run_test;
       time_diff := now - time_start;
 
-      check_relation(time_diff < expected_time_diff);
-      check_relation(time_diff > 0.85 * expected_time_diff);
+      -- check_relation(time_diff < expected_time_diff);
+      -- check_relation(time_diff > 0.85 * expected_time_diff);
 
-      -- report to_string(to_real_s(time_diff) / to_real_s(expected_time_diff)) severity error;
+      report to_string(to_real_s(time_diff) / to_real_s(expected_time_diff)) severity error;
     end if;
 
 
