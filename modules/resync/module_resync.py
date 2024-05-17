@@ -35,7 +35,6 @@ class Module(BaseModule):
                     self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
-
         for enable_feedback in [True, False]:
             for active_level in [True, False]:
                 for input_pulse_overload in [True, False]:
@@ -54,10 +53,8 @@ class Module(BaseModule):
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
         for pipeline_output in [True, False]:
-            name = "pipeline_output" if pipeline_output else "dont_pipeline_output"
-
             generics = dict(pipeline_output=pipeline_output)
-            tb.add_config(name=name, generics=generics)
+            self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_cycles")
         for active_high in [True, False]:
@@ -68,6 +65,17 @@ class Module(BaseModule):
             self.add_vunit_config(tb, generics=generics)
 
             generics = dict(active_high=active_high, output_clock_is_slower=True)
+            self.add_vunit_config(tb, generics=generics)
+
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_handshake")
+        for data_width in [8, 16]:
+            generics = dict(data_width=data_width)
+            self.add_vunit_config(tb, generics=generics)
+
+            generics = dict(data_width=data_width, input_clock_is_faster=True)
+            self.add_vunit_config(tb, generics=generics)
+
+            generics = dict(data_width=data_width, result_clock_is_faster=True)
             self.add_vunit_config(tb, generics=generics)
 
     def get_build_projects(self):
