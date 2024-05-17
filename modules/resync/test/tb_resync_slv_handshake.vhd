@@ -123,7 +123,7 @@ begin
       check_equal(result_valid, '1');
 
     elsif run("test_random_data") then
-      run_test(num_beats=>100);
+      run_test(num_beats=>1000);
 
     end if;
 
