@@ -74,7 +74,7 @@ begin
     )
     port map (
       clk_in => result_clk,
-      data_in => result_level,
+      data_in => input_level_resync_p1,
       --
       clk_out => input_clk,
       data_out => result_level_resync
@@ -110,16 +110,14 @@ begin
   begin
     wait until rising_edge(result_clk);
 
-    if (input_level_resync xor input_level_resync_p1) and not result_valid then
+    if input_level_resync xor input_level_resync_p1 then -- and not result_valid then
       result_valid <= '1';
       result_data_int <= input_data_sampled;
-
-      result_level <= input_level_resync;
     end if;
 
     if result_ready and result_valid then
+      input_level_resync_p1 <= input_level_resync;
       result_valid <= '0';
-      input_level_resync_p1 <= not input_level_resync_p1;
     end if;
   end process;
 
