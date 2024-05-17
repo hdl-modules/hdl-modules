@@ -31,7 +31,7 @@ use common.types_pkg.all;
 entity tb_resync_slv_handshake is
   generic (
     seed : natural;
-    data_width : positive;
+    data_width : positive := 8;
     input_clock_is_faster : boolean;
     result_clock_is_faster : boolean;
     runner_cfg : string
