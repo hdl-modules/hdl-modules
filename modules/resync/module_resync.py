@@ -7,6 +7,10 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+from dataclasses import dataclass
+from typing import Optional
+
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
@@ -97,50 +101,39 @@ class Module(BaseModule):
                 )
             )
 
-        generics = dict(counter_width=8)
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.resync_cycles", generics),
-                modules=modules,
-                part=part,
-                top="resync_cycles",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(26)),
-                    Ffs(EqualTo(41)),
-                ],
-            )
-        )
+        @dataclass
+        class Config:
+            name: str
+            lut: int
+            ff: int
+            logic: int
+            width: Optional[int] = None
+            counter_width: Optional[int] = None
 
-        generics = dict(width=16)
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.resync_slv_level_coherent", generics
-                ),
-                modules=modules,
-                part=part,
-                top="resync_slv_level_coherent",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(3)),
-                    Ffs(EqualTo(38)),
-                ],
-            )
-        )
+        def add_config(config: Config):
+            if config.width is not None:
+                generics = dict(width=config.width)
+            elif config.counter_width is not None:
+                generics = dict(counter_width=config.counter_width)
 
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.resync_counter", generics),
-                modules=modules,
-                part=part,
-                top="resync_counter",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(23)),
-                    Ffs(EqualTo(48)),
-                ],
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(f"{self.library_name}.{config.name}", generics),
+                    modules=modules,
+                    part=part,
+                    top=config.name,
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(config.lut)),
+                        Ffs(EqualTo(config.ff)),
+                    ],
+                )
             )
-        )
+
+        add_config(Config(name="resync_cycles", lut=26, ff=41, logic=3, counter_width=8))
+
+        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=38, logic=3, width=16))
+
+        add_config(Config(name="resync_counter", lut=23, ff=48, logic=3, width=16))
 
         return projects
