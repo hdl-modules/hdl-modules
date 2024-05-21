@@ -119,6 +119,23 @@ class Module(BaseModule):
                 )
             )
 
+        generics = dict(data_width=32)
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=self.test_case_name(
+                    f"{self.library_name}.resync_slv_handshake_wrapper", generics=generics
+                ),
+                modules=modules,
+                part=part,
+                top="resync_slv_handshake_wrapper",
+                generics=generics,
+                build_result_checkers=[
+                    TotalLuts(EqualTo(3)),
+                    Ffs(EqualTo(70)),
+                ],
+            )
+        )
+
         @dataclass
         class Config:
             name: str
