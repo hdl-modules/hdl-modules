@@ -11,15 +11,15 @@
 # Also AMD document UG903 provides some background.
 # --------------------------------------------------------------------------------------------------
 
-set clk_in [get_clocks -of_objects [get_ports clk_in]]
-set clk_out [get_clocks -of_objects [get_ports clk_out]]
-set first_resync_register [get_cells data_in_p1_reg]
+set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
+set clk_out [get_clocks -quiet -of_objects [get_ports "clk_out"]]
+set first_resync_register [get_cells "data_in_p1_reg"]
 
 if {${clk_in} != "" && ${clk_out} != ""} {
   # If we have both clocks we can set a max delay constraint in order
   # to get deterministic delay through the resync block.
-  set clk_in_period [get_property -min PERIOD ${clk_in}]
-  set clk_out_period [get_property -min PERIOD ${clk_out}]
+  set clk_in_period [get_property "PERIOD" ${clk_in}]
+  set clk_out_period [get_property "PERIOD" ${clk_out}]
   set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
   puts "INFO hdl-modules resync_level.tcl: Using calculated max delay: ${min_period}."
 
@@ -34,8 +34,8 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   #
   # A more elegant way of deriving the driver of the input to the CDC would be to use e.g.
   #   set timing_path [lindex [get_timing_paths -to "${first_resync_register}/D" -nworst 1] 0]
-  #   set clk_in [get_property STARTPOINT_CLOCK ${timing_path}]
-  #   set data_in_driver [get_property STARTPOINT_PIN ${timing_path}]
+  #   set clk_in [get_property "STARTPOINT_CLOCK" ${timing_path}]
+  #   set data_in_driver [get_property "STARTPOINT_PIN" ${timing_path}]
   # There some examples of this on Xilinx website.
   # This way we could use the 'set_max_delay' constraint even when the user does not assign the
   # 'clk_in' port, by programmatically finding the driver of the net.
