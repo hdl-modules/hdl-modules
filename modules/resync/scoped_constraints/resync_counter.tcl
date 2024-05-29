@@ -19,7 +19,7 @@ set first_resync_registers [get_cells "counter_in_gray_p1_reg*"]
 # not be found at this stage.
 set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
 if {${clk_in} != ""} {
-  set clk_in_period [get_property -min PERIOD ${clk_in}]
+  set clk_in_period [get_property "PERIOD" ${clk_in}]
   puts "INFO hdl-modules resync_counter.tcl: Using clk_in period: ${clk_in_period}."
 } else {
   set clk_in_period 2
@@ -31,9 +31,9 @@ if {${clk_in} != ""} {
 set_bus_skew -from ${stable_registers} -to ${first_resync_registers} ${clk_in_period}
 
 # Try to find output clock period in a similar way.
-set clk_out [get_clocks -quiet -of_objects [get_ports clk_out]]
+set clk_out [get_clocks -quiet -of_objects [get_ports "clk_out"]]
 if {${clk_out} != ""} {
-  set clk_out_period [get_property -min PERIOD ${clk_out}]
+  set clk_out_period [get_property "PERIOD" ${clk_out}]
   puts "INFO hdl-modules resync_counter.tcl: Using clk_out period: ${clk_out_period}."
 } else {
   set clk_out_period 2

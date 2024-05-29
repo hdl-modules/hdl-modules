@@ -7,14 +7,14 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-set data_in_sampled [get_cells data_in_sampled_reg*]
-set data_out [get_cells data_out_int_reg*]
-set clk_in [get_clocks -of_objects [get_ports clk_in]]
-set clk_out [get_clocks -of_objects [get_ports clk_out]]
+set data_in_sampled [get_cells "data_in_sampled_reg*"]
+set data_out [get_cells "data_out_int_reg*"]
+set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
+set clk_out [get_clocks -quiet -of_objects [get_ports "clk_out"]]
 
 if {${clk_in} != "" && ${clk_out} != ""} {
-  set clk_out_period [get_property -min PERIOD ${clk_out}]
-  set clk_in_period [get_property -min PERIOD ${clk_in}]
+  set clk_in_period [get_property "PERIOD" ${clk_in}]
+  set clk_out_period [get_property "PERIOD" ${clk_out}]
   set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
   puts "INFO hdl-modules resync_slv_level_coherent.tcl: Using calculated min period: ${min_period}."
 } else {
