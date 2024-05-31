@@ -96,17 +96,23 @@ package body attribute_pkg is
     case ram_style_enum is
       when ram_style_block =>
         return "block";
+
       when ram_style_distributed =>
         return "distributed";
+
       when ram_style_registers =>
         return "registers";
+
       when ram_style_ultra =>
         return "ultra";
+
       when ram_style_auto =>
         return "auto";
+
       when others =>
         assert false severity failure;
         return "error";
+
     end case;
   end function;
 

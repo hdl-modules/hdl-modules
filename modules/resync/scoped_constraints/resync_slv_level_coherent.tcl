@@ -36,3 +36,17 @@ if {${clk_in} != "" && ${clk_out} != ""} {
 # Typically happens when a derived clock or a clock from an IP core is used.
 # Hence we use the flag.
 set_max_delay -datapath_only -from ${data_in_sampled} -to ${data_out} ${min_period}
+
+# Waive "Clock enable controlled CDC structure detected" warning to make reports a little cleaner.
+# The 'report_cdc' command lists all the data bits as a warning, for example
+# * From: resync_slv_level_coherent_inst/data_in_sampled_reg[0]/C
+# * To: resync_slv_level_coherent_inst/data_out_int_reg[0]/D
+# The wildcards below aim to catch all these paths.
+set cdc_from [get_pins -quiet "data_in_sampled_reg*/C"]
+set cdc_to [get_pins -quiet "data_out_int_reg*/D"]
+create_waiver \
+  -quiet \
+  -id "CDC-15" \
+  -from ${cdc_from} \
+  -to ${cdc_to} \
+  -description "Clock Enable is part of this CDC concept, no reason to warn about it"
