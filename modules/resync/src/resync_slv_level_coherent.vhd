@@ -86,8 +86,8 @@ architecture a of resync_slv_level_coherent is
   attribute dont_touch of data_in_sampled : signal is "true";
   attribute dont_touch of data_out_int : signal is "true";
 
-  signal input_level_resync, input_level_resync_p1 : std_ulogic := '0';
-  signal output_level_resync, output_level_resync_p1 : std_ulogic := '0';
+  signal input_level, input_level_not_p1 : std_ulogic := '0';
+  signal output_level, output_level_p1 : std_ulogic := '0';
 
 begin
 
@@ -99,10 +99,10 @@ begin
     )
     port map (
       clk_in => clk_in,
-      data_in => output_level_resync,
+      data_in => input_level_not_p1,
       --
       clk_out => clk_out,
-      data_out => input_level_resync
+      data_out => output_level
     );
 
 
@@ -110,30 +110,38 @@ begin
   resync_output_level_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
-      enable_input_register => false,
-      -- TODO
-      default_value => '1'
+      enable_input_register => false
     )
     port map (
       clk_in => clk_out,
-      data_in => input_level_resync,
+      data_in => output_level_p1,
       --
       clk_out => clk_in,
-      data_out => output_level_resync
+      data_out => input_level
     );
 
 
   ------------------------------------------------------------------------------
-  handle_input : process
+  input_block : block
+    signal not_input_level : std_ulogic := '0';
   begin
-    wait until rising_edge(clk_in);
 
-    if output_level_resync and not output_level_resync_p1 then
-      data_in_sampled <= data_in;
-    end if;
+    not_input_level <= not input_level;
 
-    output_level_resync_p1 <= output_level_resync;
-  end process;
+
+    ------------------------------------------------------------------------------
+    handle_input : process
+    begin
+      wait until rising_edge(clk_in);
+
+      if not_input_level = input_level_not_p1 then
+        data_in_sampled <= data_in;
+      end if;
+
+      input_level_not_p1 <= not_input_level;
+    end process;
+
+  end block;
 
 
   ------------------------------------------------------------------------------
@@ -141,11 +149,11 @@ begin
   begin
     wait until rising_edge(clk_out);
 
-    if input_level_resync and not input_level_resync_p1 then
+    if output_level /= output_level_p1 then
       data_out_int <= data_in_sampled;
     end if;
 
-    input_level_resync_p1 <= input_level_resync;
+    output_level_p1 <= output_level;
   end process;
 
   data_out <= data_out_int;

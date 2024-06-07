@@ -21,18 +21,17 @@ class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level")
         for output_clock_is_faster in [True, False]:
-            for test_coherent in [True, False]:
-                for enable_input_register in [True, False]:
-                    if test_coherent and enable_input_register:
-                        # Coherent implementation does not have the 'input_register' mode
-                        continue
+            for enable_input_register in [True, False]:
+                generics = dict(
+                    output_clock_is_faster=output_clock_is_faster,
+                    enable_input_register=enable_input_register,
+                )
+                self.add_vunit_config(tb, generics=generics)
 
-                    generics = dict(
-                        output_clock_is_faster=output_clock_is_faster,
-                        test_coherent=test_coherent,
-                        enable_input_register=enable_input_register,
-                    )
-                    self.add_vunit_config(tb, generics=generics)
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level_coherent")
+        for output_clock_is_faster in [True, False]:
+            generics = dict(output_clock_is_faster=output_clock_is_faster)
+            self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
         for enable_feedback in [True, False]:
@@ -177,9 +176,12 @@ class Module(BaseModule):
         add_config(Config(name="resync_counter", lut=23, ff=48, logic=4, width=16))
         add_config(Config(name="resync_counter", lut=59, ff=96, logic=3, width=32))
 
-        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=22, logic=2, width=8))
-        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=38, logic=2, width=16))
-        add_config(Config(name="resync_slv_level_coherent", lut=3, ff=70, logic=2, width=32))
+        for width in [8, 16, 24, 32]:
+            add_config(
+                Config(
+                    name="resync_slv_level_coherent", lut=3, ff=2 * width + 6, logic=2, width=width
+                )
+            )
 
         add_config(Config(name="resync_slv_handshake", lut=6, ff=26, logic=2, data_width=8))
         add_config(Config(name="resync_slv_handshake", lut=6, ff=42, logic=2, data_width=16))
