@@ -7,7 +7,7 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-set data_in_sampled [get_cells "data_in_sampled_reg*"]
+set data_in_sampled [get_cells "input_block.data_in_sampled_reg*"]
 set data_out [get_cells "data_out_int_reg*"]
 set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
 set clk_out [get_clocks -quiet -of_objects [get_ports "clk_out"]]

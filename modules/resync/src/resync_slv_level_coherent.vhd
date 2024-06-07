@@ -86,46 +86,39 @@ architecture a of resync_slv_level_coherent is
   attribute dont_touch of data_in_sampled : signal is "true";
   attribute dont_touch of data_out_int : signal is "true";
 
-  constant level_default_value : std_ulogic := '0';
-  signal input_level, input_level_m1, input_level_m1_not_inverted, output_level, output_level_m1
-    : std_ulogic := level_default_value;
+  signal input_level, input_level_not_p1 : std_ulogic := '0';
+  signal output_level, output_level_p1 : std_ulogic := '0';
 
 begin
 
   ------------------------------------------------------------------------------
-  resync_level_to_output_inst : entity work.resync_level
+  resync_input_level_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
-      enable_input_register => false,
-      default_value => level_default_value
+      enable_input_register => false
     )
     port map (
       clk_in => clk_in,
-      data_in => input_level,
+      data_in => input_level_not_p1,
       --
       clk_out => clk_out,
-      data_out => output_level_m1
+      data_out => output_level
     );
 
 
   ------------------------------------------------------------------------------
-  resync_level_to_input_inst : entity work.resync_level
+  resync_output_level_inst : entity work.resync_level
     generic map (
       -- Value is driven by a FF so this is not needed
-      enable_input_register => false,
-      default_value => level_default_value
+      enable_input_register => false
     )
     port map (
       clk_in => clk_out,
-      data_in => output_level,
+      data_in => output_level_p1,
       --
       clk_out => clk_in,
-      data_out => input_level_m1_not_inverted
+      data_out => input_level
     );
-
-  -- Invert here, before the last input level register, so that the output level async_reg is
-  -- driven by an FF and not a LUT.
-  input_level_m1 <= not input_level_m1_not_inverted;
 
 
   ------------------------------------------------------------------------------
@@ -133,11 +126,11 @@ begin
   begin
     wait until rising_edge(clk_in);
 
-    if input_level /= input_level_m1 then
+    if input_level = input_level_not_p1 then
       data_in_sampled <= data_in;
     end if;
 
-    input_level <= input_level_m1;
+    input_level_not_p1 <= not input_level;
   end process;
 
 
@@ -146,11 +139,11 @@ begin
   begin
     wait until rising_edge(clk_out);
 
-    if output_level /= output_level_m1 then
+    if output_level /= output_level_p1 then
       data_out_int <= data_in_sampled;
     end if;
 
-    output_level <= output_level_m1;
+    output_level_p1 <= output_level;
   end process;
 
   data_out <= data_out_int;
