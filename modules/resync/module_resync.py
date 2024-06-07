@@ -66,25 +66,18 @@ class Module(BaseModule):
             self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_handshake")
-        for input_clock_is_faster in [True, False]:
-            for result_clock_is_faster in [True, False]:
-                if input_clock_is_faster and result_clock_is_faster:
-                    continue
+        for mode in ["result_clock_is_slower", "result_clock_is_faster", "clocks_are_same"]:
+            generics = {mode: True}
 
-                generics = dict(
-                    input_clock_is_faster=input_clock_is_faster,
-                    result_clock_is_faster=result_clock_is_faster,
-                )
-
-                test = tb.get_tests("test_random_data")[0]
-                for data_width in [8, 16]:
-                    generics["data_width"] = data_width
-                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
-                    self.add_vunit_config(test, generics=generics, set_random_seed=1337)
-
-                test = tb.get_tests("test_count_sampling_period")[0]
-                generics["stall_probability_percent"] = 0
+            test = tb.get_tests("test_random_data")[0]
+            for data_width in [8, 16]:
+                generics["data_width"] = data_width
                 self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                self.add_vunit_config(test, generics=generics, set_random_seed=1337)
+
+            test = tb.get_tests("test_count_sampling_period")[0]
+            generics["stall_probability_percent"] = 0
+            self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
     def get_build_projects(self):
         # Requires Python 3.7+.

@@ -34,8 +34,9 @@ entity tb_resync_slv_handshake is
     seed : natural;
     data_width : positive := 8;
     stall_probability_percent : natural := 20;
-    input_clock_is_faster : boolean;
-    result_clock_is_faster : boolean;
+    result_clock_is_slower : boolean := false;
+    result_clock_is_faster : boolean := false;
+    clocks_are_same : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -48,27 +49,26 @@ architecture tb of tb_resync_slv_handshake is
   signal input_data, result_data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
 
   -- Testbench stuff.
-  signal result_clk_int : std_ulogic := '0';
 
   -- Big difference, so that erroneous level resync back or forth could happen.
-  constant slow_clock_period : time := 31 ns;
-  constant fast_clock_period : time := 3 ns;
-
-  function get_input_period return time is
-  begin
-    if input_clock_is_faster then
-      return fast_clock_period;
-    end if;
-    return slow_clock_period;
-  end function;
+  constant clock_period_fast : time := 2 ns;
+  constant clock_period_medium : time := 10 * clock_period_fast + 1 ns;
+  constant clock_period_slow : time := 10 * clock_period_medium + 1 ns;
 
   function get_result_period return time is
   begin
     if result_clock_is_faster then
-      return fast_clock_period;
+      return clock_period_fast;
     end if;
-    return slow_clock_period;
+
+    if result_clock_is_slower then
+      return clock_period_slow;
+    end if;
+
+    return clock_period_medium;
   end function;
+  constant input_clk_period : time := clock_period_medium;
+  constant result_clk_period : time := get_result_period;
 
   constant stall_config : stall_configuration_t := (
     stall_probability => real(stall_probability_percent) / 100.0,
@@ -84,12 +84,10 @@ architecture tb of tb_resync_slv_handshake is
 
 begin
 
-  test_runner_watchdog(runner, 2 ms);
+  input_clk <= not input_clk after input_clk_period / 2;
+  result_clk <= not result_clk after result_clk_period / 2;
 
-  input_clk <= not input_clk after get_input_period / 2;
-  result_clk <= not result_clk after get_result_period / 2;
-
-  -- result_clk <= transport result_clk_int after fast_clock_period / 10;
+  test_runner_watchdog(runner, 100 ms);
 
 
   ------------------------------------------------------------------------------
@@ -120,7 +118,7 @@ begin
 
     variable time_start, time_diff : time := 0 fs;
     constant expected_time_diff : time := (
-      num_beats * (3 * get_input_period + 4 * get_result_period)
+      num_beats * (3 * input_clk_period + 3 * result_clk_period)
     );
 
   begin
@@ -131,7 +129,7 @@ begin
       check_equal(input_ready, '1');
       check_equal(result_valid, '0');
 
-      wait until input_ready'event or result_valid'event for 100 * slow_clock_period;
+      wait until input_ready'event or result_valid'event for 100 * clock_period_slow;
 
       check_equal(input_ready, '1');
       check_equal(result_valid, '0');
@@ -144,10 +142,11 @@ begin
       run_test;
       time_diff := now - time_start;
 
-      -- check_relation(time_diff < expected_time_diff);
-      -- check_relation(time_diff > 0.85 * expected_time_diff);
+      report to_string(to_real_s(time_diff) / to_real_s(expected_time_diff));
 
-      report to_string(to_real_s(time_diff) / to_real_s(expected_time_diff)) severity error;
+      check_relation(time_diff < 1.001 * expected_time_diff);
+      check_relation(time_diff > 0.9 * expected_time_diff);
+
     end if;
 
 
