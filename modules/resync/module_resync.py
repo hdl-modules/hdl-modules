@@ -18,18 +18,20 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level")
-        for output_clock_is_faster in [True, False]:
-            for enable_input_register in [True, False]:
-                generics = dict(
-                    output_clock_is_faster=output_clock_is_faster,
-                    enable_input_register=enable_input_register,
-                )
-                self.add_vunit_config(tb, generics=generics)
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
+        for pipeline_output in [True, False]:
+            generics = dict(pipeline_output=pipeline_output)
+            self.add_vunit_config(tb, generics=generics)
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level_coherent")
-        for output_clock_is_faster in [True, False]:
-            generics = dict(output_clock_is_faster=output_clock_is_faster)
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_cycles")
+        for active_high in [True, False]:
+            generics = dict(active_high=active_high, output_clock_is_faster=True)
+            self.add_vunit_config(tb, generics=generics)
+
+            generics = dict(active_high=active_high)
+            self.add_vunit_config(tb, generics=generics)
+
+            generics = dict(active_high=active_high, output_clock_is_slower=True)
             self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
@@ -49,20 +51,18 @@ class Module(BaseModule):
                         generics[mode] = True
                         self.add_vunit_config(tb, generics=generics)
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
-        for pipeline_output in [True, False]:
-            generics = dict(pipeline_output=pipeline_output)
-            self.add_vunit_config(tb, generics=generics)
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level")
+        for output_clock_is_faster in [True, False]:
+            for enable_input_register in [True, False]:
+                generics = dict(
+                    output_clock_is_faster=output_clock_is_faster,
+                    enable_input_register=enable_input_register,
+                )
+                self.add_vunit_config(tb, generics=generics)
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_cycles")
-        for active_high in [True, False]:
-            generics = dict(active_high=active_high, output_clock_is_faster=True)
-            self.add_vunit_config(tb, generics=generics)
-
-            generics = dict(active_high=active_high)
-            self.add_vunit_config(tb, generics=generics)
-
-            generics = dict(active_high=active_high, output_clock_is_slower=True)
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level_coherent")
+        for mode in ["output_clock_is_faster", "output_clock_is_slower", "clocks_are_same"]:
+            generics = {mode: True}
             self.add_vunit_config(tb, generics=generics)
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_handshake")

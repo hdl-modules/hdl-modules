@@ -18,7 +18,9 @@ use vunit_lib.run_pkg.all;
 
 entity tb_resync_slv_level_coherent is
   generic (
-    output_clock_is_faster : boolean;
+    output_clock_is_slower : boolean := false;
+    output_clock_is_faster : boolean := false;
+    clocks_are_same : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -29,14 +31,23 @@ architecture tb of tb_resync_slv_level_coherent is
   constant clock_period_medium : time := clock_period_fast * 20 + 1 ns;
   constant clock_period_slow : time := clock_period_medium * 20 + 1 ns;
 
-  function clk_out_period return time is
+  function get_clk_out_period return time is
   begin
-    if output_clock_is_faster then
-      return clock_period_fast;
-    else
+    if output_clock_is_slower then
       return clock_period_slow;
     end if;
+
+    if output_clock_is_faster then
+      return clock_period_fast;
+    end if;
+
+    if clocks_are_same then
+      return clock_period_medium;
+    end if;
+
+    assert false;
   end function;
+  constant clk_out_period : time := get_clk_out_period;
 
   signal clk_in, clk_out : std_ulogic := '0';
 
