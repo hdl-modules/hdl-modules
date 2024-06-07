@@ -15,6 +15,9 @@ library vunit_lib;
 use vunit_lib.check_pkg.all;
 use vunit_lib.run_pkg.all;
 
+library common;
+use common.time_pkg.to_real_s;
+
 
 entity tb_resync_slv_level_coherent is
   generic (
@@ -47,6 +50,7 @@ architecture tb of tb_resync_slv_level_coherent is
 
     assert false;
   end function;
+  constant clk_in_period : time := clock_period_medium;
   constant clk_out_period : time := get_clk_out_period;
 
   signal clk_in, clk_out : std_ulogic := '0';
@@ -54,30 +58,35 @@ architecture tb of tb_resync_slv_level_coherent is
   constant data_init : u_unsigned(16 - 1 downto 0) := x"5A5A";
   signal data_in, data_out : u_unsigned(data_init'range) := data_init;
 
-  signal num_stimuli_sent, num_result_checked : natural := 0;
+  signal num_outputs_checked : natural := 0;
 
   signal sum_cycles_since_last_change : natural := 0;
-  signal min_cycles_since_last_change, max_cycles_since_last_change : positive := 1;
+  signal min_cycles_since_last_change : positive := 2**20;
+  signal max_cycles_since_last_change : positive := 1;
   signal min_value_diff, max_value_diff : positive := 1;
 
 begin
 
+  clk_in <= not clk_in after clk_in_period / 2;
   clk_out <= not clk_out after clk_out_period / 2;
-  clk_in <= not clk_in after clock_period_medium / 2;
 
   test_runner_watchdog(runner, 10 ms);
 
 
   ------------------------------------------------------------------------------
   main : process
+    variable average_cycles_since_last_change : real := 0.0;
+    constant num_tests : positive := 100;
+    constant expected_time : time := 3 * clk_out_period + 3 * clk_in_period;
+    variable got_time : time := 0 fs;
+    variable relative_error : real := 0.0;
   begin
     test_runner_setup(runner, runner_cfg);
 
     -- Default value
     check_equal(data_out, data_init);
 
-    wait until num_stimuli_sent > 100 and rising_edge(clk_in);
-    wait until num_result_checked > 100 and rising_edge(clk_out);
+    wait until num_outputs_checked = num_tests and rising_edge(clk_out);
 
     report "min_value_diff: " & to_string(min_value_diff);
     report "max_value_diff: " & to_string(max_value_diff);
@@ -85,9 +94,23 @@ begin
     report "max_cycles_since_last_change: " & to_string(max_cycles_since_last_change);
 
     report "sum_cycles_since_last_change: " & to_string(sum_cycles_since_last_change);
-    report "num_result_checked: " & to_string(num_result_checked);
+    report "num_result_checked: " & to_string(num_outputs_checked);
 
-    assert False;
+    average_cycles_since_last_change := (
+      real(sum_cycles_since_last_change) / real(num_outputs_checked)
+    );
+
+    report "average_cycles_since_last_change: " & to_string(average_cycles_since_last_change);
+
+    got_time := average_cycles_since_last_change * clk_out_period;
+
+    report "expected_time: " & to_string(expected_time);
+    report "got_time: " & to_string(got_time);
+
+    relative_error := abs(to_real_s(got_time - expected_time)) / to_real_s(expected_time);
+
+    report "relative_error: " & to_string(100.0 * relative_error);
+    assert relative_error < 0.05 report "Not expected throughput";
 
     test_runner_cleanup(runner);
   end process;
@@ -99,18 +122,17 @@ begin
     wait until rising_edge(clk_in);
 
     data_in <= data_in + 1;
-    num_stimuli_sent <= num_stimuli_sent + 1;
   end process;
 
 
   ------------------------------------------------------------------------------
-  check_result_block : block
+  check_output_block : block
     signal data_out_p1 : u_unsigned(16 - 1 downto 0) := data_init;
     signal cycles_since_last_change : natural := 0;
   begin
 
     ------------------------------------------------------------------------------
-    check_result : process
+    check_output : process
       variable value_diff : positive := 1;
     begin
       wait until rising_edge(clk_out);
@@ -123,6 +145,8 @@ begin
         min_value_diff <= minimum(min_value_diff, value_diff);
         max_value_diff <= maximum(max_value_diff, value_diff);
 
+        sum_cycles_since_last_change <= sum_cycles_since_last_change + cycles_since_last_change;
+
         min_cycles_since_last_change <= minimum(
           min_cycles_since_last_change, cycles_since_last_change
         );
@@ -132,11 +156,13 @@ begin
 
         cycles_since_last_change <= 1;
 
-        num_result_checked <= num_result_checked + 1;
+        num_outputs_checked <= num_outputs_checked + 1;
 
       else
         cycles_since_last_change <= cycles_since_last_change + 1;
       end if;
+
+      data_out_p1 <= data_out;
     end process;
 
   end block;
