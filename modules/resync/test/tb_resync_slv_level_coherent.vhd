@@ -59,28 +59,6 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-
-    procedure wait_cycles(signal clk : std_ulogic; num_cycles : in integer) is
-    begin
-      for i in 0 to num_cycles-1 loop
-        wait until rising_edge(clk);
-      end loop;
-    end procedure;
-
-    procedure wait_for_input_value_to_propagate is
-      variable clk_in_wait_count, clk_out_wait_count : natural := 0;
-    begin
-      -- Wait to assign input value in tb
-      clk_in_wait_count := 1;
-      -- Two registers
-      clk_out_wait_count := 2;
-
-      clk_in_wait_count := clk_in_wait_count + 3;
-
-      wait_cycles(clk_in, clk_in_wait_count);
-      wait_cycles(clk_out, clk_out_wait_count);
-    end procedure;
-
   begin
     test_runner_setup(runner, runner_cfg);
 
@@ -97,19 +75,6 @@ begin
 
     report "sum_cycles_since_last_change: " & to_string(sum_cycles_since_last_change);
     report "num_result_checked: " & to_string(num_result_checked);
-
-    -- wait until rising_edge(clk_out);
-    -- check_equal(data_out, one);
-
-    -- wait_cycles(clk_out, 40);
-    -- check_equal(data_out, one);
-    -- data_in <= two;
-
-    -- wait_for_input_value_to_propagate;
-    -- check_equal(data_out, two);
-
-    -- wait_cycles(clk_out, 40);
-    -- check_equal(data_out, two);
 
     test_runner_cleanup(runner);
   end process;

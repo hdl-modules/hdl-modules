@@ -8,7 +8,6 @@
 # --------------------------------------------------------------------------------------------------
 
 # Standard libraries
-from dataclasses import dataclass
 from typing import Optional
 
 # Third party libraries
@@ -88,12 +87,18 @@ class Module(BaseModule):
                 self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
     def get_build_projects(self):
+        # Requires Python 3.7+.
+        # Import here so that users who have an older Python version can still use this module.
+        # Standard libraries
+        # pylint: disable=import-outside-toplevel
+        from dataclasses import dataclass
+
+        # First party libraries
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
         # pylint: disable=import-outside-toplevel
-        # First party libraries
         from hdl_modules import get_hdl_modules
 
         projects = []
@@ -130,7 +135,7 @@ class Module(BaseModule):
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(3)),
-                    Ffs(EqualTo(70)),
+                    Ffs(EqualTo(73)),
                 ],
             )
         )
@@ -168,23 +173,29 @@ class Module(BaseModule):
                 )
             )
 
-        add_config(Config(name="resync_cycles", lut=26, ff=41, logic=5, counter_width=8))
-        add_config(Config(name="resync_cycles", lut=31, ff=81, logic=7, counter_width=16))
-        add_config(Config(name="resync_cycles", lut=69, ff=161, logic=9, counter_width=32))
+        add_config(Config(name="resync_cycles", counter_width=8, lut=26, ff=41, logic=5))
+        add_config(Config(name="resync_cycles", counter_width=16, lut=31, ff=81, logic=7))
+        add_config(Config(name="resync_cycles", counter_width=24, lut=45, ff=121, logic=9))
+        add_config(Config(name="resync_cycles", counter_width=32, lut=69, ff=161, logic=9))
+        add_config(Config(name="resync_cycles", counter_width=64, lut=140, ff=321, logic=17))
 
-        add_config(Config(name="resync_counter", lut=11, ff=24, logic=3, width=8))
-        add_config(Config(name="resync_counter", lut=23, ff=48, logic=4, width=16))
-        add_config(Config(name="resync_counter", lut=59, ff=96, logic=3, width=32))
+        add_config(Config(name="resync_counter", width=8, lut=11, ff=24, logic=3))
+        add_config(Config(name="resync_counter", width=16, lut=23, ff=48, logic=4))
+        add_config(Config(name="resync_counter", width=24, lut=35, ff=72, logic=6))
+        add_config(Config(name="resync_counter", width=32, lut=59, ff=96, logic=3))
+        add_config(Config(name="resync_counter", width=64, lut=123, ff=192, logic=4))
 
-        for width in [8, 16, 24, 32]:
+        for width in [8, 16, 24, 32, 64]:
             add_config(
                 Config(
-                    name="resync_slv_level_coherent", lut=3, ff=2 * width + 6, logic=2, width=width
+                    name="resync_slv_level_coherent", width=width, lut=3, ff=2 * width + 6, logic=2
                 )
             )
 
-        add_config(Config(name="resync_slv_handshake", lut=6, ff=26, logic=2, data_width=8))
-        add_config(Config(name="resync_slv_handshake", lut=6, ff=42, logic=2, data_width=16))
-        add_config(Config(name="resync_slv_handshake", lut=6, ff=74, logic=2, data_width=32))
+        add_config(Config(name="resync_slv_handshake", data_width=8, lut=4, ff=25, logic=2))
+        add_config(Config(name="resync_slv_handshake", data_width=16, lut=4, ff=41, logic=2))
+        add_config(Config(name="resync_slv_handshake", data_width=24, lut=4, ff=57, logic=2))
+        add_config(Config(name="resync_slv_handshake", data_width=32, lut=4, ff=73, logic=2))
+        add_config(Config(name="resync_slv_handshake", data_width=64, lut=4, ff=137, logic=2))
 
         return projects
