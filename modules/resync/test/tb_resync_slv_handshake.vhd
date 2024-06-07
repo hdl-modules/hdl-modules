@@ -146,9 +146,7 @@ begin
 
       check_relation(time_diff < 1.001 * expected_time_diff);
       check_relation(time_diff > 0.9 * expected_time_diff);
-
     end if;
-
 
     test_runner_cleanup(runner);
   end process;
