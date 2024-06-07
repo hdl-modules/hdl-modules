@@ -87,6 +87,8 @@ begin
     report "sum_cycles_since_last_change: " & to_string(sum_cycles_since_last_change);
     report "num_result_checked: " & to_string(num_result_checked);
 
+    assert False;
+
     test_runner_cleanup(runner);
   end process;
 
