@@ -63,7 +63,10 @@ architecture tb of tb_resync_slv_level_coherent is
   signal sum_cycles_since_last_change : natural := 0;
   signal min_cycles_since_last_change : positive := 2**20;
   signal max_cycles_since_last_change : positive := 1;
-  signal min_value_diff, max_value_diff : positive := 1;
+
+  signal sum_value_diff : natural := 0;
+  signal min_value_diff : positive := 2 ** 20;
+  signal max_value_diff : positive := 1;
 
 begin
 
@@ -75,8 +78,10 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable average_cycles_since_last_change : real := 0.0;
     constant num_tests : positive := 100;
+
+    variable average_value_diff, average_cycles_since_last_change : real := 0.0;
+
     constant expected_time : time := 3 * clk_out_period + 3 * clk_in_period;
     variable got_time : time := 0 fs;
     variable relative_error : real := 0.0;
@@ -90,6 +95,11 @@ begin
 
     report "min_value_diff: " & to_string(min_value_diff);
     report "max_value_diff: " & to_string(max_value_diff);
+
+    report "sum_value_diff: " & to_string(sum_value_diff);
+    average_value_diff := real(sum_value_diff) / real(num_outputs_checked);
+    report "average_value_diff: " & to_string(average_value_diff);
+
     report "min_cycles_since_last_change: " & to_string(min_cycles_since_last_change);
     report "max_cycles_since_last_change: " & to_string(max_cycles_since_last_change);
 
@@ -142,6 +152,7 @@ begin
 
         value_diff := to_integer(data_out - data_out_p1);
 
+        sum_value_diff <= sum_value_diff + value_diff;
         min_value_diff <= minimum(min_value_diff, value_diff);
         max_value_diff <= maximum(max_value_diff, value_diff);
 

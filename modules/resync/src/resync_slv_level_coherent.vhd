@@ -122,26 +122,16 @@ begin
 
 
   ------------------------------------------------------------------------------
-  input_block : block
-    signal not_input_level : std_ulogic := '0';
+  handle_input : process
   begin
+    wait until rising_edge(clk_in);
 
-    not_input_level <= not input_level;
+    if input_level = input_level_not_p1 then
+      data_in_sampled <= data_in;
+    end if;
 
-
-    ------------------------------------------------------------------------------
-    handle_input : process
-    begin
-      wait until rising_edge(clk_in);
-
-      if not_input_level = input_level_not_p1 then
-        data_in_sampled <= data_in;
-      end if;
-
-      input_level_not_p1 <= not_input_level;
-    end process;
-
-  end block;
+    input_level_not_p1 <= not input_level;
+  end process;
 
 
   ------------------------------------------------------------------------------
