@@ -13,6 +13,8 @@
 -- The implementation is quite optimized with very low resource utilization when extra features
 -- are not enabled.
 --
+-- For more CDC solutions, please see :ref:`module_resync`.
+--
 -- .. note::
 --   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --   See the ``scoped_constraints`` folder for the file with the same name.
