@@ -12,8 +12,8 @@
 --
 -- .. note::
 --   This entity instantiates a :ref:`resync.resync_level` block (``async_reg`` chain) to make sure
---   the input is not metastable. The :ref:`resync.resync_level` has a scoped constraint file that
---   must be used.
+--   the input is not metastable. The :ref:`resync.resync_level` has a
+--   :ref:`scoped constraint <scoped_constraints>` file that must be used.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

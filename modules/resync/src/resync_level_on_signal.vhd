@@ -9,7 +9,7 @@
 -- Sample a bit from one clock domain to another.
 --
 -- .. note::
---   This entity has a scoped constraint file that must be used.
+--   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --   See the ``scoped_constraints`` folder for the file with the same name.
 --
 -- This entity does not utilize any meta stability protection.

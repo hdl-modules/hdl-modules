@@ -23,9 +23,11 @@ The simulation code should be added to your simulation project.
 All files must be handled as VHDL-2008.
 
 .. note::
-  When using tsfpga, this is done with a call to :func:`tsfpga.module.get_modules` and appending
-  to your current list of modules.
+  When using `tsfpga <https://tsfpga.com>`__, this is done with a call to
+  :func:`tsfpga.module.get_modules` and appending to your current list of modules.
 
+
+.. _scoped_constraints:
 
 Scoped constraints
 ------------------
@@ -44,7 +46,7 @@ Using this we do not have to search through the whole design hierarchically to f
 we are interested in in our constraint file.
 
 .. note::
-  When using tsfpga, this is done automatically for build projects, since
+  When using `tsfpga <https://tsfpga.com>`__, this is done automatically for build projects, since
   hdl-modules uses the recommended module structure.
 
 
