@@ -11,8 +11,8 @@
 -- .. figure:: resync_pulse_transparent.png
 --
 -- .. note::
---   This entity instantiates :ref:`resync.resync_level` which has a scoped constraint file
---   that must be used.
+--   This entity instantiates :ref:`resync.resync_level` which has a
+--   :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with a LUT as well as an FF.

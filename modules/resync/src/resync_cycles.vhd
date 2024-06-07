@@ -9,8 +9,8 @@
 -- Resynchronizes a bit, so that the output bit is asserted as many clock cycles as the input bit.
 --
 -- .. note::
---   This entity instantiates :ref:`resync.resync_counter` which has a scoped constraint file
---   that must be used.
+--   This entity instantiates :ref:`resync.resync_counter` which has a
+--   :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --
 -- This module counts each ``clk_in`` cycle the input bit is asserted.
 -- The counter is resynchronized to ``clk_out``, and used as a reference to know

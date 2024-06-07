@@ -9,8 +9,8 @@
 -- Resync a vector from one clock domain to another.
 --
 -- .. note::
---   This entity instantiates :ref:`resync.resync_level` which has a scoped constraint
---   file that must be used.
+--   This entity instantiates :ref:`resync.resync_level` which has a
+--   :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --
 -- This simple vector resync mechanism does not guarantee any coherency between the bits.
 -- There might be a large skew between different bits.

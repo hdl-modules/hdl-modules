@@ -16,7 +16,7 @@
 -- with LUTs as well as FFs.
 --
 -- .. note::
---   This entity has a scoped constraint file that must be used.
+--   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --   See the ``scoped_constraints`` folder for the file with the same name.
 --
 -- .. warning::

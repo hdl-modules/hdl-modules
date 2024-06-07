@@ -9,8 +9,8 @@
 -- Sample a vector from one clock domain to another.
 --
 -- .. note::
---   This entity instantiates :ref:`resync.resync_level_on_signal` which has a scoped constraint
---   file that must be used.
+--   This entity instantiates :ref:`resync.resync_level_on_signal` which has a
+--   :ref:`scoped constraint <scoped_constraints>` file that must be used.
 --
 -- This modules does not utilize any meta stability protection.
 -- It is up to the user to ensure that ``data_in`` is stable when ``sample_value`` is asserted.
