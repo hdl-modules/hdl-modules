@@ -130,7 +130,7 @@
 --
 --   saturation -> result;
 --
--- The :math:`\pi / 2` is handled as a fixed-pointed value with a number of fractional bits
+-- The :math:`\pi / 2` is handled as a fixed-point value with a number of fractional bits
 -- determined to give sufficient performance.
 -- Multiplying with the phase error, which is a fractional value, and then the cosine value
 -- gives a value that has a very high number of fractional bits.
