@@ -87,16 +87,16 @@ begin
       )
       port map(
         clk => clk,
-        clk_read => clk,
         clk_write => clk_input,
-        --
-        read_ready => output_s2m.ready,
-        read_valid => read_valid,
-        read_data => read_data,
+        clk_read => clk,
         --
         write_ready => input_s2m.ready,
         write_valid => input_m2s.valid,
-        write_data => write_data
+        write_data => write_data,
+        --
+        read_ready => output_s2m.ready,
+        read_valid => read_valid,
+        read_data => read_data
       );
 
   end generate;

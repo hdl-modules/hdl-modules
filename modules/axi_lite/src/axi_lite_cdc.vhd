@@ -71,15 +71,15 @@ begin
         ram_type => ram_type
       )
       port map(
-        clk_read => clk_slave,
-        read_ready => slave_s2m.write.aw.ready,
-        read_valid => slave_m2s.write.aw.valid,
-        read_data => read_data,
-        --
         clk_write => clk_master,
         write_ready => master_s2m.write.aw.ready,
         write_valid => master_m2s.write.aw.valid,
-        write_data => write_data
+        write_data => write_data,
+        --
+        clk_read => clk_slave,
+        read_ready => slave_s2m.write.aw.ready,
+        read_valid => slave_m2s.write.aw.valid,
+        read_data => read_data
       );
 
   end block;
@@ -107,15 +107,15 @@ begin
         ram_type => ram_type
       )
       port map(
-        clk_read => clk_slave,
-        read_ready => slave_s2m.write.w.ready,
-        read_valid => slave_m2s.write.w.valid,
-        read_data => read_data,
-        --
         clk_write => clk_master,
         write_ready => master_s2m.write.w.ready,
         write_valid => master_m2s.write.w.valid,
-        write_data => write_data
+        write_data => write_data,
+        --
+        clk_read => clk_slave,
+        read_ready => slave_s2m.write.w.ready,
+        read_valid => slave_m2s.write.w.valid,
+        read_data => read_data
       );
 
   end block;
@@ -129,15 +129,15 @@ begin
       ram_type => ram_type
     )
     port map(
-      clk_read => clk_master,
-      read_ready => master_m2s.write.b.ready,
-      read_valid => master_s2m.write.b.valid,
-      read_data => master_s2m.write.b.resp,
-      --
       clk_write => clk_slave,
       write_ready => slave_m2s.write.b.ready,
       write_valid => slave_s2m.write.b.valid,
-      write_data => slave_s2m.write.b.resp
+      write_data => slave_s2m.write.b.resp,
+      --
+      clk_read => clk_master,
+      read_ready => master_m2s.write.b.ready,
+      read_valid => master_s2m.write.b.valid,
+      read_data => master_s2m.write.b.resp
     );
 
 
@@ -160,15 +160,15 @@ begin
         ram_type => ram_type
       )
       port map(
-        clk_read => clk_slave,
-        read_ready => slave_s2m.read.ar.ready,
-        read_valid => slave_m2s.read.ar.valid,
-        read_data => read_data,
-        --
         clk_write => clk_master,
         write_ready => master_s2m.read.ar.ready,
         write_valid => master_m2s.read.ar.valid,
-        write_data => write_data
+        write_data => write_data,
+        --
+        clk_read => clk_slave,
+        read_ready => slave_s2m.read.ar.ready,
+        read_valid => slave_m2s.read.ar.valid,
+        read_data => read_data
       );
 
   end block;
@@ -196,15 +196,15 @@ begin
         ram_type => ram_type
       )
       port map(
-        clk_read => clk_master,
-        read_ready => master_m2s.read.r.ready,
-        read_valid => master_s2m.read.r.valid,
-        read_data => read_data,
-        --
         clk_write => clk_slave,
         write_ready => slave_m2s.read.r.ready,
         write_valid => slave_s2m.read.r.valid,
-        write_data => write_data
+        write_data => write_data,
+        --
+        clk_read => clk_master,
+        read_ready => master_m2s.read.r.ready,
+        read_valid => master_s2m.read.r.valid,
+        read_data => read_data
       );
 
   end block;

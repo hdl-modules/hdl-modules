@@ -54,9 +54,9 @@ architecture tb of tb_fifo is
   signal clk : std_ulogic := '0';
   signal level : natural range 0 to depth := 0;
 
-  signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_ulogic := '0';
   signal write_ready, write_valid, write_last, almost_full : std_ulogic := '0';
-  signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
+  signal read_ready, read_valid, read_last, read_peek_mode, almost_empty : std_ulogic := '0';
+  signal write_data, read_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
 
   signal drop_packet : std_ulogic := '0';
 
@@ -448,21 +448,22 @@ begin
     )
     port map (
       clk => clk,
-      level => level,
       --
-      read_ready => read_ready,
-      read_valid => read_valid,
-      read_data => read_data,
-      read_last => read_last,
-      read_peek_mode => read_peek_mode,
-      almost_empty => almost_empty,
+      level => level,
       --
       write_ready => write_ready,
       write_valid => write_valid,
       write_data => write_data,
       write_last => write_last,
       almost_full => almost_full,
-      drop_packet => drop_packet
+      drop_packet => drop_packet,
+      --
+      read_ready => read_ready,
+      read_valid => read_valid,
+      read_data => read_data,
+      read_last => read_last,
+      read_peek_mode => read_peek_mode,
+      almost_empty => almost_empty
     );
 
 end architecture;

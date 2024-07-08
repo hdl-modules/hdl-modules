@@ -51,16 +51,16 @@ begin
     )
     port map (
       clk => clk,
-      clk_read => clk_read,
       clk_write => clk_write,
-      --
-      read_ready => read_ready,
-      read_valid => read_valid,
-      read_data => read_data,
+      clk_read => clk_read,
       --
       write_ready => write_ready,
       write_valid => write_valid,
-      write_data => write_data
+      write_data => write_data,
+      --
+      read_ready => read_ready,
+      read_valid => read_valid,
+      read_data => read_data
     );
 
 end architecture;

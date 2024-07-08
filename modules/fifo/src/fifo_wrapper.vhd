@@ -39,21 +39,8 @@ entity fifo_wrapper is
     -- This clock is used for a synchronous FIFO
     clk : in std_ulogic;
     -- These clocks are used for an asynchronous FIFO
-    clk_read : in std_ulogic := '0';
     clk_write : in std_ulogic := '0';
-
-    --# {{}}
-    read_ready : in  std_ulogic;
-    read_valid : out std_ulogic := '0';
-    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
-    read_last : out std_ulogic := '0';
-    read_peek_mode : in std_ulogic := '0';
-
-    -- Note that this is the same as write_level for a synchronous FIFO.
-    -- Note that this value is not assigned for an asynchronous FIFO in packet mode.
-    read_level : out natural range 0 to depth := 0;
-    -- Note that for an asynchronous FIFO, this signal is in the "read" clock domain.
-    almost_empty : out std_ulogic := '1';
+    clk_read : in std_ulogic := '0';
 
     --# {{}}
     write_ready : out std_ulogic := '1';
@@ -67,7 +54,20 @@ entity fifo_wrapper is
     almost_full : out std_ulogic := '0';
 
     -- Note that for an asynchronous FIFO, this signal is in the "write" clock domain
-    drop_packet : in std_ulogic := '0'
+    drop_packet : in std_ulogic := '0';
+
+    --# {{}}
+    read_ready : in  std_ulogic;
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
+    read_last : out std_ulogic := '0';
+    read_peek_mode : in std_ulogic := '0';
+
+    -- Note that this is the same as write_level for a synchronous FIFO.
+    -- Note that this value is not assigned for an asynchronous FIFO in packet mode.
+    read_level : out natural range 0 to depth := 0;
+    -- Note that for an asynchronous FIFO, this signal is in the "read" clock domain.
+    almost_empty : out std_ulogic := '1'
   );
 end entity;
 
@@ -109,15 +109,6 @@ begin
         ram_type => ram_type
       )
       port map (
-        clk_read => clk_read,
-        read_ready => read_ready,
-        read_valid => read_valid,
-        read_data => read_data,
-        read_last => read_last,
-        --
-        read_level => read_level,
-        read_almost_empty => almost_empty,
-        --
         clk_write => clk_write,
         write_ready => write_ready,
         write_valid => write_valid,
@@ -127,7 +118,16 @@ begin
         write_level => write_level,
         write_almost_full => almost_full,
         --
-        drop_packet => drop_packet
+        drop_packet => drop_packet,
+        --
+        clk_read => clk_read,
+        read_ready => read_ready,
+        read_valid => read_valid,
+        read_data => read_data,
+        read_last => read_last,
+        --
+        read_level => read_level,
+        read_almost_empty => almost_empty
       );
 
 
@@ -150,14 +150,8 @@ begin
       )
       port map (
         clk => clk,
-        level => read_level,
         --
-        read_ready => read_ready,
-        read_valid => read_valid,
-        read_data => read_data,
-        read_last => read_last,
-        read_peek_mode => read_peek_mode,
-        almost_empty => almost_empty,
+        level => read_level,
         --
         write_ready => write_ready,
         write_valid => write_valid,
@@ -165,7 +159,14 @@ begin
         write_last => write_last,
         almost_full => almost_full,
         --
-        drop_packet => drop_packet
+        drop_packet => drop_packet,
+        --
+        read_ready => read_ready,
+        read_valid => read_valid,
+        read_data => read_data,
+        read_last => read_last,
+        read_peek_mode => read_peek_mode,
+        almost_empty => almost_empty
       );
 
     write_level <= read_level;

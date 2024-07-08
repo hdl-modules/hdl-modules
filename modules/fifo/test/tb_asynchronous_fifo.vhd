@@ -53,12 +53,10 @@ architecture tb of tb_asynchronous_fifo is
   -- DUT ports
   signal clk_read, clk_write : std_ulogic := '0';
 
-  signal read_ready, read_valid, read_last : std_ulogic := '0';
-  signal write_ready, write_valid, write_last : std_ulogic := '0';
-  signal read_data, write_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
-
-  signal read_level, write_level : natural range 0 to depth := 0;
-  signal read_almost_empty, write_almost_full : std_ulogic := '0';
+  signal write_ready, write_valid, write_last, write_almost_full : std_ulogic := '0';
+  signal read_ready, read_valid, read_last, read_almost_empty : std_ulogic := '0';
+  signal write_data, read_data : std_ulogic_vector(width - 1 downto 0) := (others => '0');
+  signal write_level, read_level : natural range 0 to depth := 0;
 
   signal drop_packet : std_ulogic := '0';
 
@@ -495,15 +493,6 @@ begin
       enable_output_register => enable_output_register
     )
     port map (
-      clk_read => clk_read,
-      read_ready   => read_ready,
-      read_valid   => read_valid,
-      read_data    => read_data,
-      read_last    => read_last,
-      --
-      read_level => read_level,
-      read_almost_empty => read_almost_empty,
-      --
       clk_write => clk_write,
       write_ready => write_ready,
       write_valid => write_valid,
@@ -513,7 +502,16 @@ begin
       write_level => write_level,
       write_almost_full => write_almost_full,
       --
-      drop_packet => drop_packet
+      drop_packet => drop_packet,
+      --
+      clk_read => clk_read,
+      read_ready   => read_ready,
+      read_valid   => read_valid,
+      read_data    => read_data,
+      read_last    => read_last,
+      --
+      read_level => read_level,
+      read_almost_empty => read_almost_empty
     );
 
 end architecture;
