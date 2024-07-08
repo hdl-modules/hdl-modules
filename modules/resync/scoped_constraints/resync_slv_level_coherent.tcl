@@ -24,10 +24,10 @@ if {${clk_in} != ""} {
 
 if {${clk_out} != ""} {
   set clk_out_period [get_property "PERIOD" ${clk_out}]
-  puts "INFO hdl-modules resync_counter.tcl: Using clk_out period: ${clk_out_period}."
+  puts "INFO hdl-modules resync_slv_level_coherent.tcl: Using clk_out period: ${clk_out_period}."
 } else {
   set clk_out_period 2
-  puts "WARNING hdl-modules resync_counter.tcl: Could not find clk_out."
+  puts "WARNING hdl-modules resync_slv_level_coherent.tcl: Could not find clk_out."
 }
 
 set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
