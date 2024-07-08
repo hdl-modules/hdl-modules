@@ -84,7 +84,7 @@ architecture a of resync_level is
   -- That is, if the register exists via the generic, otherwise it is just a passthrough net.
   attribute dont_touch of data_in_int : signal is "true";
 
-  -- Ensure placement in same slice.
+  -- Ensure FFs are not optimized/modified, and placed in the same slice to minimize MTBF.
   attribute async_reg of data_in_p1 : signal is "true";
   attribute async_reg of data_out_int : signal is "true";
 
