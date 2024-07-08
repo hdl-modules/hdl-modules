@@ -311,28 +311,52 @@ class Module(BaseModule):
         )
 
     def _setup_asynchronous_fifo_build_projects(self, projects, modules, part):
-        # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
-        # Note that this uses the minimal top level wrapper so that only the barebone features
-        # are available.
-        generics = dict(use_asynchronous_fifo=True, width=16, depth=8, enable_output_register=False)
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.resync_fifo", generics
-                ),
-                modules=modules,
-                part=part,
-                top="fifo_netlist_build_wrapper",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(35)),
-                    Ffs(EqualTo(50)),
-                    Ramb36(EqualTo(0)),
-                    Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(4)),
-                ],
+        # Standard libraries
+        # pylint: disable=import-outside-toplevel
+        from dataclasses import dataclass
+
+        @dataclass
+        class ResyncConfig:
+            width: int
+            lut: int
+            ff: int
+            logic: int
+
+        def add_resync_config(config: ResyncConfig):
+            # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
+            # Note that this uses the minimal top level wrapper so that only the barebone features
+            # are available.
+            generics = dict(
+                use_asynchronous_fifo=True,
+                width=config.width,
+                depth=8,
+                enable_output_register=False,
             )
-        )
+
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        f"{self.library_name}.asynchronous_fifo.resync_fifo", generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="fifo_netlist_build_wrapper",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(config.lut)),
+                        Ffs(EqualTo(config.ff)),
+                        MaximumLogicLevel(EqualTo(config.logic)),
+                        Ramb36(EqualTo(0)),
+                        Ramb18(EqualTo(0)),
+                    ],
+                )
+            )
+
+        add_resync_config(ResyncConfig(width=8, lut=31, ff=42, logic=4))
+        add_resync_config(ResyncConfig(width=16, lut=35, ff=50, logic=4))
+        add_resync_config(ResyncConfig(width=24, lut=39, ff=58, logic=4))
+        add_resync_config(ResyncConfig(width=32, lut=47, ff=66, logic=4))
+        add_resync_config(ResyncConfig(width=64, lut=67, ff=98, logic=4))
 
         # Typical FIFO without levels. Use a wrapper as top level, which only routes the
         # "barebone" ports, resulting in a minimal FIFO.
