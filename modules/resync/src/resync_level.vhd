@@ -28,26 +28,30 @@
 -- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-1-lukas-vik-copcf/>`__
 -- for information about timing constraints and how this CDC topology is made reliable.
 --
+--
 -- Deterministic latency
--- _____________________
+-- ________________________________________
 --
 -- If you want a deterministic latency through this resync block, via a ``set_max_delay``
--- constraint, the ``clk_in`` port must be assigned to the clock that drives the input data.
+-- constraint, the ``enable_input_register`` generic must be enabled and the ``clk_in``
+-- port assigned.
 -- If it is not, a simple ``set_false_path`` constraint will
 -- be used and the latency can be arbitrary, depending on the placer/router.
 --
 --
--- Input register
--- ______________
+-- Glitches
+-- ________
 --
--- There is an option to include a register on the input side before the ``async_reg`` flip-flop
--- chain.
--- This option is to prevent sampling of data when the input is in a transient "glitch" state, which
--- can occur if it is driven by a LUT as opposed to a flip-flop. If the input is already driven by
--- a flip-flop, you can safely set the generic to ``false`` in order to save resources.
+-- The ``enable_input_register`` generic helps to prevent sampling of data when the input is in a
+-- transient "glitch" state, which can occur if it is driven by a LUT as opposed to a flip-flop.
+-- When this option is enabled, the ``clk_in`` port must be driven with the correct clock.
 -- Note that this is a separate issue from meta-stability; they can happen independently of
 -- each other.
--- When this option is enabled, the ``clk_in`` port must be driven with the correct clock.
+--
+-- If the input is already driven by a flip-flop, you can set the generic to ``false`` in
+-- order to save resources.
+-- But notice though, as stated above, that this will result in a ``set_false_path`` constraint
+-- being used, which can result in quite arbitrary latency.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
