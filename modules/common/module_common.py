@@ -28,6 +28,7 @@ class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
+        self._setup_debounce_tests(vunit_proj=vunit_proj)
         self._setup_handshake_merger_tests(vunit_proj=vunit_proj)
         self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
@@ -77,6 +78,13 @@ class Module(BaseModule):
         for data_width in [16, 32]:
             generics = dict(data_width=data_width)
             self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
+
+    def _setup_debounce_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_debounce")
+
+        for enable_iob in [False, True]:
+            generics = dict(enable_iob=enable_iob)
+            self.add_vunit_config(test=tb, generics=generics)
 
     def _setup_handshake_merger_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_merger")
