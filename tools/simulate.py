@@ -32,12 +32,7 @@ def main() -> None:
     cli = get_arguments_cli(default_output_path=tools_env.HDL_MODULES_GENERATED)
     args = cli.parse_args()  # type: ignore[no-untyped-call]
 
-    # Avoid the module that depends on Xilinx unisim library
-    module_names_avoid = set(["hard_fifo"]) if args.vivado_skip else None
-    modules = get_modules(
-        modules_folders=[tools_env.HDL_MODULES_DIRECTORY],
-        names_avoid=module_names_avoid,
-    )
+    modules = get_modules(modules_folder=tools_env.HDL_MODULES_DIRECTORY)
 
     if args.vcs_minimal:
         if args.test_patterns != "*":
