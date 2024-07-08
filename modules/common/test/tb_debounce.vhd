@@ -19,6 +19,7 @@ use work.types_pkg.all;
 
 entity tb_debounce is
   generic (
+    enable_iob : boolean;
     runner_cfg : string
   );
 end entity;
@@ -110,7 +111,8 @@ begin
   ------------------------------------------------------------------------------
   dut : entity work.debounce
     generic map (
-      stable_count => stable_count
+      stable_count => stable_count,
+      enable_iob => enable_iob
     )
     port map (
       noisy_input => noisy_input,
