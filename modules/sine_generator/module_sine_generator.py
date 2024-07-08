@@ -62,8 +62,6 @@ class Module(BaseModule):
     def _setup_generator_tests(  # pylint: disable=too-many-statements
         self, vunit_proj: Any, inspect: bool
     ) -> None:
-        # Requires Python 3.7+.
-        # Import here so that users who have an older Python version can still use this module.
         # Standard libraries
         # pylint: disable=import-outside-toplevel
         from dataclasses import dataclass
@@ -377,11 +375,8 @@ class Module(BaseModule):
         return plt.figure(figsize=(15, 7))
 
     def get_build_projects(self):
-        # pylint: disable=import-outside-toplevel
-
         # Standard libraries
-        # Requires Python 3.7+.
-        # Import here so that users who have an older Python version can still use this module.
+        # pylint: disable=import-outside-toplevel
         from dataclasses import dataclass
 
         # First party libraries
@@ -389,6 +384,7 @@ class Module(BaseModule):
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
+        # pylint: disable=import-outside-toplevel
         from hdl_modules import get_hdl_modules
 
         projects = []
@@ -598,8 +594,8 @@ def get_coherent_sampling_count(sample_rate_hz: int, sine_frequency_hz: int) -> 
 
         N = a_sample = f_sample / gcd.
     """
-    # pylint: disable=import-outside-toplevel
     # Standard libraries
+    # pylint: disable=import-outside-toplevel
     from math import gcd
 
     greatest_common_divisor = gcd(sample_rate_hz, sine_frequency_hz)
@@ -627,8 +623,8 @@ def get_power_spectrum(
         * The frequency axis that the power spectrum's bins correspond to.
         * The power spectrum with a linear scale (fft^2).
     """
-    # pylint: disable=import-outside-toplevel
     # Third party libraries
+    # pylint: disable=import-outside-toplevel
     from numpy import abs as np_abs
     from scipy.fft import rfft, rfftfreq
 
@@ -651,8 +647,8 @@ def power_spectrum_to_db(power_spectrum: "ndarray") -> "ndarray":
     Returns:
         The power spectrum in a normalized dB scale (20 log10(fft)).
     """
-    # pylint: disable=import-outside-toplevel
     # Third party libraries
+    # pylint: disable=import-outside-toplevel
     from numpy import log10
     from numpy import max as np_max
 
