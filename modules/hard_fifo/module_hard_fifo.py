@@ -14,7 +14,29 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def get_simulation_files(self, files_avoid=None, include_unisim=True, **kwargs):
+        """
+        Exclude files that depend on IP cores and/or unisim.
+        """
+        files_to_avoid = {
+            self.path / "src" / "asynchronous_hard_fifo.vhd",
+            self.path / "src" / "fifo36e2_wrapper.vhd",
+            self.path / "src" / "hard_fifo.vhd",
+            self.path / "test" / "tb_hard_fifo.vhd",
+        }
+
+        if not include_unisim:
+            files_avoid = files_to_avoid if files_avoid is None else files_avoid | files_to_avoid
+
+        return super().get_simulation_files(files_avoid=files_avoid, **kwargs)
+
+    def setup_vunit(
+        self, vunit_proj, include_unisim=True, **kwargs
+    ):  # pylint: disable=unused-argument
+        if include_unisim:
+            self._setup_hard_fifo_test(vunit_proj=vunit_proj)
+
+    def _setup_hard_fifo_test(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_hard_fifo")
 
         for test in tb.get_tests():
