@@ -98,6 +98,11 @@ architecture a of resync_slv_level_coherent is
   signal input_level_m1, input_level, input_level_not_p1 : std_ulogic := '0';
   signal output_level_m1, output_level, output_level_p1 : std_ulogic := '0';
 
+  -- These two feed async_reg chains, and it is absolutely crucial that they are driven by FFs.
+  -- So place attribute on them so that build tool does not optimize/modify anything.
+  attribute dont_touch of input_level_not_p1 : signal is "true";
+  attribute dont_touch of output_level_p1 : signal is "true";
+
   -- Ensure FFs are not optimized/modified, and placed in the same slice to minimize MTBF.
   attribute async_reg of input_level_m1 : signal is "true";
   attribute async_reg of input_level : signal is "true";
