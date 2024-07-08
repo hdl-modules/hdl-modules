@@ -18,7 +18,6 @@ use vunit_lib.run_pkg.all;
 
 entity tb_resync_slv_level is
   generic (
-    test_coherent : boolean;
     output_clock_is_faster : boolean;
     enable_input_register : boolean;
     runner_cfg : string
@@ -48,9 +47,10 @@ architecture tb of tb_resync_slv_level is
 
 begin
 
-  test_runner_watchdog(runner, 10 ms);
   clk_out <= not clk_out after clk_out_period / 2;
   clk_in <= not clk_in after clock_period_medium / 2;
+
+  test_runner_watchdog(runner, 10 ms);
 
 
   ------------------------------------------------------------------------------
@@ -70,10 +70,6 @@ begin
       clk_in_wait_count := 1;
       -- Two registers
       clk_out_wait_count := 2;
-
-      if test_coherent then
-        clk_in_wait_count := clk_in_wait_count + 3;
-      end if;
 
       if enable_input_register then
         clk_in_wait_count := clk_in_wait_count + 1;
@@ -110,43 +106,24 @@ begin
   assert_output_always_valid_value : process
   begin
     wait until rising_edge(clk_out);
+
     assert data_out = one or data_out = two;
   end process;
 
 
   ------------------------------------------------------------------------------
-  choose_dut : if test_coherent generate
-
-    dut : entity work.resync_slv_level_coherent
-      generic map (
-        width => data_in'length,
-        default_value => one
-      )
-      port map (
-        clk_in => clk_in,
-        data_in => data_in,
-
-        clk_out => clk_out,
-        data_out => data_out
-      );
-
-  else generate
-
-    dut : entity work.resync_slv_level
-      generic map (
-        width => data_in'length,
-        enable_input_register => enable_input_register,
-        default_value => one
-      )
-      port map (
-        clk_in => clk_in,
-        data_in => data_in,
-
-        clk_out => clk_out,
-        data_out => data_out
-      );
-
-  end generate;
-
+  dut : entity work.resync_slv_level
+    generic map (
+      width => data_in'length,
+      enable_input_register => enable_input_register,
+      default_value => one
+    )
+    port map (
+      clk_in => clk_in,
+      data_in => data_in,
+      --
+      clk_out => clk_out,
+      data_out => data_out
+    );
 
 end architecture;
