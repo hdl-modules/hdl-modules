@@ -67,11 +67,11 @@ architecture a of resync_counter is
     counter_in'range
   ) := to_gray(default_value);
 
-  -- Make sure the input register is not optimized away and that logic is not moved around.
+  -- These feed async_reg chains, and it is absolutely crucial that they are driven by FFs.
+  -- So place attribute on them so that build tool does not optimize/modify anything.
   attribute dont_touch of counter_in_gray : signal is "true";
 
-  -- Maximize metastability recovery time for the FF chain.
-  -- Same concept as in 'resync_level'.
+  -- Ensure FFs are not optimized/modified, and placed in the same slice to minimize MTBF.
   attribute async_reg of counter_in_gray_p1 : signal is "true";
   attribute async_reg of counter_out_gray : signal is "true";
 

@@ -11,8 +11,8 @@
 -- .. figure:: resync_pulse_transparent.png
 --
 -- .. note::
---   This entity instantiates :ref:`resync.resync_level` which has a
---   :ref:`scoped constraint <scoped_constraints>` file that must be used.
+--   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
+--   See the ``scoped_constraints`` folder for the file with the same name.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with a LUT as well as an FF.
@@ -67,6 +67,7 @@ use ieee.std_logic_1164.all;
 
 library common;
 use common.attribute_pkg.all;
+use common.common_pkg.ite;
 use common.types_pkg.all;
 
 
@@ -95,13 +96,25 @@ end entity;
 
 architecture a of resync_pulse is
 
-  signal level_in, level_out, level_out_feedback : std_ulogic := '0';
+  signal level_in : std_ulogic := '0';
+  signal level_out_m1, level_out, level_out_p1 : std_ulogic := '0';
+  signal level_out_feedback_m1, level_out_feedback : std_ulogic := '0';
 
-  -- These two feed the input of 'resync_level' without input registers.
-  -- Hence it is absolutely crucial that they are driven by FFs.
-  -- So place attribute on them so that build tool does not optimize or move any elements.
+  -- These two feed async_reg chains, and it is absolutely crucial that they are driven by FFs.
+  -- So place attribute on them so that build tool does not optimize/modify anything.
   attribute dont_touch of level_in : signal is "true";
   attribute dont_touch of level_out : signal is "true";
+
+  -- Ensure FFs are not optimized/modified, and placed in the same slice to minimize MTBF.
+  attribute async_reg of level_out_m1 : signal is "true";
+  attribute async_reg of level_out : signal is "true";
+
+  -- If feedback is disabled but the attribute is applied as "true", the two registers will present
+  -- but unused in the synthesized design.
+  -- Hence set "true" only if feedback is enabled.
+  constant async_reg_feedback : string := ite(enable_feedback, "true", "false");
+  attribute async_reg of level_out_feedback_m1 : signal is async_reg_feedback;
+  attribute async_reg of level_out_feedback : signal is async_reg_feedback;
 
 begin
 
@@ -138,61 +151,28 @@ begin
         end if;
       end if;
     end if;
+
+    if enable_feedback then
+      -- CDC path into async_reg chain.
+      level_out_feedback <= level_out_feedback_m1;
+      level_out_feedback_m1 <= level_out;
+    end if;
   end process;
 
 
   ------------------------------------------------------------------------------
-  level_in_resync_inst : entity work.resync_level
-    generic map (
-      -- Value is drive by a FF so this is not needed
-      enable_input_register => false
-    )
-    port map (
-      clk_in => clk_in,
-      data_in => level_in,
-      --
-      clk_out => clk_out,
-      data_out => level_out
-    );
-
-
-  ------------------------------------------------------------------------------
-  feedback_level_gen : if enable_feedback generate
-
-    ------------------------------------------------------------------------------
-    level_out_resync_inst : entity work.resync_level
-      generic map (
-        -- Value is drive by a FF so this is not needed
-        enable_input_register => false
-      )
-      port map (
-        clk_in => clk_out,
-        data_in => level_out,
-        --
-        clk_out => clk_in,
-        data_out => level_out_feedback
-      );
-
-  end generate;
-
-
-  ------------------------------------------------------------------------------
-  output_block : block
-    signal level_out_p1 : std_ulogic := '0';
+  level_out_register : process
   begin
+    wait until rising_edge(clk_out);
 
-    -- Level to pulse.
-    pulse_out <= (not active_level) when level_out = level_out_p1 else active_level;
+    level_out_p1 <= level_out;
 
+    -- CDC path into async_reg chain.
+    level_out <= level_out_m1;
+    level_out_m1 <= level_in;
+  end process;
 
-    ------------------------------------------------------------------------------
-    level_out_register : process
-    begin
-      wait until rising_edge(clk_out);
-
-      level_out_p1 <= level_out;
-    end process;
-
-  end block;
+  -- Level to pulse.
+  pulse_out <= (not active_level) when level_out = level_out_p1 else active_level;
 
 end architecture;
