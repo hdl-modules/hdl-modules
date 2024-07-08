@@ -26,32 +26,14 @@ from tsfpga.vivado.build_result_checker import (
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
-        self.add_vunit_config(
-            tb, generics=dict(reference_clock_rate_mhz=250, target_clock_rate_mhz=50)
-        )
-        self.add_vunit_config(
-            tb, generics=dict(reference_clock_rate_mhz=50, target_clock_rate_mhz=250)
-        )
-
-        tb = vunit_proj.library(self.library_name).test_bench("tb_periodic_pulser")
-        for period in [5, 15, 127]:
-            self.add_vunit_config(tb, generics=dict(period=period, shift_register_length=8))
-
-        # Create some random settings
-        for _ in range(3):
-            period = randrange(2, 5000)
-            shift_register_length = randrange(1, 66)
-            self.add_vunit_config(
-                tb, generics=dict(period=period, shift_register_length=shift_register_length)
-            )
-
+        self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_handshake_merger_tests(vunit_proj=vunit_proj)
         self._setup_handshake_mux_tests(vunit_proj=vunit_proj)
         self._setup_handshake_pipeline_tests(vunit_proj=vunit_proj)
         self._setup_handshake_splitter_tests(vunit_proj=vunit_proj)
         self._setup_keep_remover_tests(vunit_proj=vunit_proj)
+        self._setup_periodic_pulser_tests(vunit_proj=vunit_proj)
         self._setup_strobe_on_last_tests(vunit_proj=vunit_proj)
         self._setup_width_conversion_tests(vunit_proj=vunit_proj)
 
@@ -79,6 +61,15 @@ class Module(BaseModule):
         self._get_width_conversion_build_projects(part, projects)
 
         return projects
+
+    def _setup_clock_counter_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
+        self.add_vunit_config(
+            tb, generics=dict(reference_clock_rate_mhz=250, target_clock_rate_mhz=50)
+        )
+        self.add_vunit_config(
+            tb, generics=dict(reference_clock_rate_mhz=50, target_clock_rate_mhz=250)
+        )
 
     def _setup_clean_packet_dropper_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_clean_packet_dropper")
@@ -159,6 +150,19 @@ class Module(BaseModule):
                 data_width=data_width, strobe_unit_width=strobe_unit_width, enable_jitter=False
             )
             self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+
+    def _setup_periodic_pulser_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_periodic_pulser")
+        for period in [5, 15, 127]:
+            self.add_vunit_config(tb, generics=dict(period=period, shift_register_length=8))
+
+        # Create some random settings
+        for _ in range(3):
+            period = randrange(2, 5000)
+            shift_register_length = randrange(1, 66)
+            self.add_vunit_config(
+                tb, generics=dict(period=period, shift_register_length=shift_register_length)
+            )
 
     def _setup_strobe_on_last_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_strobe_on_last")
