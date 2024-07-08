@@ -99,19 +99,6 @@ entity fifo is
     level : out natural range 0 to depth := 0;
 
     --# {{}}
-    read_ready : in std_ulogic;
-    -- '1' if FIFO is not empty
-    read_valid : out std_ulogic := '0';
-    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
-    -- Must set 'enable_last' generic in order to use this
-    read_last : out std_ulogic := '0';
-    -- When this is asserted, packets can be read multiple times from the FIFO.
-    -- Must set 'enable_peek_mode' generic in order to use this.
-    read_peek_mode : in std_ulogic := '0';
-    -- '1' if there are 'almost_empty_level' or fewer words available to read
-    almost_empty : out std_ulogic := '1';
-
-    --# {{}}
     -- '1' if FIFO is not full
     write_ready : out std_ulogic := '1';
     write_valid : in std_ulogic;
@@ -122,7 +109,20 @@ entity fifo is
     almost_full : out std_ulogic := '0';
     -- Drop the current packet (all words that have been written since the previous write_last).
     -- Must set 'enable_drop_packet' generic in order to use this.
-    drop_packet : in std_ulogic := '0'
+    drop_packet : in std_ulogic := '0';
+
+    --# {{}}
+    read_ready : in std_ulogic;
+    -- '1' if FIFO is not empty
+    read_valid : out std_ulogic := '0';
+    read_data : out std_ulogic_vector(width - 1 downto 0) := (others => '0');
+    -- Must set 'enable_last' generic in order to use this
+    read_last : out std_ulogic := '0';
+    -- When this is asserted, packets can be read multiple times from the FIFO.
+    -- Must set 'enable_peek_mode' generic in order to use this.
+    read_peek_mode : in std_ulogic := '0';
+    -- '1' if there are 'almost_empty_level' or fewer words available to read
+    almost_empty : out std_ulogic := '1'
   );
 end entity;
 

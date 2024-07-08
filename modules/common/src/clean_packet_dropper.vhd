@@ -106,17 +106,17 @@ begin
       port map(
         clk => clk,
         --
+        write_ready => write_ready,
+        write_valid => input_valid,
+        write_last => input_last,
+        write_data => write_data,
+        --
         drop_packet => drop_fifo_packet,
         --
         read_ready => result_ready,
         read_valid => result_valid,
         read_last => result_last,
-        read_data => read_data,
-        --
-        write_ready => write_ready,
-        write_valid => input_valid,
-        write_last => input_last,
-        write_data => write_data
+        read_data => read_data
       );
 
     -- Pack/unpack data
