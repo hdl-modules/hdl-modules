@@ -21,6 +21,9 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   set clk_in_period [get_property "PERIOD" ${clk_in}]
   set clk_out_period [get_property "PERIOD" ${clk_out}]
   set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
+
+  puts "INFO hdl-modules resync_level.tcl: Using clk_in period: ${clk_in_period}."
+  puts "INFO hdl-modules resync_level.tcl: Using clk_out period: ${clk_out_period}."
   puts "INFO hdl-modules resync_level.tcl: Using calculated max delay: ${min_period}."
 
   # The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
