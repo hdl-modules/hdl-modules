@@ -182,7 +182,7 @@ class Module(BaseModule):
         for width in [8, 16, 24, 32, 64]:
             add_config(
                 Config(
-                    name="resync_slv_handshake", data_width=width, lut=6, ff=2 * width + 8, logic=2
+                    name="resync_slv_handshake", data_width=width, lut=5, ff=2 * width + 8, logic=2
                 )
             )
 
