@@ -111,6 +111,7 @@ jobs:
           sphinx_sitemap \
           sphinxcontrib-wavedrom \
           sphinxext-opengraph \
+          tomli_w \
           vunit-hdl
 
     - name: Clone dependency repos
@@ -190,8 +191,10 @@ jobs:
         python3 -m pip install \
           GitPython \
           numpy \
+          PyYAML \
           rtoml \
           scipy \
+          tomli_w \
           vunit-hdl@git+https://github.com/VUnit/vunit.git
 
     - name: Setup GHDL
