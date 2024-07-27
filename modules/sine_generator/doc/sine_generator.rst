@@ -84,7 +84,7 @@ Note that the module will always use a memory that is
 
 large, and you must hence choose a maximum memory size that your design can afford.
 The  ``memory_data_width`` is typically  18 and ``memory_address_width`` between 9 and 12, since
-that maps very nicely to BRAM primitives
+that maps very nicely to BRAM primitives.
 But they can be both less or more.
 
 
