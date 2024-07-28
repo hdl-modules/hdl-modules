@@ -22,7 +22,10 @@ package common_pkg is
   -- Equivalent to
   --   condition ? value_if_true : value_if_false
   -- in C-like languages.
-  function ite(condition : boolean; value_if_true : string; value_if_false : string) return string;
+  -- Function can be overloaded for other value data types.
+  function if_then_else(
+    condition : boolean; value_if_true : string; value_if_false : string
+  ) return string;
 
 end package;
 
@@ -37,15 +40,15 @@ package body common_pkg is
     return false;
   end function;
 
-  function ite(
+  function if_then_else(
     condition : boolean; value_if_true : string; value_if_false : string
   ) return string is
   begin
     if condition then
       return value_if_true;
-    else
-      return value_if_false;
     end if;
+
+    return value_if_false;
   end function;
 
 end package body;

@@ -28,9 +28,9 @@ begin
   begin
     test_runner_setup(runner, runner_cfg);
 
-    if run("test_ite_string") then
-      check_equal(ite(true, "a", "b"), "a");
-      check_equal(ite(false, "a", "b"), "b");
+    if run("test_if_then_else_string") then
+      check_equal(if_then_else(true, "a", "b"), "a");
+      check_equal(if_then_else(false, "a", "b"), "b");
 
     end if;
 

@@ -67,7 +67,7 @@ use ieee.std_logic_1164.all;
 
 library common;
 use common.attribute_pkg.all;
-use common.common_pkg.ite;
+use common.common_pkg.if_then_else;
 use common.types_pkg.all;
 
 
@@ -112,7 +112,7 @@ architecture a of resync_pulse is
   -- If feedback is disabled but the attribute is applied as "true", the two registers will present
   -- but unused in the synthesized design.
   -- Hence set "true" only if feedback is enabled.
-  constant async_reg_feedback : string := ite(enable_feedback, "true", "false");
+  constant async_reg_feedback : string := if_then_else(enable_feedback, "true", "false");
   attribute async_reg of level_out_feedback_m1 : signal is async_reg_feedback;
   attribute async_reg of level_out_feedback : signal is async_reg_feedback;
 

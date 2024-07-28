@@ -17,7 +17,7 @@ use ieee.std_logic_1164.all;
 
 library common;
 use common.attribute_pkg.all;
-use common.common_pkg.ite;
+use common.common_pkg.if_then_else;
 
 library resync;
 
@@ -53,8 +53,10 @@ architecture a of debounce is
 
   -- Set either the IOB constraint, to place the register in I/O buffer, or async_reg
   -- constraint to place the register in the same chain as the other two.
-  attribute iob of non_metastable_input_m2 : signal is ite(enable_iob, "true", "false");
-  attribute async_reg of non_metastable_input_m2 : signal is ite(enable_iob, "false", "true");
+  attribute iob of non_metastable_input_m2 : signal is if_then_else(enable_iob, "true", "false");
+  attribute async_reg of non_metastable_input_m2 : signal is if_then_else(
+    enable_iob, "false", "true"
+  );
 
   -- Ensure FFs are not optimized/modified, and placed in the same slice to minimize MTBF.
   attribute async_reg of non_metastable_input_m1 : signal is "true";
