@@ -244,10 +244,10 @@ begin
         width => read_addr_next'length
       )
       port map (
-        clk_in      => clk_read,
-        counter_in  => read_addr_next,
+        clk_in => clk_read,
+        counter_in => read_addr_next,
         --
-        clk_out     => clk_write,
+        clk_out => clk_write,
         counter_out => read_addr_resync
       );
 
@@ -401,10 +401,10 @@ begin
           width => write_addr'length
         )
         port map (
-          clk_in      => clk_write,
-          counter_in  => write_addr,
+          clk_in => clk_write,
+          counter_in => write_addr,
           --
-          clk_out     => clk_read,
+          clk_out => clk_read,
           counter_out => write_addr_resync
         );
 
@@ -421,10 +421,10 @@ begin
           width => num_lasts_written'length
         )
         port map (
-          clk_in      => clk_write,
-          counter_in  => num_lasts_written,
+          clk_in => clk_write,
+          counter_in => num_lasts_written,
           --
-          clk_out     => clk_read,
+          clk_out => clk_read,
           counter_out => num_lasts_written_resync
         );
 

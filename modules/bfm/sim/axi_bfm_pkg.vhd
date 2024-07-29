@@ -35,15 +35,15 @@ package axi_bfm_pkg is
   -- Stall in a way where it is probable that W data arrives a long while before AWVALID.
   constant default_address_stall_config : stall_configuration_t := (
     stall_probability => 0.3,
-    min_stall_cycles  => 1,
-    max_stall_cycles  => 30
+    min_stall_cycles => 1,
+    max_stall_cycles => 30
   );
 
   -- Stall just a little bit, to make sure handshaking works properly on all the channels.
   constant default_data_stall_config : stall_configuration_t := (
     stall_probability => 0.3,
-    min_stall_cycles  => 1,
-    max_stall_cycles  => 4
+    min_stall_cycles => 1,
+    max_stall_cycles => 4
   );
 
   -- From a desired length, return the highest possible length that does not cross a 4k barrier

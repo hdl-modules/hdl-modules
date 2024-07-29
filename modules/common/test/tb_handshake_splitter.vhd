@@ -126,11 +126,11 @@ begin
       logger_name_suffix => " - input"
     )
     port map(
-      clk   => clk,
+      clk => clk,
       --
       valid => input_valid,
       ready => input_ready,
-      data  => input_data
+      data => input_data
     );
 
 
@@ -148,11 +148,11 @@ begin
         disable_last_check => true
       )
       port map(
-        clk   => clk,
+        clk => clk,
         --
         valid => output_valid(output_index),
         ready => output_ready(output_index),
-        data  => input_data,
+        data => input_data,
         --
         num_packets_checked => num_packets_checked(output_index)
       );
