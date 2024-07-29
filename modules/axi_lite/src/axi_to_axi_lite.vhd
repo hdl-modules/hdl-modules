@@ -51,8 +51,8 @@ end entity;
 
 architecture a of axi_to_axi_lite is
 
-  constant len : natural := 0;
-  constant size : natural := log2(data_width / 8);
+  constant expected_len : natural := 0;
+  constant expected_size : natural := log2(data_width / 8);
 
   signal read_id, write_id : u_unsigned(axi_m2s.read.ar.id'range) := (others => '0');
 
@@ -144,13 +144,16 @@ begin
   begin
     wait until rising_edge(clk);
 
-    -- If an error occurs the bus will return an error. The bus will be unlocked for any
-    -- upcoming transactions, if the SW can handle it.
+    -- If an error occurs the bus will return an error without being stalled or hung.
+    -- Meaning that theoretically, if the upstream AXI master can handle it, further transactions
+    -- can be performed after the erroneous one.
+    -- However, if the problem is with the length, there will probably be some deadlock anyway,
+    -- since the downstream AXI-Lite slave will not, e.g., pop more than one W beat.
 
-    if axi_m2s.write.aw.valid and axi_s2m.write.aw.ready then
+    if axi_s2m.write.aw.ready and axi_m2s.write.aw.valid then
       if (
-        to_integer(unsigned(axi_m2s.write.aw.len)) /= len
-        or to_integer(unsigned(axi_m2s.write.aw.size)) /= size
+        to_integer(unsigned(axi_m2s.write.aw.len)) /= expected_len
+        or to_integer(unsigned(axi_m2s.write.aw.size)) /= expected_size
       ) then
         write_error <= true;
       else
@@ -158,10 +161,10 @@ begin
       end if;
     end if;
 
-    if axi_m2s.read.ar.valid and axi_s2m.read.ar.ready then
+    if axi_s2m.read.ar.ready and axi_m2s.read.ar.valid then
       if (
-        to_integer(unsigned(axi_m2s.read.ar.len)) /= len
-        or to_integer(unsigned(axi_m2s.read.ar.size)) /= size
+        to_integer(unsigned(axi_m2s.read.ar.len)) /= expected_len
+        or to_integer(unsigned(axi_m2s.read.ar.size)) /= expected_size
       ) then
         read_error <= true;
       else
