@@ -85,10 +85,10 @@ begin
   test_runner_watchdog(runner, 2 ms);
 
   clocks : if read_clock_is_faster generate
-    clk_read  <= not clk_read after 2 ns;
+    clk_read <= not clk_read after 2 ns;
     clk_write <= not clk_write after 3 ns;
   else  generate
-    clk_read  <= not clk_read after 3 ns;
+    clk_read <= not clk_read after 3 ns;
     clk_write <= not clk_write after 2 ns;
   end generate;
 
@@ -496,8 +496,8 @@ begin
       clk_write => clk_write,
       write_ready => write_ready,
       write_valid => write_valid,
-      write_data  => write_data,
-      write_last  => write_last,
+      write_data => write_data,
+      write_last => write_last,
       --
       write_level => write_level,
       write_almost_full => write_almost_full,
@@ -505,10 +505,10 @@ begin
       drop_packet => drop_packet,
       --
       clk_read => clk_read,
-      read_ready   => read_ready,
-      read_valid   => read_valid,
-      read_data    => read_data,
-      read_last    => read_last,
+      read_ready => read_ready,
+      read_valid => read_valid,
+      read_data => read_data,
+      read_last => read_last,
       --
       read_level => read_level,
       read_almost_empty => read_almost_empty

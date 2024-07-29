@@ -150,7 +150,7 @@ begin
         logger_name_suffix => " - input #" & to_string(input_idx)
       )
       port map(
-        clk   => clk,
+        clk => clk,
         --
         ready => input_ready(input_idx),
         valid => input_valid(input_idx),
@@ -177,12 +177,12 @@ begin
         logger_name_suffix => " - result"
       )
       port map(
-        clk   => clk,
+        clk => clk,
         --
         ready => result_ready,
         valid => result_valid,
         last => result_last,
-        data  => result_data,
+        data => result_data,
         --
         num_packets_checked => num_packets_checked
       );

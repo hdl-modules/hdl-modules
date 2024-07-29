@@ -26,22 +26,25 @@ entity tb_resync_counter is
 end entity;
 
 architecture tb of tb_resync_counter is
-  constant clk_in_period   : time    := 3.3 ns;
-  constant clk_out_period  : time    := 4 ns;
-  constant max_resync_time : time :=
-    clk_in_period +
-    2*clk_out_period +
-    to_int(pipeline_output) * clk_out_period;
+  constant clk_in_period : time := 3.3 ns;
+  constant clk_out_period : time := 4 ns;
 
-  signal clk_in                  : std_ulogic                      := '1';
-  signal clk_out                 : std_ulogic                      := '0';
+  constant max_resync_time : time := (
+    clk_in_period + 2*clk_out_period + to_int(pipeline_output) * clk_out_period
+  );
+
+  signal clk_in : std_ulogic := '1';
+  signal clk_out : std_ulogic := '0';
+
   signal counter_in, counter_out : u_unsigned(8 - 1 downto 0) := (others => '0');
   constant counter_max : integer := 2 ** counter_in'length - 1;
+
 begin
 
-  test_runner_watchdog(runner, 10 ms);
-  clk_in  <= not clk_in  after clk_in_period/2;
+  clk_in <= not clk_in  after clk_in_period/2;
   clk_out <= not clk_out after clk_out_period/2;
+
+  test_runner_watchdog(runner, 10 ms);
 
 
   ------------------------------------------------------------------------------
@@ -78,12 +81,14 @@ begin
   dut : entity work.resync_counter
     generic map (
       width => counter_in'length,
-      pipeline_output => pipeline_output)
+      pipeline_output => pipeline_output
+    )
     port map (
-      clk_in     => clk_in,
+      clk_in => clk_in,
       counter_in => counter_in,
-
-      clk_out     => clk_out,
-      counter_out => counter_out);
+      --
+      clk_out => clk_out,
+      counter_out => counter_out
+    );
 
 end architecture;

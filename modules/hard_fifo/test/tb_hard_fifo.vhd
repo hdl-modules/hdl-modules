@@ -82,10 +82,10 @@ begin
   clock_generation : if is_asynchronous generate
 
     clocks : if read_clock_is_faster generate
-      clk_read  <= not clk_read after 2 ns;
+      clk_read <= not clk_read after 2 ns;
       clk_write <= not clk_write after 3 ns;
     else  generate
-      clk_read  <= not clk_read after 3 ns;
+      clk_read <= not clk_read after 3 ns;
       clk_write <= not clk_write after 2 ns;
     end generate;
 
