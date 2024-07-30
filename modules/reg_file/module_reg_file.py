@@ -42,25 +42,29 @@ class Module(BaseModule):
 
         projects = []
         all_modules = get_hdl_modules(
-            names_include=[self.name, "axi", "axi_lite", "common", "math"]
+            names_include=[self.name, "axi", "axi_lite", "common", "crip", "math"]
         )
         part = "xc7z020clg400-1"
 
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.axi_lite_reg_file",
-                modules=all_modules,
-                part=part,
-                top="axi_lite_reg_file_netlist_wrapper",
-                build_result_checkers=[
-                    TotalLuts(EqualTo(202)),
-                    Ffs(EqualTo(447)),
-                    Ramb36(EqualTo(0)),
-                    Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(4)),
-                ],
+        def add_reg_file(name: str, luts: int, ffs: int, logic_level: int):
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=f"{self.library_name}.{name}_reg_file",
+                    modules=all_modules,
+                    part=part,
+                    top=f"{name}_reg_file_netlist_wrapper",
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(luts)),
+                        Ffs(EqualTo(ffs)),
+                        Ramb36(EqualTo(0)),
+                        Ramb18(EqualTo(0)),
+                        MaximumLogicLevel(EqualTo(logic_level)),
+                    ],
+                )
             )
-        )
+
+        add_reg_file(name="axi_lite", luts=202, ffs=447, logic_level=4)
+        add_reg_file(name="crip", luts=178, ffs=439, logic_level=3)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
