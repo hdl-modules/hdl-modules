@@ -67,7 +67,7 @@ begin
 
   ------------------------------------------------------------------------------
   assert sanity_check_axi_data_width(data_width) and sanity_check_axi_lite_data_width(data_width)
-    report "Invalid AXI/AXI-Lite data width, see printout above"
+    report "Invalid AXI/AXI-Lite data width, see printout above."
     severity failure;
 
 

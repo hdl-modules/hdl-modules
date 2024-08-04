@@ -427,7 +427,7 @@ package body axi_pkg is
     constant result : axi_a_size_t := to_unsigned(log2(data_width_bits / 8), axi_a_size_sz);
   begin
     assert sanity_check_axi_data_width(data_width_bits)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     return result;
@@ -548,7 +548,7 @@ package body axi_pkg is
     variable result : std_ulogic_vector(axi_w_strb_sz - 1 downto 0) := (others => '0');
   begin
     assert sanity_check_axi_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     result(data_width / 8 - 1 downto 0) := (others => '1');
@@ -559,7 +559,7 @@ package body axi_pkg is
   function axi_w_strb_width(data_width : positive range 8 to axi_data_sz) return positive is
   begin
     assert sanity_check_axi_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     return data_width / 8;
@@ -570,7 +570,7 @@ package body axi_pkg is
   ) return positive is
   begin
     assert sanity_check_axi_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     -- Excluded member: valid.
@@ -696,7 +696,7 @@ package body axi_pkg is
   ) return positive is
   begin
     assert sanity_check_axi_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     -- Excluded member: valid.

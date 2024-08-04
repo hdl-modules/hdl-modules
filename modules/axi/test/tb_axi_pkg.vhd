@@ -33,6 +33,7 @@ end entity;
 architecture tb of tb_axi_pkg is
 begin
 
+  ------------------------------------------------------------------------------
   main : process
     variable rnd : RandomPType;
 
