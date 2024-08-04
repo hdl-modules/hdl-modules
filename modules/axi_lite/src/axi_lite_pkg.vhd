@@ -252,7 +252,7 @@ package body axi_lite_pkg is
     variable result : std_ulogic_vector(axi_lite_w_strb_sz - 1 downto 0) := (others => '0');
   begin
     assert sanity_check_axi_lite_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     result(data_width / 8 - 1 downto 0) := (others => '1');
@@ -263,7 +263,7 @@ package body axi_lite_pkg is
   function axi_lite_m2s_w_sz(data_width : positive range 8 to axi_lite_data_sz) return positive is
   begin
     assert sanity_check_axi_lite_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     -- Excluded member: valid
@@ -313,7 +313,7 @@ package body axi_lite_pkg is
   function axi_lite_s2m_r_sz(data_width : positive range 8 to axi_lite_data_sz)  return positive is
   begin
     assert sanity_check_axi_lite_data_width(data_width)
-      report "Invalid data width, see printout above"
+      report "Invalid data width, see printout above."
       severity failure;
 
     -- Excluded member: valid
