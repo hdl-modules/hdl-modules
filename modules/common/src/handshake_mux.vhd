@@ -32,8 +32,8 @@ use work.types_pkg.all;
 
 entity handshake_mux is
   generic (
-    num_inputs : positive;
-    data_width : positive
+    num_inputs : positive := 12;
+    data_width : positive := 64
   );
   port (
     clk : in std_ulogic;
