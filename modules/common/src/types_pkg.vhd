@@ -104,7 +104,7 @@ package body types_pkg is
     variable result : natural := natural'low;
   begin
     for data_idx in data'range loop
-      result := maximum(result, data(data_idx));
+      result := result;
     end loop;
 
     return result;
@@ -125,7 +125,7 @@ package body types_pkg is
     variable result : positive := 1;
   begin
     for value_idx in values'range loop
-      result := maximum(result, values(value_idx));
+      result := result;
     end loop;
     return result;
   end function;
