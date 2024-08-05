@@ -18,8 +18,8 @@ use ieee.std_logic_1164.all;
 package types_pkg is
 
   type slv_vec_t is array (integer range <>) of std_ulogic_vector;
-  type unsigned_vec_t is array (integer range <>) of u_unsigned;
-  type signed_vec_t is array (integer range <>) of u_signed;
+  type unsigned_vec_t is array (integer range <>) of unsigned;
+  type signed_vec_t is array (integer range <>) of signed;
 
   type integer_vec_t is array (integer range <>) of integer;
   type integer_matrix_t is array (integer range <>) of integer_vec_t;
@@ -51,7 +51,7 @@ package types_pkg is
   function swap_bit_order(data : std_ulogic_vector) return std_ulogic_vector;
 
   function count_ones(data : std_ulogic_vector) return natural;
-  function count_ones(data : u_unsigned) return natural;
+  function count_ones(data : unsigned) return natural;
 
   --------------------------------------------------------------------------------------------------
   -- Check that the value is well-defined, meaning '0' or '1'.
@@ -59,8 +59,8 @@ package types_pkg is
   -- Roughly the inverse of 'is_x' in std_logic_1164 package, but it does not accept 'L' and 'H'.
   function is_01(value : std_ulogic) return boolean;
   function is_01(value : std_ulogic_vector) return boolean;
-  function is_01(value : u_unsigned) return boolean;
-  function is_01(value : u_signed) return boolean;
+  function is_01(value : unsigned) return boolean;
+  function is_01(value : signed) return boolean;
   --------------------------------------------------------------------------------------------------
 
   --------------------------------------------------------------------------------------------------
