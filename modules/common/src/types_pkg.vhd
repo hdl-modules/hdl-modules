@@ -229,8 +229,8 @@ package body types_pkg is
     return result;
   end function;
 
-  function count_ones(data : u_unsigned) return natural is
-    constant result : natural range 0 to data'length := count_ones(data=>std_logic_vector(data));
+  function count_ones(data : unsigned) return natural is
+    constant result : natural range 0 to data'length := count_ones(data=>std_ulogic_vector(data));
   begin
     return result;
   end function;
@@ -252,14 +252,14 @@ package body types_pkg is
     return true;
   end function;
 
-  function is_01(value : u_unsigned) return boolean is
+  function is_01(value : unsigned) return boolean is
   begin
-    return is_01(std_logic_vector(value));
+    return is_01(std_ulogic_vector(value));
   end function;
 
-  function is_01(value : u_signed) return boolean is
+  function is_01(value : signed) return boolean is
   begin
-    return is_01(std_logic_vector(value));
+    return is_01(std_ulogic_vector(value));
   end function;
   --------------------------------------------------------------------------------------------------
 
