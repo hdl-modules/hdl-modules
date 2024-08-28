@@ -333,25 +333,37 @@ begin
       sine_in_negative_quadrant := result_quadrant = 2 or result_quadrant = 3;
 
       if enable_sine then
-        result_sine <= (- memory_sine_signed) when sine_in_negative_quadrant
-          else memory_sine_signed;
+        if sine_in_negative_quadrant then
+          result_sine <= - memory_sine_signed;
+        else
+          result_sine <= memory_sine_signed;
+        end if;
       end if;
 
       if enable_minus_sine then
-        result_minus_sine <= memory_sine_signed when sine_in_negative_quadrant
-          else (- memory_sine_signed);
+        if sine_in_negative_quadrant then
+          result_minus_sine <= memory_sine_signed;
+        else
+          result_minus_sine <= - memory_sine_signed;
+        end if;
       end if;
 
       cosine_in_negative_quadrant := result_quadrant = 1 or result_quadrant = 2;
 
       if enable_cosine then
-        result_cosine <= (- memory_cosine_signed) when cosine_in_negative_quadrant
-          else memory_cosine_signed;
+        if cosine_in_negative_quadrant then
+          result_cosine <= - memory_cosine_signed;
+        else
+          result_cosine <= memory_cosine_signed;
+        end if;
       end if;
 
       if enable_minus_cosine then
-        result_minus_cosine <= memory_cosine_signed when cosine_in_negative_quadrant
-          else (- memory_cosine_signed);
+        if cosine_in_negative_quadrant then
+          result_minus_cosine <= memory_cosine_signed;
+        else
+          result_minus_cosine <= - memory_cosine_signed;
+        end if;
       end if;
     end process;
 
