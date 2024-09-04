@@ -18,8 +18,9 @@ set read_data [
 # These registers exist as FFs when the RAM is implemented as distributed RAM (LUTRAM).
 # In this case there is a timing path from write clock to the read data registers which
 # can be safely ignored in order for timing to pass.
-# If the RAM is implemented as BRAM, the read data registers are internal in the BRAM primitive.
-# See some old discussion in https://gitlab.com/tsfpga/tsfpga/merge_requests/20
+# If the RAM is instead implemented as BRAM, the read data registers are internal in the
+# BRAM primitive.
+# See some old discussion here: https://gitlab.com/tsfpga/tsfpga/merge_requests/20
 # This is also discussed in AMD UG903 and in various places in the forum.
 # In recent Vivado versions (at least 2023.2), the cells show up even when the RAM is implemented as
 # BRAM, hence why we filter for the primitive type.
