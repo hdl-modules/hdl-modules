@@ -32,8 +32,10 @@
 -- Hence the "level" part in the name.
 --
 -- .. note::
---   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity has a scoped constraint file
+--   `resync_slv_level_coherent.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_slv_level_coherent.tcl>`__
+--   that must be used for proper operation.
+--   See :ref:`here <scoped_constraints>` for instructions.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with LUTs as well as FFs.

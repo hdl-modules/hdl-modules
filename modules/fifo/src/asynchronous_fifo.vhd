@@ -16,8 +16,10 @@
 -- For more CDC solutions, please see :ref:`module_resync`.
 --
 -- .. note::
---   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity has a scoped constraint file
+--   `asynchronous_fifo.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/fifo/scoped_constraints/asynchronous_fifo.tcl>`__
+--   that must be used for proper operation.
+--   See :ref:`here <scoped_constraints>` for instructions.
 --   This entity also instantiates :ref:`resync.resync_counter` which has a further constraint file
 --   that must be used.
 --
