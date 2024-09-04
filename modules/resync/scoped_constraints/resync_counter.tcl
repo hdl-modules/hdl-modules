@@ -9,6 +9,10 @@
 # See this article for background and discussion about these constraints:
 # https://www.linkedin.com/pulse/reliable-cdc-constraints-2-counters-fifos-lukas-vik-ist5c
 # Also AMD document UG903 provides some examples.
+#
+# See the file 'resync_pulse.tcl' for background on
+# * Why we find the minimum period in such a clunky way.
+# * Why we use 'set_max_delay' with the '-datapath_only' flag.
 # --------------------------------------------------------------------------------------------------
 
 set stable_registers [get_cells "counter_in_gray_reg*"]
@@ -43,14 +47,6 @@ if {${clk_out} != ""} {
 set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
 
 # Set max delay to impose a latency limit.
-# The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
-# constraining asynchronous clock domain crossings.
-# This removes any clock pessimism from the delay calculation, though, which means that in reality
-# the delay can be slightly greater than one clock cycle.
-# But without this flag, it works in most cases but command failure has been observed in some
-# other, non-trivial, cases.
-# Typically happens when a derived clock or a clock from an IP core is used.
-# Hence we use the flag.
 set_max_delay -datapath_only -from ${stable_registers} -to ${first_resync_registers} ${min_period}
 
 # Waive "Multi-bit synchronized with ASYNC_REG property" warning to make reports a little cleaner.

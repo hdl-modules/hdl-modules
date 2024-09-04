@@ -9,6 +9,10 @@
 # Note that this file is almost identical to 'resync_slv_handshake.tcl', except for
 # signal names.
 # Changes/improvements should be incorporated in both files.
+#
+# See the file 'resync_pulse.tcl' for background on
+# * Why we find the minimum period in such a clunky way.
+# * Why we use 'set_max_delay' with the '-datapath_only' flag.
 # --------------------------------------------------------------------------------------------------
 
 set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
@@ -34,14 +38,6 @@ set min_period [expr {min(${clk_in_period}, ${clk_out_period})}]
 puts "INFO hdl-modules resync_slv_level_coherent.tcl: Using calculated min period: ${min_period}."
 
 # Set max delay to impose a latency limit.
-# The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
-# constraining asynchronous clock domain crossings.
-# This removes any clock pessimism from the delay calculation, though, which means that in reality
-# the delay can be slightly greater than one clock cycle.
-# But without this flag, it works in most cases but command failure has been observed in some
-# other, non-trivial, cases.
-# Typically happens when a derived clock or a clock from an IP core is used.
-# Hence we use the flag.
 set data_in_sampled [get_cells "data_in_sampled_reg*"]
 set data_out [get_cells "data_out_int_reg*"]
 set_max_delay -datapath_only -from ${data_in_sampled} -to ${data_out} ${min_period}
@@ -60,7 +56,7 @@ create_waiver \
   -to ${cdc_to} \
   -description "Clock Enable is part of this CDC concept, no reason to warn about it"
 
-# Constrain the level signals. Very similar to resync_level.tcl.
+# Constrain the level signals. Very similar to 'resync_level.tcl'.
 set input_level_not_p1 [get_cells "input_level_not_p1_reg"]
 set output_level_m1 [get_cells "output_level_m1_reg"]
 set_max_delay -datapath_only -from ${input_level_not_p1} -to ${output_level_m1} ${min_period}

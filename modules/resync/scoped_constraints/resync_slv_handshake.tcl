@@ -9,6 +9,10 @@
 # Note that this file is almost identical to 'resync_slv_handshake.tcl', except for
 # signal names.
 # Changes/improvements should be incorporated in both files.
+#
+# See the file 'resync_pulse.tcl' for background on
+# * Why we find the minimum period in such a clunky way.
+# * Why we use 'set_max_delay' with the '-datapath_only' flag.
 # --------------------------------------------------------------------------------------------------
 
 set input_clk [get_clocks -quiet -of_objects [get_ports "input_clk"]]
@@ -34,14 +38,6 @@ set min_period [expr {min(${input_clk_period}, ${result_clk_period})}]
 puts "INFO hdl-modules resync_slv_handshake.tcl: Using calculated min period: ${min_period}."
 
 # Set max delay to impose a latency limit.
-# The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
-# constraining asynchronous clock domain crossings.
-# This removes any clock pessimism from the delay calculation, though, which means that in reality
-# the delay can be slightly greater than one clock cycle.
-# But without this flag, it works in most cases but command failure has been observed in some
-# other, non-trivial, cases.
-# Typically happens when a derived clock or a clock from an IP core is used.
-# Hence we use the flag.
 set input_data_sampled [get_cells "input_data_sampled_reg*"]
 set result_data [get_cells "result_data_int_reg*"]
 set_max_delay -datapath_only -from ${input_data_sampled} -to ${result_data} ${min_period}
