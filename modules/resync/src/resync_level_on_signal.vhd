@@ -9,8 +9,10 @@
 -- Sample a bit from one clock domain to another.
 --
 -- .. note::
---   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity has a scoped constraint file
+--   `resync_level_on_signal.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_level_on_signal.tcl>`__
+--   that must be used for proper operation.
+--   See :ref:`here <scoped_constraints>` for instructions.
 --
 -- This entity does not utilize any meta stability protection.
 -- It is up to the user to ensure that ``data_in`` is stable when ``sample_value`` is asserted.

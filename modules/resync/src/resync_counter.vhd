@@ -16,8 +16,10 @@
 -- with LUTs as well as FFs.
 --
 -- .. note::
---   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity has a scoped constraint file
+--   `resync_counter.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_counter.tcl>`__
+--   that must be used for proper operation.
+--   See :ref:`here <scoped_constraints>` for instructions.
 --
 -- .. warning::
 --   This entity assumes that the input counter value only increments and decrements in steps

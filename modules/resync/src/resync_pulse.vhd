@@ -11,8 +11,10 @@
 -- .. figure:: resync_pulse_transparent.png
 --
 -- .. note::
---   This entity has a :ref:`scoped constraint <scoped_constraints>` file that must be used.
---   See the ``scoped_constraints`` folder for the file with the same name.
+--   This entity has a scoped constraint file
+--   `resync_pulse.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_pulse.tcl>`__
+--   that must be used for proper operation.
+--   See :ref:`here <scoped_constraints>` for instructions.
 --
 -- Note that unlike e.g. :ref:`resync.resync_level`, it is safe to drive the input of this entity
 -- with a LUT as well as an FF.
