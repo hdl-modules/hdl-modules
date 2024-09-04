@@ -9,6 +9,10 @@
 # See this article for background and discussion about these constraints:
 # https://www.linkedin.com/pulse/reliable-cdc-constraints-1-lukas-vik-copcf/
 # Also AMD document UG903 provides some background.
+#
+# See the file 'resync_pulse.tcl' for background on
+# * Why we find the minimum period in such a clunky way.
+# * Why we use 'set_max_delay' with the '-datapath_only' flag.
 # --------------------------------------------------------------------------------------------------
 
 set clk_in [get_clocks -quiet -of_objects [get_ports "clk_in"]]
@@ -26,15 +30,6 @@ if {${clk_in} != "" && ${clk_out} != ""} {
   puts "INFO hdl-modules resync_level.tcl: Using clk_out period: ${clk_out_period}."
   puts "INFO hdl-modules resync_level.tcl: Using calculated max delay: ${min_period}."
 
-  # The recommend way, according to 'set_max_delay -help', is to use '-datapath_only' when
-  # constraining asynchronous clock domain crossings.
-  # This removes any clock pessimism from the delay calculation, though, which means that in reality
-  # the delay can be slightly greater than one clock cycle.
-  # But without this flag, it works in most cases but command failure has been observed in some
-  # other, non-trivial, cases.
-  # Typically happens when a derived clock or a clock from an IP core is used.
-  # Hence we use the flag.
-  #
   # A more elegant way of deriving the driver of the input to the CDC would be to use e.g.
   #   set timing_path [lindex [get_timing_paths -to "${first_resync_register}/D" -nworst 1] 0]
   #   set clk_in [get_property "STARTPOINT_CLOCK" ${timing_path}]
@@ -52,6 +47,7 @@ if {${clk_in} != "" && ${clk_out} != ""} {
 } else {
   # Could not find both clocks.
   # Could be that 'clk_in' is not connected, or the clocks have not been created yet.
+  # See also 'resync_pulse.tcl' for some background on when this can happen.
   # In this case, fall back to simple false path constraint.
   puts "WARNING hdl-modules resync_level.tcl: Could not find both clocks."
   set_false_path -setup -hold -to ${first_resync_register}
