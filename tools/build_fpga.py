@@ -11,7 +11,7 @@
 import sys
 from pathlib import Path
 
-# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install.
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
