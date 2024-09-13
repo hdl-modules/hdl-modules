@@ -17,7 +17,7 @@ import sys
 # First party libraries
 from tools.tools_env import REPO_ROOT
 
-# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install
+# Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install.
 
 # Paths e.g.
 # repo/hdl-modules/hdl-modules
