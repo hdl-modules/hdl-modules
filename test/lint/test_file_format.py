@@ -104,6 +104,7 @@ def test_no_checked_in_files_have_too_long_lines():
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_rarely_valid_lutram.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_rarely_valid.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase_handshake.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase_lutram.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase.vhd",
         # Impossible to break TCL syntax
         HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_twophase_handshake.tcl",
