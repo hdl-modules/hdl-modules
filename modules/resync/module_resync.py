@@ -13,7 +13,14 @@ from typing import Optional
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
-from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
+from tsfpga.vivado.build_result_checker import (
+    EqualTo,
+    Ffs,
+    GreaterThan,
+    LutRams,
+    MaximumLogicLevel,
+    TotalLuts,
+)
 
 
 class Module(BaseModule):
@@ -81,8 +88,15 @@ class Module(BaseModule):
             "output_clock_is_mildly_slower",
             "output_clock_is_greatly_slower",
         ]:
-            generics = {mode: True}
-            self.add_vunit_config(tb, generics=generics)
+            for enable_lutram in [False, True]:
+                generics = {mode: True, "enable_lutram": enable_lutram}
+
+                if enable_lutram:
+                    for enable_output_register in [False, True]:
+                        generics["enable_output_register"] = enable_output_register
+                        self.add_vunit_config(tb, generics=generics)
+                else:
+                    self.add_vunit_config(tb, generics=generics)
 
     def setup_resync_twophase_handshake_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase_handshake")
@@ -166,6 +180,14 @@ class Module(BaseModule):
             else:
                 raise ValueError("Invalid config")
 
+            build_result_checkers = [
+                TotalLuts(EqualTo(config.lut)),
+                Ffs(EqualTo(config.ff)),
+                MaximumLogicLevel(EqualTo(config.logic)),
+            ]
+            if "lutram" in config.name:
+                build_result_checkers.append(LutRams(GreaterThan(0)))
+
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(f"{self.library_name}.{config.name}", generics),
@@ -173,11 +195,7 @@ class Module(BaseModule):
                     part=part,
                     top=config.name,
                     generics=generics,
-                    build_result_checkers=[
-                        TotalLuts(EqualTo(config.lut)),
-                        Ffs(EqualTo(config.ff)),
-                        MaximumLogicLevel(EqualTo(config.logic)),
-                    ],
+                    build_result_checkers=build_result_checkers,
                 )
             )
 
@@ -197,6 +215,12 @@ class Module(BaseModule):
             add_config(
                 Config(name="resync_twophase", width=width, lut=3, ff=2 * width + 6, logic=2)
             )
+
+        add_config(Config(name="resync_twophase_lutram", width=8, lut=10, ff=6, logic=2))
+        add_config(Config(name="resync_twophase_lutram", width=16, lut=14, ff=6, logic=2))
+        add_config(Config(name="resync_twophase_lutram", width=24, lut=18, ff=6, logic=2))
+        add_config(Config(name="resync_twophase_lutram", width=32, lut=26, ff=6, logic=2))
+        add_config(Config(name="resync_twophase_lutram", width=64, lut=46, ff=6, logic=2))
 
         for width in [8, 16, 24, 32, 64]:
             add_config(
