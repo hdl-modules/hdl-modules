@@ -45,9 +45,16 @@ The constraint file being scoped means that it is applied relative to each insta
 Using this we do not have to search through the whole design hierarchically to find the signals that
 we are interested in in our constraint file.
 
+.. warning::
+  In order for constraints to be applied and actually have an effect there are many
+  build tool settings that need to be set correctly.
+  See
+  `this article <https://linkedin.com/pulse/reliable-cdc-constraints-4-build-tool-settings-lukas-vik-yknsc/>`__
+  for more information.
+
 .. note::
-  When using `tsfpga <https://tsfpga.com>`__, this is done automatically for build projects, since
-  hdl-modules uses the recommended module structure.
+  When using `tsfpga <https://tsfpga.com>`__, scoped constraint files are loaded automatically
+  to the build project and correct settings are applied.
 
 
 Unresolved types
