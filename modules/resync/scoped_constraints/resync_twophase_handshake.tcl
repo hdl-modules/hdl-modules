@@ -6,7 +6,7 @@
 # https://hdl-modules.com
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
-# Note that this file is almost identical to 'resync_slv_handshake.tcl', except for
+# Note that this file is almost identical to 'resync_twophase.tcl', except for
 # signal names.
 # Changes/improvements should be incorporated in both files.
 #
@@ -20,22 +20,22 @@ set result_clk [get_clocks -quiet -of_objects [get_ports "result_clk"]]
 
 if {${input_clk} != ""} {
   set input_clk_period [get_property "PERIOD" ${input_clk}]
-  puts "INFO hdl-modules resync_slv_handshake.tcl: Using input_clk period: ${input_clk_period}."
+  puts "INFO hdl-modules resync_twophase_handshake.tcl: Using input_clk period: ${input_clk_period}."
 } else {
   set input_clk_period 2
-  puts "WARNING hdl-modules resync_slv_handshake.tcl: Could not find input_clk."
+  puts "WARNING hdl-modules resync_twophase_handshake.tcl: Could not find input_clk."
 }
 
 if {${result_clk} != ""} {
   set result_clk_period [get_property "PERIOD" ${result_clk}]
-  puts "INFO hdl-modules resync_slv_handshake.tcl: Using result_clk period: ${result_clk_period}."
+  puts "INFO hdl-modules resync_twophase_handshake.tcl: Using result_clk period: ${result_clk_period}."
 } else {
   set result_clk_period 2
-  puts "WARNING hdl-modules resync_slv_handshake.tcl: Could not find result_clk."
+  puts "WARNING hdl-modules resync_twophase_handshake.tcl: Could not find result_clk."
 }
 
 set min_period [expr {min(${input_clk_period}, ${result_clk_period})}]
-puts "INFO hdl-modules resync_slv_handshake.tcl: Using calculated min period: ${min_period}."
+puts "INFO hdl-modules resync_twophase_handshake.tcl: Using calculated min period: ${min_period}."
 
 # Set max delay to impose a latency limit.
 set input_data_sampled [get_cells "input_data_sampled_reg*"]
@@ -44,8 +44,8 @@ set_max_delay -datapath_only -from ${input_data_sampled} -to ${result_data} ${mi
 
 # Waive "Clock enable controlled CDC structure detected" warning to make reports a little cleaner.
 # The 'report_cdc' command lists all the data bits as a warning, for example
-# * From: resync_slv_handshake_inst/input_data_sampled_reg[0]/C
-# * To: resync_slv_handshake_inst/result_data_int_reg[0]/D
+# * From: resync_twophase_handshake_inst/input_data_sampled_reg[0]/C
+# * To: resync_twophase_handshake_inst/result_data_int_reg[0]/D
 # The wildcards below aim to catch all these paths.
 set cdc_from [get_pins -quiet "input_data_sampled_reg*/C"]
 set cdc_to [get_pins -quiet "result_data_int_reg*/D"]

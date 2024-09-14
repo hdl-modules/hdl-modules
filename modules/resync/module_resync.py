@@ -60,7 +60,7 @@ class Module(BaseModule):
                 )
                 self.add_vunit_config(tb, generics=generics)
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level_coherent")
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase")
         for mode in [
             "output_clock_is_greatly_faster",
             "output_clock_is_mildly_faster",
@@ -71,7 +71,7 @@ class Module(BaseModule):
             generics = {mode: True}
             self.add_vunit_config(tb, generics=generics)
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_handshake")
+        tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase_handshake")
         for mode in [
             "result_clock_is_greatly_faster",
             "result_clock_is_mildly_faster",
@@ -174,15 +174,17 @@ class Module(BaseModule):
 
         for width in [8, 16, 24, 32, 64]:
             add_config(
-                Config(
-                    name="resync_slv_level_coherent", width=width, lut=3, ff=2 * width + 6, logic=2
-                )
+                Config(name="resync_twophase", width=width, lut=3, ff=2 * width + 6, logic=2)
             )
 
         for width in [8, 16, 24, 32, 64]:
             add_config(
                 Config(
-                    name="resync_slv_handshake", data_width=width, lut=5, ff=2 * width + 8, logic=2
+                    name="resync_twophase_handshake",
+                    data_width=width,
+                    lut=5,
+                    ff=2 * width + 8,
+                    logic=2,
                 )
             )
 

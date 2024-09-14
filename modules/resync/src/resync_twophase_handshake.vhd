@@ -6,19 +6,20 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Two-phase handshaking CDC for resynchronizing a data vector from one clock domain to another.
+-- Two-phase handshaking CDC for resynchronizing a vector of correlated data from one clock
+-- domain to another.
 -- Features an AXI-Stream-like handshaking interface on both the ``input`` and ``result`` side.
 --
--- .. figure:: resync_slv_handshake_transparent.png
+-- .. figure:: resync_twophase_handshake_transparent.png
 --
--- In many ways this entity is a superset of :ref:`resync.resync_slv_level_coherent`, so see that
+-- In many ways this entity is a superset of :ref:`resync.resync_twophase`, so see that
 -- for some more insight.
 -- But this one features ``ready``/``valid`` handshaking, which enables backpressure but increases
--- :ref:`resync.resync_slv_handshake.resource_utilization` slightly.
+-- :ref:`resync.resync_twophase_handshake.resource_utilization` slightly.
 --
 -- .. note::
 --   This entity has a scoped constraint file
---   `resync_slv_handshake.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_slv_handshake.tcl>`__
+--   `resync_twophase_handshake.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_twophase_handshake.tcl>`__
 --   that must be used for proper operation.
 --   See :ref:`here <scoped_constraints>` for instructions.
 --
@@ -52,7 +53,7 @@ library common;
 use common.attribute_pkg.all;
 
 
-entity resync_slv_handshake is
+entity resync_twophase_handshake is
   generic (
     data_width : positive
   );
@@ -69,7 +70,7 @@ entity resync_slv_handshake is
   );
 end entity;
 
-architecture a of resync_slv_handshake is
+architecture a of resync_twophase_handshake is
 
   signal input_data_sampled, result_data_int : std_ulogic_vector(input_data'range) := (
     others => '0'
