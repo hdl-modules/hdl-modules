@@ -19,7 +19,7 @@ library common;
 use common.time_pkg.to_real_s;
 
 
-entity tb_resync_slv_level_coherent is
+entity tb_resync_twophase is
   generic (
     output_clock_is_greatly_faster : boolean := false;
     output_clock_is_mildly_faster : boolean := false;
@@ -30,7 +30,7 @@ entity tb_resync_slv_level_coherent is
   );
 end entity;
 
-architecture tb of tb_resync_slv_level_coherent is
+architecture tb of tb_resync_twophase is
 
   -- Big difference, so that erroneous level resync back or forth could happen.
   constant clock_period_greatly_fast : time := 2 ns;
@@ -196,7 +196,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.resync_slv_level_coherent
+  dut : entity work.resync_twophase
     generic map (
       width => data_in'length,
       default_value => std_logic_vector(data_init)

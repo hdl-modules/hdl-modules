@@ -29,7 +29,7 @@ use common.types_pkg.all;
 use common.time_pkg.all;
 
 
-entity tb_resync_slv_handshake is
+entity tb_resync_twophase_handshake is
   generic (
     seed : natural;
     data_width : positive := 8;
@@ -43,7 +43,7 @@ entity tb_resync_slv_handshake is
   );
 end entity;
 
-architecture tb of tb_resync_slv_handshake is
+architecture tb of tb_resync_twophase_handshake is
 
   -- DUT connections.
   signal input_clk, input_ready, input_valid : std_ulogic := '0';
@@ -213,7 +213,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.resync_slv_handshake
+  dut : entity work.resync_twophase_handshake
     generic map (
       data_width => data_width
     )

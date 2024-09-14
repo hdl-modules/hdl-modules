@@ -6,12 +6,12 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Free-running two-phase handshaking CDC for resynchronizing a data vector from one clock domain
--- to another.
+-- Free-running two-phase CDC for resynchronizing a vector of correlated data from one
+-- clock domain to another.
 -- Unlike e.g. :ref:`resync.resync_slv_level`, this entity contains a mechanism that guarantees
 -- bit coherency.
 --
--- .. figure:: resync_slv_level_coherent_transparent.png
+-- .. figure:: resync_twophase_transparent.png
 --
 -- A level signal is rotated around between input and output side, with three registers in each
 -- direction. The level toggles for each roundtrip, and data is sampled on each side upon a level
@@ -22,18 +22,17 @@
 --
 -- .. note::
 --   This entity is free-running, meaning that it will sample and resync input data back-to-back.
---   See :ref:`resync.resync_slv_handshake` for a version that AXI-Stream-like handshaking on the
---   input and result sides.
+--   See :ref:`resync.resync_twophase_handshake` for a version that features AXI-Stream-like
+--   handshaking on the input and result sides.
 --
 -- This entity is suitable for resynchronizing e.g. a control/status register or a counter value,
 -- which are scenarios where bit coherency is crucial.
 -- It will not be able to handle pulses in the input data, it is very likely that pulses will
 -- be missed.
--- Hence the "level" part in the name.
 --
 -- .. note::
 --   This entity has a scoped constraint file
---   `resync_slv_level_coherent.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_slv_level_coherent.tcl>`__
+--   `resync_twophase.tcl <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_twophase.tcl>`__
 --   that must be used for proper operation.
 --   See :ref:`here <scoped_constraints>` for instructions.
 --
@@ -44,13 +43,22 @@
 -- Latency and resource utilization
 -- ________________________________
 --
--- The latency is less than or equal to
+-- The latency from input to output, given the constraints that we apply, is in the absolute worst
+-- case almost equal to
 --
---   3 * period(clk_in) + 3 * period(clk_out)
+--   4 * period(clk_in) + 4 * period(clk_out)
 --
--- This is also the sampling period of the signal. As such this resync is not suitable for signals
--- that change quickly. It is instead typically used for e.g. slow moving counters and status
--- words, or other data where the different bits are correlated.
+-- Depending on
+--
+-- * which state the level signal is in,
+-- * the place/route result,
+-- * and how the clock edges align,
+--
+-- the latency from input to output can be significantly lower.
+-- This is also how the sampling period of the signal behaves.
+-- As such this resync is not suitable for signals that change quickly.
+-- It is instead typically used for e.g. slow moving counters and status words, or other data where
+-- the different bits are correlated.
 --
 -- The LUT utilization is always 3. The FF utilization increases linearly at a rate
 -- of ``2 * width``.
@@ -63,6 +71,15 @@
 -- The FIFO will however have higher LUT usage.
 -- FF usage is higher for the FIFO, up to around width 32 where this entity will consume more FF.
 -- Latency is about the same for both.
+--
+--
+-- Why is this a separate implementation?
+-- ______________________________________
+--
+-- In terms of functionality, this entity is identical to :ref:`resync.resync_twophase_handshake`,
+-- but with handshaking ``input_valid`` and ``result_ready`` tied to ``'1'``.
+-- However, doing it like that results in a slightly higher result utilization
+-- than a purpose-specific implementation as in this file.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -72,7 +89,7 @@ library common;
 use common.attribute_pkg.all;
 
 
-entity resync_slv_level_coherent is
+entity resync_twophase is
   generic (
     width : positive;
     -- Initial value for the output that will be set for a few cycles before the first input
@@ -88,7 +105,7 @@ entity resync_slv_level_coherent is
   );
 end entity;
 
-architecture a of resync_slv_level_coherent is
+architecture a of resync_twophase is
 
   signal data_in_sampled, data_out_int : std_ulogic_vector(data_in'range) := default_value;
 

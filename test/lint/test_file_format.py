@@ -101,10 +101,10 @@ def test_no_checked_in_files_have_too_long_lines():
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_level_on_signal.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_level.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_pulse.vhd",
-        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_slv_handshake.vhd",
-        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_slv_level_coherent.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase_handshake.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase.vhd",
         # Impossible to break TCL syntax
-        HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_slv_level_coherent.tcl",
+        HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_twophase_handshake.tcl",
     ]
     for file_path in files_to_test(excludes=excludes):
         test_ok &= check_file_for_line_length(file_path=file_path)
