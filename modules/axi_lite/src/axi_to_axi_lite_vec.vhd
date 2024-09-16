@@ -34,7 +34,7 @@ entity axi_to_axi_lite_vec is
   generic (
     base_addresses : addr_vec_t;
     -- Set to false in order to insert a CDC for this slave.
-    -- Must also set clk_axi_lite_vec.
+    -- Must also set 'clk_axi_lite_vec' in that case.
     clocks_are_the_same : boolean_vector(base_addresses'range) := (others => true);
     -- Optionally insert a pipeline stage on the AXI-Lite bus after the AXI to AXI-Lite conversion
     pipeline_axi_lite : boolean := false;
@@ -46,7 +46,8 @@ entity axi_to_axi_lite_vec is
     axi_m2s : in axi_m2s_t;
     axi_s2m : out axi_s2m_t;
     --# {{}}
-    -- Only need to set if different from axi_clk
+    -- Only need to assign if different than 'clk_axi'
+    -- (as indicated by the 'clocks_are_the_same' generic).
     clk_axi_lite_vec : in std_ulogic_vector(base_addresses'range) := (others => '0');
     axi_lite_m2s_vec : out axi_lite_m2s_vec_t(base_addresses'range);
     axi_lite_s2m_vec : in axi_lite_s2m_vec_t(base_addresses'range)
