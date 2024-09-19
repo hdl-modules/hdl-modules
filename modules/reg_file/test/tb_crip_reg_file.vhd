@@ -26,21 +26,21 @@ library common;
 use common.addr_pkg.all;
 use common.types_pkg.all;
 
-library crip;
-use crip.crip_pkg.all;
+library trail;
+use trail.trail_pkg.all;
 
 use work.reg_file_pkg.all;
 use work.reg_operations_pkg.all;
 
 
-entity tb_crip_reg_file is
+entity tb_trail_reg_file is
   generic (
     seed : natural;
     runner_cfg : string
   );
 end entity;
 
-architecture tb of tb_crip_reg_file is
+architecture tb of tb_trail_reg_file is
 
   -- Generic constants.
   constant regs : reg_definition_vec_t(0 to 15 - 1) := (
@@ -83,8 +83,8 @@ architecture tb of tb_crip_reg_file is
   constant clk_period : time := 10 ns;
   signal clk : std_ulogic := '0';
 
-  signal crip_operation : crip_operation_t := crip_operation_init;
-  signal crip_response : crip_response_t := crip_response_init;
+  signal trail_operation : trail_operation_t := trail_operation_init;
+  signal trail_response : trail_response_t := trail_response_init;
 
   signal regs_up, regs_down : reg_vec_t(regs'range) := (others => (others => '0'));
   signal reg_was_read, reg_was_written : std_ulogic_vector(regs'range);
@@ -176,10 +176,10 @@ begin
     rnd.InitSeed(seed);
 
     if run("test_default_values") then
-      wait until regs_down /= default_values or crip_response.enable = '1' for 100 * clk_period;
+      wait until regs_down /= default_values or trail_response.enable = '1' for 100 * clk_period;
 
       assert regs_down = default_values;
-      assert not crip_response.enable;
+      assert not trail_response.enable;
 
     elsif run("test_random_read_and_write") then
       -- TODO loop?
@@ -214,17 +214,17 @@ begin
 
 
   ------------------------------------------------------------------------------
-  crip_master_inst : entity crip.crip_master
+  trail_master_inst : entity trail.trail_master
     port map (
       clk => clk,
       --
-      crip_operation => crip_operation,
-      crip_response => crip_response
+      trail_operation => trail_operation,
+      trail_response => trail_response
     );
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.crip_reg_file
+  dut : entity work.trail_reg_file
     generic map (
       regs => regs,
       default_values => default_values
@@ -232,8 +232,8 @@ begin
     port map (
       clk => clk,
       --
-      crip_operation => crip_operation,
-      crip_response => crip_response,
+      trail_operation => trail_operation,
+      trail_response => trail_response,
       --
       regs_up => regs_up,
       regs_down => regs_down,

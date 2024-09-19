@@ -12,19 +12,19 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library crip;
-use crip.crip_pkg.all;
+library trail;
+use trail.trail_pkg.all;
 
 use work.reg_file_pkg.all;
 use work.reg_file_netlist_pkg.all;
 
 
-entity crip_reg_file_netlist_wrapper is
+entity trail_reg_file_netlist_wrapper is
   port (
     clk : in std_ulogic;
     --
-    crip_operation : in crip_operation_t;
-    crip_response : out crip_response_t := crip_response_init;
+    trail_operation : in trail_operation_t;
+    trail_response : out trail_response_t := trail_response_init;
     --
     regs_up : in reg_vec_t(0 to 15 - 1);
     regs_down : out reg_vec_t(0 to 15 - 1);
@@ -34,11 +34,11 @@ entity crip_reg_file_netlist_wrapper is
   );
 end entity;
 
-architecture a of crip_reg_file_netlist_wrapper is
+architecture a of trail_reg_file_netlist_wrapper is
 begin
 
   ------------------------------------------------------------------------------
-  crip_reg_file_inst : entity work.crip_reg_file
+  trail_reg_file_inst : entity work.trail_reg_file
     generic map (
       regs => regs,
       default_values => default_values
@@ -46,8 +46,8 @@ begin
     port map (
       clk => clk,
       --
-      crip_operation => crip_operation,
-      crip_response => crip_response,
+      trail_operation => trail_operation,
+      trail_response => trail_response,
       --
       regs_up => regs_up,
       regs_down => regs_down,

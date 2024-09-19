@@ -27,10 +27,10 @@ use vunit_lib.bus_master_pkg.bus_master_t;
 use vunit_lib.bus_master_pkg.address_length;
 use vunit_lib.bus_master_pkg.data_length;
 
-use work.crip_pkg.all;
+use work.trail_pkg.all;
 
 
-entity crip_protocol_checker is
+entity trail_protocol_checker is
   generic (
     bus_handle : bus_master_t := regs_bus_master;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
@@ -39,17 +39,17 @@ entity crip_protocol_checker is
   port (
     clk : in std_ulogic;
     --# {{}}
-    crip_operation : in crip_operation_t;
-    crip_response : in crip_response_t
+    trail_operation : in trail_operation_t;
+    trail_response : in trail_response_t
   );
 end entity;
 
-architecture a of crip_protocol_checker is
+architecture a of trail_protocol_checker is
 
-  constant address_width : crip_address_width_t := address_length(bus_handle);
-  constant data_width : crip_data_width_t := data_length(bus_handle);
+  constant address_width : trail_address_width_t := address_length(bus_handle);
+  constant data_width : trail_data_width_t := data_length(bus_handle);
 
-  constant num_unaligned_address_bits : natural := crip_num_unaligned_address_bits(
+  constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
     data_width=>data_width
   );
   subtype aligned_address_range is
@@ -57,13 +57,13 @@ architecture a of crip_protocol_checker is
 
   subtype data_range is natural range data_width - 1 downto 0;
 
-  constant base_error_message : string := "crip_protocol_checker" & logger_name_suffix & ": ";
+  constant base_error_message : string := "trail_protocol_checker" & logger_name_suffix & ": ";
 
 begin
 
   ------------------------------------------------------------------------------
-  assert sanity_check_crip_data_width(data_width=>data_width)
-    report "Invalid crip data width, see printout above."
+  assert sanity_check_trail_data_width(data_width=>data_width)
+    report "Invalid trail data width, see printout above."
     severity failure;
 
 
@@ -79,7 +79,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      assert is_01(crip_operation.enable) report error_message;
+      assert is_01(trail_operation.enable) report error_message;
     end process;
 
   end block;
@@ -101,13 +101,13 @@ begin
     ------------------------------------------------------------------------------
     operation_well_defined_when_enabled_check : process
     begin
-      wait until crip_operation.enable = '1' and rising_edge(clk);
+      wait until trail_operation.enable = '1' and rising_edge(clk);
 
-      assert is_01(crip_operation.address(aligned_address_range)) report address_error_message;
-      assert is_01(crip_operation.write_enable) report write_enable_error_message;
+      assert is_01(trail_operation.address(aligned_address_range)) report address_error_message;
+      assert is_01(trail_operation.write_enable) report write_enable_error_message;
 
-      if crip_operation.write_enable then
-        assert is_01(crip_operation.write_data(data_range)) report write_data_error_message;
+      if trail_operation.write_enable then
+        assert is_01(trail_operation.write_data(data_range)) report write_data_error_message;
       end if;
     end process;
 
@@ -126,7 +126,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      assert is_01(crip_response.enable) report error_message;
+      assert is_01(trail_response.enable) report error_message;
     end process;
 
   end block;
@@ -142,10 +142,10 @@ begin
     ------------------------------------------------------------------------------
     response_well_defined_when_enabled_check : process
     begin
-      wait until crip_response.enable = '1' and rising_edge(clk);
+      wait until trail_response.enable = '1' and rising_edge(clk);
 
-      if not crip_operation.write_enable then
-        assert is_01(crip_response.read_data(data_range)) report read_data_error_message;
+      if not trail_operation.write_enable then
+        assert is_01(trail_response.read_data(data_range)) report read_data_error_message;
       end if;
     end process;
 
@@ -160,7 +160,7 @@ begin
     ------------------------------------------------------------------------------
     count_operation : process
     begin
-      wait until crip_operation.enable = '1' and rising_edge(clk);
+      wait until trail_operation.enable = '1' and rising_edge(clk);
 
       num_operation <= num_operation + 1;
     end process;
@@ -169,7 +169,7 @@ begin
     ------------------------------------------------------------------------------
     count_response : process
     begin
-      wait until crip_response.enable = '1' and rising_edge(clk);
+      wait until trail_response.enable = '1' and rising_edge(clk);
 
       num_response <= num_response + 1;
     end process;
@@ -186,7 +186,7 @@ begin
       assert num_operation <= num_response + 1
         report base_error_message & "Got new 'operation' before previous 'response'.";
 
-      assert not (crip_operation.enable and crip_response.enable)
+      assert not (trail_operation.enable and trail_response.enable)
         report base_error_message & "Got 'operation' and 'response' at the same time.";
     end process;
 
@@ -203,31 +203,31 @@ begin
         base_error_message & "enabled 'operation.write_data' changed value before 'response'."
       );
 
-      variable expected_operation : crip_operation_t := crip_operation_init;
+      variable expected_operation : trail_operation_t := trail_operation_init;
     begin
-      wait until crip_operation.enable = '1' and rising_edge(clk);
+      wait until trail_operation.enable = '1' and rising_edge(clk);
 
-      expected_operation := crip_operation;
+      expected_operation := trail_operation;
 
       check_loop : loop
         wait until rising_edge(clk);
 
         assert (
-            crip_operation.address(aligned_address_range)
+            trail_operation.address(aligned_address_range)
             = expected_operation.address(aligned_address_range)
           )
           report address_error_message;
 
-        assert crip_operation.write_enable = expected_operation.write_enable
+        assert trail_operation.write_enable = expected_operation.write_enable
           report write_enable_error_message;
 
-        if crip_operation.write_enable then
-          assert crip_operation.write_data(data_range) = expected_operation.write_data(data_range)
+        if trail_operation.write_enable then
+          assert trail_operation.write_data(data_range) = expected_operation.write_data(data_range)
             report write_data_error_message;
         end if;
 
         -- When a 'response' comes, we should stop checking.
-        if crip_response.enable then
+        if trail_response.enable then
           exit check_loop;
         end if;
       end loop;
@@ -243,24 +243,24 @@ begin
         base_error_message & "enabled 'response.read_data' changed value before 'operation'."
       );
 
-      variable expected_response : crip_response_t := crip_response_init;
+      variable expected_response : trail_response_t := trail_response_init;
     begin
-      wait until crip_response.enable = '1' and rising_edge(clk);
+      wait until trail_response.enable = '1' and rising_edge(clk);
 
-      expected_response := crip_response;
+      expected_response := trail_response;
 
       check_loop : loop
         wait until rising_edge(clk);
 
-        assert crip_response.status = expected_response.status report status_error_message;
+        assert trail_response.status = expected_response.status report status_error_message;
 
-        if not crip_operation.write_enable then
-          assert crip_response.read_data(data_range) = expected_response.read_data(data_range)
+        if not trail_operation.write_enable then
+          assert trail_response.read_data(data_range) = expected_response.read_data(data_range)
             report read_data_error_message;
         end if;
 
         -- When new 'operation' comes, we should stop checking.
-        if crip_operation.enable then
+        if trail_operation.enable then
           exit check_loop;
         end if;
       end loop;
