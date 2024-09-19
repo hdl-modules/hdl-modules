@@ -18,19 +18,19 @@ library vunit_lib;
 use vunit_lib.check_pkg.all;
 use vunit_lib.run_pkg.all;
 
-use work.crip_pkg.all;
+use work.trail_pkg.all;
 
 
-entity tb_crip_pkg is
+entity tb_trail_pkg is
   generic (
-    address_width : crip_address_width_t;
-    data_width : crip_data_width_t;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t;
     seed : natural;
     runner_cfg : string
   );
 end entity;
 
-architecture tb of tb_crip_pkg is
+architecture tb of tb_trail_pkg is
 begin
 
   ------------------------------------------------------------------------------
@@ -40,18 +40,18 @@ begin
     procedure test_slv_conversion is
       constant enable : std_ulogic := rnd.RandSl;
 
-      variable operation : crip_operation_t := crip_operation_init;
+      variable operation : trail_operation_t := trail_operation_init;
       variable operation_slv, operation_converted : std_ulogic_vector(
-        crip_operation_width(address_width=>address_width, data_width=>data_width) - 1 downto 0
+        trail_operation_width(address_width=>address_width, data_width=>data_width) - 1 downto 0
       ) := (others => '0');
 
-      variable response : crip_response_t := crip_response_init;
+      variable response : trail_response_t := trail_response_init;
       variable response_converted, response_slv : std_ulogic_vector(
-        crip_response_width(data_width=>data_width) - 1 downto 0
+        trail_response_width(data_width=>data_width) - 1 downto 0
       ) := (others => '0');
     begin
       operation_slv := rnd.RandSLV(operation_slv'length);
-      operation := to_crip_operation(
+      operation := to_trail_operation(
         data=>operation_slv, address_width=>address_width, data_width=>data_width, enable=>enable
       );
 
@@ -63,7 +63,7 @@ begin
       check_equal(operation_converted, operation_slv);
 
       response_slv := rnd.RandSLV(response_slv'length);
-      response := to_crip_response(
+      response := to_trail_response(
         data=>response_slv, data_width=>data_width, enable=>enable
       );
 
@@ -99,27 +99,27 @@ begin
     rnd.InitSeed(seed);
 
     if run("test_num_unaligned_address_bits") then
-      check_equal(crip_num_unaligned_address_bits(data_width=>8), 0);
-      check_equal(crip_num_unaligned_address_bits(data_width=>16), 1);
-      check_equal(crip_num_unaligned_address_bits(data_width=>32), 2);
-      check_equal(crip_num_unaligned_address_bits(data_width=>64), 3);
+      check_equal(trail_num_unaligned_address_bits(data_width=>8), 0);
+      check_equal(trail_num_unaligned_address_bits(data_width=>16), 1);
+      check_equal(trail_num_unaligned_address_bits(data_width=>32), 2);
+      check_equal(trail_num_unaligned_address_bits(data_width=>64), 3);
 
-    elsif run("test_check_crip_data_width") then
-      assert not sanity_check_crip_data_width(data_width=>-8);
-      assert not sanity_check_crip_data_width(data_width=>0);
-      assert not sanity_check_crip_data_width(data_width=>4);
+    elsif run("test_check_trail_data_width") then
+      assert not sanity_check_trail_data_width(data_width=>-8);
+      assert not sanity_check_trail_data_width(data_width=>0);
+      assert not sanity_check_trail_data_width(data_width=>4);
 
-      assert not sanity_check_crip_data_width(data_width=>7);
-      assert sanity_check_crip_data_width(data_width=>8);
-      assert not sanity_check_crip_data_width(data_width=>9);
+      assert not sanity_check_trail_data_width(data_width=>7);
+      assert sanity_check_trail_data_width(data_width=>8);
+      assert not sanity_check_trail_data_width(data_width=>9);
 
-      assert not sanity_check_crip_data_width(data_width=>24);
+      assert not sanity_check_trail_data_width(data_width=>24);
 
-      assert not sanity_check_crip_data_width(data_width=>31);
-      assert sanity_check_crip_data_width(data_width=>32);
-      assert not sanity_check_crip_data_width(data_width=>33);
+      assert not sanity_check_trail_data_width(data_width=>31);
+      assert sanity_check_trail_data_width(data_width=>32);
+      assert not sanity_check_trail_data_width(data_width=>33);
 
-      assert not sanity_check_crip_data_width(data_width=>256);
+      assert not sanity_check_trail_data_width(data_width=>256);
 
     elsif run("test_slv_conversion") then
       for i in 0 to 100 loop

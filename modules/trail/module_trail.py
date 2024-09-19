@@ -13,10 +13,10 @@ from tsfpga.module import BaseModule
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        self.setup_crip_pkg_tests(vunit_proj=vunit_proj)
+        self.setup_trail_pkg_tests(vunit_proj=vunit_proj)
 
-    def setup_crip_pkg_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_crip_pkg")
+    def setup_trail_pkg_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_trail_pkg")
         for test in tb.get_tests("test_slv_conversion"):
             for data_width in [8, 16, 32, 64]:
                 for address_width in [7, 24, 40]:

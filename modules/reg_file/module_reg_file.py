@@ -42,7 +42,7 @@ class Module(BaseModule):
 
         projects = []
         all_modules = get_hdl_modules(
-            names_include=[self.name, "axi", "axi_lite", "common", "crip", "math"]
+            names_include=[self.name, "axi", "axi_lite", "common", "trail", "math"]
         )
         part = "xc7z020clg400-1"
 
@@ -64,7 +64,7 @@ class Module(BaseModule):
             )
 
         add_reg_file(name="axi_lite", luts=202, ffs=447, logic_level=4)
-        add_reg_file(name="crip", luts=178, ffs=439, logic_level=3)
+        add_reg_file(name="trail", luts=178, ffs=439, logic_level=3)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(

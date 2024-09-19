@@ -17,21 +17,21 @@ library math;
 use math.math_pkg.all;
 
 
-package crip_pkg is
+package trail_pkg is
 
   ------------------------------------------------------------------------------
   -- Operation address field.
   ------------------------------------------------------------------------------
   -- The width value below is a max value, implementation should only take into regard the bits
   -- that are actually used.
-  constant crip_max_address_width : positive := 48;
-  subtype crip_address_width_t is positive range 1 to crip_max_address_width;
+  constant trail_max_address_width : positive := 48;
+  subtype trail_address_width_t is positive range 1 to trail_max_address_width;
 
   -- TODO.
-  function crip_num_unaligned_address_bits(data_width : integer) return natural;
+  function trail_num_unaligned_address_bits(data_width : integer) return natural;
 
   -- TODO
-  -- function crip_aligned_address_width(
+  -- function trail_aligned_address_width(
   --   address_width : integer; data_width : integer
   -- ) return positive;
 
@@ -41,36 +41,36 @@ package crip_pkg is
   ------------------------------------------------------------------------------
   -- The width value below is a max value, implementation should only take into regard the bits
   -- that are actually used.
-  constant crip_max_data_width : positive := 64;
-  subtype crip_data_width_t is positive range 1 to crip_max_address_width;
+  constant trail_max_data_width : positive := 64;
+  subtype trail_data_width_t is positive range 1 to trail_max_address_width;
 
-  -- Check that a provided data width is valid to be used with crip.
+  -- Check that a provided data width is valid to be used with trail.
   -- Return 'true' if everything is okay, otherwise 'false'.
-  function sanity_check_crip_data_width(data_width : integer) return boolean;
+  function sanity_check_trail_data_width(data_width : integer) return boolean;
 
 
   ------------------------------------------------------------------------------
   -- Response status code.
   ------------------------------------------------------------------------------
-  type crip_response_status_t is (crip_response_status_okay, crip_response_status_error);
-  constant crip_response_status_width : positive := 1;
+  type trail_response_status_t is (trail_response_status_okay, trail_response_status_error);
+  constant trail_response_status_width : positive := 1;
 
-  function to_sl(data : crip_response_status_t) return std_ulogic;
+  function to_sl(data : trail_response_status_t) return std_ulogic;
 
-  function to_crip_response_status(data : std_ulogic) return crip_response_status_t;
+  function to_trail_response_status(data : std_ulogic) return trail_response_status_t;
 
 
   ------------------------------------------------------------------------------
   -- Operation (master-to-slave) payload.
   ------------------------------------------------------------------------------
-  type crip_operation_t is record
+  type trail_operation_t is record
     enable : std_ulogic;
-    address : u_unsigned(crip_max_address_width - 1 downto 0);
+    address : u_unsigned(trail_max_address_width - 1 downto 0);
     write_enable : std_ulogic;
-    write_data : std_ulogic_vector(crip_max_data_width - 1 downto 0);
+    write_data : std_ulogic_vector(trail_max_data_width - 1 downto 0);
   end record;
 
-  constant crip_operation_init : crip_operation_t := (
+  constant trail_operation_init : trail_operation_t := (
     enable => '0',
     address => (others => '0'),
     write_enable => '0',
@@ -78,62 +78,62 @@ package crip_pkg is
   );
 
   -- Note that the 'new' signal, which is used for handshaking, is not included.
-  function crip_operation_width(
-    address_width : crip_address_width_t; data_width : crip_data_width_t
+  function trail_operation_width(
+    address_width : trail_address_width_t; data_width : trail_data_width_t
   ) return positive;
 
-  type crip_operation_vec_t is array (integer range <>) of crip_operation_t;
+  type trail_operation_vec_t is array (integer range <>) of trail_operation_t;
 
   -- Note that the 'new' signal, which is used for handshaking, is not included.
   function to_slv(
-    data : crip_operation_t;
-    address_width : crip_address_width_t;
-    data_width : crip_data_width_t
+    data : trail_operation_t;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t
   ) return std_ulogic_vector;
 
-  function to_crip_operation(
+  function to_trail_operation(
     data : std_ulogic_vector;
-    address_width : crip_address_width_t;
-    data_width : crip_data_width_t;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t;
     enable : std_ulogic
-  ) return crip_operation_t;
+  ) return trail_operation_t;
 
 
   ------------------------------------------------------------------------------
   -- Response (slave-to-master) payload.
   ------------------------------------------------------------------------------
-  type crip_response_t is record
+  type trail_response_t is record
     enable : std_ulogic;
-    status : crip_response_status_t;
-    read_data : std_ulogic_vector(crip_max_data_width - 1 downto 0);
+    status : trail_response_status_t;
+    read_data : std_ulogic_vector(trail_max_data_width - 1 downto 0);
   end record;
 
-  constant crip_response_init : crip_response_t := (
+  constant trail_response_init : trail_response_t := (
     enable => '0',
-    status => crip_response_status_okay,
+    status => trail_response_status_okay,
     read_data => (others => '0')
   );
 
-  function crip_response_width(data_width : crip_data_width_t) return positive;
+  function trail_response_width(data_width : trail_data_width_t) return positive;
 
-  type crip_response_vec_t is array (integer range <>) of crip_response_t;
+  type trail_response_vec_t is array (integer range <>) of trail_response_t;
 
-  function to_slv(data : crip_response_t; data_width : crip_data_width_t) return std_ulogic_vector;
+  function to_slv(data : trail_response_t; data_width : trail_data_width_t) return std_ulogic_vector;
 
-  function to_crip_response(
-    data : std_ulogic_vector; data_width : crip_data_width_t; enable : std_ulogic
-  ) return crip_response_t;
+  function to_trail_response(
+    data : std_ulogic_vector; data_width : trail_data_width_t; enable : std_ulogic
+  ) return trail_response_t;
 
 end;
 
-package body crip_pkg is
+package body trail_pkg is
 
   ------------------------------------------------------------------------------
-  function crip_num_unaligned_address_bits(data_width : integer) return natural is
+  function trail_num_unaligned_address_bits(data_width : integer) return natural is
     variable data_width_bytes : positive := 1;
     variable result : natural := 0;
   begin
-    assert sanity_check_crip_data_width(data_width=>data_width)
+    assert sanity_check_trail_data_width(data_width=>data_width)
       report "Invalid data width, see printout above."
       severity failure;
 
@@ -145,30 +145,30 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function sanity_check_crip_data_width(data_width : integer) return boolean is
+  function sanity_check_trail_data_width(data_width : integer) return boolean is
     constant message : string := ". Got data_width=" & integer'image(data_width) & ".";
   begin
     if data_width <= 0 then
-      report "crip data width must be greater than zero" & message;
+      report "trail data width must be greater than zero" & message;
       return false;
     end if;
 
-    if data_width > crip_max_data_width then
+    if data_width > trail_max_data_width then
       report (
-        "crip data width must not be greater than max value "
-        & integer'image(crip_max_data_width)
+        "trail data width must not be greater than max value "
+        & integer'image(trail_max_data_width)
         & message
       );
       return false;
     end if;
 
     if data_width mod 8 /= 0 then
-      report "crip data width must be a whole number of bytes" & message;
+      report "trail data width must be a whole number of bytes" & message;
       return false;
     end if;
 
     if not is_power_of_two(data_width / 8) then
-      report "crip data byte width must be a power of two" & message;
+      report "trail data byte width must be a power of two" & message;
       return false;
     end if;
 
@@ -177,9 +177,9 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function to_sl(data : crip_response_status_t) return std_ulogic is
+  function to_sl(data : trail_response_status_t) return std_ulogic is
   begin
-    if data = crip_response_status_okay then
+    if data = trail_response_status_okay then
       return '0';
     end if;
 
@@ -188,21 +188,21 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function to_crip_response_status(data : std_ulogic) return crip_response_status_t is
+  function to_trail_response_status(data : std_ulogic) return trail_response_status_t is
   begin
     if data = '0'then
-      return crip_response_status_okay;
+      return trail_response_status_okay;
     end if;
 
-    return crip_response_status_error;
+    return trail_response_status_error;
   end function;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function crip_operation_width(
-    address_width : crip_address_width_t; data_width : crip_data_width_t
+  function trail_operation_width(
+    address_width : trail_address_width_t; data_width : trail_data_width_t
   ) return positive is
-    constant num_unaligned_address_bits : natural := crip_num_unaligned_address_bits(
+    constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
         data_width=>data_width
     );
   begin
@@ -215,16 +215,16 @@ package body crip_pkg is
 
   ------------------------------------------------------------------------------
   function to_slv(
-    data : crip_operation_t;
-    address_width : crip_address_width_t;
-    data_width : crip_data_width_t
+    data : trail_operation_t;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t
   ) return std_ulogic_vector is
-    constant num_unaligned_address_bits : natural := crip_num_unaligned_address_bits(
+    constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
         data_width=>data_width
     );
     constant address_width_to_use : positive := address_width - num_unaligned_address_bits;
 
-    constant result_width : positive := crip_operation_width(
+    constant result_width : positive := trail_operation_width(
       address_width=>address_width, data_width=>data_width
     );
     variable result : std_logic_vector(result_width - 1 downto 0) := (others => '0');
@@ -246,22 +246,22 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function to_crip_operation(
+  function to_trail_operation(
     data : std_ulogic_vector;
-    address_width : crip_address_width_t;
-    data_width : crip_data_width_t;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t;
     enable : std_ulogic
-  ) return crip_operation_t is
-    constant expected_slv_width : positive := crip_operation_width(
+  ) return trail_operation_t is
+    constant expected_slv_width : positive := trail_operation_width(
       address_width=>address_width, data_width=>data_width
     );
 
-    constant num_unaligned_address_bits : natural := crip_num_unaligned_address_bits(
+    constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
         data_width=>data_width
     );
     constant address_width_to_use : positive := address_width - num_unaligned_address_bits;
 
-    variable result : crip_operation_t := crip_operation_init;
+    variable result : trail_operation_t := trail_operation_init;
   begin
     assert data'length = expected_slv_width report "Unexpected SLV width";
 
@@ -284,17 +284,17 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function crip_response_width(data_width : crip_data_width_t) return positive is
+  function trail_response_width(data_width : trail_data_width_t) return positive is
   begin
-    return data_width + crip_response_status_width;
+    return data_width + trail_response_status_width;
   end function;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
   function to_slv(
-    data : crip_response_t; data_width : crip_data_width_t
+    data : trail_response_t; data_width : trail_data_width_t
   ) return std_ulogic_vector is
-    constant result_width : positive := crip_response_width(data_width=>data_width);
+    constant result_width : positive := trail_response_width(data_width=>data_width);
     variable result : std_logic_vector(result_width - 1 downto 0) := (others => '0');
   begin
     result(data_width - 1 downto 0) := data.read_data(data_width - 1 downto 0);
@@ -306,18 +306,18 @@ package body crip_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  function to_crip_response(
-    data : std_ulogic_vector; data_width : crip_data_width_t; enable : std_ulogic
-  ) return crip_response_t is
-    constant expected_slv_width : positive := crip_response_width(data_width=>data_width);
+  function to_trail_response(
+    data : std_ulogic_vector; data_width : trail_data_width_t; enable : std_ulogic
+  ) return trail_response_t is
+    constant expected_slv_width : positive := trail_response_width(data_width=>data_width);
 
-    variable result : crip_response_t := crip_response_init;
+    variable result : trail_response_t := trail_response_init;
   begin
     assert data'length = expected_slv_width report "Unexpected SLV width";
 
     result.read_data(data_width - 1 downto 0) := data(data_width - 1 downto 0);
 
-    result.status := to_crip_response_status(data(data'high));
+    result.status := to_trail_response_status(data(data'high));
 
     result.enable := enable;
 

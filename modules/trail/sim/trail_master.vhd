@@ -39,10 +39,10 @@ use vunit_lib.logger_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
 
-use work.crip_pkg.all;
+use work.trail_pkg.all;
 
 
-entity crip_master is
+entity trail_master is
   generic (
     bus_handle : bus_master_t := regs_bus_master;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
@@ -51,12 +51,12 @@ entity crip_master is
   port (
     clk : in std_ulogic;
     --# {{}}
-    crip_operation : out crip_operation_t := crip_operation_init;
-    crip_response : crip_response_t
+    trail_operation : out trail_operation_t := trail_operation_init;
+    trail_response : trail_response_t
   );
 end entity;
 
-architecture a of crip_master is
+architecture a of trail_master is
 
   constant message_queue : queue_t := new_queue;
   signal idle : boolean := true;
@@ -75,15 +75,15 @@ architecture a of crip_master is
 begin
 
   ------------------------------------------------------------------------------
-  crip_protocol_checker_inst : entity work.crip_protocol_checker
+  trail_protocol_checker_inst : entity work.trail_protocol_checker
     generic map (
-      logger_name_suffix => " - crip_master" & logger_name_suffix
+      logger_name_suffix => " - trail_master" & logger_name_suffix
     )
     port map (
       clk => clk,
       --
-      crip_operation => crip_operation,
-      crip_response => crip_response
+      trail_operation => trail_operation,
+      trail_response => trail_response
     );
 
 
@@ -116,22 +116,22 @@ begin
   bus_process : process
     procedure drive_operation_payload_invalid is
     begin
-      crip_operation.address <= (others => 'X');
-      crip_operation.write_enable <= 'X';
-      crip_operation.write_data <= (others => 'X');
+      trail_operation.address <= (others => 'X');
+      trail_operation.write_enable <= 'X';
+      trail_operation.write_data <= (others => 'X');
     end procedure;
 
-    procedure check_response_status(expected : crip_response_status_t) is
-      function describe(value : crip_response_status_t) return string is
+    procedure check_response_status(expected : trail_response_status_t) is
+      function describe(value : trail_response_status_t) return string is
       begin
         return "'" & to_string(value) & "'";
       end function;
-      constant got : crip_response_status_t := crip_response.status;
+      constant got : trail_response_status_t := trail_response.status;
     begin
       if got /= expected then
         failure(
           bus_handle.p_logger,
-          "Got crip 'response.status' "  & describe(got) & "', expected " & describe(expected) & "."
+          "Got trail 'response.status' "  & describe(got) & "', expected " & describe(expected) & "."
         );
       end if;
     end;
@@ -153,29 +153,29 @@ begin
       request_msg := pop(message_queue);
       msg_type := message_type(request_msg);
 
-      crip_operation.enable <= '1';
+      trail_operation.enable <= '1';
 
       address_this_transaction := pop_std_ulogic_vector(request_msg);
-      crip_operation.address(address_this_transaction'range) <= unsigned(address_this_transaction);
+      trail_operation.address(address_this_transaction'range) <= unsigned(address_this_transaction);
 
-      crip_operation.write_enable <= to_sl(is_write(msg_type));
+      trail_operation.write_enable <= to_sl(is_write(msg_type));
 
       if is_write(msg_type) then
         data_this_transaction := pop_std_ulogic_vector(request_msg);
-        crip_operation.write_data(data_this_transaction'range) <= data_this_transaction;
+        trail_operation.write_data(data_this_transaction'range) <= data_this_transaction;
       end if;
 
       wait until rising_edge(clk);
-      crip_operation.enable <= '0';
+      trail_operation.enable <= '0';
 
-      wait until crip_response.enable = '1' and rising_edge(clk);
+      wait until trail_response.enable = '1' and rising_edge(clk);
 
       drive_operation_payload_invalid;
 
-      check_response_status(expected=>crip_response_status_okay);
+      check_response_status(expected=>trail_response_status_okay);
 
       if is_read(msg_type) then
-        data_this_transaction := crip_response.read_data(data_this_transaction'range);
+        data_this_transaction := trail_response.read_data(data_this_transaction'range);
 
         reply_msg := new_msg;
         push_std_ulogic_vector(reply_msg, data_this_transaction);
