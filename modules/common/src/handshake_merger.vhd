@@ -29,7 +29,7 @@ entity handshake_merger is
     --# {{}}
     input_ready : out std_ulogic_vector(0 to num_interfaces - 1) := (others => '0');
     input_valid : in std_ulogic_vector(0 to num_interfaces - 1);
-    input_last : in std_ulogic_vector(0 to num_interfaces - 1);
+    input_last : in std_ulogic_vector(0 to num_interfaces - 1) := (others => '1');
     --# {{}}
     result_ready : in std_ulogic;
     result_valid : out std_ulogic := '0';
