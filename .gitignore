@@ -9,3 +9,6 @@
 .vscode
 
 generated
+
+modules/simple_dma/regs_sim/
+modules/simple_dma/regs_src/

@@ -1,0 +1,152 @@
+################################################################################
+interrupt_status.mode = "r_wpulse"
+interrupt_status.description = """
+Interrupt status for the different interrupt sources of this module.
+When an interrupt condition occurs, the corresponding bit in this register will read as '1' until
+cleared (see below).
+If the corresponding bit in **interrupt_mask** is also set to '1' by software, the **interrupt**
+signal of this module will trigger, meaning it will be '1' until the interrupt(s) that triggered it
+are cleared.
+
+Note that if an interrupt-based workflow is not used, this register can instead be polled
+to check for events.
+
+Interrupt status is cleared by writing '1' to the target interrupt bit(s) in this register.
+"""
+
+interrupt_status.write_done.type = "bit"
+interrupt_status.write_done.description = """
+Burst has been written to memory.
+Compare **buffer_written_address** with **buffer_read_address** to find out
+how many bytes have been written and to which location.
+"""
+
+interrupt_status.write_error.type = "bit"
+interrupt_status.write_error.description = "Memory write responded with error (BRESP)."
+
+interrupt_status.start_address_unaligned_error.type = "bit"
+interrupt_status.start_address_unaligned_error.description = """
+The provided **buffer_start_address** is not aligned with the burst length.
+"""
+
+interrupt_status.end_address_unaligned_error.type = "bit"
+interrupt_status.end_address_unaligned_error.description = """
+The provided **buffer_end_address** is not aligned with the burst length.
+"""
+
+interrupt_status.read_address_unaligned_error.type = "bit"
+interrupt_status.read_address_unaligned_error.description = """
+The provided **buffer_read_address** is not aligned with the burst length.
+"""
+
+
+################################################################################
+interrupt_mask.mode = "r_w"
+interrupt_mask.description = """
+Interrupt enable mask for the different interrupts of this module.
+The bits of this register correspond to the interrupts in **interrupt_status**.
+
+Clearing the mask of an interrupt will lower the **interrupt** signal of this module, if the
+interrupt trigger was caused by that specific interrupt.
+"""
+
+
+################################################################################
+[config]
+
+mode = "r_w"
+description = "Configuration register."
+
+enable.type = "bit"
+enable.description = """
+When this bit is set, the module will continuously consume streaming data and write it to the
+memory buffer.
+Before this bit is set, the module will stall streaming data (**stream_ready** tied low).
+
+Before this bit is set, the **buffer_start_address**, **buffer_end_address**,
+and **buffer_read_address** registers must be set with valid values.
+
+The module does not support disabling after enabling.
+I.e, once this bit has been set, clearing it will result in an undefined behavior.
+"""
+
+
+################################################################################
+[buffer_start_address]
+
+mode = "w"
+description = """
+Address to the first byte in the memory buffer.
+Must be aligned by the burst length expressed in bytes.
+
+This address and upcoming bytes after will be written with data.
+
+Note that while a 32-bit value can be written to this register, only the number of
+bits given by the **address_width** generic will actually be used by the module.
+
+Once this value has been set, and the module **enable**'d, the value must not be changed.
+"""
+
+
+################################################################################
+[buffer_end_address]
+
+mode = "w"
+description = """
+Address to the byte after the last byte in the memory buffer.
+Must be aligned by the burst length expressed in bytes.
+
+Bytes before this address (excluding) will be written with data.
+
+Note that while a 32-bit value can be written to this register, only the number of
+bits given by the **address_width** generic will actually be used by the module.
+
+Once this value has been set, and the module **enable**'d, the value must not be changed.
+"""
+
+
+################################################################################
+[buffer_written_address]
+
+mode = "r"
+description = """
+Is continuously updated by the module as data is written to the memory buffer.
+All bytes between **buffer_read_address** (including) and this address (excluding) will contain
+valid written data.
+That number of bytes will always be a multiple of the burst length expressed in bytes.
+
+If **buffer_read_address** and this address are equal, the memory buffer is empty.
+If they have different values, the memory buffer contains valid written data.
+
+When the module reaches the end of the buffer, i.e. when the very last byte of the buffer has been
+written, the value of this register will wrap around to **buffer_start_address**.
+I.e. this register will never assume the value of **buffer_end_address**.
+
+The value of this register will always be aligned by the burst length expressed in bytes.
+
+Note that while a 32-bit value is read from this register, only the number of
+bits given by the **address_width** generic will actually be set by the module.
+The others will always read as zero.
+"""
+
+
+################################################################################
+[buffer_read_address]
+
+mode = "w"
+description = """
+Must be continuously updated by the software as it consumes data from the memory buffer.
+All bytes before (excluding) this address are considered free and can be written by the module.
+
+When data is written to the memory buffer, the software must consume all the data between this
+address (including) and **buffer_written_address** (excluding).
+Once this is done, the software must update this register with the value
+of **buffer_written_address**.
+When that is done, this part of the memory buffer can be written again by the module.
+Meaning, at that point, software must either be fully finished with the data or have a copy of it.
+
+The value written to this register must be aligned by the burst length expressed in bytes.
+
+Note that while this while a 32-bit value can be written to this register, only the number of
+bits given by the **address_width** generic will actually be used by the module.
+"""

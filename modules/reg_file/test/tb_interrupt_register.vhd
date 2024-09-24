@@ -128,11 +128,11 @@ begin
   dut : entity work.interrupt_register
     port map (
       clk => clk,
-
+      --
       sources => sources,
       mask => mask,
       clear => clear,
-
+      --
       status => status,
       trigger => trigger
     );
