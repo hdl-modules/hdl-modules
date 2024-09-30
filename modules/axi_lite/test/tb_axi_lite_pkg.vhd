@@ -35,7 +35,7 @@ begin
 
     variable rnd : RandomPType;
 
-    procedure test_slv_conversion(addr_width : positive) is
+    procedure test_slv_conversion is
       variable data_w : axi_lite_m2s_w_t := axi_lite_m2s_w_init;
       variable data_w_slv, data_w_converted :
         std_ulogic_vector(axi_lite_m2s_w_sz(data_width) - 1 downto 0) := (others => '0');
@@ -72,8 +72,7 @@ begin
     if run("test_slv_conversion") then
       -- Loop a couple of times to get good random coverage
       for i in 0 to 1000 loop
-        test_slv_conversion(addr_width=>32);
-        test_slv_conversion(addr_width=>40);
+        test_slv_conversion;
       end loop;
 
     elsif run("test_axi_lite_strb") then
