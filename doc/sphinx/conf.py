@@ -34,6 +34,7 @@ extensions = [
     "sphinx_sitemap",
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
+    "sphinxcontrib.googleanalytics",
     "sphinxext.opengraph",
     "symbolator_sphinx",
 ]
@@ -61,7 +62,6 @@ html_theme = "sphinx_rtd_theme"
 
 html_theme_options = {
     "prev_next_buttons_location": "both",
-    "analytics_id": "G-GN3TVQGSHC",
     "logo_only": True,
 }
 
@@ -78,6 +78,9 @@ html_css_files = [
     # https://stackoverflow.com/questions/69845499/
     "docutils_table_caption_below.css",
 ]
+
+# Google Analytics settings.
+googleanalytics_id = "G-GN3TVQGSHC"
 
 # OpenGraph settings.
 ogp_site_url = WEBSITE_URL

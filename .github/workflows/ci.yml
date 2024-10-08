@@ -98,17 +98,18 @@ jobs:
     - name: Install Python packages
       run: |
         pip install \
-          pycairo \
-          PyGObject \
           git+https://github.com/hdl/pyHDLParser@354dc73a231677f277709633b9bcd0110f1816d0 \
           git+https://github.com/hdl/symbolator \
           GitPython \
           pybadges \
+          pycairo \
+          PyGObject \
           rtoml \
           setuptools \
           sphinx \
-          sphinx-rtd-theme \
           sphinx_sitemap \
+          sphinx-rtd-theme \
+          sphinxcontrib-googleanalytics \
           sphinxcontrib-wavedrom \
           sphinxext-opengraph \
           tomli_w \
