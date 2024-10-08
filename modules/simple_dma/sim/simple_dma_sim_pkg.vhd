@@ -66,7 +66,7 @@ package body simple_dma_sim_pkg is
   ) is
     variable buf : buffer_t := null_buffer;
 
-    variable write_address, read_address, num_bytes_pushed : natural := 0;
+    variable written_address, read_address, num_bytes_pushed : natural := 0;
   begin
     buf := allocate(
       memory => memory,
@@ -97,10 +97,10 @@ package body simple_dma_sim_pkg is
 
     while num_bytes_pushed /= receive_num_bytes loop
       read_simple_dma_buffer_written_address(
-        net=>net, value=>write_address, base_address=>regs_base_address
+        net=>net, value=>written_address, base_address=>regs_base_address
       );
 
-      while write_address /= read_address loop
+      while written_address /= read_address loop
         push(receive_data_queue, read_byte(memory=>memory, address=>read_address));
         num_bytes_pushed := num_bytes_pushed + 1;
 
