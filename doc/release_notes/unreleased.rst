@@ -1,3 +1,7 @@
+Added
+
+* Add :ref:`resync.resync_sticky_level`.
+
 Breaking changes
 
 * Rename ``resync_slv_level_coherent`` to :ref:`resync.resync_twophase`.
