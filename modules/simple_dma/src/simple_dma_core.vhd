@@ -97,7 +97,7 @@ begin
   begin
 
     ------------------------------------------------------------------------------
-    dut : entity reg_file.interrupt_register
+    interrupt_register_inst : entity reg_file.interrupt_register
       port map (
         clk => clk,
         --
