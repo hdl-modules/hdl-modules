@@ -35,10 +35,22 @@ use work.simple_dma_register_record_pkg.all;
 
 entity simple_dma_core is
   generic (
+    -- The width of the AXI AWADDR field as well as all the ring buffer addresses
+    -- handled internally.
     address_width : positive range 1 to axi_a_addr_sz;
+    -- The data width of the 'stream' interface.
     stream_data_width : positive range 8 to axi_data_sz;
+    -- The width of the AXI WDATA field.
+    -- Must be the native width of the AXI port, we do not support narrow bursts.
     axi_data_width : positive range 8 to axi_data_sz;
-    burst_length_beats : positive range 1 to axi_max_burst_length_beats
+    -- The number of beats on the 'stream' interface that are accumulated before
+    -- being written to memory.
+    -- Increase this number to improve memory performance.
+    -- Will also decrease the frequency of 'write_done' interrupts.
+    -- But note that there is not support from writing partial packets.
+    packet_length_beats : positive range 1 to axi_max_burst_length_beats;
+    -- Enable AXI3 instead of AXI4, with the limitations that this implies.
+    enable_axi3 : boolean
   );
   port (
     clk : in std_ulogic;
@@ -58,6 +70,16 @@ end entity;
 
 architecture a of simple_dma_core is
 
+  constant stream_data_width_bytes : positive := stream_data_width / 8;
+  constant axi_data_width_bytes : positive := axi_data_width / 8;
+
+  constant packet_length_bytes : positive := packet_length_beats * stream_data_width_bytes;
+  constant packet_length_axi_beats : positive := packet_length_bytes / axi_data_width_bytes;
+
+  constant max_burst_length_beats : positive := get_max_burst_length_beats(
+    enable_axi3=>enable_axi3
+  );
+
   signal segment_ready, segment_valid : std_ulogic := '0';
   signal segment_address : u_unsigned(address_width - 1 downto 0) := (others => '0');
 
@@ -73,18 +95,29 @@ begin
 
   ------------------------------------------------------------------------------
   assert stream_data_width = axi_data_width
-    report "Widths must be the same, but we have separate generics for future flexibility"
+    report "Widths must be the same at the moment. Will be changed in the future."
     severity failure;
 
+  assert stream_data_width mod axi_data_width = 0 or axi_data_width mod stream_data_width = 0
+    report "Data width ratio must be a whole number of beats"
+    severity failure;
+
+  -- Once we split the AXI and stream data widths, we should that the stream data width
+  -- is a power-of-two number of bytes.
   assert sanity_check_axi_data_width(data_width=>axi_data_width)
     report "Invalid AXI data width"
     severity failure;
 
-  assert burst_length_beats = 1
-    report (
-      "We support only single-beat bursts at the moment. Yes, will result in a lot of AXI traffic. "
-      & "The generic is kept for future flexibility."
-    )
+  assert packet_length_beats = 1
+    report "We support only single-beat bursts at the moment. Will be changed in the future."
+    severity failure;
+
+  assert packet_length_axi_beats <= max_burst_length_beats
+    report "We do not support burst splitting at the moment. Will be changed in the future."
+    severity failure;
+
+  assert packet_length_bytes <= 4096
+    report "We do not support burst splitting at the moment. Will be changed in the future."
     severity failure;
 
 
@@ -131,8 +164,6 @@ begin
 
   ------------------------------------------------------------------------------
   ring_buffer_block : block
-    constant segment_length_bytes : positive := (stream_data_width / 8) * burst_length_beats;
-
     signal buffer_start_address, buffer_end_address, buffer_written_address, buffer_read_address :
       u_unsigned(address_width - 1 downto 0) := (others => '0');
   begin
@@ -141,7 +172,7 @@ begin
     simple_ring_buffer_manager_inst : entity ring_buffer.simple_ring_buffer_manager
       generic map (
         address_width => address_width,
-        segment_length_bytes => segment_length_bytes
+        segment_length_bytes => packet_length_bytes
       )
       port map (
         clk => clk,

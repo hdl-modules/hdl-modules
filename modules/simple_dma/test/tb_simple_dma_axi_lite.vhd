@@ -184,7 +184,7 @@ begin
       address_width => address_width,
       stream_data_width => data_width,
       axi_data_width => data_width,
-      burst_length_beats => 1
+      packet_length_beats => 1
     )
     port map (
       clk => clk,

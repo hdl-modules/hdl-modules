@@ -16,7 +16,7 @@ Interrupt status is cleared by writing '1' to the target interrupt bit(s) in thi
 
 interrupt_status.write_done.type = "bit"
 interrupt_status.write_done.description = """
-Burst has been written to memory.
+A streaming packet, as defined by the **packet_length_beats** generic, has been written to memory.
 Compare **buffer_written_address** with **buffer_read_address** to find out
 how many bytes have been written and to which location.
 """
