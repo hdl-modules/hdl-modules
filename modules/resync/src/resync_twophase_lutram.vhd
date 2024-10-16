@@ -18,7 +18,7 @@
 --   that must be used for proper operation.
 --   See :ref:`here <scoped_constraints>` for instructions.
 --
--- .. figure:: resync_twophase_lutram_transparent.png
+-- .. figure:: resync_twophase_lutram.png
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
