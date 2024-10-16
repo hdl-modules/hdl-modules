@@ -25,10 +25,12 @@ use work.simple_dma_register_record_pkg.all;
 
 entity simple_dma_axi_lite is
   generic (
+    -- See 'simple_dma_core.vhd' for documentation of the generics.
     address_width : positive range 1 to axi_a_addr_sz;
     stream_data_width : positive range 8 to axi_data_sz;
     axi_data_width : positive range 8 to axi_data_sz;
-    burst_length_beats : positive range 1 to axi_max_burst_length_beats
+    packet_length_beats : positive range 1 to axi_max_burst_length_beats;
+    enable_axi3 : boolean := false
   );
   port (
     clk : in std_ulogic;
@@ -58,7 +60,8 @@ begin
       address_width => address_width,
       stream_data_width => stream_data_width,
       axi_data_width => axi_data_width,
-      burst_length_beats => burst_length_beats
+      packet_length_beats => packet_length_beats,
+      enable_axi3 => enable_axi3
     )
     port map (
       clk => clk,

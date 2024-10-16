@@ -1,5 +1,6 @@
 Added
 
+* Add :ref:`module_simple_dma`.
 * Add :ref:`resync.resync_sticky_level`.
 
 Breaking changes
