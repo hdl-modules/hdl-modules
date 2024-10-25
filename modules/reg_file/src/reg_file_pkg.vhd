@@ -24,6 +24,7 @@ package reg_file_pkg is
 
   constant reg_width : positive := 32;
   subtype reg_t is std_ulogic_vector(reg_width - 1 downto 0);
+  constant reg_init : reg_t := (others => '0');
   type reg_vec_t is array (integer range <>) of reg_t;
 
   type reg_type_t is (
