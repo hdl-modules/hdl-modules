@@ -65,6 +65,7 @@ begin
   increment : process
   begin
     wait until rising_edge(target_clock);
+
     tick_count <= tick_count + 1;
   end process;
 
@@ -84,7 +85,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  periodic_pulse_inst : entity work.periodic_pulser
+  periodic_pulser_inst : entity work.periodic_pulser
     generic map (
       period => 2 ** resolution_bits,
       shift_register_length => shift_register_length
