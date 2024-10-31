@@ -17,12 +17,22 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 
 
 class Module(BaseModule):
+
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+        self.setup_resync_counter_tests(vunit_proj=vunit_proj)
+        self.setup_resync_cycles_tests(vunit_proj=vunit_proj)
+        self.setup_resync_pulse_tests(vunit_proj=vunit_proj)
+        self.setup_resync_slv_level_tests(vunit_proj=vunit_proj)
+        self.setup_resync_twophase_tests(vunit_proj=vunit_proj)
+        self.setup_resync_twophase_handshake_tests(vunit_proj=vunit_proj)
+
+    def setup_resync_counter_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
         for pipeline_output in [True, False]:
             generics = dict(pipeline_output=pipeline_output)
             self.add_vunit_config(tb, generics=generics)
 
+    def setup_resync_cycles_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_cycles")
         for active_high in [True, False]:
             generics = dict(active_high=active_high, output_clock_is_faster=True)
@@ -34,6 +44,7 @@ class Module(BaseModule):
             generics = dict(active_high=active_high, output_clock_is_slower=True)
             self.add_vunit_config(tb, generics=generics)
 
+    def setup_resync_pulse_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
         for enable_feedback in [True, False]:
             for active_level in [True, False]:
@@ -51,6 +62,7 @@ class Module(BaseModule):
                         generics[mode] = True
                         self.add_vunit_config(tb, generics=generics)
 
+    def setup_resync_slv_level_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level")
         for output_clock_is_faster in [True, False]:
             for enable_input_register in [True, False]:
@@ -60,6 +72,7 @@ class Module(BaseModule):
                 )
                 self.add_vunit_config(tb, generics=generics)
 
+    def setup_resync_twophase_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase")
         for mode in [
             "output_clock_is_greatly_faster",
@@ -71,6 +84,7 @@ class Module(BaseModule):
             generics = {mode: True}
             self.add_vunit_config(tb, generics=generics)
 
+    def setup_resync_twophase_handshake_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase_handshake")
         for mode in [
             "result_clock_is_greatly_faster",
@@ -81,14 +95,21 @@ class Module(BaseModule):
         ]:
             generics = {mode: True}
 
-            test = tb.get_tests("test_random_data")[0]
-            for data_width in [8, 16]:
-                generics["data_width"] = data_width
-                self.add_vunit_config(test, generics=generics, set_random_seed=True)
+            for test in tb.get_tests():
+                if test.name == "test_random_data":
+                    for data_width in [8, 16]:
+                        generics["data_width"] = data_width
+                        self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
-            test = tb.get_tests("test_count_sampling_period")[0]
-            generics["stall_probability_percent"] = 0
-            self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                elif test.name == "test_count_sampling_period":
+                    generics["stall_probability_percent"] = 0
+                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
+
+                elif test.name == "test_init_state":
+                    self.add_vunit_config(test, generics=generics, set_random_seed=0)
+
+                else:
+                    raise RuntimeError(f"Unknown test: {test.name}")
 
     def get_build_projects(self):
         # Standard libraries

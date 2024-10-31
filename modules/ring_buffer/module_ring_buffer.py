@@ -27,7 +27,7 @@ class Module(BaseModule):
                     segment_length_bytes=segment_length_bytes,
                     buffer_size_segments=buffer_size_segments,
                 )
-                self.add_vunit_config(test=test, generics=generics, set_random_seed=549101979)
+                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
         test = (
             vunit_proj.library(self.library_name)
@@ -35,7 +35,7 @@ class Module(BaseModule):
             .get_tests("test_invalid_addresses")[0]
         )
         self.add_vunit_config(
-            test=test, generics=dict(segment_length_bytes=4, buffer_size_segments=4)
+            test=test, generics=dict(segment_length_bytes=4, buffer_size_segments=4, seed=0)
         )
 
     def get_build_projects(self):
