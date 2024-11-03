@@ -13,6 +13,8 @@
 -- The implementation is quite optimized with very low resource utilization when extra features
 -- are not enabled.
 --
+-- .. figure:: asynchronous_fifo_circuit.png
+--
 -- For more CDC solutions, please see :ref:`module_resync`.
 --
 -- .. note::
