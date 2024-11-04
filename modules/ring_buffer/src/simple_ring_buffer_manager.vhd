@@ -179,7 +179,7 @@ begin
         end if;
 
       when wait_for_handshake =>
-        -- We know that 'segment_valid' is '1' here so we dont't have to do 'ready and valid'.
+        -- We know that 'segment_valid' is '1' here so we don't have to do 'ready and valid'.
         if segment_ready then
           segment_valid <= '0';
           state <= idle;
