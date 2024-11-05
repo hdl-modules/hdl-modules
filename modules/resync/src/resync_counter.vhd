@@ -26,7 +26,9 @@
 --   of one.
 --   Erroneous values can appear on the output if this is not followed.
 --
--- See the corresponding constraint file and
+-- See the
+-- `constraint file <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_counter.tcl>`__
+-- and
 -- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-2-counters-fifos-lukas-vik-ist5c>`__
 -- for information about timing constraints and how this CDC topology is made reliable.
 -- -------------------------------------------------------------------------------------------------
