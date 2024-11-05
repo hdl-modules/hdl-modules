@@ -20,6 +20,8 @@
 -- with a LUT as well as an FF.
 --
 -- See the
+-- `constraint file <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_pulse.tcl>`__
+-- and
 -- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-3-pulses-lukas-vik-31tif/>`__
 -- for detailed information about timing constraints and how this CDC topology can be used reliably.
 --

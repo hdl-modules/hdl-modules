@@ -26,7 +26,9 @@
 --   This entity can not handle "pulse"-type signals.
 --   Pulses can be missed and single-cycle pulse behavior will not work.
 --
--- See the corresponding constraint file and
+-- See the
+-- `constraint file <https://github.com/hdl-modules/hdl-modules/blob/main/modules/resync/scoped_constraints/resync_level.tcl>`__
+-- and
 -- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-1-lukas-vik-copcf/>`__
 -- for information about timing constraints and how this CDC topology is made reliable.
 --
