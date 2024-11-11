@@ -14,13 +14,30 @@ library common;
 use common.time_pkg.all;
 
 
-entity test_frequency_conversion is
+entity test_time_pkg is
 
 end entity;
 
-architecture a of test_frequency_conversion is
+architecture a of test_time_pkg is
 
 begin
+
+  --------------------------------------------------------------------------------------------------
+  time_test_block : for test_idx in test_times'range generate
+    constant test_time : time := test_times(test_idx);
+    constant test_time_real_s : real := test_times_real_s(test_idx);
+    constant test_time_from_real : time := to_time(test_time_real_s);
+  begin
+
+    assert test_time_from_real = test_time
+      report "Got test_time_from_real=" & time'image(test_time_from_real)
+        & " expected test_time=" & time'image(test_time)
+        & " (difference=" & time'image(test_time_from_real - test_time)
+        & ", test_idx=" & natural'image(test_idx) & ")"
+      severity failure;
+
+  end generate;
+
 
   --------------------------------------------------------------------------------------------------
   frequency_test_block : for test_idx in test_periods'range generate

@@ -66,6 +66,11 @@ package time_pkg is
   -- Convert a 'time' value to a floating point number of seconds.
   -- It would be lovely if this was part of the standard library.
   function to_real_s(value : time) return real;
+  -- Convert a number of seconds to a 'time' value.
+  -- Uses an operator function from the standard library, but it's nice to have this function
+  -- 1. for symmetry,
+  -- 2. for code clarity since it's a named function with a named argument.
+  function to_time(value_s : real) return time;
 
   -- Functions for converting between frequency and period values using the 'time' type.
   -- Doing these operations has historically been very risky with Vivado.
@@ -75,6 +80,13 @@ package time_pkg is
   function to_period(frequency_hz : positive) return time;
   function to_frequency_hz(period : time) return real;
   function to_frequency_hz(period : time) return positive;
+
+  -- Test values.
+  -- These are used to verify the 'to_time' function, which uses solely functions from
+  -- the standard library.
+  -- So we don't have to worry too much about testing the details of it.
+  constant test_times : time_vec_t(0 to 1) := (1.25 ns, 30 min);
+  constant test_times_real_s : real_vec_t(0 to 1) := (1.25e-9, 3.0 * 60.0e1);
 
   -- Test values, both in high range and low range: 468 MHz, 513 KHz, 2.47 Hz.
   -- Used in both simulation and netlist build Vivado checker.
@@ -161,6 +173,13 @@ package body time_pkg is
 
     value_real_s := real(value_integer) * to_s_factor;
     return value_real_s;
+  end function;
+
+  function to_time(value_s : real) return time is
+  begin
+    -- Using 'time' * 'real' -> 'time' function.
+    -- Should give maximum precision.
+    return value_s * (1 sec);
   end function;
 
   function to_period(frequency_hz : real) return time is

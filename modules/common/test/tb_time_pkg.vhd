@@ -75,12 +75,17 @@ begin
       check_equal(to_real_s(2 fs), 2.0e-15, max_diff=>real_time_max_diff);
       check_equal(to_real_s(1 fs), 1.0e-15, max_diff=>real_time_max_diff);
 
+    elsif run("test_to_time") then
+      for test_idx in test_times'range loop
+        check_equal(to_time(value_s=>test_times_real_s(test_idx)), test_times(test_idx));
+      end loop;
+
     elsif run("test_frequency_conversion") then
       -- Same checks as in the netlist build. Should give same result in Vivado as in simulator.
 
       for test_idx in test_periods'range loop
         -- 'time' period calculated from 'real' frequency
-        assert  to_period(test_frequencies_real(test_idx)) = test_periods(test_idx);
+        assert to_period(test_frequencies_real(test_idx)) = test_periods(test_idx);
 
         -- 'time' period calculated from 'integer' frequency
         -- The assert is a "check almost equal" for 'time' type.
