@@ -31,6 +31,7 @@ library ring_buffer;
 use ring_buffer.simple_ring_buffer_manager_pkg.all;
 
 use work.simple_dma_register_record_pkg.all;
+use work.simple_dma_regs_pkg.all;
 
 
 entity simple_dma_core is
@@ -70,6 +71,8 @@ end entity;
 
 architecture a of simple_dma_core is
 
+  ------------------------------------------------------------------------------
+  -- Generic constants.
   constant stream_data_width_bytes : positive := stream_data_width / 8;
   constant axi_data_width_bytes : positive := axi_data_width / 8;
 
@@ -80,6 +83,8 @@ architecture a of simple_dma_core is
     enable_axi3=>enable_axi3
   );
 
+  ------------------------------------------------------------------------------
+  -- Signals.
   signal segment_ready, segment_valid : std_ulogic := '0';
   signal segment_address : u_unsigned(address_width - 1 downto 0) := (others => '0');
 
@@ -90,6 +95,8 @@ architecture a of simple_dma_core is
   );
 
   signal merged_ready, merged_valid : std_ulogic := '0';
+
+  signal interrupt_sources : reg_t := (others => '0');
 
 begin
 
@@ -123,10 +130,7 @@ begin
 
   ------------------------------------------------------------------------------
   interrupt_register_block : block
-    signal write_done, write_error : std_ulogic := '0';
-    signal sources_record : simple_dma_interrupt_status_t := simple_dma_interrupt_status_init;
-
-    signal sources, mask, clear, status : reg_t := (others => '0');
+    signal clear, status : reg_t := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -134,27 +138,36 @@ begin
       port map (
         clk => clk,
         --
-        sources => sources,
-        mask => mask,
+        sources => interrupt_sources,
+        mask => regs_down.interrupt_mask,
         clear => clear,
         --
         status => status,
         trigger => interrupt
       );
 
-    write_done <= axi_write_m2s.b.ready and axi_write_s2m.b.valid;
-    write_error <= write_done and to_sl(axi_write_s2m.b.resp /= axi_resp_okay);
-
-    sources_record <= (
-      write_done=>write_done,
-      write_error=>write_error,
-      start_address_unaligned_error=>ring_buffer_status.start_address_unaligned,
-      end_address_unaligned_error=>ring_buffer_status.end_address_unaligned,
-      read_address_unaligned_error=>ring_buffer_status.read_address_unaligned
+    interrupt_sources(simple_dma_interrupt_status_write_done) <= (
+      axi_write_m2s.b.ready and axi_write_s2m.b.valid
     );
-    sources <= to_slv(sources_record);
 
-    mask <= to_slv(regs_down.interrupt_mask);
+    interrupt_sources(simple_dma_interrupt_status_write_error) <= (
+      axi_write_m2s.b.ready
+      and axi_write_s2m.b.valid
+      and to_sl(axi_write_s2m.b.resp /= axi_resp_okay)
+    );
+
+    interrupt_sources(simple_dma_interrupt_status_start_address_unaligned_error) <= (
+      ring_buffer_status.start_address_unaligned
+    );
+
+    interrupt_sources(simple_dma_interrupt_status_end_address_unaligned_error) <= (
+      ring_buffer_status.end_address_unaligned
+    );
+
+    interrupt_sources(simple_dma_interrupt_status_read_address_unaligned_error) <= (
+      ring_buffer_status.read_address_unaligned
+    );
+
     clear <= to_slv(regs_down.interrupt_status);
 
     regs_up.interrupt_status <= to_simple_dma_interrupt_status(status);

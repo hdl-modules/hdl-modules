@@ -41,6 +41,7 @@ entity simple_dma_axi_lite is
     --# {{}}
     regs_m2s : in axi_lite_m2s_t;
     regs_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
+    interrupt : out std_ulogic := '0';
     --# {{}}
     axi_write_m2s : out axi_write_m2s_t := axi_write_m2s_init;
     axi_write_s2m : in axi_write_s2m_t
@@ -72,6 +73,7 @@ begin
       --
       regs_up => regs_up,
       regs_down => regs_down,
+      interrupt => interrupt,
       --
       axi_write_m2s => axi_write_m2s,
       axi_write_s2m => axi_write_s2m
