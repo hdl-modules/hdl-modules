@@ -45,11 +45,14 @@ use axi_lite.axi_lite_pkg.all;
 
 use work.reg_file_pkg.all;
 
+library xil_defaultlib;
+use xil_defaultlib.test_regs_pkg.all;
+
 
 entity axi_lite_reg_file is
   generic (
-    regs : reg_definition_vec_t;
-    default_values : reg_vec_t(regs'range) := (others => (others => '0'))
+    regs : reg_definition_vec_t := test_reg_map;
+    default_values : reg_vec_t(regs'range) := test_regs_init
   );
   port (
     clk : in std_ulogic;
@@ -117,12 +120,27 @@ begin
 
       if valid_read_address then
         axi_lite_s2m.read.r.resp <= axi_resp_okay;
+        -- if is_fabric_gives_value_type(regs(read_idx).reg_type) then
+        --   axi_lite_s2m.read.r.data(regs_up(0)'range) <= regs_up(read_idx);
+        -- else
+        --   axi_lite_s2m.read.r.data(regs_up(0)'range) <= reg_values(read_idx);
+        -- end if;
 
-        if is_fabric_gives_value_type(regs(read_idx).reg_type) then
-          axi_lite_s2m.read.r.data(reg_values(0)'range) <= regs_up(read_idx);
-        else
-          axi_lite_s2m.read.r.data(reg_values(0)'range) <= reg_values(read_idx);
-        end if;
+        axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
+
+        for list_idx in regs'range loop
+          if is_read_type(regs(list_idx).reg_type) then
+            if is_fabric_gives_value_type(regs(list_idx).reg_type) then
+              if read_idx = list_idx then
+                axi_lite_s2m.read.r.data(regs(list_idx).width - 1 downto 0) <= regs_up(read_idx)(regs(list_idx).width - 1 downto 0);
+              end if;
+            else
+              if read_idx = list_idx then
+                axi_lite_s2m.read.r.data(regs(list_idx).width - 1 downto 0) <= reg_values(read_idx)(regs(list_idx).width - 1 downto 0);
+              end if;
+            end if;
+          end if;
+        end loop;
       else
         axi_lite_s2m.read.r.resp <= axi_resp_slverr;
         axi_lite_s2m.read.r.data <= (others => '-');
@@ -182,7 +200,8 @@ begin
         if is_write_pulse_type(regs(list_idx).reg_type) then
           -- Set initial default value.
           -- If a write occurs to this register, the value will be asserted for one cycle below.
-          reg_values(list_idx) <= default_values(list_idx);
+          -- reg_values(list_idx)(regs(list_idx).width - 1 downto 0) <= default_values(list_idx)(regs(list_idx).width - 1 downto 0);
+          reg_values(list_idx)(regs(list_idx).width - 1 downto 0) <= default_values(list_idx)(regs(list_idx).width - 1 downto 0);
         end if;
       end loop;
 
@@ -202,8 +221,14 @@ begin
         when w =>
           if axi_lite_m2s.write.w.valid and axi_lite_s2m.write.w.ready then
             if valid_write_address then
-              reg_values(write_idx) <= axi_lite_m2s.write.w.data(reg_values(0)'range);
-              reg_was_written(write_idx) <= '1';
+              for list_idx in regs'range loop
+                if is_write_type(regs(list_idx).reg_type) then
+                  if write_idx = list_idx then
+                    reg_values(list_idx)(regs(list_idx).width - 1 downto 0) <= axi_lite_m2s.write.w.data(regs(list_idx).width - 1 downto 0);
+                    reg_was_written(list_idx) <= '1';
+                  end if;
+                end if;
+              end loop;
             end if;
 
             axi_lite_s2m.write.w.ready <= '0';
