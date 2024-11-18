@@ -45,14 +45,11 @@ use axi_lite.axi_lite_pkg.all;
 
 use work.reg_file_pkg.all;
 
-library xil_defaultlib;
-use xil_defaultlib.test_regs_pkg.all;
-
 
 entity axi_lite_reg_file is
   generic (
-    regs : reg_definition_vec_t := test_reg_map;
-    default_values : reg_vec_t(regs'range) := test_regs_init
+    regs : reg_definition_vec_t;
+    default_values : reg_vec_t(regs'range) := (others => (others => '0'))
   );
   port (
     clk : in std_ulogic;
