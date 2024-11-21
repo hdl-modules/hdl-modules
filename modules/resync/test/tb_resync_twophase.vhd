@@ -26,6 +26,8 @@ entity tb_resync_twophase is
     clocks_are_same : boolean := false;
     output_clock_is_mildly_slower : boolean := false;
     output_clock_is_greatly_slower : boolean := false;
+    enable_lutram : boolean;
+    enable_output_register : boolean := false;
     runner_cfg : string
   );
 end entity;
@@ -100,6 +102,9 @@ begin
     variable relative_error : real := 0.0;
   begin
     test_runner_setup(runner, runner_cfg);
+
+    report "clk_in_period: " & to_string(clk_in_period);
+    report "clk_out_period: " & to_string(clk_out_period);
 
     -- Default value
     check_equal(data_out, data_init);
@@ -196,17 +201,41 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.resync_twophase
-    generic map (
-      width => data_in'length,
-      default_value => std_logic_vector(data_init)
-    )
-    port map (
-      clk_in => clk_in,
-      data_in => std_logic_vector(data_in),
+  dut_gen : if enable_lutram generate
 
-      clk_out => clk_out,
-      unsigned(data_out) => data_out
-    );
+    ------------------------------------------------------------------------------
+    dut : entity work.resync_twophase_lutram
+      generic map (
+        width => data_in'length,
+        default_value => std_logic_vector(data_init),
+        enable_output_register => enable_output_register
+      )
+      port map (
+        clk_in => clk_in,
+        data_in => std_logic_vector(data_in),
+
+        clk_out => clk_out,
+        unsigned(data_out) => data_out
+      );
+
+  else generate
+
+    ------------------------------------------------------------------------------
+    dut : entity work.resync_twophase
+      generic map (
+        width => data_in'length,
+        default_value => std_logic_vector(data_init)
+      )
+      port map (
+        clk_in => clk_in,
+        data_in => std_logic_vector(data_in),
+
+        clk_out => clk_out,
+        unsigned(data_out) => data_out
+      );
+
+    assert not enable_output_register;
+
+  end generate;
 
 end architecture;
