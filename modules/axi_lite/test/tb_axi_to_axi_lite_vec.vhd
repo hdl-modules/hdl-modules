@@ -49,8 +49,8 @@ architecture tb of tb_axi_to_axi_lite_vec is
   );
 
   constant reg_map : reg_definition_vec_t(0 to 2 - 1) := (
-    (idx => 0, reg_type => r_w),
-    (idx => 1, reg_type => r_w)
+    (idx => 0, reg_type => r_w, width=> 32),
+    (idx => 1, reg_type => r_w, width=> 32)
   );
 
   constant clk_axi_period : time := 7 ns;

@@ -36,21 +36,21 @@ end entity;
 architecture a of axi_lite_reg_file_netlist_wrapper is
 
   constant regs : reg_definition_vec_t(regs_up'range) := (
-    (idx=>0, reg_type=>r),
-    (idx=>1, reg_type=>w),
-    (idx=>2, reg_type=>r_w),
-    (idx=>3, reg_type=>wpulse),
-    (idx=>4, reg_type=>r_wpulse),
-    (idx=>5, reg_type=>r),
-    (idx=>6, reg_type=>w),
-    (idx=>7, reg_type=>r_w),
-    (idx=>8, reg_type=>wpulse),
-    (idx=>9, reg_type=>r_wpulse),
-    (idx=>10, reg_type=>r),
-    (idx=>11, reg_type=>w),
-    (idx=>12, reg_type=>r_w),
-    (idx=>13, reg_type=>wpulse),
-    (idx=>14, reg_type=>r_wpulse)
+    (idx=>0, reg_type=>r, width=>24),
+    (idx=>1, reg_type=>w, width=>18),
+    (idx=>2, reg_type=>r_w, width=>17),
+    (idx=>3, reg_type=>wpulse, width=>31),
+    (idx=>4, reg_type=>r_wpulse, width=>22),
+    (idx=>5, reg_type=>r, width=>14),
+    (idx=>6, reg_type=>w, width=>30),
+    (idx=>7, reg_type=>r_w, width=>27),
+    (idx=>8, reg_type=>wpulse, width=>19),
+    (idx=>9, reg_type=>r_wpulse, width=>22),
+    (idx=>10, reg_type=>r, width=>25),
+    (idx=>11, reg_type=>w, width=>19),
+    (idx=>12, reg_type=>r_w, width=>22),
+    (idx=>13, reg_type=>wpulse, width=>26),
+    (idx=>14, reg_type=>r_wpulse, width=>18)
   );
 
   constant default_values : reg_vec_t(regs'range) := (
