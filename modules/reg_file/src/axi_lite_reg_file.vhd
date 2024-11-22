@@ -213,6 +213,10 @@ begin
     begin
       wait until rising_edge(clk);
 
+      if axi_lite_m2s.write.aw.valid then
+        write_index <= axi_lite_m2s.write.aw.addr(addr_range);
+      end if;
+
       case write_state is
         when aw =>
           axi_lite_s2m.write.aw.ready <= '1';
@@ -220,8 +224,6 @@ begin
           if axi_lite_m2s.write.aw.valid and axi_lite_s2m.write.aw.ready then
             axi_lite_s2m.write.aw.ready <= '0';
             axi_lite_s2m.write.w.ready <= '1';
-
-            write_index <= axi_lite_m2s.write.aw.addr(addr_range);
 
             write_state <= w;
           end if;
