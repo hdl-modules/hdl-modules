@@ -95,8 +95,10 @@ begin
 
 
     ------------------------------------------------------------------------------
-    set_status : process(all)
+    set_status : process
     begin
+      wait until rising_edge(clk);
+
       reg_was_read <= (others => '0');
 
       axi_lite_s2m.read.r.resp <= axi_resp_slverr;
@@ -104,7 +106,7 @@ begin
 
       for list_idx in regs'range loop
         if is_read_type(regs(list_idx).reg_type) then
-          -- Todo experiment with the if statement
+          -- TODO experiment with the if statement
           if read_index = list_idx then
             axi_lite_s2m.read.r.resp <= axi_resp_okay;
             reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
@@ -169,8 +171,10 @@ begin
 
 
     ------------------------------------------------------------------------------
-    set_status : process(all)
+    set_status : process
     begin
+      wait until rising_edge(clk);
+
       reg_was_written <= (others => '0');
 
       axi_lite_s2m.write.b.resp <= axi_resp_slverr;
