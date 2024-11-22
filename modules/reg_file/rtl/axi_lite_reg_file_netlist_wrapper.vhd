@@ -62,6 +62,8 @@
 -- +-----------------+-------------+-----+-----+-----+----+----+
 -- | (none)          | 0.000ns     | 179 | 332 | 397 | 17 | 17 |
 -- +-----------------+-------------+-----+-----+-----+----+----+
+--
+-- Third optimization saved one LUT.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -90,6 +92,7 @@ end entity;
 
 architecture a of axi_lite_reg_file_netlist_wrapper is
 
+  -- Sum of widths: 268
   constant regs : reg_definition_vec_t(regs_up'range) := (
     (idx=>0, reg_type=>r, width=>24),
     (idx=>1, reg_type=>w, width=>18),
