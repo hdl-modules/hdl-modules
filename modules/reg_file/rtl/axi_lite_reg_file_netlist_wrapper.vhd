@@ -64,6 +64,27 @@
 -- +-----------------+-------------+-----+-----+-----+----+----+
 --
 -- Third optimization saved one LUT.
+--
+-- After combinatorial optimization:
+-- Size of reg_file.axi_lite_reg_file after synthesis:
+-- {
+--   "Total LUTs": 175,
+--   "Logic LUTs": 175,
+--   "LUTRAMs": 0,
+--   "SRLs": 0,
+--   "FFs": 301,
+--   "RAMB36": 0,
+--   "RAMB18": 0,
+--   "DSP Blocks": 0
+-- }
+-- Logic level distribution:
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | End Point Clock | Requirement |  0  |  1  |  2  |  3 |  4 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | (none)          | 0.000ns     | 183 | 295 | 384 | 17 | 17 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+--
+-- TODO: Try w/ and w/o reg_was_read/written.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

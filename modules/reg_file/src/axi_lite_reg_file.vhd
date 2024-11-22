@@ -95,10 +95,8 @@ begin
 
 
     ------------------------------------------------------------------------------
-    set_status : process
+    set_status : process(all)
     begin
-      wait until rising_edge(clk);
-
       reg_was_read <= (others => '0');
 
       axi_lite_s2m.read.r.resp <= axi_resp_slverr;
