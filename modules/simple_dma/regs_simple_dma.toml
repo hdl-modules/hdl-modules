@@ -147,6 +147,6 @@ Meaning, at that point, software must either be fully finished with the data or 
 
 The value written to this register must be aligned by the burst length expressed in bytes.
 
-Note that while this while a 32-bit value can be written to this register, only the number of
+Note that while a 32-bit value can be written to this register, only the number of
 bits given by the **address_width** generic will actually be used by the module.
 """
