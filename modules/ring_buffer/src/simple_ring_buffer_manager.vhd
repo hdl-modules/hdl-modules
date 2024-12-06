@@ -6,14 +6,20 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Simple implementation of ring buffer, or circular buffer, logic.
--- It is simple in the sense that all address segments provided are of the same length,
+-- Simple implementation of the logic for a ring buffer or circular buffer.
+-- It is simple in the sense address segments are always of the same length,
 -- which is defined at compile-time.
+--
+-- The entity is designed to be used with applications where the FPGA writes data to
+-- a memory buffer and a CPU progressively reads/consumes it.
+-- Even though the entity might have other use cases, the terminology and naming of things is based
+-- on this presumed use case.
 --
 -- The ``buffer_start_address``, ``buffer_end_address`` and ``buffer_read_address`` must be set
 -- by the user before enabling the entity with the ``enable`` signal.
 -- Initially, the ``buffer_read_address`` should be set to the ``buffer_start_address``.
--- All these addresses need to be byte-aligned with the segment length.
+-- All these addresses need to be byte-aligned with the segment length, i.e. they must be integer
+-- multiples of ``segment_length_bytes``.
 --
 -- .. warning::
 --
@@ -25,10 +31,16 @@
 -- This is an AXI-Stream-like handshaking interface.
 -- Once a segment has been written, the ``segment_written`` signal must be pulsed by the user.
 -- The entity will then update the ``buffer_written_address`` accordingly.
+-- Once the CPU has updated ``buffer_read_address`` accordingly, the address of this segment can
+-- once again be provided on the ``segment`` interface.
 --
 -- .. note::
---   In order to distinguish between the full and the empty states, this entity will never have
---   more than ``segment_length_bytes - 1`` segments outstanding.
+--   In order to distinguish between the full and empty states, this entity will never
+--   utilize 100% of the provided buffer space.
+--   There will always be one segment that is not used.
+--   In other words, there will never be more than
+--   ``(buffer_end_address - buffer_start_address) / segment_length_bytes - 1``
+--   segments outstanding.
 --
 -- .. warning::
 --
