@@ -21,9 +21,9 @@ import tools.tools_pythonpath  # noqa: F401
 
 # Third party libraries
 from tsfpga.examples.simulation_utils import (
-    NoGitDiffTestsFound,
+    NoVcsDiffTestsFound,
     SimulationProject,
-    find_git_test_filters,
+    find_git_test_filter,
     get_arguments_cli,
 )
 from tsfpga.module import get_modules
@@ -40,8 +40,8 @@ def main() -> None:
 
     if args.vcs_minimal:
         try:
-            args = find_git_test_filters(args=args, repo_root=tools_env.REPO_ROOT, modules=modules)
-        except NoGitDiffTestsFound:
+            args = find_git_test_filter(args=args, repo_root=tools_env.REPO_ROOT, modules=modules)
+        except NoVcsDiffTestsFound:
             print("Nothing to run. Appears to be no VHDL-related git diff.")
             return
 
