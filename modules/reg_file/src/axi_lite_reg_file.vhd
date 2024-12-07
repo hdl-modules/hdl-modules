@@ -100,7 +100,7 @@ begin
       reg_was_read <= (others => '0');
 
       axi_lite_s2m.read.r.resp <= axi_resp_slverr;
-      axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '-');
+      axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
 
       for list_idx in regs'range loop
         if is_read_type(regs(list_idx).reg_type) then
