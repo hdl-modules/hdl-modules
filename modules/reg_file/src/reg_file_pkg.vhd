@@ -49,6 +49,7 @@ package reg_file_pkg is
   type reg_definition_t is record
     idx : natural;
     reg_type : reg_type_t;
+    width : natural range 0 to reg_width;
   end record;
   type reg_definition_vec_t is array (natural range <>) of reg_definition_t;
 

@@ -47,21 +47,21 @@ architecture tb of tb_axi_lite_reg_file is
 
   -- Generic constants.
   constant regs : reg_definition_vec_t(0 to 15 - 1) := (
-    (idx => 0, reg_type => r),
-    (idx => 1, reg_type => r),
-    (idx => 2, reg_type => r),
-    (idx => 3, reg_type => w),
-    (idx => 4, reg_type => w),
-    (idx => 5, reg_type => w),
-    (idx => 6, reg_type => r_w),
-    (idx => 7, reg_type => r_w),
-    (idx => 8, reg_type => r_w),
-    (idx => 9, reg_type => wpulse),
-    (idx => 10, reg_type => wpulse),
-    (idx => 11, reg_type => wpulse),
-    (idx => 12, reg_type => r_wpulse),
-    (idx => 13, reg_type => r_wpulse),
-    (idx => 14, reg_type => r_wpulse)
+    (idx => 0, reg_type => r, width=>32),
+    (idx => 1, reg_type => r, width=>32),
+    (idx => 2, reg_type => r, width=>32),
+    (idx => 3, reg_type => w, width=>32),
+    (idx => 4, reg_type => w, width=>32),
+    (idx => 5, reg_type => w, width=>32),
+    (idx => 6, reg_type => r_w, width=>32),
+    (idx => 7, reg_type => r_w, width=>32),
+    (idx => 8, reg_type => r_w, width=>32),
+    (idx => 9, reg_type => wpulse, width=>32),
+    (idx => 10, reg_type => wpulse, width=>32),
+    (idx => 11, reg_type => wpulse, width=>32),
+    (idx => 12, reg_type => r_wpulse, width=>32),
+    (idx => 13, reg_type => r_wpulse, width=>32),
+    (idx => 14, reg_type => r_wpulse, width=>32)
   );
 
   constant default_values : reg_vec_t(regs'range) := (

@@ -34,14 +34,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.addr_pkg.all;
-
 library axi;
 use axi.axi_pkg.all;
 
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
+
+library math;
+use math.math_pkg.all;
 
 use work.reg_file_pkg.all;
 
@@ -73,38 +73,62 @@ end entity;
 
 architecture a of axi_lite_reg_file is
 
-  constant addr_and_mask_vec : addr_and_mask_vec_t := to_addr_and_mask_vec(regs);
+  constant num_addr_bits : positive := num_bits_needed(get_highest_idx(regs));
+  subtype addr_range is natural range num_addr_bits + 2 - 1 downto 2;
 
   signal reg_values : reg_vec_t(regs'range) := default_values;
 
-  constant invalid_addr : natural := regs'length;
-  subtype decoded_idx_t is natural range 0 to invalid_addr;
-
 begin
 
-  regs_down <= reg_values;
+  ------------------------------------------------------------------------------
+  assign_down : process(all)
+  begin
+    -- Assign only the bits that are marked as utilized, so there is no risk of confusion/misuse.
+    for reg_idx in regs'range loop
+      if is_write_type(regs(reg_idx).reg_type) then
+        regs_down(reg_idx)(regs(reg_idx).width - 1 downto 0) <= reg_values(reg_idx)(
+          regs(reg_idx).width - 1 downto 0
+        );
+      end if;
+    end loop;
+  end process;
 
 
   ------------------------------------------------------------------------------
   read_block : block
     type read_state_t is (ar, r);
     signal read_state : read_state_t := ar;
-    signal read_idx : decoded_idx_t := invalid_addr;
-    signal valid_read_address : boolean := false;
+    signal read_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
   begin
-
-    -- An address transaction has occurred and the address points to a valid read register
-    valid_read_address <= read_idx /= invalid_addr and is_read_type(regs(read_idx).reg_type);
-
 
     ------------------------------------------------------------------------------
     set_status : process(all)
     begin
       reg_was_read <= (others => '0');
 
-      if valid_read_address then
-        reg_was_read(read_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
-      end if;
+      axi_lite_s2m.read.r.resp <= axi_resp_slverr;
+      axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
+
+      for list_idx in regs'range loop
+        if is_read_type(regs(list_idx).reg_type) then
+          if read_index = list_idx then
+            axi_lite_s2m.read.r.resp <= axi_resp_okay;
+            reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
+          end if;
+
+          for bit_idx in 0 to regs(list_idx).width - 1 loop
+            if is_fabric_gives_value_type(regs(list_idx).reg_type) then
+              if read_index = list_idx then
+                axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
+              end if;
+            else
+              if read_index = list_idx then
+                axi_lite_s2m.read.r.data(bit_idx) <= reg_values(list_idx)(bit_idx);
+              end if;
+            end if;
+          end loop;
+        end if;
+      end loop;
     end process;
 
 
@@ -115,26 +139,15 @@ begin
 
       axi_lite_s2m.read.r.valid <= '0';
 
-      if valid_read_address then
-        axi_lite_s2m.read.r.resp <= axi_resp_okay;
-
-        if is_fabric_gives_value_type(regs(read_idx).reg_type) then
-          axi_lite_s2m.read.r.data(reg_values(0)'range) <= regs_up(read_idx);
-        else
-          axi_lite_s2m.read.r.data(reg_values(0)'range) <= reg_values(read_idx);
-        end if;
-      else
-        axi_lite_s2m.read.r.resp <= axi_resp_slverr;
-        axi_lite_s2m.read.r.data <= (others => '-');
-      end if;
-
       case read_state is
         when ar =>
           axi_lite_s2m.read.ar.ready <= '1';
 
+          read_index <= axi_lite_m2s.read.ar.addr(addr_range);
+
+          -- TODO optimize handshaking
           if axi_lite_m2s.read.ar.valid and axi_lite_s2m.read.ar.ready then
             axi_lite_s2m.read.ar.ready <= '0';
-            read_idx <= decode(axi_lite_m2s.read.ar.addr, addr_and_mask_vec);
 
             read_state <= r;
           end if;
@@ -157,12 +170,46 @@ begin
   write_block : block
     type write_state_t is (aw, w, b);
     signal write_state : write_state_t := aw;
-    signal write_idx : decoded_idx_t := invalid_addr;
-    signal valid_write_address : boolean := false;
+    signal write_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
   begin
 
-    -- An address transaction has occurred and the address points to a valid write register
-    valid_write_address <= write_idx /= invalid_addr and is_write_type(regs(write_idx).reg_type);
+
+    ------------------------------------------------------------------------------
+    set_status : process
+    begin
+      wait until rising_edge(clk);
+
+      reg_was_written <= (others => '0');
+
+      axi_lite_s2m.write.b.resp <= axi_resp_slverr;
+
+      for list_idx in regs'range loop
+        if is_write_pulse_type(regs(list_idx).reg_type) then
+          for bit_idx in 0 to regs(list_idx).width - 1 loop
+            -- Set initial default value.
+            -- If a write occurs to this register, the value will be asserted for one cycle below.
+            reg_values(list_idx)(bit_idx) <= default_values(list_idx)(bit_idx);
+          end loop;
+        end if;
+      end loop;
+
+      for list_idx in regs'range loop
+        if is_write_type(regs(list_idx).reg_type) then
+          if write_index = list_idx then
+            axi_lite_s2m.write.b.resp <= axi_resp_okay;
+            reg_was_written(list_idx) <= axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid;
+          end if;
+
+          for bit_idx in 0 to regs(list_idx).width - 1 loop
+            if write_index = list_idx then
+              if axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid then
+                reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);
+              end if;
+            end if;
+          end loop;
+        end if;
+      end loop;
+    end process;
 
 
     ------------------------------------------------------------------------------
@@ -170,21 +217,9 @@ begin
     begin
       wait until rising_edge(clk);
 
-      reg_was_written <= (others => '0');
-
-      if valid_write_address then
-        axi_lite_s2m.write.b.resp <= axi_resp_okay;
-      else
-        axi_lite_s2m.write.b.resp <= axi_resp_slverr;
+      if axi_lite_m2s.write.aw.valid then
+        write_index <= axi_lite_m2s.write.aw.addr(addr_range);
       end if;
-
-      for list_idx in regs'range loop
-        if is_write_pulse_type(regs(list_idx).reg_type) then
-          -- Set initial default value.
-          -- If a write occurs to this register, the value will be asserted for one cycle below.
-          reg_values(list_idx) <= default_values(list_idx);
-        end if;
-      end loop;
 
       case write_state is
         when aw =>
@@ -194,18 +229,11 @@ begin
             axi_lite_s2m.write.aw.ready <= '0';
             axi_lite_s2m.write.w.ready <= '1';
 
-            write_idx <= decode(axi_lite_m2s.write.aw.addr, addr_and_mask_vec);
-
             write_state <= w;
           end if;
 
         when w =>
           if axi_lite_m2s.write.w.valid and axi_lite_s2m.write.w.ready then
-            if valid_write_address then
-              reg_values(write_idx) <= axi_lite_m2s.write.w.data(reg_values(0)'range);
-              reg_was_written(write_idx) <= '1';
-            end if;
-
             axi_lite_s2m.write.w.ready <= '0';
             axi_lite_s2m.write.b.valid <= '1';
 
