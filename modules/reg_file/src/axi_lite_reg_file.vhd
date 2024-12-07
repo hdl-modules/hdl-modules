@@ -34,9 +34,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.addr_pkg.all;
-
 library axi;
 use axi.axi_pkg.all;
 
