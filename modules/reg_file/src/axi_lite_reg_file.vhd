@@ -83,7 +83,18 @@ architecture a of axi_lite_reg_file is
 
 begin
 
-  regs_down <= reg_values;
+  ------------------------------------------------------------------------------
+  assign_down : process(all)
+  begin
+    -- Assign only the bits that are marked as utilized, so there is no risk of confusion/misuse.
+    for reg_idx in regs'range loop
+      if is_write_type(regs(reg_idx).reg_type) then
+        regs_down(reg_idx)(regs(reg_idx).width - 1 downto 0) <= reg_values(reg_idx)(
+          regs(reg_idx).width - 1 downto 0
+        );
+      end if;
+    end loop;
+  end process;
 
 
   ------------------------------------------------------------------------------
@@ -92,7 +103,6 @@ begin
     signal read_state : read_state_t := ar;
     signal read_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
   begin
-
 
     ------------------------------------------------------------------------------
     set_status : process(all)
