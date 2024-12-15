@@ -13,9 +13,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library axi_lite;
-use axi_lite.axi_lite_pkg.all;
-
 library common;
 use common.types_pkg.to_sl;
 
@@ -24,11 +21,8 @@ use reg_file.reg_operations_pkg.regs_bus_master;
 
 library vunit_lib;
 use vunit_lib.axi_lite_master_pkg.all;
-use vunit_lib.axi_pkg.all;
-use vunit_lib.axi_slave_private_pkg.check_axi_resp;
 use vunit_lib.bus_master_pkg.address_length;
 use vunit_lib.bus_master_pkg.bus_master_t;
-use vunit_lib.bus_master_pkg.byte_enable_length;
 use vunit_lib.bus_master_pkg.data_length;
 use vunit_lib.com_pkg.net;
 use vunit_lib.com_pkg.receive;
