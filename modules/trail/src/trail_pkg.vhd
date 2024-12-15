@@ -42,7 +42,7 @@ package trail_pkg is
   -- The width value below is a max value, implementation should only take into regard the bits
   -- that are actually used.
   constant trail_max_data_width : positive := 64;
-  subtype trail_data_width_t is positive range 1 to trail_max_address_width;
+  subtype trail_data_width_t is positive range 1 to trail_max_data_width;
 
   -- Check that a provided data width is valid to be used with trail.
   -- Return 'true' if everything is okay, otherwise 'false'.
