@@ -16,9 +16,18 @@ class Module(BaseModule):
         self.setup_trail_pkg_tests(vunit_proj=vunit_proj)
 
     def setup_trail_pkg_tests(self, vunit_proj):
-        tb = vunit_proj.library(self.library_name).test_bench("tb_trail_pkg")
-        for test in tb.get_tests("test_slv_conversion"):
-            for data_width in [8, 16, 32, 64]:
-                for address_width in [7, 24, 40]:
-                    generics = dict(address_width=address_width, data_width=data_width)
-                    self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+        tb_trail_pkg = vunit_proj.library(self.library_name).test_bench("tb_trail_pkg")
+        test_slv_conversion = tb_trail_pkg.test("test_slv_conversion")
+
+        tb_trail_pipeline = vunit_proj.library(self.library_name).test_bench("tb_trail_pipeline")
+
+        for data_width in [8, 16, 32, 64]:
+            for address_width in [7, 24, 40]:
+                generics = dict(address_width=address_width, data_width=data_width)
+
+                self.add_vunit_config(
+                    test=test_slv_conversion, generics=generics, set_random_seed=True
+                )
+                self.add_vunit_config(
+                    test=tb_trail_pipeline, generics=generics, set_random_seed=True
+                )
