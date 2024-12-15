@@ -7,17 +7,12 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- TODO
+-- TODO make this a wrapper around trail_bfm_master
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
-library common;
-use common.types_pkg.to_sl;
-
-library reg_file;
-use reg_file.reg_operations_pkg.regs_bus_master;
 
 library vunit_lib;
 use vunit_lib.axi_lite_master_pkg.all;
@@ -33,10 +28,16 @@ use vunit_lib.logger_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
 
+library common;
+use common.types_pkg.to_sl;
+
+library reg_file;
+use reg_file.reg_operations_pkg.regs_bus_master;
+
 use work.trail_pkg.all;
 
 
-entity trail_master is
+entity trail_bfm_master_old is
   generic (
     bus_handle : bus_master_t := regs_bus_master;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
@@ -46,11 +47,11 @@ entity trail_master is
     clk : in std_ulogic;
     --# {{}}
     trail_operation : out trail_operation_t := trail_operation_init;
-    trail_response : trail_response_t
+    trail_response : in trail_response_t
   );
 end entity;
 
-architecture a of trail_master is
+architecture a of trail_bfm_master_old is
 
   constant message_queue : queue_t := new_queue;
   signal idle : boolean := true;
@@ -65,7 +66,7 @@ begin
     generic map (
       address_width => address_length(bus_handle),
       data_width => data_length(bus_handle),
-      logger_name_suffix => " - trail_master" & logger_name_suffix
+      logger_name_suffix => " - trail_bfm_master" & logger_name_suffix
     )
     port map (
       clk => clk,
