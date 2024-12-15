@@ -131,7 +131,11 @@ begin
       if got /= expected then
         failure(
           bus_handle.p_logger,
-          "Got trail 'response.status' "  & describe(got) & "', expected " & describe(expected) & "."
+          "Got trail 'response.status' "
+          & describe(got)
+          & "', expected "
+          & describe(expected)
+          & "."
         );
       end if;
     end;

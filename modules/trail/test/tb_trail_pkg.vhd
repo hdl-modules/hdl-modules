@@ -71,27 +71,6 @@ begin
 
       response_converted := to_slv(data=>response, data_width=>data_width);
       check_equal(response_converted, response_slv);
-
-      -- hi := data_w_converted'high + lo;
-      -- data_w_slv(hi downto lo) := rnd.RandSLV(data_w_converted'length);
-      -- data_w := to_axi_m2s_w(data_w_slv(hi downto lo), data_width=>data_width, id_width=>id_width);
-      -- data_w_converted := to_slv(data_w, data_width=>data_width, id_width=>id_width);
-
-      -- check_equal(data_w_converted, data_w_slv(hi downto lo));
-
-      -- hi := data_r_converted'high + lo;
-      -- data_r_slv(hi downto lo) := rnd.RandSLV(data_r_converted'length);
-      -- data_r := to_axi_s2m_r(data_r_slv(hi downto lo), data_width=>data_width, id_width=>id_width);
-      -- data_r_converted := to_slv(data_r, data_width=>data_width, id_width=>id_width);
-
-      -- check_equal(data_r_converted, data_r_slv(hi downto lo));
-
-      -- hi := data_b_converted'high + lo;
-      -- data_b_slv(hi downto lo) := rnd.RandSLV(data_b_converted'length);
-      -- data_b := to_axi_s2m_b(data_b_slv(hi downto lo), id_width=>id_width);
-      -- data_b_converted := to_slv(data_b, id_width=>id_width);
-
-      -- check_equal(data_b_converted, data_b_slv(hi downto lo));
     end procedure;
 
   begin

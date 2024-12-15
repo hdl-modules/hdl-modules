@@ -118,7 +118,9 @@ package trail_pkg is
 
   type trail_response_vec_t is array (integer range <>) of trail_response_t;
 
-  function to_slv(data : trail_response_t; data_width : trail_data_width_t) return std_ulogic_vector;
+  function to_slv(
+    data : trail_response_t; data_width : trail_data_width_t
+  ) return std_ulogic_vector;
 
   function to_trail_response(
     data : std_ulogic_vector; data_width : trail_data_width_t; enable : std_ulogic
