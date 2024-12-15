@@ -64,19 +64,13 @@ architecture a of trail_master is
   subtype address_range is natural range address_length(bus_handle) - 1 downto 0;
   subtype data_range is natural range data_length(bus_handle) - 1 downto 0;
 
-  -- signal araddr, awaddr : std_ulogic_vector(address_length(bus_handle) - 1 downto 0) := (
-  --   others => '0'
-  -- );
-
-  -- constant data_width : positive := data_length(bus_handle);
-  -- signal rdata, wdata : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
-  -- signal wstrb : std_ulogic_vector(wdata'length / 8 - 1 downto 0) := (others => '0');
-
 begin
 
   ------------------------------------------------------------------------------
   trail_protocol_checker_inst : entity work.trail_protocol_checker
     generic map (
+      address_width => address_length(bus_handle),
+      data_width => data_length(bus_handle),
       logger_name_suffix => " - trail_master" & logger_name_suffix
     )
     port map (
