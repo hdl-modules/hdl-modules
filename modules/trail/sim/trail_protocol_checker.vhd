@@ -13,26 +13,16 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library axi_lite;
-use axi_lite.axi_lite_pkg.all;
-
 library common;
 use common.types_pkg.is_01;
-
-library reg_file;
-use reg_file.reg_operations_pkg.regs_bus_master;
-
-library vunit_lib;
-use vunit_lib.bus_master_pkg.bus_master_t;
-use vunit_lib.bus_master_pkg.address_length;
-use vunit_lib.bus_master_pkg.data_length;
 
 use work.trail_pkg.all;
 
 
 entity trail_protocol_checker is
   generic (
-    bus_handle : bus_master_t := regs_bus_master;
+    address_width : trail_address_width_t;
+    data_width : trail_data_width_t;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
@@ -45,9 +35,6 @@ entity trail_protocol_checker is
 end entity;
 
 architecture a of trail_protocol_checker is
-
-  constant address_width : trail_address_width_t := address_length(bus_handle);
-  constant data_width : trail_data_width_t := data_length(bus_handle);
 
   constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
     data_width=>data_width
@@ -62,9 +49,18 @@ architecture a of trail_protocol_checker is
 begin
 
   ------------------------------------------------------------------------------
-  assert sanity_check_trail_data_width(data_width=>data_width)
-    report "Invalid trail data width, see printout above."
-    severity failure;
+  data_width_block : block
+    constant data_width_error_message : string := (
+      base_error_message & "Invalid trail data width, see printout above."
+    );
+  begin
+
+    ------------------------------------------------------------------------------
+    assert sanity_check_trail_data_width(data_width=>data_width)
+      report data_width_error_message
+      severity failure;
+
+  end block;
 
 
   ------------------------------------------------------------------------------
@@ -154,118 +150,123 @@ begin
 
   ------------------------------------------------------------------------------
   handshaking_block : block
-    signal num_operation, num_response : natural := 0;
+    type state_t is (wait_for_operation, wait_for_response);
+    signal state : state_t := wait_for_operation;
   begin
 
     ------------------------------------------------------------------------------
-    count_operation : process
-    begin
-      wait until trail_operation.enable = '1' and rising_edge(clk);
-
-      num_operation <= num_operation + 1;
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    count_response : process
-    begin
-      wait until trail_response.enable = '1' and rising_edge(clk);
-
-      num_response <= num_response + 1;
-    end process;
-
-
-    ------------------------------------------------------------------------------
     not_out_of_sync_check : process
+      constant operation_error_message : string := (
+        base_error_message & "Got 'response' before a corresponding 'operation'."
+      );
+      constant response_error_message : string := (
+        base_error_message
+        & "Got 'operation' while waiting for "
+        & "'response' to a previous 'operation'."
+      );
+      constant at_the_same_time_error_message : string := (
+        base_error_message & "Got 'operation' and 'response' at the same time."
+      );
     begin
       wait until rising_edge(clk);
 
-      assert num_operation >= num_response
-        report base_error_message & "Got 'response' before 'operation'.";
+      case state is
+        when wait_for_operation =>
+          assert not trail_response.enable report operation_error_message;
 
-      assert num_operation <= num_response + 1
-        report base_error_message & "Got new 'operation' before previous 'response'.";
+          if trail_operation.enable then
+            state <= wait_for_response;
+          end if;
+
+        when wait_for_response =>
+          assert not trail_operation.enable report response_error_message;
+
+          if trail_response.enable then
+            state <= wait_for_operation;
+          end if;
+
+      end case;
 
       assert not (trail_operation.enable and trail_response.enable)
-        report base_error_message & "Got 'operation' and 'response' at the same time.";
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    enabled_operation_does_not_change_until_response_check : process
-      constant address_error_message : string := (
-        base_error_message & "enabled 'operation.address' changed value before 'response'."
-      );
-      constant write_enable_error_message : string := (
-        base_error_message & "enabled 'operation.write_enable' changed value before 'response'."
-      );
-      constant write_data_error_message : string := (
-        base_error_message & "enabled 'operation.write_data' changed value before 'response'."
-      );
-
-      variable expected_operation : trail_operation_t := trail_operation_init;
-    begin
-      wait until trail_operation.enable = '1' and rising_edge(clk);
-
-      expected_operation := trail_operation;
-
-      check_loop : loop
-        wait until rising_edge(clk);
-
-        assert (
-            trail_operation.address(aligned_address_range)
-            = expected_operation.address(aligned_address_range)
-          )
-          report address_error_message;
-
-        assert trail_operation.write_enable = expected_operation.write_enable
-          report write_enable_error_message;
-
-        if trail_operation.write_enable then
-          assert trail_operation.write_data(data_range) = expected_operation.write_data(data_range)
-            report write_data_error_message;
-        end if;
-
-        -- When a 'response' comes, we should stop checking.
-        if trail_response.enable then
-          exit check_loop;
-        end if;
-      end loop;
-    end process;
-
-
-    ------------------------------------------------------------------------------
-    enabled_response_does_not_change_until_next_operation_check : process
-      constant status_error_message : string := (
-        base_error_message & "enabled 'response.status' changed value before next 'operation'."
-      );
-      constant read_data_error_message : string := (
-        base_error_message & "enabled 'response.read_data' changed value before 'operation'."
-      );
-
-      variable expected_response : trail_response_t := trail_response_init;
-    begin
-      wait until trail_response.enable = '1' and rising_edge(clk);
-
-      expected_response := trail_response;
-
-      check_loop : loop
-        wait until rising_edge(clk);
-
-        assert trail_response.status = expected_response.status report status_error_message;
-
-        if not trail_operation.write_enable then
-          assert trail_response.read_data(data_range) = expected_response.read_data(data_range)
-            report read_data_error_message;
-        end if;
-
-        -- When new 'operation' comes, we should stop checking.
-        if trail_operation.enable then
-          exit check_loop;
-        end if;
-      end loop;
+        report at_the_same_time_error_message;
     end process;
 
   end block;
+
+
+  ------------------------------------------------------------------------------
+  enabled_operation_does_not_change_until_response_check : process
+    constant address_error_message : string := (
+      base_error_message & "Enabled 'operation.address' changed value before 'response'."
+    );
+    constant write_enable_error_message : string := (
+      base_error_message & "Enabled 'operation.write_enable' changed value before 'response'."
+    );
+    constant write_data_error_message : string := (
+      base_error_message & "Enabled 'operation.write_data' changed value before 'response'."
+    );
+
+    variable expected_operation : trail_operation_t := trail_operation_init;
+  begin
+    wait until trail_operation.enable = '1' and rising_edge(clk);
+
+    expected_operation := trail_operation;
+
+    check_loop : loop
+      wait until rising_edge(clk);
+
+      assert (
+          trail_operation.address(aligned_address_range)
+          = expected_operation.address(aligned_address_range)
+        )
+        report address_error_message;
+
+      assert trail_operation.write_enable = expected_operation.write_enable
+        report write_enable_error_message;
+
+      if trail_operation.write_enable then
+        assert trail_operation.write_data(data_range) = expected_operation.write_data(data_range)
+          report write_data_error_message;
+      end if;
+
+      -- When a 'response' comes, we should stop checking.
+      if trail_response.enable then
+        exit check_loop;
+      end if;
+    end loop;
+  end process;
+
+
+  ------------------------------------------------------------------------------
+  enabled_response_does_not_change_until_next_operation_check : process
+    constant status_error_message : string := (
+      base_error_message & "Enabled 'response.status' changed value before next 'operation'."
+    );
+    constant read_data_error_message : string := (
+      base_error_message & "Enabled 'response.read_data' changed value before 'operation'."
+    );
+
+    variable expected_response : trail_response_t := trail_response_init;
+  begin
+    wait until trail_response.enable = '1' and rising_edge(clk);
+
+    expected_response := trail_response;
+
+    check_loop : loop
+      wait until rising_edge(clk);
+
+      assert trail_response.status = expected_response.status report status_error_message;
+
+      if not trail_operation.write_enable then
+        assert trail_response.read_data(data_range) = expected_response.read_data(data_range)
+          report read_data_error_message;
+      end if;
+
+      -- When new 'operation' comes, we should stop checking.
+      if trail_operation.enable then
+        exit check_loop;
+      end if;
+    end loop;
+  end process;
 
 end architecture;
