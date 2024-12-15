@@ -124,4 +124,24 @@ class Module(BaseModule):
             )
         )
 
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_lite_pipeline",
+                modules=modules,
+                part=part,
+                top="axi_lite_pipeline",
+                generics={
+                    "data_width": 32,
+                    "addr_width": 20,
+                    "full_throughput": False,
+                    "pipeline_control_signals": True,
+                },
+                build_result_checkers=[
+                    TotalLuts(EqualTo(5)),
+                    Ffs(EqualTo(122)),
+                    MaximumLogicLevel(EqualTo(2)),
+                ],
+            )
+        )
+
         return projects

@@ -111,6 +111,29 @@ begin
 
 
   ------------------------------------------------------------------------------
+  operation_address_aligned_when_enabled_gen : if num_unaligned_address_bits > 0 generate
+    subtype address_unaligned_range is natural range num_unaligned_address_bits - 1 downto 0;
+    constant address_unaligned_error_message : string := (
+      base_error_message
+      & "'operation.address' is not aligned with "
+      & to_string(data_width / 8)
+      & "-byte data."
+    );
+  begin
+
+    ------------------------------------------------------------------------------
+    operation_address_aligned_when_enabled_check : process
+    begin
+      wait until trail_operation.enable = '1' and rising_edge(clk);
+
+      assert trail_operation.address(address_unaligned_range) = 0
+        report address_unaligned_error_message;
+    end process;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   response_enable_well_defined_block : block
     constant error_message : string := (
       base_error_message & "'response.enable' has undefined value."
@@ -140,7 +163,9 @@ begin
     begin
       wait until trail_response.enable = '1' and rising_edge(clk);
 
-      if not trail_operation.write_enable then
+      if (
+        trail_operation.write_enable = '0' and trail_response.status = trail_response_status_okay
+      ) then
         assert is_01(trail_response.read_data(data_range)) report read_data_error_message;
       end if;
     end process;

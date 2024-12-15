@@ -212,7 +212,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  trail_master_inst : entity trail.trail_master
+  trail_bfm_master_inst : entity trail.trail_bfm_master_old
     port map (
       clk => clk,
       --
