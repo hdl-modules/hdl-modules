@@ -73,5 +73,15 @@ class Module(BaseModule):
             ),
             ffs=2 * (16 + 1),
         )
+        add_trail_pipeline(
+            generics=dict(
+                address_width=20,
+                data_width=32,
+                pipeline_operation_address=True,
+                pipeline_operation_write_enable=True,
+                pipeline_response_read_data=True,
+            ),
+            ffs=53,
+        )
 
         return projects
