@@ -31,6 +31,7 @@ entity tb_trail_pkg is
 end entity;
 
 architecture tb of tb_trail_pkg is
+
 begin
 
   ------------------------------------------------------------------------------
