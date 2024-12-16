@@ -20,8 +20,6 @@ use vunit_lib.run_pkg.all;
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
-library bfm;
-
 library common;
 use common.addr_pkg.all;
 use common.types_pkg.all;
