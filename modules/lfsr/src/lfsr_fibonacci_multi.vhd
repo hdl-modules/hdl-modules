@@ -93,7 +93,7 @@
 --   state[1] = state[13] XOR state[12]
 --
 -- and the ``state[15:13]`` signal can be used as output.
--- This is want this entity implements, in a generic fashion, by generalizing the shift operations
+-- This is what this entity implements, in a generic fashion, by generalizing the shift operations
 -- outlined above.
 -- For any LFSR length and any step count.
 --
