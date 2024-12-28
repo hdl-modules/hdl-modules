@@ -45,6 +45,7 @@ package trail_sim_pkg is
   procedure get_random_trail_bfm_command(
     constant address_width : trail_address_width_t;
     constant data_width : trail_data_width_t;
+    constant include_error : boolean := true;
     rnd : inout RandomPType;
     command : out trail_bfm_command_t
   );
@@ -72,6 +73,7 @@ package body trail_sim_pkg is
   procedure get_random_trail_bfm_command(
     constant address_width : trail_address_width_t;
     constant data_width : trail_data_width_t;
+    constant include_error : boolean := true;
     rnd : inout RandomPType;
     command : out trail_bfm_command_t
   ) is
@@ -87,7 +89,11 @@ package body trail_sim_pkg is
 
     result.data := rnd.RandSlv(result.data'length);
 
-    result.expect_error := to_sl(rnd.DistBool(Weight=>(false=>9, true=>1)));
+    if include_error then
+      result.expect_error := to_sl(rnd.DistBool(Weight=>(false=>9, true=>1)));
+    else
+      result.expect_error := '0';
+    end if;
 
     command := result;
   end procedure;
