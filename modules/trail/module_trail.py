@@ -47,6 +47,10 @@ class Module(BaseModule):
                         test=tb_axi_lite_to_trail, generics=generics, set_random_seed=711
                     )
 
+        tb_trail_splitter = vunit_proj.library(self.library_name).test_bench("tb_trail_splitter")
+        for _ in range(4):
+            self.add_vunit_config(test=tb_trail_splitter, set_random_seed=True)
+
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
@@ -62,13 +66,13 @@ class Module(BaseModule):
         )
         part = "xc7z020clg400-1"
 
-        def add(name: str, generics: dict, luts: int, ffs: int):
+        def add(name: str, generics: dict, luts: int, ffs: int, top: str = ""):
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(name=name, generics=generics),
                     modules=all_modules,
                     part=part,
-                    top=name,
+                    top=name if top == "" else top,
                     generics=generics,
                     build_result_checkers=[TotalLuts(EqualTo(luts)), Ffs(EqualTo(ffs))],
                 )
@@ -76,6 +80,15 @@ class Module(BaseModule):
 
         def add_trail_pipeline(generics: dict[str, bool], ffs: int):
             add(name="trail_pipeline", generics=generics, luts=0, ffs=ffs)
+
+        def add_trail_splitter(generics: dict[str, bool], luts: int):
+            add(
+                name="trail_splitter",
+                generics=generics,
+                luts=luts,
+                ffs=5,
+                top="trail_splitter_netlist_build_wrapper",
+            )
 
         add_trail_pipeline(generics=dict(address_width=38, data_width=64), ffs=0)
         add_trail_pipeline(
@@ -114,5 +127,8 @@ class Module(BaseModule):
             luts=34,
             ffs=106,
         )
+
+        add_trail_splitter(generics=dict(address_width=32, data_width=64), luts=355)
+        add_trail_splitter(generics=dict(address_width=24, data_width=32), luts=195)
 
         return projects
