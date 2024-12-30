@@ -6,7 +6,65 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- TODO
+-- Pipelining of a TRAIL response, to be used when build timing issues require a decrease in
+-- critical path and/or fanout.
+-- Use the ``pipeline_*`` generics to enable pipelining of the fields that are causing
+-- timing issues.
+--
+-- Pipelining of a TRAIL response is incredibly resource-efficient due
+-- to :ref:`rule 3 <trail_rules>`.
+-- We only have to pipeline ``enable`` along with any payload fields that have timing issues.
+-- All other fields can be left as a pass-through.
+-- This can save a lot of resources compared to a full pipeline, since it is commonly only a
+-- specific field that is causing issues.
+--
+-- Note that if ``pipeline_*`` is activated for any payload, pipelining of the ``enable``
+-- signal is also activated internally.
+-- Regardless of the ``pipeline_enable`` generic.
+--
+--
+-- Resource utilization
+-- ____________________
+--
+-- This entity consumes one FF for each bit in the fields that are pipelined.
+-- See the :ref:`resource utilization <trail.trail_pipeline.resource_utilization>`
+-- of :ref:`trail.trail_pipeline` for some actual numbers.
+--
+--
+-- Examples
+-- ________
+--
+-- The example below shows first a typical ``input`` TRAIL response.
+--
+-- Secondly it shows what happens when only ``pipeline_enable`` is activated.
+-- I.e. how you would parameterize if you have timing issues with the ``enable`` signal.
+--
+-- Lastly it shows what happens when ``pipeline_read_data`` (and possibly ``pipeline_enable``)
+-- is activated.
+-- I.e. how you would parameterize if you have timing issues with the ``read_data`` signal.
+--
+-- .. wavedrom::
+--
+--   {
+--     "signal": [
+--       { "name": "clk",          "wave": "p...." },
+--       {},
+--       { "name": "enable",       "wave": "010.." },
+--       { "name": "status",       "wave": "x6..." },
+--       { "name": "read_data",    "wave": "x6..." },
+--       {},
+--       { "name": "enable",       "wave": "0.10." },
+--       { "name": "status",       "wave": "x6..." },
+--       { "name": "read_data",    "wave": "x6..." },
+--       {},
+--       { "name": "enable",       "wave": "0.10." },
+--       { "name": "status",       "wave": "x6..." },
+--       { "name": "read_data",    "wave": "xx7.." },
+--     ],
+--     "foot": {
+--       "text": "TRAIL response pipelining."
+--     },
+--   }
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
