@@ -209,4 +209,18 @@ class Module(BaseModule):
                 )
             )
 
+        for data_width in [32, 64]:
+            add_config(
+                Config(
+                    name="resync_rarely_valid",
+                    data_width=data_width,
+                    lut=2,
+                    ff=2 * data_width + 5,
+                    logic=2,
+                )
+            )
+
+        add_config(Config(name="resync_rarely_valid_lutram", data_width=32, lut=26, ff=4, logic=2))
+        add_config(Config(name="resync_rarely_valid_lutram", data_width=64, lut=46, ff=4, logic=2))
+
         return projects
