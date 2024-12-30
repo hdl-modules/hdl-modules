@@ -62,6 +62,21 @@ class Module(BaseModule):
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_lite_cdc",
+                modules=modules,
+                part=part,
+                top="axi_lite_cdc",
+                generics=dict(data_width=32, addr_width=24),
+                build_result_checkers=[
+                    TotalLuts(EqualTo(199)),
+                    Ffs(EqualTo(290)),
+                    MaximumLogicLevel(EqualTo(4)),
+                ],
+            )
+        )
+
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
                 name=f"{self.library_name}.axi_lite_mux",
                 modules=modules,
                 part=part,

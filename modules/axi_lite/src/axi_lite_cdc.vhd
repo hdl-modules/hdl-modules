@@ -34,7 +34,7 @@ entity axi_lite_cdc is
   generic (
     data_width : positive range 1 to axi_lite_data_sz;
     addr_width : positive range 1 to axi_a_addr_sz;
-    fifo_depth : positive := 16;
+    fifo_depth : positive := 8;
     ram_type : ram_style_t := ram_style_auto
   );
   port (
