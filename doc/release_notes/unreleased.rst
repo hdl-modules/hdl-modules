@@ -3,6 +3,7 @@ Added
 * Add :ref:`module_simple_dma`.
   This module is in a beta state so expect changes in the future.
 * Add :ref:`resync.resync_sticky_level`.
+* Add :ref:`resync.resync_rarely_valid` and :ref:`resync.resync_rarely_valid_lutram`.
 
 Breaking changes
 
