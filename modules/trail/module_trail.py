@@ -69,7 +69,7 @@ class Module(BaseModule):
         def add(name: str, generics: dict, luts: int, ffs: int, top: str = ""):
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(name=name, generics=generics),
+                    name=self.test_case_name(name=f"{self.library_name}.{name}", generics=generics),
                     modules=all_modules,
                     part=part,
                     top=name if top == "" else top,
