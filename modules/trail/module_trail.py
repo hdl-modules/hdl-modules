@@ -18,7 +18,10 @@ class Module(BaseModule):
         self.setup_trail_pkg_tests(vunit_proj=vunit_proj)
 
     def setup_trail_pkg_tests(self, vunit_proj):
+        tb_trail_cdc = vunit_proj.library(self.library_name).test_bench("tb_trail_cdc")
+
         tb_trail_pkg = vunit_proj.library(self.library_name).test_bench("tb_trail_pkg")
+
         test_slv_conversion = tb_trail_pkg.test("test_slv_conversion")
 
         tb_trail_pipeline = vunit_proj.library(self.library_name).test_bench("tb_trail_pipeline")
@@ -38,14 +41,26 @@ class Module(BaseModule):
                     test=tb_trail_pipeline, generics=generics, set_random_seed=True
                 )
 
+                # FIX!!! Does not need to be run for all combinations of address and data width.
+                for use_lutram in [True, False]:
+                    # FIX!!! this does not need to be tested here.
+                    # Should be done in tb_resync_rarely_valid_lutram.
+                    for use_lutram_output_register in [True, False]:
+                        self.add_vunit_config(
+                            test=tb_trail_cdc,
+                            generics=dict(
+                                use_lutram=use_lutram,
+                                use_lutram_output_register=use_lutram_output_register,
+                                **generics,
+                            ),
+                            set_random_seed=True,
+                        )
+
                 if data_width in [32, 64] and address_width < 32:
                     for _ in range(4):
                         self.add_vunit_config(
                             test=tb_axi_lite_to_trail, generics=generics, set_random_seed=True
                         )
-                    self.add_vunit_config(
-                        test=tb_axi_lite_to_trail, generics=generics, set_random_seed=711
-                    )
 
         tb_trail_splitter = vunit_proj.library(self.library_name).test_bench("tb_trail_splitter")
         for _ in range(4):
@@ -62,7 +77,7 @@ class Module(BaseModule):
 
         projects = []
         all_modules = get_hdl_modules(
-            names_include=[self.name, "axi", "axi_lite", "common", "math"]
+            names_include=[self.name, "axi", "axi_lite", "common", "math", "resync"]
         )
         part = "xc7z020clg400-1"
 
@@ -130,5 +145,46 @@ class Module(BaseModule):
 
         add_trail_splitter(generics=dict(address_width=32, data_width=64), luts=355)
         add_trail_splitter(generics=dict(address_width=24, data_width=32), luts=195)
+
+        add(
+            name="trail_cdc",
+            generics=dict(address_width=24, data_width=32, use_lutram=False),
+            luts=4,
+            ffs=186,
+        )
+        add(
+            name="trail_cdc",
+            generics=dict(address_width=35, data_width=64, use_lutram=False),
+            luts=4,
+            ffs=334,
+        )
+        add(
+            name="trail_cdc",
+            generics=dict(address_width=24, data_width=32, use_lutram=True),
+            luts=92,
+            ffs=8,
+        )
+        add(
+            name="trail_cdc",
+            generics=dict(address_width=35, data_width=64, use_lutram=True),
+            luts=166,
+            ffs=8,
+        )
+        add(
+            name="trail_cdc",
+            generics=dict(
+                address_width=24, data_width=32, use_lutram=True, use_lutram_output_register=True
+            ),
+            luts=92,
+            ffs=98,
+        )
+        add(
+            name="trail_cdc",
+            generics=dict(
+                address_width=35, data_width=64, use_lutram=True, use_lutram_output_register=True
+            ),
+            luts=166,
+            ffs=172,
+        )
 
         return projects
