@@ -36,7 +36,7 @@ package axi_lite_pkg is
   end record;
 
   constant axi_lite_m2s_a_init : axi_lite_m2s_a_t := (valid => '0', addr => (others => '0'));
-  function axi_lite_m2s_a_sz(addr_width : positive range 1 to axi_a_addr_sz) return positive;
+  function axi_lite_m2s_a_sz(addr_width : axi_addr_width_t) return positive;
 
   -- Record for the AR/AW signals in the slave-to-master direction.
   type axi_lite_s2m_a_t is record
@@ -227,7 +227,7 @@ end;
 package body axi_lite_pkg is
 
   ------------------------------------------------------------------------------
-  function axi_lite_m2s_a_sz(addr_width : positive range 1 to axi_a_addr_sz) return positive is
+  function axi_lite_m2s_a_sz(addr_width : axi_addr_width_t) return positive is
   begin
     -- Excluded member: valid.
     return addr_width;

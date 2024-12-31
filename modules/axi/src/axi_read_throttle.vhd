@@ -80,8 +80,8 @@ entity axi_read_throttle is
   generic(
     data_fifo_depth : positive;
     max_burst_length_beats : positive;
-    id_width : natural range 0 to axi_id_sz;
-    addr_width : positive range 1 to axi_a_addr_sz;
+    id_width : axi_id_width_t;
+    addr_width : axi_addr_width_t;
     -- The AR channel is pipelined one step to improve poor timing, mainly on ARVALID.
     -- If this generic is set to false, the pipelining will be of a simpler model that has lower
     -- logic footprint, but only allow a transaction every third clock cycle. If it is set to true,

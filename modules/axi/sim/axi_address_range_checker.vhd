@@ -24,9 +24,9 @@ use axi.axi_pkg.all;
 
 entity axi_address_range_checker is
   generic (
-    address_width : positive range 1 to axi_a_addr_sz;
-    id_width : natural range 0 to axi_id_sz;
-    data_width : positive range 8 to axi_data_sz;
+    address_width : axi_addr_width_t;
+    id_width : axi_id_width_t;
+    data_width : axi_data_width_t;
     enable_axi3 : boolean;
     supports_narrow_burst : boolean
   );

@@ -28,7 +28,7 @@ use work.axi_pkg.all;
 
 entity axi_b_fifo is
   generic (
-    id_width : natural range 0 to axi_id_sz;
+    id_width : axi_id_width_t;
     asynchronous : boolean;
     depth : natural := 16;
     ram_type : ram_style_t := ram_style_auto

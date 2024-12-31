@@ -34,14 +34,14 @@ use common.types_pkg.all;
 entity axi_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 8 to axi_data_sz;
+    data_width : axi_data_width_t;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural range 0 to axi_id_sz;
+    id_width : axi_id_width_t;
     -- Optionally limit the address width.
     -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
     -- converts the field to an integer.
-    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz;
+    address_width : axi_addr_width_t := axi_a_addr_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
     w_fifo_depth : natural := 0;

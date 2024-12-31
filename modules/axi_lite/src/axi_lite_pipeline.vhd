@@ -30,7 +30,7 @@ use work.axi_lite_pkg.all;
 entity axi_lite_pipeline is
   generic (
     data_width : positive range 1 to axi_lite_data_sz;
-    addr_width : positive range 1 to axi_a_addr_sz;
+    addr_width : axi_addr_width_t;
     -- Settings to the handshake_pipeline blocks. These default settings (the same as
     -- handshake_pipeline's defaults) give full throughput and the lowest logic depth.
     -- They can be changed from default in order to decrease logic utilization.

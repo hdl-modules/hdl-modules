@@ -38,12 +38,12 @@ entity simple_dma_core is
   generic (
     -- The width of the AXI AWADDR field as well as all the ring buffer addresses
     -- handled internally.
-    address_width : positive range 1 to axi_a_addr_sz;
+    address_width : axi_addr_width_t;
     -- The data width of the 'stream' interface.
-    stream_data_width : positive range 8 to axi_data_sz;
+    stream_data_width : axi_data_width_t;
     -- The width of the AXI WDATA field.
     -- Must be the native width of the AXI port, we do not support narrow bursts.
-    axi_data_width : positive range 8 to axi_data_sz;
+    axi_data_width : axi_data_width_t;
     -- The number of beats on the 'stream' interface that are accumulated before
     -- being written to memory.
     -- Increase this number to improve memory performance.

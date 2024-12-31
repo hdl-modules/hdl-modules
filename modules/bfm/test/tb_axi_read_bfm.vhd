@@ -32,7 +32,7 @@ use work.axi_bfm_pkg.all;
 
 entity tb_axi_read_bfm is
   generic (
-    data_width : positive range 8 to axi_data_sz;
+    data_width : axi_data_width_t;
     seed : natural;
     runner_cfg : string
   );

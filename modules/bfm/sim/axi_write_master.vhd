@@ -64,9 +64,9 @@ use work.axi_bfm_pkg.all;
 entity axi_write_master is
   generic (
     -- The desired width of the 'AWID' and 'BID' signals, as well as 'WID' if using AXI3.
-    id_width : natural range 0 to axi_id_sz;
+    id_width : axi_id_width_t;
     -- The desired width of the 'WDATA' signal.
-    data_width : positive range 8 to axi_data_sz;
+    data_width : axi_data_width_t;
     -- Push jobs (SLV of axi_master_bfm_job_t) to this queue. Each job pushed will result in an
     -- AW transaction and eventually a B check.
     job_queue : queue_t;

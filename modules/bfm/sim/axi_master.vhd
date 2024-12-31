@@ -49,7 +49,7 @@ entity axi_master is
     bus_handle : bus_master_t;
     -- Width of the ARID/RID/AWID/BID fields.
     -- Only used for protocol checking of the R and B channels.
-    id_width : natural range 0 to axi_id_sz := 0;
+    id_width : axi_id_width_t := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
