@@ -106,7 +106,7 @@ architecture a of axi_read_master is
 
   constant bytes_per_beat : positive := data_width / 8;
 
-  constant r_id_queue : queue_t := new_queue;
+  constant r_id_queue, r_resp_queue : queue_t := new_queue;
 
 begin
 
@@ -141,6 +141,7 @@ begin
       job := to_axi_bfm_job(job_slv);
 
       push(r_id_queue, job.id);
+      push(r_resp_queue, job.expected_response);
 
       id_target <= to_unsigned(job.id, id_target'length);
       addr_target <= to_unsigned(job.address, addr_target'length);
@@ -194,17 +195,25 @@ begin
       constant error_message_base : string := (
         "axi_read_master - R"  & logger_name_suffix & ": 'RRESP' check in burst_idx="
       );
+
+      variable is_first_beat : std_ulogic := '1';
+      variable expected_response : axi_resp_t := axi_resp_okay;
     begin
       wait until axi_read_m2s.r.ready and axi_read_s2m.r.valid and rising_edge(clk);
 
-      -- Check response code OKAY (everything else is checked in the axi_stream_slave)
+      if is_first_beat then
+        expected_response := pop(r_resp_queue);
+      end if;
+
+      -- Check response code only (everything else is checked in the axi_stream_slave)
       check_equal(
         axi_read_s2m.r.resp,
-        axi_resp_okay,
+        expected_response,
         error_message_base & to_string(num_bursts_checked)
       );
 
       num_bursts_checked <= num_bursts_checked + to_int(axi_read_s2m.r.last);
+      is_first_beat := axi_read_s2m.r.last;
     end process;
 
 
