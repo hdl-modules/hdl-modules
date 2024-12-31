@@ -26,9 +26,7 @@ class Module(BaseModule):
 
         tb_trail_pipeline = vunit_proj.library(self.library_name).test_bench("tb_trail_pipeline")
 
-        tb_axi_lite_to_trail = vunit_proj.library(self.library_name).test_bench(
-            "tb_axi_lite_to_trail"
-        )
+        tb_axi_to_trail = vunit_proj.library(self.library_name).test_bench("tb_axi_to_trail")
 
         for data_width in [8, 16, 32, 64]:
             for address_width in [7, 24, 40]:
@@ -57,9 +55,16 @@ class Module(BaseModule):
                         )
 
                 if data_width in [32, 64] and address_width < 32:
-                    for _ in range(4):
+                    for test_axi_lite in [True, False]:
+                        generics["test_axi_lite"] = test_axi_lite
+
                         self.add_vunit_config(
-                            test=tb_axi_lite_to_trail, generics=generics, set_random_seed=True
+                            test=tb_axi_to_trail, generics=generics, set_random_seed=711
+                        )
+
+                        # for _ in range(4):
+                        self.add_vunit_config(
+                            test=tb_axi_to_trail, generics=generics, set_random_seed=True
                         )
 
         tb_trail_splitter = vunit_proj.library(self.library_name).test_bench("tb_trail_splitter")
