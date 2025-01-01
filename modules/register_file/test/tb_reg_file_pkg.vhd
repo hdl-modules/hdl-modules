@@ -32,22 +32,22 @@ begin
 
   main : process
     constant regs_3 : reg_definition_vec_t(0 to 3 - 1) := (
-      (idx => 0, reg_type => r_w),
-      (idx => 1, reg_type => r_w),
-      (idx => 2, reg_type => r_w)
+      (idx => 0, reg_type => r_w, width=>32),
+      (idx => 1, reg_type => r_w, width=>32),
+      (idx => 2, reg_type => r_w, width=>32)
     );
     constant regs_4 : reg_definition_vec_t(0 to 4 - 1) := (
-      (idx => 0, reg_type => r_w),
-      (idx => 1, reg_type => r_w),
-      (idx => 2, reg_type => r_w),
-      (idx => 3, reg_type => r_w)
+      (idx => 0, reg_type => r_w, width=>32),
+      (idx => 1, reg_type => r_w, width=>32),
+      (idx => 2, reg_type => r_w, width=>32),
+      (idx => 3, reg_type => r_w, width=>32)
     );
     constant regs_5 : reg_definition_vec_t(0 to 5 - 1) := (
-      (idx => 0, reg_type => r_w),
-      (idx => 1, reg_type => r_w),
-      (idx => 2, reg_type => r_w),
-      (idx => 3, reg_type => r_w),
-      (idx => 4, reg_type => r_w)
+      (idx => 0, reg_type => r_w, width=>32),
+      (idx => 1, reg_type => r_w, width=>32),
+      (idx => 2, reg_type => r_w, width=>32),
+      (idx => 3, reg_type => r_w, width=>32),
+      (idx => 4, reg_type => r_w, width=>32)
     );
     variable expected : addr_t;
   begin

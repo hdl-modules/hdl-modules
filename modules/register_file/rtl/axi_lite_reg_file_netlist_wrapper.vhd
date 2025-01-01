@@ -7,6 +7,84 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Wrapper for netlist build, that sets an appropriate generic.
+--
+-- main:
+-- {
+--   "Total LUTs": 202,
+--   "Logic LUTs": 202,
+--   "LUTRAMs": 0,
+--   "SRLs": 0,
+--   "FFs": 447,
+--   "RAMB36": 0,
+--   "RAMB18": 0,
+--   "DSP Blocks": 0
+-- }
+-- Logic level distribution:
+-- +-----------------+-------------+-----+-----+-----+----+
+-- | End Point Clock | Requirement |  1  |  2  |  3  |  4 |
+-- +-----------------+-------------+-----+-----+-----+----+
+-- | (none)          | 0.000ns     | 466 | 102 | 400 | 32 |
+-- +-----------------+-------------+-----+-----+-----+----+
+--
+-- After first, quite shitty optimization:
+-- {
+--   "Total LUTs": 158,
+--   "Logic LUTs": 158,
+--   "LUTRAMs": 0,
+--   "SRLs": 0,
+--   "FFs": 329,
+--   "RAMB36": 0,
+--   "RAMB18": 0,
+--   "DSP Blocks": 0
+-- }
+-- Logic level distribution:
+-- +-----------------+-------------+-----+-----+----+-----+----+
+-- | End Point Clock | Requirement |  0  |  1  |  2 |  3  |  4 |
+-- +-----------------+-------------+-----+-----+----+-----+----+
+-- | (none)          | 0.000ns     | 211 | 332 | 84 | 294 | 17 |
+-- +-----------------+-------------+-----+-----+----+-----+----+
+--
+-- After second optimization:
+-- Size of reg_file.axi_lite_reg_file after synthesis:
+-- {
+--   "Total LUTs": 173,
+--   "Logic LUTs": 173,
+--   "LUTRAMs": 0,
+--   "SRLs": 0,
+--   "FFs": 338,
+--   "RAMB36": 0,
+--   "RAMB18": 0,
+--   "DSP Blocks": 0
+-- }
+-- Logic level distribution:
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | End Point Clock | Requirement |  0  |  1  |  2  |  3 |  4 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | (none)          | 0.000ns     | 179 | 332 | 397 | 17 | 17 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+--
+-- Third optimization saved one LUT.
+--
+-- After combinatorial optimization:
+-- Size of reg_file.axi_lite_reg_file after synthesis:
+-- {
+--   "Total LUTs": 175,
+--   "Logic LUTs": 175,
+--   "LUTRAMs": 0,
+--   "SRLs": 0,
+--   "FFs": 301,
+--   "RAMB36": 0,
+--   "RAMB18": 0,
+--   "DSP Blocks": 0
+-- }
+-- Logic level distribution:
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | End Point Clock | Requirement |  0  |  1  |  2  |  3 |  4 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+-- | (none)          | 0.000ns     | 183 | 295 | 384 | 17 | 17 |
+-- +-----------------+-------------+-----+-----+-----+----+----+
+--
+-- TODO: Try w/ and w/o reg_was_read/written.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -35,22 +113,23 @@ end entity;
 
 architecture a of axi_lite_reg_file_netlist_wrapper is
 
+  -- Sum of widths: 268
   constant regs : reg_definition_vec_t(regs_up'range) := (
-    (idx=>0, reg_type=>r),
-    (idx=>1, reg_type=>w),
-    (idx=>2, reg_type=>r_w),
-    (idx=>3, reg_type=>wpulse),
-    (idx=>4, reg_type=>r_wpulse),
-    (idx=>5, reg_type=>r),
-    (idx=>6, reg_type=>w),
-    (idx=>7, reg_type=>r_w),
-    (idx=>8, reg_type=>wpulse),
-    (idx=>9, reg_type=>r_wpulse),
-    (idx=>10, reg_type=>r),
-    (idx=>11, reg_type=>w),
-    (idx=>12, reg_type=>r_w),
-    (idx=>13, reg_type=>wpulse),
-    (idx=>14, reg_type=>r_wpulse)
+    (idx=>0, reg_type=>r, width=>24),
+    (idx=>1, reg_type=>w, width=>18),
+    (idx=>2, reg_type=>r_w, width=>17),
+    (idx=>3, reg_type=>wpulse, width=>31),
+    (idx=>4, reg_type=>r_wpulse, width=>22),
+    (idx=>5, reg_type=>r, width=>14),
+    (idx=>6, reg_type=>w, width=>30),
+    (idx=>7, reg_type=>r_w, width=>27),
+    (idx=>8, reg_type=>wpulse, width=>19),
+    (idx=>9, reg_type=>r_wpulse, width=>22),
+    (idx=>10, reg_type=>r, width=>25),
+    (idx=>11, reg_type=>w, width=>19),
+    (idx=>12, reg_type=>r_w, width=>22),
+    (idx=>13, reg_type=>wpulse, width=>26),
+    (idx=>14, reg_type=>r_wpulse, width=>18)
   );
 
   constant default_values : reg_vec_t(regs'range) := (
