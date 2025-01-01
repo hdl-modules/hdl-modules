@@ -1,9 +1,23 @@
 Added
 
 * Add :ref:`module_simple_dma`.
+  This module is in a beta state so expect changes in the future.
 * Add :ref:`resync.resync_sticky_level`.
 
 Breaking changes
 
 * Rename ``resync_slv_level_coherent`` to :ref:`resync.resync_twophase`.
 * Rename ``resync_slv_handshake`` to :ref:`resync.resync_twophase_handshake`.
+
+* Rename old ``reg_file`` module to :ref:`register_file <module_register_file>` and rework it.
+  Note that this change is compatible with `hdl-registers <https://hdl-registers.com>`__ version
+  7.0.0 and later.
+  If you use hdl-registers, the changes should be completely transparent.
+  The changes are:
+
+  * Rename "reg" to "register", "idx" to "index", "reg_type" to "mode" for all files,
+    types, constants.
+
+  * Add ``utilized_width`` field to register definition type.
+
+  * Remove unused functions.
