@@ -72,7 +72,7 @@ The following things can be found, at a glance, in the different modules:
 * `math <https://hdl-modules.com/modules/math/math.html>`_:
   Some common math function implementations.
 
-* `reg\_file <https://hdl-modules.com/modules/reg_file/reg_file.html>`_:
+* `register\_file <https://hdl-modules.com/modules/register_file/register_file.html>`_:
   A generic register file and a simulation support package for register operations.
 
 * `resync <https://hdl-modules.com/modules/resync/resync.html>`_:

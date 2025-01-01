@@ -137,7 +137,7 @@ The following things can be found, at a glance, in the different modules:
 * `math <{WEBSITE_URL}/modules/math/math.html>`_:
   Some common math function implementations.
 
-* `reg\\_file <{WEBSITE_URL}/modules/reg_file/reg_file.html>`_:
+* `register\\_file <{WEBSITE_URL}/modules/register_file/register_file.html>`_:
   A generic register file and a simulation support package for register operations.
 
 * `resync <{WEBSITE_URL}/modules/resync/resync.html>`_:

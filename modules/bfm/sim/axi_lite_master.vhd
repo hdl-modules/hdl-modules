@@ -15,9 +15,9 @@
 -- based on VUnit VC calls, such as ``read_bus``.
 --
 -- If this BFM is used for a register bus, the convenience methods in
--- :ref:`reg_file.register_operations_pkg` can be useful.
+-- :ref:`register_file.register_operations_pkg` can be useful.
 -- Note that the default value for ``bus_handle`` is the same as the default bus handle for the
--- procedures in :ref:`reg_file.register_operations_pkg`.
+-- procedures in :ref:`register_file.register_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
