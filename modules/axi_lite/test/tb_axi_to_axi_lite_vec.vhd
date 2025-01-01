@@ -134,16 +134,19 @@ begin
 
   ------------------------------------------------------------------------------
   register_maps : for slave in base_addresses'range generate
-    axi_lite_register_file_inst : entity register_file.axi_lite_register_file
-    generic map (
-      regs => reg_map
-    )
-    port map (
-      clk => clk_axi_lite_vec(slave),
 
-      axi_lite_m2s => axi_lite_m2s_vec(slave),
-      axi_lite_s2m => axi_lite_s2m_vec(slave)
-    );
+    ------------------------------------------------------------------------------
+    axi_lite_register_file_inst : entity register_file.axi_lite_register_file
+      generic map (
+        regs => reg_map
+      )
+      port map (
+        clk => clk_axi_lite_vec(slave),
+
+        axi_lite_m2s => axi_lite_m2s_vec(slave),
+        axi_lite_s2m => axi_lite_s2m_vec(slave)
+      );
+
   end generate;
 
 

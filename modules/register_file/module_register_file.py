@@ -53,11 +53,11 @@ class Module(BaseModule):
                 part=part,
                 top="axi_lite_register_file_netlist_wrapper",
                 build_result_checkers=[
-                    TotalLuts(EqualTo(175)),
+                    TotalLuts(EqualTo(170)),
                     Ffs(EqualTo(301)),
                     Ramb36(EqualTo(0)),
                     Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(4)),
+                    MaximumLogicLevel(EqualTo(3)),
                 ],
             )
         )
