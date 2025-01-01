@@ -43,13 +43,13 @@ use axi_lite.axi_lite_pkg.all;
 library math;
 use math.math_pkg.all;
 
-use work.reg_file_pkg.all;
+use work.register_file_pkg.all;
 
 
-entity axi_lite_reg_file is
+entity axi_lite_register_file is
   generic (
-    regs : reg_definition_vec_t;
-    default_values : reg_vec_t(regs'range) := (others => (others => '0'))
+    regs : register_definition_vec_t;
+    default_values : register_vec_t(regs'range) := (others => (others => '0'))
   );
   port (
     clk : in std_ulogic;
@@ -59,8 +59,8 @@ entity axi_lite_reg_file is
     axi_lite_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
     --# {{}}
     -- Register values
-    regs_up : in reg_vec_t(regs'range) := default_values;
-    regs_down : out reg_vec_t(regs'range) := default_values;
+    regs_up : in register_vec_t(regs'range) := default_values;
+    regs_down : out register_vec_t(regs'range) := default_values;
     --# {{}}
     -- Each bit is pulsed for one cycle when the corresponding register is read/written.
     -- For read, the bit is asserted the exact same cycle as the AXI-Lite R transaction occurs.
@@ -71,12 +71,12 @@ entity axi_lite_reg_file is
   );
 end entity;
 
-architecture a of axi_lite_reg_file is
+architecture a of axi_lite_register_file is
 
-  constant num_addr_bits : positive := num_bits_needed(get_highest_idx(regs));
+  constant num_addr_bits : positive := num_bits_needed(get_highest_index(regs));
   subtype addr_range is natural range num_addr_bits + 2 - 1 downto 2;
 
-  signal reg_values : reg_vec_t(regs'range) := default_values;
+  signal reg_values : register_vec_t(regs'range) := default_values;
 
 begin
 
@@ -85,9 +85,9 @@ begin
   begin
     -- Assign only the bits that are marked as utilized, so there is no risk of confusion/misuse.
     for reg_idx in regs'range loop
-      if is_write_type(regs(reg_idx).reg_type) then
-        regs_down(reg_idx)(regs(reg_idx).width - 1 downto 0) <= reg_values(reg_idx)(
-          regs(reg_idx).width - 1 downto 0
+      if is_write_mode(regs(reg_idx).mode) then
+        regs_down(reg_idx)(regs(reg_idx).utilized_width - 1 downto 0) <= reg_values(reg_idx)(
+          regs(reg_idx).utilized_width - 1 downto 0
         );
       end if;
     end loop;
@@ -110,14 +110,14 @@ begin
       axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
 
       for list_idx in regs'range loop
-        if is_read_type(regs(list_idx).reg_type) then
+        if is_read_mode(regs(list_idx).mode) then
           if read_index = list_idx then
             axi_lite_s2m.read.r.resp <= axi_resp_okay;
             reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
           end if;
 
-          for bit_idx in 0 to regs(list_idx).width - 1 loop
-            if is_fabric_gives_value_type(regs(list_idx).reg_type) then
+          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
+            if is_hardware_gives_value_mode(regs(list_idx).mode) then
               if read_index = list_idx then
                 axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
               end if;
@@ -184,8 +184,8 @@ begin
       axi_lite_s2m.write.b.resp <= axi_resp_slverr;
 
       for list_idx in regs'range loop
-        if is_write_pulse_type(regs(list_idx).reg_type) then
-          for bit_idx in 0 to regs(list_idx).width - 1 loop
+        if is_write_pulse_mode(regs(list_idx).mode) then
+          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
             -- Set initial default value.
             -- If a write occurs to this register, the value will be asserted for one cycle below.
             reg_values(list_idx)(bit_idx) <= default_values(list_idx)(bit_idx);
@@ -194,13 +194,13 @@ begin
       end loop;
 
       for list_idx in regs'range loop
-        if is_write_type(regs(list_idx).reg_type) then
+        if is_write_mode(regs(list_idx).mode) then
           if write_index = list_idx then
             axi_lite_s2m.write.b.resp <= axi_resp_okay;
             reg_was_written(list_idx) <= axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid;
           end if;
 
-          for bit_idx in 0 to regs(list_idx).width - 1 loop
+          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
             if write_index = list_idx then
               if axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid then
                 reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);

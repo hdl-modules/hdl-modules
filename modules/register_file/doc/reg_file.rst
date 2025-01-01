@@ -15,21 +15,21 @@ Below is a diagram of the typical layout for a register bus.
 
   axi_lite_mux [ label="axi_lite_mux" shape=box height=3.5 ];
 
-  axi_lite_mux -> axi_lite_reg_file0;
-  axi_lite_reg_file0 [ label="axi_lite_reg_file" shape=box ];
+  axi_lite_mux -> axi_lite_register_file0;
+  axi_lite_register_file0 [ label="axi_lite_register_file" shape=box ];
 
-  axi_lite_mux -> axi_lite_reg_file1;
-  axi_lite_reg_file1 [ label="axi_lite_reg_file" shape=box ];
+  axi_lite_mux -> axi_lite_register_file1;
+  axi_lite_register_file1 [ label="axi_lite_register_file" shape=box ];
 
   axi_lite_mux -> axi_lite_cdc2;
   axi_lite_cdc2 [ label="axi_lite_cdc" shape=box ];
-  axi_lite_cdc2 -> axi_lite_reg_file2;
-  axi_lite_reg_file2 [ label="axi_lite_reg_file" shape=box ];
+  axi_lite_cdc2 -> axi_lite_register_file2;
+  axi_lite_register_file2 [ label="axi_lite_register_file" shape=box ];
 
   axi_lite_mux -> axi_lite_cdc3;
   axi_lite_cdc3 [ label="axi_lite_cdc" shape=box ];
-  axi_lite_cdc3 -> axi_lite_reg_file3;
-  axi_lite_reg_file3 [ label="axi_lite_reg_file" shape=box ];
+  axi_lite_cdc3 -> axi_lite_register_file3;
+  axi_lite_register_file3 [ label="axi_lite_register_file" shape=box ];
 
   dots [ shape=none label="..."];
   axi_lite_mux -> dots;
@@ -56,10 +56,10 @@ pulse resynchronization, etc.
 
 * :ref:`axi_lite.axi_lite_cdc` is an asynchronous FIFO-based clock domain crossing (CDC) for
   AXI-Lite buses.
-  It must be used in the cases where the ``axi_lite_reg_file`` (i.e. your module) is in a different
+  It must be used in the cases where the ``axi_lite_register_file`` (i.e. your module) is in a different
   clock domain than the CPU AXI master.
 
-* :ref:`reg_file.axi_lite_reg_file` is a generic, parameterizable, register file for AXI-Lite
+* :ref:`reg_file.axi_lite_register_file` is a generic, parameterizable, register file for AXI-Lite
   register buses.
   It is parameterizable via a generic that sets the list of registers, with their modes and their
   default values.

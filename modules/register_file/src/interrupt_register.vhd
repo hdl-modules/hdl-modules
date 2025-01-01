@@ -23,19 +23,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
+library register_file;
+use register_file.register_file_pkg.all;
 
 
 entity interrupt_register is
   port (
     clk : in std_ulogic;
     --# {{}}
-    sources : in reg_t := (others => '0');
-    mask : in reg_t := (others => '1');
-    clear : in reg_t := (others => '0');
+    sources : in register_t := (others => '0');
+    mask : in register_t := (others => '1');
+    clear : in register_t := (others => '0');
     --# {{}}
-    status : out reg_t := (others => '0');
+    status : out register_t := (others => '0');
     trigger : out std_ulogic := '0'
   );
 end entity;
@@ -45,7 +45,7 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable status_next : reg_t := (others => '0');
+    variable status_next : register_t := (others => '0');
   begin
     wait until rising_edge(clk);
 

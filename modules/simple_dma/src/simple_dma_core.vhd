@@ -24,8 +24,8 @@ use axi_lite.axi_lite_pkg.all;
 library common;
 use common.types_pkg.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
+library register_file;
+use register_file.register_file_pkg.all;
 
 library ring_buffer;
 use ring_buffer.simple_ring_buffer_manager_pkg.all;
@@ -96,7 +96,7 @@ architecture a of simple_dma_core is
 
   signal merged_ready, merged_valid : std_ulogic := '0';
 
-  signal interrupt_sources : reg_t := (others => '0');
+  signal interrupt_sources : register_t := (others => '0');
 
 begin
 
@@ -130,11 +130,11 @@ begin
 
   ------------------------------------------------------------------------------
   interrupt_register_block : block
-    signal clear, status : reg_t := (others => '0');
+    signal clear, status : register_t := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
-    interrupt_register_inst : entity reg_file.interrupt_register
+    interrupt_register_inst : entity register_file.interrupt_register
       port map (
         clk => clk,
         --

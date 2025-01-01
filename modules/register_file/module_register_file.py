@@ -22,7 +22,7 @@ from tsfpga.vivado.build_result_checker import (
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_reg_file")
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_register_file")
 
         tb.test("test_read_from_non_existent_register").set_generic("use_axi_lite_bfm", False)
         tb.test("test_read_from_non_read_type_register").set_generic("use_axi_lite_bfm", False)
@@ -48,10 +48,10 @@ class Module(BaseModule):
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.axi_lite_reg_file",
+                name=f"{self.library_name}.axi_lite_register_file",
                 modules=all_modules,
                 part=part,
-                top="axi_lite_reg_file_netlist_wrapper",
+                top="axi_lite_register_file_netlist_wrapper",
                 build_result_checkers=[
                     TotalLuts(EqualTo(175)),
                     Ffs(EqualTo(301)),

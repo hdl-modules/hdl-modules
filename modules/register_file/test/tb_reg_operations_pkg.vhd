@@ -18,7 +18,7 @@ library common;
 use common.types_pkg.all;
 
 use work.reg_operations_pkg.all;
-use work.reg_file_pkg.all;
+use work.register_file_pkg.all;
 
 
 entity tb_reg_operations_pkg is
@@ -37,7 +37,7 @@ begin
     variable bit_indexes_2 : natural_vec_t(-2147483648 to -2147483647) := (others => 0);
     variable values_2 : std_ulogic_vector(0 to 1) := (others => '0');
 
-    variable reg_value, reg_value_2 : reg_t := (others => '0');
+    variable reg_value, reg_value_2 : register_t := (others => '0');
   begin
     test_runner_setup(runner, runner_cfg);
 
