@@ -45,7 +45,7 @@
 -- +-----------------+-------------+-----+-----+----+-----+----+
 --
 -- After second optimization:
--- Size of reg_file.axi_lite_register_file after synthesis:
+-- Size of register_file.axi_lite_register_file after synthesis:
 -- {
 --   "Total LUTs": 173,
 --   "Logic LUTs": 173,
@@ -66,7 +66,7 @@
 -- Third optimization saved one LUT.
 --
 -- After combinatorial optimization:
--- Size of reg_file.axi_lite_register_file after synthesis:
+-- Size of register_file.axi_lite_register_file after synthesis:
 -- {
 --   "Total LUTs": 175,
 --   "Logic LUTs": 175,
