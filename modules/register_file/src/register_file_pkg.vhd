@@ -28,16 +28,17 @@ package register_file_pkg is
   type register_vec_t is array (integer range <>) of register_t;
 
   type register_mode_t is (
-    -- Software can read a value that fabric provides
+    -- Software can read a value that hardware provides.
     r,
-    -- Software can write a value that is available for fabric usage
+    -- Software can write a value that is available for usage in hardware.
     w,
-    -- Software can write a value and read it back. The written value is available for fabric usage
+    -- Software can write a value and read it back. The written value is available for usage
+    -- in hardware.
     r_w,
-    -- Software can write a value that is asserted for one cycle in fabric
+    -- Software can write a value that is asserted for one cycle in hardware.
     wpulse,
-    -- Software can read a value that fabric provides.
-    -- Software can write a value that is asserted for one cycle in fabric.
+    -- Software can read a value that hardware provides.
+    -- Software can write a value that is asserted for one cycle in hardware.
     r_wpulse
   );
 

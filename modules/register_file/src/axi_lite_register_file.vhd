@@ -137,18 +137,23 @@ begin
     begin
       wait until rising_edge(clk);
 
+      -- Default assignments.
+      axi_lite_s2m.read.ar.ready <= '0';
       axi_lite_s2m.read.r.valid <= '0';
 
       case read_state is
         when ar =>
-          axi_lite_s2m.read.ar.ready <= '1';
-
+          -- Sample always, will only be used if we change state.
           read_index <= axi_lite_m2s.read.ar.addr(addr_range);
 
-          -- TODO optimize handshaking
-          if axi_lite_m2s.read.ar.valid and axi_lite_s2m.read.ar.ready then
-            axi_lite_s2m.read.ar.ready <= '0';
+          -- Keep high and then lower it after we have a 'valid'.
+          -- Will be high at one rising clock edge together with 'valid'.
+          -- Note that we will spend at least one clock cycle in the 'r' state,
+          -- so we can look at 'valid' straight away when we return to this state, knowing that
+          -- the previous AR word has been popped.
+          axi_lite_s2m.read.ar.ready <= '1';
 
+          if axi_lite_m2s.read.ar.valid then
             read_state <= r;
           end if;
 
@@ -157,7 +162,6 @@ begin
 
           if axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid then
             axi_lite_s2m.read.r.valid <= '0';
-            axi_lite_s2m.read.ar.ready <= '1';
 
             read_state <= ar;
           end if;
@@ -217,23 +221,30 @@ begin
     begin
       wait until rising_edge(clk);
 
-      if axi_lite_m2s.write.aw.valid then
-        write_index <= axi_lite_m2s.write.aw.addr(addr_range);
-      end if;
+      -- Default assignment.
+      axi_lite_s2m.write.aw.ready <= '0';
 
       case write_state is
         when aw =>
+          -- Sample always, will only be used if we change state.
+          write_index <= axi_lite_m2s.write.aw.addr(addr_range);
+
+          -- Keep high and then lower it after we have a 'valid'.
+          -- Will be high at one rising clock edge together with 'valid'.
+          -- Note that we will spend at least one clock cycle in the 'r' state,
+          -- so we can look at 'valid' straight away when we return to this state, knowing that
+          -- the previous AR word has been popped.
           axi_lite_s2m.write.aw.ready <= '1';
 
-          if axi_lite_m2s.write.aw.valid and axi_lite_s2m.write.aw.ready then
-            axi_lite_s2m.write.aw.ready <= '0';
+          if axi_lite_m2s.write.aw.valid then
             axi_lite_s2m.write.w.ready <= '1';
 
             write_state <= w;
           end if;
 
         when w =>
-          if axi_lite_m2s.write.w.valid and axi_lite_s2m.write.w.ready then
+          -- We know that 'WREADY' is high when we enter this state, so we can just look at 'valid'.
+          if axi_lite_m2s.write.w.valid then
             axi_lite_s2m.write.w.ready <= '0';
             axi_lite_s2m.write.b.valid <= '1';
 
@@ -241,8 +252,8 @@ begin
           end if;
 
         when b =>
-          if axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid then
-            axi_lite_s2m.write.aw.ready <= '1';
+          -- We know that 'BVALID' is high when we enter this state, so we can just look at 'ready'.
+          if axi_lite_m2s.write.b.ready then
             axi_lite_s2m.write.b.valid <= '0';
 
             write_state <= aw;

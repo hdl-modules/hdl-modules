@@ -56,11 +56,11 @@ pulse resynchronization, etc.
 
 * :ref:`axi_lite.axi_lite_cdc` is an asynchronous FIFO-based clock domain crossing (CDC) for
   AXI-Lite buses.
-  It must be used in the cases where the ``axi_lite_register_file`` (i.e. your module) is in a different
-  clock domain than the CPU AXI master.
+  It must be used in the cases where the ``axi_lite_register_file`` (i.e. your module) is in a
+  different clock domain than the CPU AXI master.
 
-* :ref:`register_file.axi_lite_register_file` is a generic, parameterizable, register file for AXI-Lite
-  register buses.
+* :ref:`register_file.axi_lite_register_file` is a generic, parameterizable, register file for
+  AXI-Lite register buses.
   It is parameterizable via a generic that sets the list of registers, with their modes and their
   default values.
   If the address requested by the master does not match any register, or there is a
