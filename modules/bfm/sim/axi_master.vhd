@@ -26,7 +26,7 @@
 --
 -- It is used by performing VUnit VC calls, such as ``read_bus``,
 -- or, preferably when operating on a register bus, by using the convenience methods
--- in :ref:`reg_file.reg_operations_pkg`.
+-- in :ref:`reg_file.register_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
