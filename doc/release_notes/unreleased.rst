@@ -20,4 +20,6 @@ Breaking changes
 
   * Add ``utilized_width`` field to register definition type.
 
+  * Optimize resource utilization of :ref:`register_file.axi_lite_register_file`.
+
   * Remove unused functions.
