@@ -222,7 +222,7 @@ begin
       wait until rising_edge(clk);
 
       -- Default assignment.
-      axi_lite_s2m.write.aw.ready <= '0';
+      -- axi_lite_s2m.write.aw.ready <= '0';
 
       case write_state is
         when aw =>
@@ -231,12 +231,17 @@ begin
 
           -- Keep high and then lower it after we have a 'valid'.
           -- Will be high at one rising clock edge together with 'valid'.
-          -- Note that we will spend at least one clock cycle in the 'r' state,
+          -- Note that we will spend at least one clock cycle in the other states,
           -- so we can look at 'valid' straight away when we return to this state, knowing that
-          -- the previous AR word has been popped.
+          -- the previous AW word has been popped.
+          -- axi_lite_s2m.write.aw.ready <= '1';
+
+          -- if axi_lite_m2s.write.aw.valid then
+
           axi_lite_s2m.write.aw.ready <= '1';
 
-          if axi_lite_m2s.write.aw.valid then
+          if axi_lite_m2s.write.aw.valid and axi_lite_s2m.write.aw.ready then
+            axi_lite_s2m.write.aw.ready <= '0';
             axi_lite_s2m.write.w.ready <= '1';
 
             write_state <= w;
@@ -253,7 +258,9 @@ begin
 
         when b =>
           -- We know that 'BVALID' is high when we enter this state, so we can just look at 'ready'.
-          if axi_lite_m2s.write.b.ready then
+          -- if axi_lite_m2s.write.b.ready then
+          if axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid then
+            axi_lite_s2m.write.aw.ready <= '1';
             axi_lite_s2m.write.b.valid <= '0';
 
             write_state <= aw;
