@@ -217,26 +217,17 @@ begin
 
 
     ------------------------------------------------------------------------------
+    -- The handshaking is not really optimal, but if it is "optimized" the LUT usage increases
+    -- by 100% for some reason.
+    -- Leave as it is for now, might be worth investigating at some point in the future.
     write_process : process
     begin
       wait until rising_edge(clk);
-
-      -- Default assignment.
-      -- axi_lite_s2m.write.aw.ready <= '0';
 
       case write_state is
         when aw =>
           -- Sample always, will only be used if we change state.
           write_index <= axi_lite_m2s.write.aw.addr(addr_range);
-
-          -- Keep high and then lower it after we have a 'valid'.
-          -- Will be high at one rising clock edge together with 'valid'.
-          -- Note that we will spend at least one clock cycle in the other states,
-          -- so we can look at 'valid' straight away when we return to this state, knowing that
-          -- the previous AW word has been popped.
-          -- axi_lite_s2m.write.aw.ready <= '1';
-
-          -- if axi_lite_m2s.write.aw.valid then
 
           axi_lite_s2m.write.aw.ready <= '1';
 
@@ -248,8 +239,7 @@ begin
           end if;
 
         when w =>
-          -- We know that 'WREADY' is high when we enter this state, so we can just look at 'valid'.
-          if axi_lite_m2s.write.w.valid then
+          if axi_lite_m2s.write.w.valid and axi_lite_s2m.write.w.ready then
             axi_lite_s2m.write.w.ready <= '0';
             axi_lite_s2m.write.b.valid <= '1';
 
@@ -257,8 +247,6 @@ begin
           end if;
 
         when b =>
-          -- We know that 'BVALID' is high when we enter this state, so we can just look at 'ready'.
-          -- if axi_lite_m2s.write.b.ready then
           if axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid then
             axi_lite_s2m.write.aw.ready <= '1';
             axi_lite_s2m.write.b.valid <= '0';
