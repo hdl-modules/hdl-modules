@@ -15,9 +15,9 @@
 -- based on VUnit VC calls, such as ``read_bus``.
 --
 -- If this BFM is used for a register bus, the convenience methods in
--- :ref:`reg_file.reg_operations_pkg` can be useful.
+-- :ref:`reg_file.register_operations_pkg` can be useful.
 -- Note that the default value for ``bus_handle`` is the same as the default bus handle for the
--- procedures in :ref:`reg_file.reg_operations_pkg`.
+-- procedures in :ref:`reg_file.register_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -30,7 +30,7 @@ use axi_lite.axi_lite_pkg.all;
 library common;
 
 library register_file;
-use register_file.reg_operations_pkg.regs_bus_master;
+use register_file.register_operations_pkg.register_bus_master;
 
 library vunit_lib;
 use vunit_lib.bus_master_pkg.bus_master_t;
@@ -40,7 +40,7 @@ use vunit_lib.bus_master_pkg.data_length;
 
 entity axi_lite_master is
   generic (
-    bus_handle : bus_master_t := regs_bus_master;
+    bus_handle : bus_master_t := register_bus_master;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );

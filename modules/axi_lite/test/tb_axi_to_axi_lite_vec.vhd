@@ -22,7 +22,7 @@ use common.addr_pkg.all;
 
 library register_file;
 use register_file.register_file_pkg.all;
-use register_file.reg_operations_pkg.all;
+use register_file.register_operations_pkg.all;
 
 library bfm;
 
@@ -119,7 +119,7 @@ begin
   ------------------------------------------------------------------------------
   axi_master_inst : entity bfm.axi_master
     generic map (
-      bus_handle => regs_bus_master
+      bus_handle => register_bus_master
     )
     port map (
       clk => clk_axi,

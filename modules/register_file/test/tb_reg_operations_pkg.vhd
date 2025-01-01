@@ -17,17 +17,17 @@ use vunit_lib.run_pkg.all;
 library common;
 use common.types_pkg.all;
 
-use work.reg_operations_pkg.all;
+use work.register_operations_pkg.all;
 use work.register_file_pkg.all;
 
 
-entity tb_reg_operations_pkg is
+entity tb_register_operations_pkg is
   generic (
     runner_cfg : string
   );
 end entity;
 
-architecture tb of tb_reg_operations_pkg is
+architecture tb of tb_register_operations_pkg is
 begin
 
   main : process

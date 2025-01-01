@@ -57,13 +57,13 @@ use register_file.register_file_pkg.register_t;
 use register_file.register_file_pkg.register_width;
 
 
-package reg_operations_pkg is
+package register_operations_pkg is
 
   -- Default bus handle that can be used to simplify calls.
-  constant regs_bus_master : bus_master_t := new_bus(
+  constant register_bus_master : bus_master_t := new_bus(
     data_length=>register_width,
     address_length=>addr_width,
-    logger=>get_logger("regs_bus_master")
+    logger=>get_logger("register_bus_master")
   );
 
   -- Some common register operations.
@@ -73,7 +73,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : out register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure read_reg(
@@ -81,7 +81,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : out integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure check_reg_equal(
@@ -89,7 +89,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   );
 
@@ -98,7 +98,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   );
 
@@ -109,7 +109,7 @@ package reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   );
 
@@ -120,7 +120,7 @@ package reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   );
 
@@ -129,7 +129,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   );
@@ -139,7 +139,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   );
@@ -151,7 +151,7 @@ package reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   );
@@ -163,7 +163,7 @@ package reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   );
@@ -173,7 +173,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure write_reg(
@@ -181,7 +181,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in u_unsigned(register_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure write_reg(
@@ -189,7 +189,7 @@ package reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure write_reg_bits(
@@ -199,7 +199,7 @@ package reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure write_reg_bit(
@@ -209,7 +209,7 @@ package reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure read_modify_write_reg_bits(
@@ -218,7 +218,7 @@ package reg_operations_pkg is
     bit_indexes : in natural_vec_t;
     values : in std_ulogic_vector;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   procedure read_modify_write_reg_bit(
@@ -227,7 +227,7 @@ package reg_operations_pkg is
     bit_index : in natural;
     value : in std_ulogic;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   );
 
   -- Internal helper function. Not meant to be used outside of this package.
@@ -240,7 +240,7 @@ package reg_operations_pkg is
 
 end;
 
-package body reg_operations_pkg is
+package body register_operations_pkg is
 
   function get_error_message(
     reg_index : natural;
@@ -262,7 +262,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : out register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
     variable address : addr_t;
   begin
@@ -275,7 +275,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : out integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
     variable slv_value : register_t := (others => '0');
   begin
@@ -288,7 +288,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   ) is
     variable got : register_t := (others => '0');
@@ -311,7 +311,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   ) is
     variable got : integer := 0;
@@ -333,7 +333,7 @@ package body reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   ) is
     variable reg_values : register_t := (others => '0');
@@ -366,7 +366,7 @@ package body reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     message : in string := ""
   ) is
   begin
@@ -391,7 +391,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   ) is
@@ -415,7 +415,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   ) is
@@ -438,7 +438,7 @@ package body reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   ) is
@@ -472,7 +472,7 @@ package body reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '-';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master;
+    bus_handle : in bus_master_t := register_bus_master;
     timeout : delay_length := max_timeout;
     message : string := ""
   ) is
@@ -499,7 +499,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in register_t;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
     variable address : addr_t;
   begin
@@ -514,7 +514,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in integer;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
   begin
     -- Note that this call is non-blocking.
@@ -533,7 +533,7 @@ package body reg_operations_pkg is
     reg_index : in natural;
     value : in u_unsigned(register_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
   begin
     -- Note that this call is non-blocking.
@@ -554,7 +554,7 @@ package body reg_operations_pkg is
     values : in std_ulogic_vector;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
     variable reg_value : register_t := (others => '0');
   begin
@@ -585,7 +585,7 @@ package body reg_operations_pkg is
     value : in std_ulogic;
     other_bits_value : in std_ulogic := '0';
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
   begin
     -- Write to register where the 'bit_index' bit will be set to 'value'.
@@ -610,7 +610,7 @@ package body reg_operations_pkg is
     bit_indexes : in natural_vec_t;
     values : in std_ulogic_vector;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
     variable previous_value, new_value : register_t := (others => '0');
   begin
@@ -642,7 +642,7 @@ package body reg_operations_pkg is
     bit_index : in natural;
     value : in std_ulogic;
     base_address : in addr_t := (others => '0');
-    bus_handle : in bus_master_t := regs_bus_master
+    bus_handle : in bus_master_t := register_bus_master
   ) is
   begin
     -- Read-modify-write where the 'bit_index' bit will be set to 'value'.
