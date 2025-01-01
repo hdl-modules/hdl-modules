@@ -52,16 +52,16 @@ use common.addr_pkg.addr_t;
 use common.addr_pkg.addr_width;
 use common.types_pkg.natural_vec_t;
 
-library reg_file;
-use reg_file.reg_file_pkg.reg_t;
-use reg_file.reg_file_pkg.reg_width;
+library register_file;
+use register_file.register_file_pkg.register_t;
+use register_file.register_file_pkg.register_width;
 
 
 package reg_operations_pkg is
 
   -- Default bus handle that can be used to simplify calls.
   constant regs_bus_master : bus_master_t := new_bus(
-    data_length=>reg_width,
+    data_length=>register_width,
     address_length=>addr_width,
     logger=>get_logger("regs_bus_master")
   );
@@ -71,7 +71,7 @@ package reg_operations_pkg is
   procedure read_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : out reg_t;
+    value : out register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -87,7 +87,7 @@ package reg_operations_pkg is
   procedure check_reg_equal(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
@@ -127,7 +127,7 @@ package reg_operations_pkg is
   procedure wait_until_reg_equals(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -171,7 +171,7 @@ package reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -179,7 +179,7 @@ package reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in u_unsigned(reg_width - 1 downto 0);
+    value : in u_unsigned(register_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   );
@@ -235,8 +235,8 @@ package reg_operations_pkg is
   function to_reg_value(
     bit_indexes : natural_vec_t;
     values : std_ulogic_vector;
-    previous_value : reg_t := (others => '0')
-  ) return reg_t;
+    previous_value : register_t := (others => '0')
+  ) return register_t;
 
 end;
 
@@ -260,7 +260,7 @@ package body reg_operations_pkg is
   procedure read_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : out reg_t;
+    value : out register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -277,7 +277,7 @@ package body reg_operations_pkg is
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
-    variable slv_value : reg_t := (others => '0');
+    variable slv_value : register_t := (others => '0');
   begin
     read_reg(net, reg_index, slv_value, base_address, bus_handle);
     value := to_integer(signed(slv_value));
@@ -286,12 +286,12 @@ package body reg_operations_pkg is
   procedure check_reg_equal(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
   ) is
-    variable got : reg_t := (others => '0');
+    variable got : register_t := (others => '0');
   begin
     -- Check that the register value equals the specified 'value'. Note that '-' can be used as a
     -- wildcard in 'value' since check_match is used to check for equality.
@@ -336,7 +336,7 @@ package body reg_operations_pkg is
     bus_handle : in bus_master_t := regs_bus_master;
     message : in string := ""
   ) is
-    variable reg_values : reg_t := (others => '0');
+    variable reg_values : register_t := (others => '0');
   begin
     -- Check that the bits in 'bit_indexes' have the expected 'values'.
     -- Expected value of the other bits can be controlled with the 'other_bits_value' parameter.
@@ -389,7 +389,7 @@ package body reg_operations_pkg is
   procedure wait_until_reg_equals(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master;
     timeout : delay_length := max_timeout;
@@ -423,7 +423,7 @@ package body reg_operations_pkg is
     wait_until_reg_equals(
       net=>net,
       reg_index=>reg_index,
-      value=>std_ulogic_vector(to_signed(value, reg_width)),
+      value=>std_ulogic_vector(to_signed(value, register_width)),
       base_address=>base_address,
       bus_handle=>bus_handle,
       timeout=>timeout,
@@ -442,7 +442,7 @@ package body reg_operations_pkg is
     timeout : delay_length := max_timeout;
     message : string := ""
   ) is
-    variable reg_value : reg_t := (others => '0');
+    variable reg_value : register_t := (others => '0');
   begin
     -- Wait until all the bits listed in 'bit_indexes' are read as their corresponding 'values'.
     -- Other bits' values can either be ignored (if 'other_bits_value' is left at default value) or
@@ -497,7 +497,7 @@ package body reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in reg_t;
+    value : in register_t;
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -522,7 +522,7 @@ package body reg_operations_pkg is
     write_reg(
       net=>net,
       reg_index=>reg_index,
-      value=>std_logic_vector(to_signed(value, reg_width)),
+      value=>std_logic_vector(to_signed(value, register_width)),
       base_address=>base_address,
       bus_handle=>bus_handle
     );
@@ -531,7 +531,7 @@ package body reg_operations_pkg is
   procedure write_reg(
     signal net : inout network_t;
     reg_index : in natural;
-    value : in u_unsigned(reg_width - 1 downto 0);
+    value : in u_unsigned(register_width - 1 downto 0);
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
@@ -556,7 +556,7 @@ package body reg_operations_pkg is
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
-    variable reg_value : reg_t := (others => '0');
+    variable reg_value : register_t := (others => '0');
   begin
     -- Write to register where the bits listed in 'bit_indexes' will be set to 'values'.
     -- The other bits in the write word are set to zero if 'other_bits_value' is left out,
@@ -612,7 +612,7 @@ package body reg_operations_pkg is
     base_address : in addr_t := (others => '0');
     bus_handle : in bus_master_t := regs_bus_master
   ) is
-    variable previous_value, new_value : reg_t := (others => '0');
+    variable previous_value, new_value : register_t := (others => '0');
   begin
     -- Read-modify-write where the bits listed in 'bit_indexes' will be set to 'values'.
     -- Note that the read portion of this call is blocking, but the write portion is non-blocking.
@@ -661,9 +661,9 @@ package body reg_operations_pkg is
   function to_reg_value(
     bit_indexes : natural_vec_t;
     values : std_ulogic_vector;
-    previous_value : reg_t := (others => '0')
-  ) return reg_t is
-    variable result : reg_t := previous_value;
+    previous_value : register_t := (others => '0')
+  ) return register_t is
+    variable result : register_t := previous_value;
   begin
     -- Construct a register value based on bit values.
     -- Assigning 'previous_value' realizes a "read-modify-write" behavior.

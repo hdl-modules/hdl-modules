@@ -45,7 +45,7 @@
 -- +-----------------+-------------+-----+-----+----+-----+----+
 --
 -- After second optimization:
--- Size of reg_file.axi_lite_reg_file after synthesis:
+-- Size of reg_file.axi_lite_register_file after synthesis:
 -- {
 --   "Total LUTs": 173,
 --   "Logic LUTs": 173,
@@ -66,7 +66,7 @@
 -- Third optimization saved one LUT.
 --
 -- After combinatorial optimization:
--- Size of reg_file.axi_lite_reg_file after synthesis:
+-- Size of reg_file.axi_lite_register_file after synthesis:
 -- {
 --   "Total LUTs": 175,
 --   "Logic LUTs": 175,
@@ -93,46 +93,46 @@ use ieee.std_logic_1164.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
-use work.reg_file_pkg.all;
+use work.register_file_pkg.all;
 
 
-entity axi_lite_reg_file_netlist_wrapper is
+entity axi_lite_register_file_netlist_wrapper is
   port (
     clk : in std_ulogic;
     --
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
     --
-    regs_up : in reg_vec_t(0 to 15 - 1);
-    regs_down : out reg_vec_t(0 to 15 - 1);
+    regs_up : in register_vec_t(0 to 15 - 1);
+    regs_down : out register_vec_t(0 to 15 - 1);
     --
     reg_was_read : out std_ulogic_vector(0 to 15 - 1);
     reg_was_written : out std_ulogic_vector(0 to 15 - 1)
   );
 end entity;
 
-architecture a of axi_lite_reg_file_netlist_wrapper is
+architecture a of axi_lite_register_file_netlist_wrapper is
 
-  -- Sum of widths: 268
-  constant regs : reg_definition_vec_t(regs_up'range) := (
-    (idx=>0, reg_type=>r, width=>24),
-    (idx=>1, reg_type=>w, width=>18),
-    (idx=>2, reg_type=>r_w, width=>17),
-    (idx=>3, reg_type=>wpulse, width=>31),
-    (idx=>4, reg_type=>r_wpulse, width=>22),
-    (idx=>5, reg_type=>r, width=>14),
-    (idx=>6, reg_type=>w, width=>30),
-    (idx=>7, reg_type=>r_w, width=>27),
-    (idx=>8, reg_type=>wpulse, width=>19),
-    (idx=>9, reg_type=>r_wpulse, width=>22),
-    (idx=>10, reg_type=>r, width=>25),
-    (idx=>11, reg_type=>w, width=>19),
-    (idx=>12, reg_type=>r_w, width=>22),
-    (idx=>13, reg_type=>wpulse, width=>26),
-    (idx=>14, reg_type=>r_wpulse, width=>18)
+  -- Sum of utilized_widths: 268
+  constant regs : register_definition_vec_t(regs_up'range) := (
+    (index=>0, mode=>r, utilized_width=>24),
+    (index=>1, mode=>w, utilized_width=>18),
+    (index=>2, mode=>r_w, utilized_width=>17),
+    (index=>3, mode=>wpulse, utilized_width=>31),
+    (index=>4, mode=>r_wpulse, utilized_width=>22),
+    (index=>5, mode=>r, utilized_width=>14),
+    (index=>6, mode=>w, utilized_width=>30),
+    (index=>7, mode=>r_w, utilized_width=>27),
+    (index=>8, mode=>wpulse, utilized_width=>19),
+    (index=>9, mode=>r_wpulse, utilized_width=>22),
+    (index=>10, mode=>r, utilized_width=>25),
+    (index=>11, mode=>w, utilized_width=>19),
+    (index=>12, mode=>r_w, utilized_width=>22),
+    (index=>13, mode=>wpulse, utilized_width=>26),
+    (index=>14, mode=>r_wpulse, utilized_width=>18)
   );
 
-  constant default_values : reg_vec_t(regs'range) := (
+  constant default_values : register_vec_t(regs'range) := (
     0 => x"dcd3e0e6",
     1 => x"323e4bfd",
     2 => x"7ddd475b",
@@ -153,7 +153,7 @@ architecture a of axi_lite_reg_file_netlist_wrapper is
 begin
 
   ------------------------------------------------------------------------------
-  axi_lite_reg_file_inst : entity work.axi_lite_reg_file
+  axi_lite_register_file_inst : entity work.axi_lite_register_file
     generic map (
       regs => regs,
       default_values => default_values

@@ -29,8 +29,8 @@ use axi_lite.axi_lite_pkg.all;
 
 library common;
 
-library reg_file;
-use reg_file.reg_operations_pkg.regs_bus_master;
+library register_file;
+use register_file.reg_operations_pkg.regs_bus_master;
 
 library vunit_lib;
 use vunit_lib.bus_master_pkg.bus_master_t;

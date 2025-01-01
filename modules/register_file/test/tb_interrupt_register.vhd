@@ -14,8 +14,8 @@ library vunit_lib;
 use vunit_lib.check_pkg.all;
 use vunit_lib.run_pkg.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
+library register_file;
+use register_file.register_file_pkg.all;
 
 
 entity tb_interrupt_register is
@@ -28,7 +28,7 @@ architecture tb of tb_interrupt_register is
 
   signal clk : std_ulogic := '0';
 
-  signal sources, mask, clear, status : reg_t := (others => '0');
+  signal sources, mask, clear, status : register_t := (others => '0');
   signal trigger : std_ulogic := '0';
 
 begin
@@ -51,7 +51,7 @@ begin
     end procedure;
 
     procedure check_status(high_bits : integer_vector) is
-      variable expected : reg_t := (others => '0');
+      variable expected : register_t := (others => '0');
     begin
       for list_idx in high_bits'range loop
         expected(high_bits(list_idx)) := '1';

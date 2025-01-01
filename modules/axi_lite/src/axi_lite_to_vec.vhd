@@ -20,8 +20,8 @@ library common;
 use common.addr_pkg.all;
 use common.attribute_pkg.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
+library register_file;
+use register_file.register_file_pkg.all;
 
 use work.axi_lite_pkg.all;
 
@@ -56,7 +56,7 @@ architecture a of axi_lite_to_vec is
   constant base_addresses_and_mask : addr_and_mask_vec_t := calculate_mask(base_addresses);
   constant addr_width : positive := addr_bits_needed(base_addresses_and_mask);
 
-  constant data_width : positive := reg_width;
+  constant data_width : positive := register_width;
 
   signal axi_lite_m2s_vec_int : axi_lite_m2s_vec_t(base_addresses'range) := (
     others => axi_lite_m2s_init
