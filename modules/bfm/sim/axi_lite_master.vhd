@@ -84,7 +84,10 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_master_inst : entity vunit_lib.axi_lite_master
     generic map (
-      bus_handle => bus_handle
+      bus_handle => bus_handle,
+      -- To avoid a lot of "NUMERIC_STD."=": meta value detected" warnings that slow down
+      -- simulation immensely.
+      drive_invalid_val => '0'
     )
     port map (
       aclk => clk,
