@@ -66,8 +66,12 @@ architecture tb of tb_simple_dma_axi_lite is
   constant axi_data_width : positive := stream_data_width;
   constant axi_bytes_per_beat : positive := axi_data_width / 8;
 
-  -- Only one beat supported at the moment.
-  constant packet_length_beats : positive := 1;
+  impure function get_packet_length_beats return positive is
+  begin
+    -- Between 1 and 8 beats.
+    return 2 ** rnd.FavorSmall(0, 3);
+  end function;
+  constant packet_length_beats : positive := get_packet_length_beats;
   constant packet_length_bytes : positive := packet_length_beats * stream_bytes_per_beat;
   constant packet_length_axi_beats : positive := packet_length_bytes / axi_bytes_per_beat;
 
@@ -121,14 +125,14 @@ architecture tb of tb_simple_dma_axi_lite is
 
 begin
 
-  test_runner_watchdog(runner, 1 ms);
-  clk <= not clk after 10 ns;
+  test_runner_watchdog(runner, 500 us);
+  clk <= not clk after 5 ns;
 
 
   ------------------------------------------------------------------------------
   main : process
-    constant buffer_size_axi_beats : positive := rnd.FavorSmall(4, 16);
-    constant buffer_size_bytes : positive := buffer_size_axi_beats * axi_bytes_per_beat;
+    constant buffer_size_packets : positive := rnd.FavorSmall(4, 16);
+    constant buffer_size_bytes : positive := buffer_size_packets * packet_length_bytes;
 
     -- Make it roll around many times.
     constant test_data_num_bytes : positive := 10 * buffer_size_bytes;
@@ -136,7 +140,7 @@ begin
     procedure run_test is
       variable data, data_copy : integer_array_t := null_integer_array;
     begin
-      report "buffer_size_axi_beats = " & to_string(buffer_size_axi_beats);
+      report "buffer_size_packets = " & to_string(buffer_size_packets);
 
       random_integer_array(
         rnd => rnd,
@@ -153,7 +157,7 @@ begin
         net => net,
         reference_data => data,
         buffer_size_bytes => buffer_size_bytes,
-        buffer_alignment => axi_bytes_per_beat,
+        packet_length_bytes => packet_length_bytes,
         memory => memory
       );
     end procedure;

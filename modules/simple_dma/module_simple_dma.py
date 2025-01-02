@@ -31,21 +31,28 @@ class Module(BaseModule):
         modules = get_hdl_modules()
         part = "xc7z020clg400-1"
 
-        generics = dict(
-            address_width=29, stream_data_width=64, axi_data_width=64, packet_length_beats=1
-        )
+        projects = []
 
-        return [
-            TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.simple_dma_axi_lite", generics),
-                modules=modules,
-                part=part,
-                top="simple_dma_axi_lite",
-                generics=generics,
-                build_result_checkers=[
-                    TotalLuts(EqualTo(156)),
-                    Ffs(EqualTo(207)),
-                    MaximumLogicLevel(EqualTo(16)),
-                ],
+        def add(generics: dict, lut: int, ff: int, logic: int) -> None:
+            all_generics = dict(address_width=29, stream_data_width=64, **generics)
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.simple_dma_axi_lite", generics=all_generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="simple_dma_axi_lite",
+                    generics=all_generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(lut)),
+                        Ffs(EqualTo(ff)),
+                        MaximumLogicLevel(EqualTo(logic)),
+                    ],
+                )
             )
-        ]
+
+        add(generics=dict(axi_data_width=64, packet_length_beats=1), lut=156, ff=207, logic=16)
+        add(generics=dict(axi_data_width=64, packet_length_beats=16), lut=157, ff=226, logic=12)
+
+        return projects

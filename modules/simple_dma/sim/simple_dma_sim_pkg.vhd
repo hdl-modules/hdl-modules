@@ -39,7 +39,7 @@ package simple_dma_sim_pkg is
     constant receive_num_bytes : positive;
     constant receive_data_queue : queue_t;
     buffer_size_bytes : in positive;
-    buffer_alignment : in positive;
+    packet_length_bytes : in positive;
     memory : in memory_t;
     regs_base_address : in addr_t := (others => '0')
   );
@@ -51,7 +51,7 @@ package simple_dma_sim_pkg is
     signal net : inout network_t;
     reference_data : in integer_array_t;
     buffer_size_bytes : in positive;
-    buffer_alignment : in positive;
+    packet_length_bytes : in positive;
     memory : in memory_t;
     regs_base_address : in addr_t := (others => '0')
   );
@@ -66,7 +66,7 @@ package body simple_dma_sim_pkg is
     constant receive_num_bytes : positive;
     constant receive_data_queue : queue_t;
     buffer_size_bytes : in positive;
-    buffer_alignment : in positive;
+    packet_length_bytes : in positive;
     memory : in memory_t;
     regs_base_address : in addr_t := (others => '0')
   ) is
@@ -84,7 +84,7 @@ package body simple_dma_sim_pkg is
       memory => memory,
       num_bytes => buffer_size_bytes,
       name=>"simple_dma_test_buffer",
-      alignment=>buffer_alignment,
+      alignment=>packet_length_bytes,
       permissions=>write_only
     );
 
@@ -111,7 +111,7 @@ package body simple_dma_sim_pkg is
         -- actually available.
         -- Will result in writing back a 'read' address that is not equal to the 'written' address.
         if rnd.Uniform(1, 8) /= 8 then
-          for memory_word_idx in 0 to buffer_alignment - 1 loop
+          for memory_word_idx in 0 to packet_length_bytes - 1 loop
             push(receive_data_queue, read_byte(memory=>memory, address=>read_address));
 
             if read_address = last_address(buf) then
@@ -121,7 +121,7 @@ package body simple_dma_sim_pkg is
             end if;
           end loop;
 
-          num_bytes_pushed := num_bytes_pushed + buffer_alignment;
+          num_bytes_pushed := num_bytes_pushed + packet_length_bytes;
         end if;
       end loop;
 
@@ -139,7 +139,7 @@ package body simple_dma_sim_pkg is
     signal net : inout network_t;
     reference_data : in integer_array_t;
     buffer_size_bytes : in positive;
-    buffer_alignment : in positive;
+    packet_length_bytes : in positive;
     memory : in memory_t;
     regs_base_address : in addr_t := (others => '0')
   ) is
@@ -152,7 +152,7 @@ package body simple_dma_sim_pkg is
       receive_num_bytes=>receive_num_bytes,
       receive_data_queue=>receive_data_queue,
       buffer_size_bytes=>buffer_size_bytes,
-      buffer_alignment=>buffer_alignment,
+      packet_length_bytes=>packet_length_bytes,
       memory=>memory,
       regs_base_address=>regs_base_address
     );

@@ -26,17 +26,17 @@ interrupt_status.write_error.description = "Memory write responded with error (B
 
 interrupt_status.start_address_unaligned_error.type = "bit"
 interrupt_status.start_address_unaligned_error.description = """
-The provided **buffer_start_address** is not aligned with the burst length.
+The provided **buffer_start_address** is not aligned with the packet length.
 """
 
 interrupt_status.end_address_unaligned_error.type = "bit"
 interrupt_status.end_address_unaligned_error.description = """
-The provided **buffer_end_address** is not aligned with the burst length.
+The provided **buffer_end_address** is not aligned with the packet length.
 """
 
 interrupt_status.read_address_unaligned_error.type = "bit"
 interrupt_status.read_address_unaligned_error.description = """
-The provided **buffer_read_address** is not aligned with the burst length.
+The provided **buffer_read_address** is not aligned with the packet length.
 """
 
 
@@ -77,7 +77,7 @@ I.e, once this bit has been set, clearing it will result in an undefined behavio
 mode = "w"
 description = """
 Address to the first byte in the memory buffer.
-Must be aligned by the burst length expressed in bytes.
+Must be aligned by the packet length expressed in bytes.
 
 This address and upcoming bytes after will be written with data.
 
@@ -94,7 +94,7 @@ Once this value has been set, and the module **enable**'d, the value must not be
 mode = "w"
 description = """
 Address to the byte after the last byte in the memory buffer.
-Must be aligned by the burst length expressed in bytes.
+Must be aligned by the packet length expressed in bytes.
 
 Bytes before this address (excluding) will be written with data.
 
@@ -122,7 +122,7 @@ When the module reaches the end of the buffer, i.e. when the very last byte of t
 written, the value of this register will wrap around to **buffer_start_address**.
 I.e. this register will never assume the value of **buffer_end_address**.
 
-The value of this register will always be aligned by the burst length expressed in bytes.
+The value of this register will always be aligned by the packet length expressed in bytes.
 
 Note that while a 32-bit value is read from this register, only the number of
 bits given by the **address_width** generic will actually be set by the module.
@@ -145,7 +145,7 @@ of **buffer_written_address**.
 When that is done, this part of the memory buffer can be written again by the module.
 Meaning, at that point, software must either be fully finished with the data or have a copy of it.
 
-The value written to this register must be aligned by the burst length expressed in bytes.
+The value written to this register must be aligned by the packet length expressed in bytes.
 
 Note that while a 32-bit value can be written to this register, only the number of
 bits given by the **address_width** generic will actually be used by the module.
