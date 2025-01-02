@@ -31,6 +31,9 @@ class Module(BaseModule):
 
         self.add_vunit_config(test=tb, set_random_seed=True)
 
+        tb = vunit_proj.library(self.library_name).test_bench("tb_trail_register_file")
+        self.add_vunit_config(test=tb, set_random_seed=True)
+
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
@@ -42,25 +45,29 @@ class Module(BaseModule):
 
         projects = []
         all_modules = get_hdl_modules(
-            names_include=[self.name, "axi", "axi_lite", "common", "math"]
+            names_include=[self.name, "axi", "axi_lite", "common", "trail", "math"]
         )
         part = "xc7z020clg400-1"
 
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.axi_lite_register_file",
-                modules=all_modules,
-                part=part,
-                top="axi_lite_register_file_netlist_build_wrapper",
-                build_result_checkers=[
-                    TotalLuts(EqualTo(169)),
-                    Ffs(EqualTo(301)),
-                    Ramb36(EqualTo(0)),
-                    Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(3)),
-                ],
+        def add_register_file(name: str, luts: int, ffs: int, logic_level: int):
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=f"{self.library_name}.{name}_register_file",
+                    modules=all_modules,
+                    part=part,
+                    top=f"{name}_register_file_netlist_build_wrapper",
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(luts)),
+                        Ffs(EqualTo(ffs)),
+                        Ramb36(EqualTo(0)),
+                        Ramb18(EqualTo(0)),
+                        MaximumLogicLevel(EqualTo(logic_level)),
+                    ],
+                )
             )
-        )
+
+        add_register_file(name="axi_lite", luts=169, ffs=301, logic_level=3)
+        add_register_file(name="trail", luts=116, ffs=312, logic_level=4)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
