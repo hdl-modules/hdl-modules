@@ -18,7 +18,7 @@ use axi_lite.axi_lite_pkg.all;
 use work.register_file_pkg.all;
 
 
-entity axi_lite_register_file_netlist_wrapper is
+entity axi_lite_register_file_netlist_build_wrapper is
   port (
     clk : in std_ulogic;
     --
@@ -33,7 +33,7 @@ entity axi_lite_register_file_netlist_wrapper is
   );
 end entity;
 
-architecture a of axi_lite_register_file_netlist_wrapper is
+architecture a of axi_lite_register_file_netlist_build_wrapper is
 
   -- Sum of utilized_widths: 268
   constant regs : register_definition_vec_t(regs_up'range) := (

@@ -51,7 +51,7 @@ class Module(BaseModule):
                 name=f"{self.library_name}.axi_lite_register_file",
                 modules=all_modules,
                 part=part,
-                top="axi_lite_register_file_netlist_wrapper",
+                top="axi_lite_register_file_netlist_build_wrapper",
                 build_result_checkers=[
                     TotalLuts(EqualTo(169)),
                     Ffs(EqualTo(301)),
