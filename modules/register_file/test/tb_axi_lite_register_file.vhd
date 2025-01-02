@@ -86,8 +86,8 @@ architecture tb of tb_axi_lite_register_file is
   constant clk_period : time := 10 ns;
   signal clk : std_ulogic := '0';
 
-  signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t;
-  signal axi_lite_s2m : axi_lite_s2m_t;
+  signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
+  signal axi_lite_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
 
   signal regs_up : register_vec_t(regs'range) := (others => (others => '0'));
   signal regs_down : register_vec_t(regs'range);
@@ -282,19 +282,24 @@ begin
 
   ------------------------------------------------------------------------------
   axi_lite_master_generate : if use_axi_lite_bfm generate
+
+    ------------------------------------------------------------------------------
     axi_lite_master_inst : entity bfm.axi_lite_master
       generic map (
         bus_handle => axi_master
       )
       port map (
         clk => clk,
-
+        --
         axi_lite_m2s => axi_lite_m2s,
         axi_lite_s2m => axi_lite_s2m
       );
 
+  ------------------------------------------------------------------------------
   else generate
+
     axi_lite_m2s <= hardcoded_m2s;
+
   end generate;
 
 
