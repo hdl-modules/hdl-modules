@@ -71,7 +71,7 @@ class Module(BaseModule):
                 generics=generics,
             )
 
-        add_register_file(name="trail", luts=178, ffs=439, logic_level=3)
+        add_register_file(name="trail", luts=116, ffs=312, logic_level=3)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
