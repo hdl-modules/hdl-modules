@@ -16,12 +16,8 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         test = vunit_proj.library(self.library_name).test_bench("tb_simple_dma_axi_lite")
-
-        for data_width in [16, 32]:
-            for buffer_size_words in [4, 16]:
-                for _ in range(5):
-                    generics = dict(data_width=data_width, buffer_size_words=buffer_size_words)
-                    self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+        for _ in range(8):
+            self.add_vunit_config(test=test, set_random_seed=True)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
@@ -36,7 +32,7 @@ class Module(BaseModule):
         part = "xc7z020clg400-1"
 
         generics = dict(
-            address_width=29, stream_data_width=64, axi_data_width=64, burst_length_beats=1
+            address_width=29, stream_data_width=64, axi_data_width=64, packet_length_beats=1
         )
 
         return [
@@ -47,9 +43,9 @@ class Module(BaseModule):
                 top="simple_dma_axi_lite",
                 generics=generics,
                 build_result_checkers=[
-                    TotalLuts(EqualTo(232)),
-                    Ffs(EqualTo(279)),
-                    MaximumLogicLevel(EqualTo(15)),
+                    TotalLuts(EqualTo(156)),
+                    Ffs(EqualTo(207)),
+                    MaximumLogicLevel(EqualTo(16)),
                 ],
             )
         ]
