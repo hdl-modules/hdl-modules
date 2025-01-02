@@ -16,6 +16,9 @@ use ieee.numeric_std.all;
 library common;
 use common.addr_pkg.all;
 
+library math;
+use math.math_pkg.all;
+
 library trail;
 use trail.trail_pkg.all;
 
@@ -24,8 +27,8 @@ use work.register_file_pkg.all;
 
 entity trail_register_file is
   generic (
-    regs : register_definition_vec_t;
-    default_values : register_vec_t(regs'range) := (others => (others => '0'))
+    registers : register_definition_vec_t;
+    default_values : register_vec_t(registers'range) := (others => (others => '0'))
   );
   port (
     clk : in std_ulogic;
@@ -35,33 +38,59 @@ entity trail_register_file is
     trail_response : out trail_response_t := trail_response_init;
     --# {{}}
     -- Register values
-    regs_up : in register_vec_t(regs'range) := default_values;
-    regs_down : out register_vec_t(regs'range) := default_values;
+    regs_up : in register_vec_t(registers'range) := default_values;
+    regs_down : out register_vec_t(registers'range) := default_values;
     --# {{}}
     -- Each bit is pulsed for one cycle when the corresponding register is read/written.
-    -- TODO.
-    reg_was_read : out std_ulogic_vector(regs'range) := (others => '0');
-    reg_was_written : out std_ulogic_vector(regs'range) := (others => '0')
+    reg_was_read : out std_ulogic_vector(registers'range) := (others => '0');
+    reg_was_written : out std_ulogic_vector(registers'range) := (others => '0')
   );
 end entity;
 
 architecture a of trail_register_file is
 
-  signal reg_values : register_vec_t(regs'range) := default_values;
+  constant num_addr_bits : positive := num_bits_needed(get_highest_index(registers));
+  subtype addr_range is natural range num_addr_bits + 2 - 1 downto 2;
 
-  constant invalid_addr : natural := regs'length;
-  subtype decoded_idx_t is natural range 0 to invalid_addr;
-  signal decoded_idx : decoded_idx_t := invalid_addr;
+  signal reg_values : register_vec_t(registers'range) := default_values;
+
+  signal is_read_operation, is_write_operation : boolean := false;
+  signal operation_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
-  regs_down <= reg_values;
+  assign_down : process(all)
+  begin
+    -- Assign only the bits that are marked as utilized, so there is no risk of confusion/misuse.
+    for reg_idx in registers'range loop
+      if is_write_mode(registers(reg_idx).mode) then
+        regs_down(reg_idx)(registers(reg_idx).utilized_width - 1 downto 0) <= reg_values(reg_idx)(
+          registers(reg_idx).utilized_width - 1 downto 0
+        );
+      end if;
+    end loop;
+  end process;
+
+  is_read_operation <= trail_operation.enable = '1' and trail_operation.write_enable = '0';
+  is_write_operation <= trail_operation.enable = '1' and trail_operation.write_enable = '1';
+
+  operation_index <= trail_operation.address(addr_range);
 
 
   ------------------------------------------------------------------------------
-  -- TODO do this differenly
-  -- decoded_idx <= decode(addr=>trail_operation.address, addrs=>addr_and_mask_vec);
+  set_reg_was_read : process(all)
+  begin
+    reg_was_read <= (others => '0');
+
+    for reg_idx in registers'range loop
+      if is_read_mode(registers(reg_idx).mode) then
+        if is_read_operation and operation_index = reg_idx then
+          reg_was_read(reg_idx) <= '1';
+        end if;
+      end if;
+    end loop;
+  end process;
 
 
   ------------------------------------------------------------------------------
@@ -69,7 +98,6 @@ begin
   begin
     wait until rising_edge(clk);
 
-    reg_was_read <= (others => '0');
     reg_was_written <= (others => '0');
 
     -- Respond straight away and unconditionally.
@@ -80,45 +108,55 @@ begin
       trail_response.status <= trail_response_status_error;
     end if;
 
-    for reg_idx in regs'range loop
-      if (
-        is_read_mode(regs(reg_idx).mode)
-        and trail_operation.enable = '1'
-        and trail_operation.write_enable = '0'
-        and decoded_idx = reg_idx
-      ) then
-        -- This is a read 'operation' from a register of a valid read type.
+    for reg_idx in registers'range loop
+      if is_read_mode(registers(reg_idx).mode) then
+        if is_read_operation and operation_index = reg_idx then
+          -- Set initial values zero.
+          -- Below we will only assign the bits that are actually utilized by the register.
+          -- Hopefully, software should not look at any bits outside of the utilized width,
+          -- but set zero just in case and to avoid confusion.
+          -- Does not impact netlist build size.
+          trail_response.read_data(reg_values(0)'range) <= (others => '0');
 
-        if is_application_gives_value_mode(regs(reg_idx).mode) then
-          trail_response.read_data(reg_values(0)'range) <= regs_up(reg_idx);
-        else
-          trail_response.read_data(reg_values(0)'range) <= reg_values(reg_idx);
+          trail_response.status <= trail_response_status_okay;
         end if;
 
-        trail_response.status <= trail_response_status_okay;
-
-        reg_was_read(reg_idx) <= '1';
+        for bit_idx in 0 to registers(reg_idx).utilized_width - 1 loop
+          if is_application_gives_value_mode(registers(reg_idx).mode) then
+            if is_read_operation and operation_index = reg_idx then
+              trail_response.read_data(reg_values(0)'range)(bit_idx) <= regs_up(reg_idx)(bit_idx);
+            end if;
+          else
+            if is_read_operation and operation_index = reg_idx then
+              trail_response.read_data(reg_values(0)'range)(bit_idx) <= reg_values(reg_idx)(
+                bit_idx
+              );
+            end if;
+          end if;
+        end loop;
       end if;
 
-      if is_write_pulse_mode(regs(reg_idx).mode) then
-        -- Set initial default value.
-        -- If a write occurs to this register, the value will be asserted for one cycle below.
-        reg_values(reg_idx) <= default_values(reg_idx);
+      if is_write_pulse_mode(registers(reg_idx).mode) then
+        for bit_idx in 0 to registers(reg_idx).utilized_width - 1 loop
+          -- Set initial default value.
+          -- If a write occurs to this register, the value will be asserted for one cycle below.
+          reg_values(reg_idx)(bit_idx) <= default_values(reg_idx)(bit_idx);
+        end loop;
       end if;
 
-      if (
-        is_write_mode(regs(reg_idx).mode)
-        and trail_operation.enable = '1'
-        and trail_operation.write_enable = '1'
-        and decoded_idx = reg_idx
-      ) then
-        -- This is a write 'operation' to a register of a valid write type.
+      if is_write_mode(registers(reg_idx).mode) then
+        if is_write_operation and operation_index = reg_idx then
+          trail_response.status <= trail_response_status_okay;
+          reg_was_written(reg_idx) <= '1';
+        end if;
 
-        reg_values(reg_idx) <= trail_operation.write_data(reg_values(0)'range);
-
-        trail_response.status <= trail_response_status_okay;
-
-        reg_was_written(reg_idx) <= '1';
+        for bit_idx in 0 to registers(reg_idx).utilized_width - 1 loop
+          if is_write_operation and operation_index = reg_idx then
+            reg_values(reg_idx)(bit_idx) <= trail_operation.write_data(reg_values(0)'range)(
+              bit_idx
+            );
+          end if;
+        end loop;
       end if;
     end loop;
   end process;

@@ -41,7 +41,7 @@ end entity;
 architecture tb of tb_trail_register_file is
 
   -- Generic constants.
-  constant regs : register_definition_vec_t(0 to 15 - 1) := (
+  constant registers : register_definition_vec_t(0 to 15 - 1) := (
     (index => 0, mode => r, utilized_width=>32),
     (index => 1, mode => r, utilized_width=>32),
     (index => 2, mode => r, utilized_width=>32),
@@ -59,7 +59,7 @@ architecture tb of tb_trail_register_file is
     (index => 14, mode => r_wpulse, utilized_width=>32)
   );
 
-  constant default_values : register_vec_t(regs'range) := (
+  constant default_values : register_vec_t(registers'range) := (
     0 => x"dcd3e0e6",
     1 => x"323e4bfd",
     2 => x"7ddd475b",
@@ -84,8 +84,8 @@ architecture tb of tb_trail_register_file is
   signal trail_operation : trail_operation_t := trail_operation_init;
   signal trail_response : trail_response_t := trail_response_init;
 
-  signal regs_up, regs_down : register_vec_t(regs'range) := (others => (others => '0'));
-  signal reg_was_read, reg_was_written : std_ulogic_vector(regs'range);
+  signal regs_up, regs_down : register_vec_t(registers'range) := (others => (others => '0'));
+  signal reg_was_read, reg_was_written : std_ulogic_vector(registers'range);
 
   -- Testbench stuff.
   constant reg_was_accessed_zero : std_ulogic_vector(reg_was_written'range) := (others => '0');
@@ -102,7 +102,7 @@ begin
   main : process
     variable rnd : RandomPType;
 
-    variable hardware_data, software_data : register_vec_t(0 to regs'length - 1);
+    variable hardware_data, software_data : register_vec_t(0 to registers'length - 1);
 
     -- TODO unify with tb_axi_lite_reg_file
     procedure reg_stimuli(reg : register_definition_t) is
@@ -184,14 +184,14 @@ begin
     elsif run("test_random_read_and_write") then
       -- TODO loop?
 
-      for list_idx in regs'range loop
+      for list_idx in registers'range loop
         hardware_data(list_idx) := rnd.RandSLV(hardware_data(0)'length);
         software_data(list_idx) := rnd.RandSLV(software_data(0)'length);
       end loop;
 
-      for list_idx in regs'range loop
-        reg_stimuli(regs(list_idx));
-        reg_data_check(regs(list_idx));
+      for list_idx in registers'range loop
+        reg_stimuli(registers(list_idx));
+        reg_data_check(registers(list_idx));
       end loop;
 
     end if;
@@ -226,7 +226,7 @@ begin
   ------------------------------------------------------------------------------
   dut : entity work.trail_register_file
     generic map (
-      regs => regs,
+      registers => registers,
       default_values => default_values
     )
     port map (

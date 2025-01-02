@@ -66,8 +66,8 @@ class Module(BaseModule):
                 )
             )
 
-        add_register_file(name="axi_lite", luts=202, ffs=447, logic_level=4)
-        add_register_file(name="trail", luts=178, ffs=439, logic_level=3)
+        add_register_file(name="axi_lite", luts=169, ffs=301, logic_level=3)
+        add_register_file(name="trail", luts=116, ffs=312, logic_level=4)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
