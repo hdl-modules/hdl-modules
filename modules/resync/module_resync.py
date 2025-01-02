@@ -13,14 +13,7 @@ from typing import Optional
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
-from tsfpga.vivado.build_result_checker import (
-    EqualTo,
-    Ffs,
-    GreaterThan,
-    LutRams,
-    MaximumLogicLevel,
-    TotalLuts,
-)
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, LutRams, MaximumLogicLevel, TotalLuts
 
 
 class Module(BaseModule):
@@ -181,12 +174,19 @@ class Module(BaseModule):
                 raise ValueError("Invalid config")
 
             build_result_checkers = [
-                TotalLuts(EqualTo(config.lut)),
                 Ffs(EqualTo(config.ff)),
                 MaximumLogicLevel(EqualTo(config.logic)),
             ]
             if "lutram" in config.name:
-                build_result_checkers.append(LutRams(GreaterThan(0)))
+                num_lutrams = {8: 8, 16: 12, 24: 16, 32: 24, 64: 44}
+                width = config.width if config.width is not None else config.data_width
+                num_lutram = num_lutrams[width]
+
+                build_result_checkers.append(LutRams(EqualTo(num_lutram)))
+                build_result_checkers.append(TotalLuts(EqualTo(num_lutram + config.lut)))
+            else:
+                build_result_checkers.append(LutRams(EqualTo(0)))
+                build_result_checkers.append(TotalLuts(EqualTo(config.lut)))
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
@@ -216,13 +216,8 @@ class Module(BaseModule):
                 Config(name="resync_twophase", width=width, lut=3, ff=2 * width + 6, logic=2)
             )
 
-        add_config(Config(name="resync_twophase_lutram", width=8, lut=10, ff=6, logic=2))
-        add_config(Config(name="resync_twophase_lutram", width=16, lut=14, ff=6, logic=2))
-        add_config(Config(name="resync_twophase_lutram", width=24, lut=18, ff=6, logic=2))
-        add_config(Config(name="resync_twophase_lutram", width=32, lut=26, ff=6, logic=2))
-        add_config(Config(name="resync_twophase_lutram", width=64, lut=46, ff=6, logic=2))
+            add_config(Config(name="resync_twophase_lutram", width=width, lut=2, ff=6, logic=2))
 
-        for width in [8, 16, 24, 32, 64]:
             add_config(
                 Config(
                     name="resync_twophase_handshake",
@@ -233,18 +228,18 @@ class Module(BaseModule):
                 )
             )
 
-        for data_width in [32, 64]:
             add_config(
                 Config(
                     name="resync_rarely_valid",
-                    data_width=data_width,
+                    data_width=width,
                     lut=2,
-                    ff=2 * data_width + 5,
+                    ff=2 * width + 5,
                     logic=2,
                 )
             )
 
-        add_config(Config(name="resync_rarely_valid_lutram", data_width=32, lut=26, ff=4, logic=2))
-        add_config(Config(name="resync_rarely_valid_lutram", data_width=64, lut=46, ff=4, logic=2))
+            add_config(
+                Config(name="resync_rarely_valid_lutram", data_width=32, lut=2, ff=4, logic=2)
+            )
 
         return projects
