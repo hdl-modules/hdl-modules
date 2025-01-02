@@ -51,7 +51,7 @@ entity simple_dma_core is
     -- But note that there is no support for writing partial packets.
     -- If the 'stream' stops in the middle of a packet, there is not way to write or clear the
     -- accumulated data.
-    packet_length_beats : positive range 1 to axi_max_burst_length_beats;
+    packet_length_beats : positive;
     -- Enable AXI3 instead of AXI4, with the limitations that this implies.
     enable_axi3 : boolean
   );

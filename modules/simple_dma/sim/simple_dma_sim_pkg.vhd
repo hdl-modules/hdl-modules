@@ -12,6 +12,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library osvvm;
+use osvvm.RandomPkg.RandomPType;
+
 library vunit_lib;
 use vunit_lib.check_pkg.all;
 use vunit_lib.com_types_pkg.network_t;
@@ -29,8 +32,9 @@ use work.simple_dma_register_read_write_pkg.all;
 package simple_dma_sim_pkg is
 
   -- Run a test where the data written to memory by the DUT is pushed byte-by-byte to a queue.
-  -- No verification of data is done so that must be done outside of the procedure.
+  -- No verification of data is done, so that must be done outside of the procedure.
   procedure run_simple_dma_test(
+    rnd : inout RandomPType;
     signal net : inout network_t;
     constant receive_num_bytes : positive;
     constant receive_data_queue : queue_t;
@@ -43,6 +47,7 @@ package simple_dma_sim_pkg is
   -- Run a test where the data written to memory by the DUT is verified byte-by-byte to
   -- reference data.
   procedure run_simple_dma_test(
+    rnd : inout RandomPType;
     signal net : inout network_t;
     reference_data : in integer_array_t;
     buffer_size_bytes : in positive;
@@ -56,6 +61,7 @@ end package;
 package body simple_dma_sim_pkg is
 
   procedure run_simple_dma_test(
+    rnd : inout RandomPType;
     signal net : inout network_t;
     constant receive_num_bytes : positive;
     constant receive_data_queue : queue_t;
@@ -101,16 +107,26 @@ package body simple_dma_sim_pkg is
       );
 
       while written_address /= read_address loop
-        push(receive_data_queue, read_byte(memory=>memory, address=>read_address));
-        num_bytes_pushed := num_bytes_pushed + 1;
+        -- At a 12.5% probability, stop consuming before we have consumed all data that is
+        -- actually available.
+        -- Will result in writing back a 'read' address that is not equal to the 'written' address.
+        if rnd.Uniform(1, 8) /= 8 then
+          for memory_word_idx in 0 to buffer_alignment - 1 loop
+            push(receive_data_queue, read_byte(memory=>memory, address=>read_address));
 
-        if read_address = last_address(buf) then
-          read_address := base_address(buf);
-        else
-          read_address := read_address + 1;
+            if read_address = last_address(buf) then
+              read_address := base_address(buf);
+            else
+              read_address := read_address + 1;
+            end if;
+          end loop;
+
+          num_bytes_pushed := num_bytes_pushed + buffer_alignment;
         end if;
       end loop;
 
+      -- Write the address for all data that has been consumed.
+      -- Note that there is a possibility that we might not have consumed any data at all.
       write_simple_dma_buffer_read_address(
         net=>net, value=>read_address, base_address=>regs_base_address
       );
@@ -119,6 +135,7 @@ package body simple_dma_sim_pkg is
 
 
   procedure run_simple_dma_test(
+    rnd : inout RandomPType;
     signal net : inout network_t;
     reference_data : in integer_array_t;
     buffer_size_bytes : in positive;
@@ -130,6 +147,7 @@ package body simple_dma_sim_pkg is
     constant receive_data_queue : queue_t := new_queue;
   begin
     run_simple_dma_test(
+      rnd=>rnd,
       net=>net,
       receive_num_bytes=>receive_num_bytes,
       receive_data_queue=>receive_data_queue,

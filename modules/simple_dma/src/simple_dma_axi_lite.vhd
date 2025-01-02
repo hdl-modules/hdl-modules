@@ -29,7 +29,7 @@ entity simple_dma_axi_lite is
     address_width : axi_addr_width_t;
     stream_data_width : axi_data_width_t;
     axi_data_width : axi_data_width_t;
-    packet_length_beats : positive range 1 to axi_max_burst_length_beats;
+    packet_length_beats : positive;
     enable_axi3 : boolean := false
   );
   port (
