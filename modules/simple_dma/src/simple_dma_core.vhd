@@ -48,7 +48,9 @@ entity simple_dma_core is
     -- being written to memory.
     -- Increase this number to improve memory performance.
     -- Will also decrease the frequency of 'write_done' interrupts.
-    -- But note that there is not support from writing partial packets.
+    -- But note that there is no support for writing partial packets.
+    -- If the 'stream' stops in the middle of a packet, there is not way to write or clear the
+    -- accumulated data.
     packet_length_beats : positive range 1 to axi_max_burst_length_beats;
     -- Enable AXI3 instead of AXI4, with the limitations that this implies.
     enable_axi3 : boolean
@@ -116,15 +118,15 @@ begin
     severity failure;
 
   assert packet_length_beats = 1
-    report "We support only single-beat bursts at the moment. Will be changed in the future."
+    report "Only single-beat bursts are supported at the moment. Will be changed in the future."
     severity failure;
 
   assert packet_length_axi_beats <= max_burst_length_beats
-    report "We do not support burst splitting at the moment. Will be changed in the future."
+    report "Burst splitting is not supported at the moment. Will be changed in the future."
     severity failure;
 
   assert packet_length_bytes <= 4096
-    report "We do not support burst splitting at the moment. Will be changed in the future."
+    report "Burst splitting is not supported at the moment. Will be changed in the future."
     severity failure;
 
 
