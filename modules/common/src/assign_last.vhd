@@ -17,6 +17,12 @@
 -- The ``ready`` and ``valid`` ports must be assigned combinatorially.
 -- The ``last`` shall be assigned combinatorially alongside the ``ready`` and ``valid`` signals
 -- that go towards the data sink.
+--
+-- .. note::
+--   This entity also produces a ``first`` signal.
+--   This is not part of the AXI-Stream specification or commonly used, but it might be useful
+--   in some cases.
+--   Feel free to ignore it.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -39,7 +45,8 @@ entity assign_last is
     --# {{}}
     ready : in std_ulogic;
     valid : in std_ulogic;
-    last : out std_ulogic := '0'
+    last : out std_ulogic := '0';
+    first : out std_ulogic := '0'
   );
 end entity;
 
@@ -53,6 +60,8 @@ begin
 
   last <= to_sl(beat_counter = packet_length_beats - 1);
 
+  first <= to_sl(beat_counter = 0);
+
 
   ------------------------------------------------------------------------------
   main : process
@@ -62,6 +71,9 @@ begin
     if ready and valid then
       if power_of_two_length then
         -- Efficient implementation.
+        -- If long packet lengths are used, it would be even more efficient to use
+        -- 'periodic_pulser' instead of a counter.
+        -- It's worth investigating if that use case ever arises.
         beat_counter <= (beat_counter + 1) mod packet_length_beats;
 
       else
