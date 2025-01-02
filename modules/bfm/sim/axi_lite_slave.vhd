@@ -55,6 +55,7 @@ begin
   ------------------------------------------------------------------------------
   axi_read_slave_gen : if axi_read_slave /= axi_slave_init generate
 
+    ------------------------------------------------------------------------------
     axi_lite_read_slave_inst : entity work.axi_lite_read_slave
       generic map (
         axi_slave => axi_read_slave,
@@ -67,12 +68,14 @@ begin
         axi_lite_read_m2s => axi_lite_read_m2s,
         axi_lite_read_s2m => axi_lite_read_s2m
       );
+
   end generate;
 
 
   ------------------------------------------------------------------------------
   axi_write_slave_gen : if axi_write_slave /= axi_slave_init generate
 
+    ------------------------------------------------------------------------------
     axi_lite_write_slave_inst : entity work.axi_lite_write_slave
       generic map (
         axi_slave => axi_write_slave,

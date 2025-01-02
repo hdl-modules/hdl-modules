@@ -123,10 +123,10 @@ begin
     )
     port map (
       clk => clk_axi,
-
+      --
       axi_read_m2s => axi_m2s.read,
       axi_read_s2m => axi_s2m.read,
-
+      --
       axi_write_m2s => axi_m2s.write,
       axi_write_s2m => axi_s2m.write
     );
@@ -142,7 +142,7 @@ begin
       )
       port map (
         clk => clk_axi_lite_vec(slave),
-
+        --
         axi_lite_m2s => axi_lite_m2s_vec(slave),
         axi_lite_s2m => axi_lite_s2m_vec(slave)
       );
