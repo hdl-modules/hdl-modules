@@ -120,7 +120,7 @@ begin
         write_bus(net, axi_master, 4 * reg.index, bus_data(reg.index));
       end if;
 
-      if is_hardware_gives_value_mode(reg.mode) then
+      if is_application_gives_value_mode(reg.mode) then
         regs_up(reg.index) <= fabric_data(reg.index);
       end if;
     end procedure;
@@ -167,7 +167,7 @@ begin
 
         await_read_bus_reply(net, read_bus_reference, read_bus_data);
 
-        if is_hardware_gives_value_mode(reg.mode) then
+        if is_application_gives_value_mode(reg.mode) then
           check_equal(read_bus_data, fabric_data(reg.index));
         else
           check_equal(read_bus_data, bus_data(reg.index));

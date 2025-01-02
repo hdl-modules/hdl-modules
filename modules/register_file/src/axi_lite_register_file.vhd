@@ -117,7 +117,7 @@ begin
           end if;
 
           for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
-            if is_hardware_gives_value_mode(regs(list_idx).mode) then
+            if is_application_gives_value_mode(regs(list_idx).mode) then
               if read_index = list_idx then
                 axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
               end if;

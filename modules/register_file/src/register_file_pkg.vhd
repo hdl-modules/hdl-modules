@@ -49,9 +49,10 @@ package register_file_pkg is
   -- If it is a mode where software can write the register and the value shall be asserted for
   -- one clock cycle in hardware.
   function is_write_pulse_mode(mode : register_mode_t) return boolean;
-  -- If it is a mode where the value that software can read is provided by the hardware.
+  -- If it is a mode where the value that software can read is provided by the 'regs_up' port
+  -- from the users' application.
   -- As opposed to for example Read-Write, where the read value is a loopback of the written value.
-  function is_hardware_gives_value_mode(mode : register_mode_t) return boolean;
+  function is_application_gives_value_mode(mode : register_mode_t) return boolean;
 
   type register_definition_t is record
     -- The index of this register, within the list of registers.
@@ -86,7 +87,7 @@ package body register_file_pkg is
     return mode = wpulse or mode = r_wpulse;
   end function;
 
-  function is_hardware_gives_value_mode(mode : register_mode_t) return boolean is
+  function is_application_gives_value_mode(mode : register_mode_t) return boolean is
   begin
     return mode = r or mode = r_wpulse;
   end function;
