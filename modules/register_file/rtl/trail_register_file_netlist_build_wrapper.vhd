@@ -19,7 +19,7 @@ use work.register_file_pkg.all;
 use work.register_file_netlist_pkg.all;
 
 
-entity trail_register_file_netlist_wrapper is
+entity trail_register_file_netlist_build_wrapper is
   port (
     clk : in std_ulogic;
     --
@@ -34,7 +34,7 @@ entity trail_register_file_netlist_wrapper is
   );
 end entity;
 
-architecture a of trail_register_file_netlist_wrapper is
+architecture a of trail_register_file_netlist_build_wrapper is
 
 begin
 

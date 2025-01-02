@@ -89,7 +89,7 @@ begin
       ) then
         -- This is a read 'operation' from a register of a valid read type.
 
-        if is_hardware_gives_value_mode(regs(reg_idx).mode) then
+        if is_application_gives_value_mode(regs(reg_idx).mode) then
           trail_response.read_data(reg_values(0)'range) <= regs_up(reg_idx);
         else
           trail_response.read_data(reg_values(0)'range) <= reg_values(reg_idx);

@@ -111,7 +111,7 @@ begin
         write_reg(net=>net, reg_index=>reg.index, value=>software_data(reg.index));
       end if;
 
-      if is_hardware_gives_value_mode(reg.mode) then
+      if is_application_gives_value_mode(reg.mode) then
         regs_up(reg.index) <= hardware_data(reg.index);
       end if;
     end procedure;
@@ -163,7 +163,7 @@ begin
 
         await_read_bus_reply(net=>net, reference=>read_bus_reference, data=>read_bus_data);
 
-        if is_hardware_gives_value_mode(reg.mode) then
+        if is_application_gives_value_mode(reg.mode) then
           check_equal(read_bus_data, hardware_data(reg.index));
         else
           check_equal(read_bus_data, software_data(reg.index));

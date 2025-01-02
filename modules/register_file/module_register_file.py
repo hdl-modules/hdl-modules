@@ -55,7 +55,7 @@ class Module(BaseModule):
                     name=f"{self.library_name}.{name}_register_file",
                     modules=all_modules,
                     part=part,
-                    top=f"{name}_register_file_netlist_wrapper",
+                    top=f"{name}_register_file_netlist_build_wrapper",
                     build_result_checkers=[
                         TotalLuts(EqualTo(luts)),
                         Ffs(EqualTo(ffs)),
