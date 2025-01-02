@@ -24,7 +24,7 @@ from tsfpga.vivado.build_result_checker import (
 
 
 class Module(BaseModule):
-    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
+    def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
@@ -49,7 +49,7 @@ class Module(BaseModule):
                     name=f"{self.library_name}.{name}_register_file",
                     modules=all_modules,
                     part=part,
-                    top=f"{name}_register_file_netlist_wrapper",
+                    top=f"{name}_register_file_netlist_build_wrapper",
                     generics=generics,
                     build_result_checkers=[
                         TotalLuts(EqualTo(luts)),

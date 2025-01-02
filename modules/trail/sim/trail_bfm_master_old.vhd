@@ -31,15 +31,15 @@ use vunit_lib.sync_pkg.all;
 library common;
 use common.types_pkg.to_sl;
 
-library reg_file;
-use reg_file.reg_operations_pkg.regs_bus_master;
+library register_file;
+use register_file.register_operations_pkg.register_bus_master;
 
 use work.trail_pkg.all;
 
 
 entity trail_bfm_master_old is
   generic (
-    bus_handle : bus_master_t := regs_bus_master;
+    bus_handle : bus_master_t := register_bus_master;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
