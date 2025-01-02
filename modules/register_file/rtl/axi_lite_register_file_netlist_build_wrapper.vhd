@@ -34,7 +34,7 @@ entity axi_lite_register_file_netlist_build_wrapper is
   );
 end entity;
 
-architecture a of axi_lite_reg_file_netlist_wrapper is
+architecture a of axi_lite_register_file_netlist_build_wrapper is
 
 begin
 

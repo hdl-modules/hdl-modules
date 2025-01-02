@@ -31,6 +31,9 @@ class Module(BaseModule):
 
         self.add_vunit_config(test=tb, set_random_seed=True)
 
+        tb = vunit_proj.library(self.library_name).test_bench("tb_trail_register_file")
+        self.add_vunit_config(test=tb, set_random_seed=True)
+
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
@@ -52,7 +55,7 @@ class Module(BaseModule):
                     name=f"{self.library_name}.{name}_register_file",
                     modules=all_modules,
                     part=part,
-                    top=f"{name}_register_file_netlist_wrapper",
+                    top=f"{name}_register_file_netlist_build_wrapper",
                     build_result_checkers=[
                         TotalLuts(EqualTo(luts)),
                         Ffs(EqualTo(ffs)),

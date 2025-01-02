@@ -19,13 +19,13 @@ use common.addr_pkg.all;
 library trail;
 use trail.trail_pkg.all;
 
-use work.reg_file_pkg.all;
+use work.register_file_pkg.all;
 
--- TODO rename
-entity trail_reg_file is
+
+entity trail_register_file is
   generic (
-    regs : reg_definition_vec_t;
-    default_values : reg_vec_t(regs'range) := (others => (others => '0'))
+    regs : register_definition_vec_t;
+    default_values : register_vec_t(regs'range) := (others => (others => '0'))
   );
   port (
     clk : in std_ulogic;
@@ -35,8 +35,8 @@ entity trail_reg_file is
     trail_response : out trail_response_t := trail_response_init;
     --# {{}}
     -- Register values
-    regs_up : in reg_vec_t(regs'range) := default_values;
-    regs_down : out reg_vec_t(regs'range) := default_values;
+    regs_up : in register_vec_t(regs'range) := default_values;
+    regs_down : out register_vec_t(regs'range) := default_values;
     --# {{}}
     -- Each bit is pulsed for one cycle when the corresponding register is read/written.
     -- TODO.
@@ -45,11 +45,9 @@ entity trail_reg_file is
   );
 end entity;
 
-architecture a of trail_reg_file is
+architecture a of trail_register_file is
 
-  constant addr_and_mask_vec : addr_and_mask_vec_t := to_addr_and_mask_vec(regs);
-
-  signal reg_values : reg_vec_t(regs'range) := default_values;
+  signal reg_values : register_vec_t(regs'range) := default_values;
 
   constant invalid_addr : natural := regs'length;
   subtype decoded_idx_t is natural range 0 to invalid_addr;
@@ -62,7 +60,8 @@ begin
 
 
   ------------------------------------------------------------------------------
-  decoded_idx <= decode(addr=>trail_operation.address, addrs=>addr_and_mask_vec);
+  -- TODO do this differenly
+  -- decoded_idx <= decode(addr=>trail_operation.address, addrs=>addr_and_mask_vec);
 
 
   ------------------------------------------------------------------------------
@@ -83,14 +82,14 @@ begin
 
     for reg_idx in regs'range loop
       if (
-        is_read_type(regs(reg_idx).reg_type)
+        is_read_mode(regs(reg_idx).mode)
         and trail_operation.enable = '1'
         and trail_operation.write_enable = '0'
         and decoded_idx = reg_idx
       ) then
         -- This is a read 'operation' from a register of a valid read type.
 
-        if is_fabric_gives_value_type(regs(reg_idx).reg_type) then
+        if is_application_gives_value_mode(regs(reg_idx).mode) then
           trail_response.read_data(reg_values(0)'range) <= regs_up(reg_idx);
         else
           trail_response.read_data(reg_values(0)'range) <= reg_values(reg_idx);
@@ -101,14 +100,14 @@ begin
         reg_was_read(reg_idx) <= '1';
       end if;
 
-      if is_write_pulse_type(regs(reg_idx).reg_type) then
+      if is_write_pulse_mode(regs(reg_idx).mode) then
         -- Set initial default value.
         -- If a write occurs to this register, the value will be asserted for one cycle below.
         reg_values(reg_idx) <= default_values(reg_idx);
       end if;
 
       if (
-        is_write_type(regs(reg_idx).reg_type)
+        is_write_mode(regs(reg_idx).mode)
         and trail_operation.enable = '1'
         and trail_operation.write_enable = '1'
         and decoded_idx = reg_idx
