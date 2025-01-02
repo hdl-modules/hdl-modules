@@ -33,7 +33,7 @@ entity axi_lite_slave is
   generic (
     axi_read_slave : axi_slave_t := axi_slave_init;
     axi_write_slave : axi_slave_t := axi_slave_init;
-    data_width : positive range 1 to axi_lite_data_sz;
+    data_width : axi_lite_data_width_t;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );

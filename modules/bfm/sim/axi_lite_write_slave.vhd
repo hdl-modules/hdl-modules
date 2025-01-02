@@ -33,7 +33,7 @@ use vunit_lib.axi_slave_pkg.all;
 entity axi_lite_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 1 to axi_lite_data_sz;
+    data_width : axi_lite_data_width_t;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );

@@ -33,7 +33,7 @@ use work.axi_lite_pkg.all;
 
 entity tb_axi_to_axi_lite is
   generic (
-    data_width : positive range 1 to axi_lite_data_sz;
+    data_width : axi_lite_data_width_t;
     runner_cfg : string
   );
 end entity;
