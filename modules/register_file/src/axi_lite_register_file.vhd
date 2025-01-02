@@ -107,6 +107,12 @@ begin
       reg_was_read <= (others => '0');
 
       axi_lite_s2m.read.r.resp <= axi_resp_slverr;
+
+      -- Set initial values zero.
+      -- Below we will only assign the bits that are actually utilized by the register.
+      -- Hopefully, software should not look at any bits outside of the utilized width,
+      -- but set zero just in case and to avoid confusion.
+      -- Does not impact netlist build size.
       axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
 
       for list_idx in registers'range loop
