@@ -141,6 +141,14 @@ begin
 
       assert buffer_size_bytes >= 2 * segment_length_bytes
         report "Buffer must be able to hold at least two segments";
+
+      assert buffer_start_address mod segment_length_bytes = 0
+        report "Buffer addresses must be aligned to segment length";
+
+      assert buffer_end_address mod segment_length_bytes = 0
+        report "Buffer addresses must be aligned to segment length";
+
+      wait;
     end process;
 
   end generate;

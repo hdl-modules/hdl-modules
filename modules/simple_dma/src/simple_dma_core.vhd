@@ -9,6 +9,89 @@
 -- Main implementation of the simple DMA functionality.
 -- This entity is not suitable for instantiation in a user design, use instead e.g.
 -- :ref:`simple_dma.simple_dma_axi_lite`.
+--
+--
+-- Packet length
+-- _____________
+--
+-- The ``packet_length_beats`` generic specifies the packet length in terms of number of
+-- input ``stream`` beats.
+-- When one packet of streaming data has been written to DDR,
+-- the ``write_done`` interrupt will trigger and the ``buffer_written_address`` register
+-- will be updated.
+-- This indicates to the software that there is data in the buffer that can be read.
+--
+-- .. note::
+--   The packet length is a compile-time parameter.
+--   It can not be changed during runtime and there is no support for writing or clearing
+--   partial packets.
+--
+--   This saves a lot of resources and is part of the simple nature of this DMA core.
+--
+-- At the moment, no burst splitting is supported, so the packet length must fit in the maximum
+-- burst length of the AXI port (16 beats for AXI3 and 256 for AXI4).
+-- This limitation can be removed in the future if there is a use case.
+--
+-- .. note::
+--   If ``stream_data_width`` and ``axi_data_width`` are different, the number of AXI
+--   beats per burst will be different than the ``packet_length_beats`` value.
+--
+--
+-- .. _simple_dma_resource_usage:
+--
+-- Resource usage
+-- ______________
+--
+-- The core has a simple design with the goal of low resource utilization in mind.
+-- See :ref:`simple_dma.simple_dma_axi_lite.resource_utilization` for some build numbers.
+-- These numbers are incredibly low compared to some other implementations.
+--
+-- The special case when ``packet_length_beats`` is 1 has an optimized implementation that gives
+-- even lower resource usage than the general case.
+-- This comes at the cost of quite poor memory performance, since every data beat becomes and
+-- AXI burst in that case.
+--
+--
+-- .. _simple_dma_throughput:
+--
+-- AXI/data throughput
+-- ___________________
+--
+-- The core has a one-cycle overhead per packet.
+-- Meaning that for each packet, the input ``stream`` will stall (``stream_ready = 0``) for one
+-- clock cycle.
+-- This is assuming that ``AWREADY`` and ``WREADY`` are high.
+-- If they are not, their stall will be propagated to the ``stream``.
+--
+-- If the memory buffer is full, the ``stream`` will stall until there is space.
+-- When the software writes an updated ``buffer_read_address`` register indicating available space,
+-- the ``stream`` will start after two clock cycles.
+--
+--
+-- AXI behavior
+-- ____________
+--
+-- The core is designed to be as well-behaved as possible in an AXI sense:
+--
+-- 1. The ``AW`` transaction is only initiated once we have at least one ``W`` beat available.
+--
+-- 2. Backpressure from ``AWREADY`` and ``WREADY`` is of course respected.
+--
+-- 3. ``BREADY`` is always high.
+--
+-- This gives very good AXI performance.
+-- The cores does NOT, however, accumulate a whole burst in order to guarantee no holes in the data.
+-- Meaning, it is possible that an ``AW`` and a few ``W`` transactions  happen, but then the
+-- stream can stop for a while and block the AXI bus before the burst is finished.
+--
+-- This can be problematic if the downstream AXI slave is a crossbar/interconnect that
+-- arbitrates between multiple AXI masters.
+--
+-- It is up to the user to make sure that either,
+--
+-- 1. The ``stream`` never stops within a packet, so that optimal AXI performance is reached.
+-- 2. Or, the downstream AXI slave can handle holes without impacting performance.
+--    The :ref:`axi.axi_write_throttle` is designed to help with this.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -23,6 +106,9 @@ use axi_lite.axi_lite_pkg.all;
 
 library common;
 use common.types_pkg.all;
+
+library math;
+use math.math_pkg.is_power_of_two;
 
 library register_file;
 use register_file.register_file_pkg.all;
@@ -87,6 +173,8 @@ architecture a of simple_dma_core is
 
   ------------------------------------------------------------------------------
   -- Signals.
+  signal interrupt_sources : register_t := (others => '0');
+
   signal segment_ready, segment_valid : std_ulogic := '0';
   signal segment_address : u_unsigned(address_width - 1 downto 0) := (others => '0');
 
@@ -95,10 +183,6 @@ architecture a of simple_dma_core is
   signal ring_buffer_status : simple_ring_buffer_manager_status_t := (
     simple_ring_buffer_manager_status_idle_no_error
   );
-
-  signal merged_ready, merged_valid : std_ulogic := '0';
-
-  signal interrupt_sources : register_t := (others => '0');
 
 begin
 
@@ -111,14 +195,17 @@ begin
     report "Data width ratio must be a whole number of beats"
     severity failure;
 
-  -- Once we split the AXI and stream data widths, we should that the stream data width
-  -- is a power-of-two number of bytes.
   assert sanity_check_axi_data_width(data_width=>axi_data_width)
-    report "Invalid AXI data width"
+    report "Invalid AXI data width. See above."
     severity failure;
 
-  assert packet_length_beats = 1
-    report "Only single-beat bursts are supported at the moment. Will be changed in the future."
+  -- We check the data width using the same function, for simplicity.
+  assert sanity_check_axi_data_width(data_width=>stream_data_width)
+    report "Invalid stream data width. See above."
+    severity failure;
+
+  assert is_power_of_two(packet_length_beats)
+    report "Packet length must be a power of two for efficient calculations."
     severity failure;
 
   assert packet_length_axi_beats <= max_burst_length_beats
@@ -220,50 +307,137 @@ begin
 
 
   ------------------------------------------------------------------------------
-  handshake_merger_inst : entity common.handshake_merger
-    generic map (
-      num_interfaces => 2
-    )
-    port map (
-      clk => clk,
-      --
-      input_ready(0) => segment_ready,
-      input_ready(1) => stream_ready,
-      input_valid(0) => segment_valid,
-      input_valid(1) => stream_valid,
-      --
-      result_ready => merged_ready,
-      result_valid => merged_valid
-    );
+  -- Optimized implementation for single-beat packets.
+  packet_length_gen : if packet_length_beats = 1 generate
+    signal merged_ready, merged_valid : std_ulogic := '0';
+  begin
+
+    ------------------------------------------------------------------------------
+    handshake_merger_inst : entity common.handshake_merger
+      generic map (
+        num_interfaces => 2
+      )
+      port map (
+        clk => clk,
+        --
+        input_ready(0) => segment_ready,
+        input_ready(1) => stream_ready,
+        input_valid(0) => segment_valid,
+        input_valid(1) => stream_valid,
+        --
+        result_ready => merged_ready,
+        result_valid => merged_valid
+      );
+
+
+    ------------------------------------------------------------------------------
+    handshake_splitter_inst : entity common.handshake_splitter
+      generic map (
+        num_interfaces => 2
+      )
+      port map (
+        clk => clk,
+        --
+        input_ready => merged_ready,
+        input_valid => merged_valid,
+        --
+        output_ready(0) => axi_write_s2m.aw.ready,
+        output_ready(1) => axi_write_s2m.w.ready,
+        output_valid(0) => axi_write_m2s.aw.valid,
+        output_valid(1) => axi_write_m2s.w.valid
+      );
+
+    axi_write_m2s.aw.addr(segment_address'range) <= segment_address;
+
+    -- Packet length one beat -> it is always the last beat.
+    axi_write_m2s.w.last <= '1';
 
 
   ------------------------------------------------------------------------------
-  handshake_splitter_inst : entity common.handshake_splitter
-    generic map (
-      num_interfaces => 2
-    )
-    port map (
-      clk => clk,
-      --
-      input_ready => merged_ready,
-      input_valid => merged_valid,
-      --
-      output_ready(0) => axi_write_s2m.aw.ready,
-      output_ready(1) => axi_write_s2m.w.ready,
-      output_valid(0) => axi_write_m2s.aw.valid,
-      output_valid(1) => axi_write_m2s.w.valid
-    );
+  -- General implementation for multi-beat packets.
+  else generate
+    type state_t is (wait_for_start_condition, let_data_pass);
+    signal state : state_t := wait_for_start_condition;
+
+    signal stream_last : std_ulogic := '0';
+  begin
+
+    ------------------------------------------------------------------------------
+    address_handshaking : process
+    begin
+      wait until rising_edge(clk);
+
+      segment_ready <= '0';
+
+      if axi_write_s2m.aw.ready then
+        axi_write_m2s.aw.valid <= '0';
+      end if;
+
+      case state is
+        when wait_for_start_condition =>
+          -- In order to initiate an AW transaction and let W data through, we need to make
+          -- sure that
+          -- 1. We have incoming stream data, since sending an AW transaction before data is
+          --    quite ill-behaved in an AXI sense.
+          --    Some AXI slaves might not like it.
+          -- 2. We have a valid address to write to.
+          --    Meaning, the user has initiated the ring buffer and it is not full.
+          -- 3. The previous AW transaction is done, since we simply assert AWVALID and do not wait
+          --    for a transaction before proceeding in the state machine.
+          if stream_valid and segment_valid and not axi_write_m2s.aw.valid then
+            axi_write_m2s.aw.valid <= '1';
+            -- Sample the address since we will pop the 'segment' word straight away, whereas
+            -- we don't know when the 'AW' transaction will happen.
+            axi_write_m2s.aw.addr(segment_address'range) <= segment_address;
+
+            -- Since we spend at least one clock cycle in the other state, it is safe to pop like
+            -- this and then look at 'segment_valid' as soon as we return to this state again.
+            segment_ready <= '1';
+
+            state <= let_data_pass;
+          end if;
+
+        when let_data_pass =>
+          -- Use the 'ready' and 'valid' that are not gated by the 'state'.
+          -- Saves a little bit of critical path.
+          if axi_write_s2m.w.ready and stream_valid and stream_last then
+            state <= wait_for_start_condition;
+          end if;
+
+      end case;
+    end process;
+
+
+    ------------------------------------------------------------------------------
+    -- Incoming stream has no 'last' indicator (by design).
+    -- So we need to generate it internally.
+    assign_last_inst : entity common.assign_last
+      generic map (
+        packet_length_beats => packet_length_axi_beats
+      )
+      port map (
+        clk => clk,
+        --
+        ready => stream_ready,
+        valid => stream_valid,
+        last => stream_last
+      );
+
+    axi_write_m2s.w.valid <= stream_valid and to_sl(state = let_data_pass);
+    axi_write_m2s.w.last <= stream_last;
+
+    stream_ready <= axi_write_s2m.w.ready and to_sl(state = let_data_pass);
+
+  end generate;
 
   -- Note that no ID is set in either AW or W.
 
-  axi_write_m2s.aw.addr(segment_address'range) <= segment_address;
-  axi_write_m2s.aw.len <= to_len(burst_length_beats=>1);
+  axi_write_m2s.aw.len <= to_len(burst_length_beats=>packet_length_axi_beats);
   axi_write_m2s.aw.size <= to_size(data_width_bits=>axi_data_width);
   axi_write_m2s.aw.burst <= axi_a_burst_incr;
 
   axi_write_m2s.w.data(stream_data'range) <= stream_data;
   axi_write_m2s.w.strb <= to_strb(data_width=>axi_data_width);
-  axi_write_m2s.w.last <= '1';
 
   axi_write_m2s.b.ready <= '1';
 
