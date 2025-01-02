@@ -199,19 +199,33 @@ class Module(BaseModule):
                 )
             )
 
-        add_config(Config(name="resync_cycles", counter_width=8, lut=26, ff=41, logic=5))
-        add_config(Config(name="resync_cycles", counter_width=16, lut=31, ff=81, logic=7))
-        add_config(Config(name="resync_cycles", counter_width=24, lut=45, ff=121, logic=9))
-        add_config(Config(name="resync_cycles", counter_width=32, lut=69, ff=161, logic=9))
-        add_config(Config(name="resync_cycles", counter_width=64, lut=140, ff=321, logic=17))
-
         add_config(Config(name="resync_counter", width=8, lut=11, ff=24, logic=3))
         add_config(Config(name="resync_counter", width=16, lut=23, ff=48, logic=4))
         add_config(Config(name="resync_counter", width=24, lut=35, ff=72, logic=6))
         add_config(Config(name="resync_counter", width=32, lut=59, ff=96, logic=3))
         add_config(Config(name="resync_counter", width=64, lut=123, ff=192, logic=4))
 
+        add_config(Config(name="resync_cycles", counter_width=8, lut=26, ff=41, logic=5))
+        add_config(Config(name="resync_cycles", counter_width=16, lut=31, ff=81, logic=7))
+        add_config(Config(name="resync_cycles", counter_width=24, lut=45, ff=121, logic=9))
+        add_config(Config(name="resync_cycles", counter_width=32, lut=69, ff=161, logic=9))
+        add_config(Config(name="resync_cycles", counter_width=64, lut=140, ff=321, logic=17))
+
         for width in [8, 16, 24, 32, 64]:
+            add_config(
+                Config(
+                    name="resync_rarely_valid",
+                    data_width=width,
+                    lut=2,
+                    ff=2 * width + 5,
+                    logic=2,
+                )
+            )
+
+            add_config(
+                Config(name="resync_rarely_valid_lutram", data_width=width, lut=2, ff=4, logic=2)
+            )
+
             add_config(
                 Config(name="resync_twophase", width=width, lut=3, ff=2 * width + 6, logic=2)
             )
@@ -226,20 +240,6 @@ class Module(BaseModule):
                     ff=2 * width + 8,
                     logic=2,
                 )
-            )
-
-            add_config(
-                Config(
-                    name="resync_rarely_valid",
-                    data_width=width,
-                    lut=2,
-                    ff=2 * width + 5,
-                    logic=2,
-                )
-            )
-
-            add_config(
-                Config(name="resync_rarely_valid_lutram", data_width=32, lut=2, ff=4, logic=2)
             )
 
         return projects
