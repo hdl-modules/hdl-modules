@@ -26,6 +26,7 @@ from tsfpga.vivado.build_result_checker import (
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+        self._setup_assign_last_tests(vunit_proj=vunit_proj)
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_debounce_tests(vunit_proj=vunit_proj)
@@ -62,6 +63,10 @@ class Module(BaseModule):
         self._get_width_conversion_build_projects(part, projects)
 
         return projects
+
+    def _setup_assign_last_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_assign_last")
+        self.add_vunit_config(tb, set_random_seed=True)
 
     def _setup_clock_counter_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
