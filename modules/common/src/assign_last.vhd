@@ -17,12 +17,6 @@
 -- The ``ready`` and ``valid`` ports must be assigned combinatorially.
 -- The ``last`` shall be assigned combinatorially alongside the ``ready`` and ``valid`` signals
 -- that go towards the data sink.
---
--- .. note::
---   This entity also produces a ``first`` signal.
---   This is not part of the AXI-Stream specification or commonly used, but it might be useful
---   in some cases.
---   Feel free to ignore it.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -45,8 +39,7 @@ entity assign_last is
     --# {{}}
     ready : in std_ulogic;
     valid : in std_ulogic;
-    last : out std_ulogic := '0';
-    first : out std_ulogic := '0'
+    last : out std_ulogic := '0'
   );
 end entity;
 
@@ -62,7 +55,6 @@ begin
   packet_length_gen : if packet_length_beats = 1 generate
 
     last <= '1';
-    first <= '1';
 
 
   ------------------------------------------------------------------------------
@@ -93,8 +85,6 @@ begin
     end process;
 
     last <= to_sl(beat_counter = packet_length_beats - 1);
-
-    first <= to_sl(beat_counter = 0);
 
   end generate;
 
