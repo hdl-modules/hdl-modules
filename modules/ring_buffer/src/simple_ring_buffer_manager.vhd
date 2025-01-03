@@ -63,7 +63,7 @@
 -- This is the default behavior that is suitable for most applications.
 --
 -- There is a use case, however, where ``buffer_written_address`` shall only be updated once a
---  number of segments have been written.
+-- number of segments have been written.
 -- The typical use case is an application that writes a packet in multiple split bursts.
 -- It will probably pop a ``segment`` for each burst, but it wants to indicate towards the software
 -- that the packet is complete only after all bursts have been written.
