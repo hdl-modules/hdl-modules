@@ -85,7 +85,7 @@
 -- W channel block
 -- ~~~~~~~~~~~~~~~
 --
--- Related to bullet point 2 above, the cores does NOT accumulate a whole burst in order to
+-- Related to bullet point 2 above, the core does NOT accumulate a whole burst in order to
 -- guarantee no holes in the data.
 -- Meaning, it is possible that an ``AW`` and a few ``W`` transactions  happen, but then the
 -- ``stream`` can stop for a while and block the AXI bus before the burst is finished.
