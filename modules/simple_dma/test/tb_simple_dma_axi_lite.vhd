@@ -66,20 +66,29 @@ architecture tb of tb_simple_dma_axi_lite is
   constant axi_data_width : positive := stream_data_width;
   constant axi_bytes_per_beat : positive := axi_data_width / 8;
 
-  impure function get_packet_length_beats return positive is
-  begin
-    -- Between 1 and 8 beats.
-    return 2 ** rnd.FavorSmall(0, 3);
-  end function;
-  constant packet_length_beats : positive := get_packet_length_beats;
-  constant packet_length_bytes : positive := packet_length_beats * stream_bytes_per_beat;
-  constant packet_length_axi_beats : positive := packet_length_bytes / axi_bytes_per_beat;
-
   impure function get_enable_axi3 return boolean is
   begin
     return rnd.RandBool;
   end function;
   constant enable_axi3 : boolean := get_enable_axi3;
+
+  impure function get_packet_length_beats return positive is
+    constant max_axi_burst_length_beats : positive := get_max_burst_length_beats(
+      enable_axi3=>enable_axi3
+    );
+  begin
+    if rnd.Uniform(1, 5) = 5 then
+      -- Test long packets that will trigger burst splitting.
+      -- Between 1 and 8 AXI bursts.
+      return 2 ** rnd.FavorSmall(0, 3) * max_axi_burst_length_beats;
+    else
+      -- Between 1 and 8 beats.
+      return 2 ** rnd.FavorSmall(0, 3);
+    end if;
+  end function;
+  constant packet_length_beats : positive := get_packet_length_beats;
+  constant packet_length_bytes : positive := packet_length_beats * stream_bytes_per_beat;
+  constant packet_length_axi_beats : positive := packet_length_bytes / axi_bytes_per_beat;
 
   -- ---------------------------------------------------------------------------
   -- DUT connections.
@@ -131,11 +140,11 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    constant buffer_size_packets : positive := rnd.FavorSmall(4, 16);
+    constant buffer_size_packets : positive := rnd.FavorSmall(2, 5);
     constant buffer_size_bytes : positive := buffer_size_packets * packet_length_bytes;
 
-    -- Make it roll around many times.
-    constant test_data_num_bytes : positive := 10 * buffer_size_bytes;
+    -- Make it roll around a few times.
+    constant test_data_num_bytes : positive := 3 * buffer_size_bytes;
 
     procedure run_test is
       variable data, data_copy : integer_array_t := null_integer_array;

@@ -65,7 +65,15 @@ use work.simple_ring_buffer_manager_pkg.all;
 entity simple_ring_buffer_manager is
   generic (
     address_width : positive;
-    segment_length_bytes : positive
+    segment_length_bytes : positive;
+    -- Change to greater than one to enable updating of 'buffer_written_address' every N'th segment.
+    -- If the application that uses this entity implements burst splitting, it will probably pop
+    -- multiple 'segment's per burst.
+    -- In this case it might be desired to update the 'buffer_written_address' only after all
+    -- segments in a burst have been written.
+    -- When not doing any kind of burst splitting, it is safe to leave this generic at its
+    -- default value.
+    segments_per_packet : positive := 1
   );
   port (
     clk : in std_ulogic;
@@ -81,7 +89,7 @@ entity simple_ring_buffer_manager is
     segment_valid : out std_ulogic := '0';
     segment_address : out u_unsigned(address_width - 1 downto 0) := (others => '0');
     --# {{}}
-    segment_written : in std_ulogic;
+    write_done : in std_ulogic;
     --# {{}}
     status : out simple_ring_buffer_manager_status_t := (
       simple_ring_buffer_manager_status_idle_no_error
@@ -91,19 +99,39 @@ end entity;
 
 architecture a of simple_ring_buffer_manager is
 
-  constant unaligned_address_width : natural := ceil_log2(segment_length_bytes);
-  constant aligned_address_width : natural := address_width - unaligned_address_width;
+  constant unaligned_segment_address_width : natural := ceil_log2(segment_length_bytes);
+  constant aligned_segment_address_width : natural := (
+    address_width - unaligned_segment_address_width
+  );
 
-  subtype unaligned_address_range is natural range unaligned_address_width - 1 downto 0;
-  subtype aligned_address_range is natural range address_width - 1 downto unaligned_address_width;
+  subtype aligned_segment_address_range is
+    natural range address_width - 1 downto unaligned_segment_address_width;
+
+  constant packet_length_bytes : positive := segments_per_packet * segment_length_bytes;
+
+  constant unaligned_packet_address_width : natural := ceil_log2(packet_length_bytes);
+  constant aligned_packet_address_width : natural := (
+    address_width - unaligned_packet_address_width
+  );
+
+  subtype unaligned_packet_address_range is
+    natural range unaligned_packet_address_width - 1 downto 0;
+  subtype aligned_packet_address_range is
+    natural range address_width - 1 downto unaligned_packet_address_width;
+
+  signal packet_index_to_segment_index_padding : u_unsigned(
+    aligned_segment_address_width - aligned_packet_address_width - 1 downto 0
+  ) := (others => '0');
 
   signal enable_p1 : std_ulogic := '0';
 
   type state_t is (idle, wait_for_handshake);
   signal state : state_t := idle;
 
-  signal buffer_start_index, buffer_end_index, buffer_written_index, buffer_read_index,
-    segment_index : u_unsigned(aligned_address_width - 1 downto 0) := (others => '0');
+  signal segment_index : u_unsigned(aligned_segment_address_width - 1 downto 0) := (others => '0');
+  signal buffer_start_index, buffer_end_index, buffer_written_index, buffer_read_index : u_unsigned(
+    aligned_packet_address_width - 1 downto 0
+  ) := (others => '0');
 
 begin
 
@@ -112,7 +140,11 @@ begin
     report "Must be power of two for efficient address calculation."
     severity failure;
 
-  assert address_width > unaligned_address_width + 1
+  assert is_power_of_two(segments_per_packet)
+    report "Must be power of two for efficient address calculation."
+    severity failure;
+
+  assert address_width > unaligned_segment_address_width + 1
     report "Buffer must be able to hold at least two segments"
     severity failure;
 
@@ -134,6 +166,12 @@ begin
       assert buffer_read_address = buffer_start_address
         report "Initial read address should be start address";
 
+      assert buffer_start_address mod packet_length_bytes = 0
+        report "Buffer addresses must be aligned to segment/packet length";
+
+      assert buffer_end_address mod packet_length_bytes = 0
+        report "Buffer addresses must be aligned to segment/packet length";
+
       buffer_size_bytes := to_integer(buffer_end_address - buffer_start_address);
 
       assert buffer_size_bytes mod segment_length_bytes = 0
@@ -142,11 +180,6 @@ begin
       assert buffer_size_bytes >= 2 * segment_length_bytes
         report "Buffer must be able to hold at least two segments";
 
-      assert buffer_start_address mod segment_length_bytes = 0
-        report "Buffer addresses must be aligned to segment length";
-
-      assert buffer_end_address mod segment_length_bytes = 0
-        report "Buffer addresses must be aligned to segment length";
 
       wait;
     end process;
@@ -154,24 +187,24 @@ begin
   end generate;
 
 
-  buffer_start_index <= buffer_start_address(aligned_address_range);
-  buffer_end_index <= buffer_end_address(aligned_address_range);
-  buffer_read_index <= buffer_read_address(aligned_address_range);
+  buffer_start_index <= buffer_start_address(aligned_packet_address_range);
+  buffer_end_index <= buffer_end_address(aligned_packet_address_range);
 
-  segment_address(aligned_address_range) <= segment_index;
-  buffer_written_address(aligned_address_range) <= buffer_written_index;
+  buffer_written_address(aligned_packet_address_range) <= buffer_written_index;
+  buffer_read_index <= buffer_read_address(aligned_packet_address_range);
+
+  segment_address(aligned_segment_address_range) <= segment_index;
 
 
   ------------------------------------------------------------------------------
   main : process
-    variable segment_index_next, written_index_next : u_unsigned(segment_index'range) := (
-      others => '0'
-    );
+    variable written_index_next : u_unsigned(buffer_written_index'range) := (others => '0');
+    variable segment_index_next : u_unsigned(segment_index'range) := (others => '0');
   begin
     wait until rising_edge(clk);
 
-    if segment_index + 1 = buffer_end_index then
-      segment_index_next := buffer_start_index;
+    if segment_index + 1 = buffer_end_index & packet_index_to_segment_index_padding then
+      segment_index_next := buffer_start_index & packet_index_to_segment_index_padding;
     else
       segment_index_next := segment_index + 1;
     end if;
@@ -184,16 +217,19 @@ begin
 
     if enable and not enable_p1 then
       buffer_written_index <= buffer_start_index;
-      segment_index <= buffer_start_index;
+      segment_index <= buffer_start_index & packet_index_to_segment_index_padding;
     end if;
 
-    if segment_written then
+    if write_done then
       buffer_written_index <= written_index_next;
     end if;
 
     case state is
       when idle =>
-        if enable = '1' and segment_index_next /= buffer_read_index then
+        if (
+          enable = '1'
+          and segment_index_next /= buffer_read_index & packet_index_to_segment_index_padding
+        ) then
           segment_valid <= '1';
           state <= wait_for_handshake;
         end if;
@@ -217,11 +253,13 @@ begin
 
 
   ------------------------------------------------------------------------------
-  set_unaligned_error_gen : if segment_length_bytes > 1 generate
+  set_unaligned_error_gen : if packet_length_bytes > 1 generate
 
     ------------------------------------------------------------------------------
     set_unaligned_error : process
-      constant unaligned_address_zero : u_unsigned(unaligned_address_range) := (others => '0');
+      constant unaligned_address_zero : u_unsigned(unaligned_packet_address_range) := (
+        others => '0'
+      );
     begin
       wait until rising_edge(clk);
 

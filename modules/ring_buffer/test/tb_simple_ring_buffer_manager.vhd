@@ -59,7 +59,7 @@ architecture tb of tb_simple_ring_buffer_manager is
   signal segment_ready, segment_valid : std_ulogic := '0';
   signal segment_address : u_unsigned(address_width - 1 downto 0) := (others => '0');
 
-  signal segment_written : std_ulogic := '0';
+  signal write_done : std_ulogic := '0';
 
   signal status : simple_ring_buffer_manager_status_t := (
     simple_ring_buffer_manager_status_idle_no_error
@@ -186,9 +186,9 @@ begin
       wait until rising_edge(clk);
     end loop;
 
-    segment_written <= '1';
+    write_done <= '1';
     wait until rising_edge(clk);
-    segment_written <= '0';
+    write_done <= '0';
 
     num_written <= num_written + 1;
   end process;
@@ -262,7 +262,7 @@ begin
       segment_valid => segment_valid,
       segment_address => segment_address,
       --
-      segment_written => segment_written,
+      write_done => write_done,
       --
       status => status
     );

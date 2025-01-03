@@ -9,6 +9,8 @@
 -- Top level for the simple DMA module, with an **AXI-Lite** register interface.
 -- This top level is suitable for instantiation in a user design.
 -- It integrates :ref:`simple_dma.simple_dma_core` and an AXI-Lite register file.
+--
+-- See :ref:`simple_dma.simple_dma_core` for more documentation.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
