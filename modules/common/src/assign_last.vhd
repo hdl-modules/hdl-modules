@@ -58,33 +58,44 @@ architecture a of assign_last is
 
 begin
 
-  last <= to_sl(beat_counter = packet_length_beats - 1);
+  ------------------------------------------------------------------------------
+  packet_length_gen : if packet_length_beats = 1 generate
 
-  first <= to_sl(beat_counter = 0);
+    last <= '1';
+    first <= '1';
 
 
   ------------------------------------------------------------------------------
-  main : process
-  begin
-    wait until rising_edge(clk);
+  else generate
 
-    if ready and valid then
-      if power_of_two_length then
-        -- Efficient implementation.
-        -- If long packet lengths are used, it would be even more efficient to use
-        -- 'periodic_pulser' instead of a counter.
-        -- It's worth investigating if that use case ever arises.
-        beat_counter <= (beat_counter + 1) mod packet_length_beats;
+    ------------------------------------------------------------------------------
+    main : process
+    begin
+      wait until rising_edge(clk);
 
-      else
-        -- Slightly less efficient.
-        if beat_counter = packet_length_beats - 1 then
-          beat_counter <= 0;
+      if ready and valid then
+        if power_of_two_length then
+          -- Efficient implementation.
+          -- If long packet lengths are used, it would be even more efficient to use
+          -- 'periodic_pulser' instead of a counter.
+          -- It's worth investigating if that use case ever arises.
+          beat_counter <= (beat_counter + 1) mod packet_length_beats;
+
         else
-          beat_counter <= beat_counter + 1;
+          -- Slightly less efficient.
+          if beat_counter = packet_length_beats - 1 then
+            beat_counter <= 0;
+          else
+            beat_counter <= beat_counter + 1;
+          end if;
         end if;
       end if;
-    end if;
-  end process;
+    end process;
+
+    last <= to_sl(beat_counter = packet_length_beats - 1);
+
+    first <= to_sl(beat_counter = 0);
+
+  end generate;
 
 end architecture;

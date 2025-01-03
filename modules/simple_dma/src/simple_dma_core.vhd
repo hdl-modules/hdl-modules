@@ -63,6 +63,12 @@
 -- This is assuming that ``AWREADY`` and ``WREADY`` are high.
 -- If they are not, their stall will be propagated to the ``stream``.
 --
+-- This performance should be enough for even the most demanding applications.
+-- The one-cycle overhead could theoretically be optimized away, but it is quite likely
+-- that downstream AXI interconnect infrastructure has some overhead for each address
+-- transaction anyway.
+-- I.e. the one-cycle overhead in this core is probably not limiting the throughput overall.
+--
 -- If the memory buffer is full, the ``stream`` will stall until there is space.
 -- When the software writes an updated ``buffer_read_address`` register indicating available space,
 -- the ``stream`` will start after two clock cycles.
@@ -80,6 +86,10 @@
 -- 3. ``BREADY`` is always high.
 --
 -- This gives very good AXI performance.
+--
+-- W channel lock
+-- ~~~~~~~~~~~~~~
+--
 -- The cores does NOT, however, accumulate a whole burst in order to guarantee no holes in the data.
 -- Meaning, it is possible that an ``AW`` and a few ``W`` transactions  happen, but then the
 -- stream can stop for a while and block the AXI bus before the burst is finished.
@@ -92,6 +102,13 @@
 -- 1. The ``stream`` never stops within a packet, so that optimal AXI performance is reached.
 -- 2. Or, the downstream AXI slave can handle holes without impacting performance.
 --    The :ref:`axi.axi_write_throttle` is designed to help with this.
+--
+-- AXI3
+-- ~~~~
+--
+-- Enabling the ``enable_axi3`` generic will make the core compliant with AXI3 instead of AXI4.
+-- The core does not use any of the ID fields (``AWID``, ``WID``, ``BID``) so the only difference
+-- is the burst length limitation.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
