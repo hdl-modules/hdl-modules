@@ -10,7 +10,8 @@
 --
 -- Shift registers are used as far as possible to create the pulse. This makes the
 -- implementation resource efficient on devices with cheap shift registers
--- (such as SRLs in Xilinx devices). In the worst case a single counter is created.
+-- (such as SRLs in Xilinx/AMD devices).
+-- In the worst case a single counter is created.
 --
 -- The ``period`` is broken down into factors that are represented using shift
 -- registers, with the shift register length being the factor value. By rotating the shift register
@@ -58,7 +59,7 @@ entity periodic_pulser is
     -- The period between pulses
     period : positive range 2 to integer'high;
     -- The shift register length is device specific.
-    -- For Xilinx UltraScale and 7 series devices, it should be set to 33.
+    -- For Xilinx/AMD 7-series and UltraScale(+) devices, it should be set to 33.
     shift_register_length : positive
   );
   port (
@@ -122,11 +123,10 @@ begin
 
   ------------------------------------------------------------------------------
   -- No further shift register factorization possible
-  ------------------------------------------------------------------------------
   gen_last_stage : if factors.num_factors_this_stage = 0 generate
-  begin
 
-    -- If the period doesn't fit in a few luts, we create a counter
+    ------------------------------------------------------------------------------
+    -- If the period doesn't fit in a few LUTs, we create a counter.
     gen_counter : if period > shift_register_length * 4 generate
       constant num_counter_bits : positive := num_bits_needed(period - 1);
 
@@ -141,6 +141,8 @@ begin
       -- should issue the pulse and then start over
       signal tick_count_next : u_unsigned(num_counter_bits + 1 - 1 downto 0) := (others => '0');
     begin
+
+      ------------------------------------------------------------------------------
       count : process
       begin
         wait until rising_edge(clk);
@@ -162,13 +164,18 @@ begin
       -- on all bits.
       pulse <= count_enable and tick_count_next(tick_count_next'high);
 
-    -- The period fits in a few luts, so create a long shift register
+
+    ------------------------------------------------------------------------------
+    -- The period fits in a few LUTs, so create a long shift register
     else generate
       signal shift_reg : std_ulogic_vector(0 to period - 1) := (0 => '1', others => '0');
     begin
+
+      ------------------------------------------------------------------------------
       shift : process
       begin
         wait until rising_edge(clk);
+
         if count_enable then
           shift_reg <= shift_reg(shift_reg'high) & shift_reg(0 to shift_reg'high - 1);
         end if;
@@ -185,24 +192,32 @@ begin
   -- Create one or more shift registers
   -- This generate is "else generate" with gen_counter, but "else generate"
   -- statements seem to fail recursive instantiation in Vivado.
-  ------------------------------------------------------------------------------
   gen_shift_registers : if factors.num_factors_this_stage > 0 generate
+
+    ------------------------------------------------------------------------------
     gen_mutual_prime_srls : for idx in factors.this_stage'range generate
+
+      ------------------------------------------------------------------------------
       gen_only_if_not_0 : if factors.this_stage(idx) /= 0 generate
         -- Create a shift register of the length of the current factor factor
         signal shift_reg : std_ulogic_vector(0 to factors.this_stage(idx) - 1) :=
           (0 => '1', others => '0');
       begin
+
+        ------------------------------------------------------------------------------
         shift : process
         begin
           wait until rising_edge(clk);
+
           if count_enable then
             shift_reg <= shift_reg(shift_reg'high) & shift_reg(0 to shift_reg'high - 1);
           end if;
         end process;
 
         shift_reg_outputs(idx) <= shift_reg(shift_reg'high);
+
       end generate;
+
     end generate;
 
     -- Gate all shift register results.
@@ -212,25 +227,30 @@ begin
 
     ------------------------------------------------------------------------------
     -- Instantiate next stage with the remaining period, or end recursion if done
-    ------------------------------------------------------------------------------
     gen_next_stage : if factors.next_stage > 1 generate
 
+      ------------------------------------------------------------------------------
       periodic_pulser_next_stage : entity work.periodic_pulser
         generic map (
           period => factors.next_stage,
-          shift_register_length => shift_register_length)
+          shift_register_length => shift_register_length
+        )
         port map (
           clk => clk,
           count_enable => pulse_this_stage,
           pulse => pulse
         );
+
     end generate;
 
+
+    ------------------------------------------------------------------------------
     -- Note: Cannot use else-generate here, as that breaks recursion in Vivado
     do_not_gen_next_stage : if factors.next_stage <= 1 generate
 
       -- Another stage is not needed
       pulse <= pulse_this_stage;
+
     end generate;
 
   end generate;
