@@ -54,5 +54,7 @@ class Module(BaseModule):
 
         add(generics=dict(axi_data_width=64, packet_length_beats=1), lut=156, ff=207, logic=16)
         add(generics=dict(axi_data_width=64, packet_length_beats=16), lut=157, ff=226, logic=12)
+        add(generics=dict(axi_data_width=64, packet_length_beats=2048), lut=132, ff=218, logic=11)
+        add(generics=dict(axi_data_width=64, packet_length_beats=16384), lut=134, ff=218, logic=10)
 
         return projects

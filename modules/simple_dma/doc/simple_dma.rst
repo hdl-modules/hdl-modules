@@ -16,6 +16,10 @@ Being simplified, however, it has the following limitations:
 These limitations and the simplicity of the design are intentional.
 This is what enables the low resource usage and high throughput.
 
+
+Roadmap
+-------
+
 The limitations listed above are intrinsic, with no plan for change.
 There are also currently a few limitations that are planned to be fixed in the future:
 
