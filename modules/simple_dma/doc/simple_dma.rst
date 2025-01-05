@@ -12,6 +12,7 @@ Being simplified, however, it has the following limitations:
 * Does not support data strobing or narrow AXI transfers.
   All addresses must be aligned with the AXI data width.
 * Uses a static compile-time packet length, with no support for partial packets.
+* Packet length must be power of two.
 
 These limitations and the simplicity of the design are intentional.
 This is what enables the low resource usage and high throughput.
