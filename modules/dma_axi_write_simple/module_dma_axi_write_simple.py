@@ -15,7 +15,7 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
-        test = vunit_proj.library(self.library_name).test_bench("tb_simple_dma_axi_lite")
+        test = vunit_proj.library(self.library_name).test_bench("tb_dma_axi_write_simple")
         for _ in range(8):
             self.add_vunit_config(test=test, set_random_seed=True)
 
@@ -38,11 +38,12 @@ class Module(BaseModule):
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
-                        name=f"{self.library_name}.simple_dma_axi_lite", generics=all_generics
+                        name=f"{self.library_name}.dma_axi_write_simple_axi_lite",
+                        generics=all_generics,
                     ),
                     modules=modules,
                     part=part,
-                    top="simple_dma_axi_lite",
+                    top="dma_axi_write_simple_axi_lite",
                     generics=all_generics,
                     build_result_checkers=[
                         TotalLuts(EqualTo(lut)),

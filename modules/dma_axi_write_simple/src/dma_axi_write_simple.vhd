@@ -8,7 +8,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Main implementation of the simple DMA functionality.
 -- This entity is not suitable for instantiation in a user design, use instead e.g.
--- :ref:`simple_dma.simple_dma_axi_lite`.
+-- :ref:`dma_axi_write_simple.dma_axi_write_simple_axi_lite`.
 --
 --
 -- Packet length
@@ -32,13 +32,14 @@
 -- the core will perform burst splitting internally.
 --
 --
--- .. _simple_dma_resource_usage:
+-- .. _dma_axi_write_simple_resource_usage:
 --
 -- Resource usage
 -- ______________
 --
 -- The core has a simple design with the goal of low resource utilization in mind.
--- See :ref:`simple_dma.simple_dma_axi_lite.resource_utilization` for some build numbers.
+-- See :ref:`dma_axi_write_simple.dma_axi_write_simple_axi_lite.resource_utilization`
+-- for some build numbers.
 -- These numbers are incredibly low compared to some other implementations.
 --
 -- The special case when ``packet_length_beats`` is 1 has an optimized implementation that gives
@@ -47,7 +48,7 @@
 -- AXI burst in that case.
 --
 --
--- .. _simple_dma_throughput:
+-- .. _dma_axi_write_simple_throughput:
 --
 -- AXI/data throughput
 -- ___________________
@@ -129,11 +130,11 @@ use register_file.register_file_pkg.all;
 library ring_buffer;
 use ring_buffer.simple_ring_buffer_manager_pkg.all;
 
-use work.simple_dma_register_record_pkg.all;
-use work.simple_dma_regs_pkg.all;
+use work.dma_axi_write_simple_register_record_pkg.all;
+use work.dma_axi_write_simple_regs_pkg.all;
 
 
-entity simple_dma_core is
+entity dma_axi_write_simple is
   generic (
     -- The width of the AXI AWADDR field as well as all the ring buffer addresses
     -- handled internally.
@@ -161,8 +162,8 @@ entity simple_dma_core is
     stream_valid : in std_ulogic;
     stream_data : in std_ulogic_vector(stream_data_width - 1 downto 0);
     --# {{}}
-    regs_up : out simple_dma_regs_up_t := simple_dma_regs_up_init;
-    regs_down : in simple_dma_regs_down_t;
+    regs_up : out dma_axi_write_simple_regs_up_t := dma_axi_write_simple_regs_up_init;
+    regs_down : in dma_axi_write_simple_regs_down_t;
     interrupt : out std_ulogic := '0';
     --# {{}}
     axi_write_m2s : out axi_write_m2s_t := axi_write_m2s_init;
@@ -170,7 +171,7 @@ entity simple_dma_core is
   );
 end entity;
 
-architecture a of simple_dma_core is
+architecture a of dma_axi_write_simple is
 
   ------------------------------------------------------------------------------
   -- Generic constants.
@@ -239,31 +240,31 @@ begin
         trigger => interrupt
       );
 
-    interrupt_sources(simple_dma_interrupt_status_write_done) <= (
+    interrupt_sources(dma_axi_write_simple_interrupt_status_write_done) <= (
       axi_write_m2s.b.ready and axi_write_s2m.b.valid
     );
 
-    interrupt_sources(simple_dma_interrupt_status_write_error) <= (
+    interrupt_sources(dma_axi_write_simple_interrupt_status_write_error) <= (
       axi_write_m2s.b.ready
       and axi_write_s2m.b.valid
       and to_sl(axi_write_s2m.b.resp /= axi_resp_okay)
     );
 
-    interrupt_sources(simple_dma_interrupt_status_start_address_unaligned_error) <= (
+    interrupt_sources(dma_axi_write_simple_interrupt_status_start_address_unaligned_error) <= (
       ring_buffer_status.start_address_unaligned
     );
 
-    interrupt_sources(simple_dma_interrupt_status_end_address_unaligned_error) <= (
+    interrupt_sources(dma_axi_write_simple_interrupt_status_end_address_unaligned_error) <= (
       ring_buffer_status.end_address_unaligned
     );
 
-    interrupt_sources(simple_dma_interrupt_status_read_address_unaligned_error) <= (
+    interrupt_sources(dma_axi_write_simple_interrupt_status_read_address_unaligned_error) <= (
       ring_buffer_status.read_address_unaligned
     );
 
     clear <= to_slv(regs_down.interrupt_status);
 
-    regs_up.interrupt_status <= to_simple_dma_interrupt_status(status);
+    regs_up.interrupt_status <= to_dma_axi_write_simple_interrupt_status(status);
 
   end block;
 

@@ -25,15 +25,15 @@ use vunit_lib.queue_pkg.all;
 library common;
 use common.addr_pkg.all;
 
-use work.simple_dma_regs_pkg.all;
-use work.simple_dma_register_read_write_pkg.all;
+use work.dma_axi_write_simple_regs_pkg.all;
+use work.dma_axi_write_simple_register_read_write_pkg.all;
 
 
-package simple_dma_sim_pkg is
+package dma_axi_write_simple_sim_pkg is
 
   -- Run a test where the data written to memory by the DUT is pushed byte-by-byte to a queue.
   -- No verification of data is done, so that must be done outside of the procedure.
-  procedure run_simple_dma_test(
+  procedure run_dma_axi_write_simple_test(
     rnd : inout RandomPType;
     signal net : inout network_t;
     constant receive_num_bytes : positive;
@@ -46,7 +46,7 @@ package simple_dma_sim_pkg is
 
   -- Run a test where the data written to memory by the DUT is verified byte-by-byte to
   -- reference data.
-  procedure run_simple_dma_test(
+  procedure run_dma_axi_write_simple_test(
     rnd : inout RandomPType;
     signal net : inout network_t;
     reference_data : in integer_array_t;
@@ -58,9 +58,9 @@ package simple_dma_sim_pkg is
 
 end package;
 
-package body simple_dma_sim_pkg is
+package body dma_axi_write_simple_sim_pkg is
 
-  procedure run_simple_dma_test(
+  procedure run_dma_axi_write_simple_test(
     rnd : inout RandomPType;
     signal net : inout network_t;
     constant receive_num_bytes : positive;
@@ -83,26 +83,28 @@ package body simple_dma_sim_pkg is
     buf := allocate(
       memory => memory,
       num_bytes => buffer_size_bytes,
-      name=>"simple_dma_test_buffer",
+      name=>"dma_axi_write_simple_test_buffer",
       alignment=>packet_length_bytes,
       permissions=>write_only
     );
 
-    write_simple_dma_buffer_start_address(
+    write_dma_axi_write_simple_buffer_start_address(
       net=>net, value=>base_address(buf), base_address=>regs_base_address
     );
-    write_simple_dma_buffer_end_address(
+    write_dma_axi_write_simple_buffer_end_address(
       net=>net, value=>last_address(buf) + 1, base_address=>regs_base_address
     );
-    write_simple_dma_buffer_read_address(
+    write_dma_axi_write_simple_buffer_read_address(
       net=>net, value=>base_address(buf), base_address=>regs_base_address
     );
     read_address := base_address(buf);
 
-    write_simple_dma_config(net=>net, value=>(enable=>'1'), base_address=>regs_base_address);
+    write_dma_axi_write_simple_config(
+      net=>net, value=>(enable=>'1'), base_address=>regs_base_address
+    );
 
     while num_bytes_pushed /= receive_num_bytes loop
-      read_simple_dma_buffer_written_address(
+      read_dma_axi_write_simple_buffer_written_address(
         net=>net, value=>written_address, base_address=>regs_base_address
       );
 
@@ -127,7 +129,7 @@ package body simple_dma_sim_pkg is
 
       -- Write the address for all data that has been consumed.
       -- Note that there is a possibility that we might not have consumed any data at all.
-      write_simple_dma_buffer_read_address(
+      write_dma_axi_write_simple_buffer_read_address(
         net=>net, value=>read_address, base_address=>regs_base_address
       );
 
@@ -139,14 +141,14 @@ package body simple_dma_sim_pkg is
       -- In that case, the easiest solution to look at the waves is to comment out the loop
       -- and register write above, and instead use only the register write below.
       -- It will simply let all data be written to memory without checking/blocking anything.
-      -- write_simple_dma_buffer_read_address(
+      -- write_dma_axi_write_simple_buffer_read_address(
       --   net=>net, value=>written_address, base_address=>regs_base_address
       -- );
     end loop;
   end procedure;
 
 
-  procedure run_simple_dma_test(
+  procedure run_dma_axi_write_simple_test(
     rnd : inout RandomPType;
     signal net : inout network_t;
     reference_data : in integer_array_t;
@@ -158,7 +160,7 @@ package body simple_dma_sim_pkg is
     constant receive_num_bytes : positive := length(reference_data);
     constant receive_data_queue : queue_t := new_queue;
   begin
-    run_simple_dma_test(
+    run_dma_axi_write_simple_test(
       rnd=>rnd,
       net=>net,
       receive_num_bytes=>receive_num_bytes,

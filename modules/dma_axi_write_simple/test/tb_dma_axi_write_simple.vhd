@@ -32,17 +32,17 @@ use axi_lite.axi_lite_pkg.all;
 library bfm;
 use bfm.stall_bfm_pkg.all;
 
-use work.simple_dma_sim_pkg.all;
+use work.dma_axi_write_simple_sim_pkg.all;
 
 
-entity tb_simple_dma_axi_lite is
+entity tb_dma_axi_write_simple is
   generic (
     seed : natural;
     runner_cfg : string
   );
 end entity;
 
-architecture tb of tb_simple_dma_axi_lite is
+architecture tb of tb_dma_axi_write_simple is
 
   -- ---------------------------------------------------------------------------
   -- Generic constants.
@@ -161,7 +161,7 @@ begin
       data_copy := copy(data);
       push_ref(stream_data_queue, data_copy);
 
-      run_simple_dma_test(
+      run_dma_axi_write_simple_test(
         rnd => rnd,
         net => net,
         reference_data => data,
@@ -180,7 +180,7 @@ begin
     report "enable_axi3 = " & to_string(enable_axi3);
     report "w_fifo_depth = " & to_string(w_fifo_depth);
 
-    if run("test_simple_dma") then
+    if run("test_dma_axi_write_simple") then
       run_test;
     end if;
 
@@ -236,7 +236,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.simple_dma_axi_lite
+  dut : entity work.dma_axi_write_simple_axi_lite
     generic map (
       address_width => address_width,
       stream_data_width => stream_data_width,

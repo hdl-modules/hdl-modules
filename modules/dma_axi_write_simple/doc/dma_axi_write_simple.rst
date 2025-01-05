@@ -2,8 +2,8 @@ This module contains a simplified Direct Memory Access (DMA) component for
 streaming data from FPGA to DDR memory over AXI.
 The implementation is optimized for
 
-* very low :ref:`resource usage <simple_dma_resource_usage>`, and
-* maximum :ref:`AXI/data throughput <simple_dma_throughput>`.
+* very low :ref:`resource usage <dma_axi_write_simple_resource_usage>`, and
+* maximum :ref:`AXI/data throughput <dma_axi_write_simple_throughput>`.
 
 Being simplified, however, it has the following limitations:
 

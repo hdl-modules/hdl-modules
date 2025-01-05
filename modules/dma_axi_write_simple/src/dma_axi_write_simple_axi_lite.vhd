@@ -8,9 +8,10 @@
 -- -------------------------------------------------------------------------------------------------
 -- Top level for the simple DMA module, with an **AXI-Lite** register interface.
 -- This top level is suitable for instantiation in a user design.
--- It integrates :ref:`simple_dma.simple_dma_core` and an AXI-Lite register file.
+-- It integrates :ref:`dma_axi_write_simple.dma_axi_write_simple` and an AXI-Lite
+-- register file.
 --
--- See :ref:`simple_dma.simple_dma_core` for more documentation.
+-- See :ref:`dma_axi_write_simple.dma_axi_write_simple` for more documentation.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -22,12 +23,12 @@ use axi.axi_pkg.all;
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
 
-use work.simple_dma_register_record_pkg.all;
+use work.dma_axi_write_simple_register_record_pkg.all;
 
 
-entity simple_dma_axi_lite is
+entity dma_axi_write_simple_axi_lite is
   generic (
-    -- See 'simple_dma_core.vhd' for documentation of the generics.
+    -- See 'dma_axi_write_simple_core.vhd' for documentation of the generics.
     address_width : axi_addr_width_t;
     stream_data_width : axi_data_width_t;
     axi_data_width : axi_data_width_t;
@@ -50,15 +51,15 @@ entity simple_dma_axi_lite is
   );
 end entity;
 
-architecture a of simple_dma_axi_lite is
+architecture a of dma_axi_write_simple_axi_lite is
 
-  signal regs_up : simple_dma_regs_up_t := simple_dma_regs_up_init;
-  signal regs_down : simple_dma_regs_down_t := simple_dma_regs_down_init;
+  signal regs_up : dma_axi_write_simple_regs_up_t := dma_axi_write_simple_regs_up_init;
+  signal regs_down : dma_axi_write_simple_regs_down_t := dma_axi_write_simple_regs_down_init;
 
 begin
 
   ------------------------------------------------------------------------------
-  simple_dma_core_inst : entity work.simple_dma_core
+  dma_axi_write_simple_core_inst : entity work.dma_axi_write_simple
     generic map (
       address_width => address_width,
       stream_data_width => stream_data_width,
@@ -83,7 +84,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  simple_dma_reg_file_inst : entity work.simple_dma_reg_file
+  dma_axi_write_simple_reg_file_inst : entity work.dma_axi_write_simple_reg_file
     port map (
       clk => clk,
       --
