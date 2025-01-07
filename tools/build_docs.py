@@ -11,7 +11,7 @@
 import shutil
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 # Do PYTHONPATH insert() instead of append() to prefer any local repo checkout over any pip install.
 REPO_ROOT = Path(__file__).parent.parent.resolve()
@@ -30,7 +30,6 @@ from hdl_registers.generator.vhdl.register_package import VhdlRegisterPackageGen
 from hdl_registers.generator.vhdl.simulation.read_write_package import (
     VhdlSimulationReadWritePackageGenerator,
 )
-from hdl_registers.register_list import RegisterList
 from pybadges import badge
 from tsfpga import TSFPGA_DOC
 from tsfpga.module import get_modules
@@ -134,37 +133,40 @@ def generate_register_artifacts() -> None:
     Generate the register artifacts that are part of the documentation.
     Note that HTML pages are generated separately.
     """
-    module = get_hdl_modules(names_include={"dma_axi_write_simple"})[0]
-    register_list = cast(RegisterList, module.registers)
-    output_folder = GENERATED_SPHINX / "modules" / register_list.name
+    for module in get_hdl_modules():
+        register_list = module.registers
+        if register_list is None:
+            continue
 
-    VhdlRegisterPackageGenerator(
-        register_list=register_list, output_folder=output_folder / "vhdl"
-    ).create_if_needed()
+        output_folder = GENERATED_SPHINX / "modules" / register_list.name
 
-    VhdlRecordPackageGenerator(
-        register_list=register_list, output_folder=output_folder / "vhdl"
-    ).create_if_needed()
+        VhdlRegisterPackageGenerator(
+            register_list=register_list, output_folder=output_folder / "vhdl"
+        ).create_if_needed()
 
-    VhdlAxiLiteWrapperGenerator(
-        register_list=register_list, output_folder=output_folder / "vhdl"
-    ).create_if_needed()
+        VhdlRecordPackageGenerator(
+            register_list=register_list, output_folder=output_folder / "vhdl"
+        ).create_if_needed()
 
-    VhdlSimulationReadWritePackageGenerator(
-        register_list=register_list, output_folder=output_folder / "vhdl"
-    ).create_if_needed()
+        VhdlAxiLiteWrapperGenerator(
+            register_list=register_list, output_folder=output_folder / "vhdl"
+        ).create_if_needed()
 
-    CppInterfaceGenerator(
-        register_list=register_list, output_folder=output_folder / "cpp" / "include"
-    ).create_if_needed()
+        VhdlSimulationReadWritePackageGenerator(
+            register_list=register_list, output_folder=output_folder / "vhdl"
+        ).create_if_needed()
 
-    CppHeaderGenerator(
-        register_list=register_list, output_folder=output_folder / "cpp" / "include"
-    ).create_if_needed()
+        CppInterfaceGenerator(
+            register_list=register_list, output_folder=output_folder / "cpp" / "include"
+        ).create_if_needed()
 
-    CppImplementationGenerator(
-        register_list=register_list, output_folder=output_folder / "cpp"
-    ).create_if_needed()
+        CppHeaderGenerator(
+            register_list=register_list, output_folder=output_folder / "cpp" / "include"
+        ).create_if_needed()
+
+        CppImplementationGenerator(
+            register_list=register_list, output_folder=output_folder / "cpp"
+        ).create_if_needed()
 
 
 def generate_documentation() -> None:
