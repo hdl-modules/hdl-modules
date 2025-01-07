@@ -103,7 +103,7 @@
 -- AXI3
 -- ~~~~
 --
--- Enabling the ``enable_axi3`` generic will make the core compliant with AXI3 instead of AXI4.
+-- Setting the ``enable_axi3`` generic will make the core compliant with AXI3 instead of AXI4.
 -- The core does not use any of the ID fields (``AWID``, ``WID``, ``BID``) so the only difference
 -- is the burst length limitation.
 -- -------------------------------------------------------------------------------------------------
@@ -205,12 +205,12 @@ begin
     report "Invalid stream data width. See above."
     severity failure;
 
-  assert is_power_of_two(packet_length_beats)
-    report "Packet length must be a power of two for efficient calculations."
-    severity failure;
-
   assert stream_data_width mod axi_data_width = 0 or axi_data_width mod stream_data_width = 0
     report "Data width ratio must be a whole number of beats."
+    severity failure;
+
+  assert is_power_of_two(packet_length_beats)
+    report "Packet length must be a power of two for efficient calculations."
     severity failure;
 
   assert packet_length_bytes mod axi_data_width_bytes = 0
