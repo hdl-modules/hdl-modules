@@ -17,7 +17,7 @@ set clk_write [get_clocks -quiet -of_objects [get_ports "clk_write"]]
 set read_data [
   get_cells \
     -quiet \
-    -filter {PRIMITIVE_GROUP==FLOP_LATCH} \
+    -filter {PRIMITIVE_GROUP==FLOP_LATCH || PRIMITIVE_GROUP==REGISTER} \
     "memory.memory_read_data_reg*"
 ]
 
