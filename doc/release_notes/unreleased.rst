@@ -15,7 +15,7 @@ Breaking changes
 * Rename old ``reg_file`` module to :ref:`register_file <module_register_file>` and rework it.
   Note that this change is compatible with `hdl-registers <https://hdl-registers.com>`__ version
   7.0.0 and later.
-  If you use hdl-registers, the changes should be completely transparent.
+  If you use hdl-registers, the changes should be transparent.
   The changes are:
 
   * Rename "reg" to "register", "idx" to "index", "reg_type" to "mode" for all files,
