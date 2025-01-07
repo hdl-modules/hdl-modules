@@ -1,3 +1,5 @@
+.. _getting_started:
+
 Getting started
 ===============
 
@@ -6,25 +8,47 @@ Start by cloning the repo:
 
   git clone https://github.com/hdl-modules/hdl-modules.git
 
-If you want a stable release you can checkout one of the tags.
+To checkout a stable release version, choose one of the :ref:`tags <release_notes>`.
+
+If you are using a Python-based simulation/build flow, using hdl-modules with
+`tsfpga <https://tsfpga.com>`_ (see `installation <https://tsfpga.com/installation>`_)
+is highly recommended.
+It is easier, more compact and more portable than handling the source code manually.
+
 
 
 Source code
 -----------
 
+When using `tsfpga <https://tsfpga.com>`__, simply call the function
+`get_hdl_modules() <https://github.com/hdl-modules/hdl-modules/blob/main/hdl_modules/__init__.py#L27>`_
+and add to your list of modules.
+Note that you must add the hdl-modules repository to your Python path to call this function,
+either by using ``sys.path.append(...)`` or by setting the ``PYTHONPATH`` environment variable.
+
+You can now use e.g.
+:py:meth:`get_synthesis_files() <tsfpga.module.BaseModule.get_synthesis_files>`,
+:py:meth:`get_simulation_files() <tsfpga.module.BaseModule.get_simulation_files>`
+and :py:class:`library_name <tsfpga.module.BaseModule>` just like with any other module.
+Note that you probably want to set the ``include_tests`` argument to ``False`` when
+calling :py:meth:`get_simulation_files() <tsfpga.module.BaseModule.get_simulation_files>`,
+so you are not running testbenches unnecessarily.
+
+Manual workflow
+_______________
+
+When not using tsfpga, source code must be added manually to your build/simulation project.
+
 Synthesizable source code is found in the ``src`` folder of each module.
 These files should be added to your simulation and build project.
 The library name is the same as the module name.
 
-Test code is found in the ``test`` folder of each module.
+Testbenches are found in the ``test`` folder of each module.
 Simulation code (BFMs) is found in the ``sim`` folder of each module.
-The simulation code should be added to your simulation project.
+The simulation code should be added to your simulation project but not your build project.
 
 All files must be handled as VHDL-2008.
 
-.. note::
-  When using `tsfpga <https://tsfpga.com>`__, this is done with a call to
-  :func:`tsfpga.module.get_modules` and appending to your current list of modules.
 
 
 .. _scoped_constraints:
@@ -32,18 +56,27 @@ All files must be handled as VHDL-2008.
 Scoped constraints
 ------------------
 
+When using `tsfpga <https://tsfpga.com>`__, scoped constraint files are loaded automatically
+to the build project and correct settings are applied.
+
+Background
+__________
+
 Many entities in this project have corresponding constraint files that must be used in
 build projects for proper operation.
 These are found in the ``scoped_constraints`` directory of the module, which contains
 ``.tcl`` files that have the same file name as the corresponding entity.
 
-These must be loaded in Vivado with e.g.
+A constraint files being "scoped" means that it is applied relative to each instance of an entity.
+Using this, we do not have to search through the whole design hierarchy to find the signals that
+we are interested in.
+
+Manual workflow
+_______________
+
+When not using tsfpga, scoped constraint files must be loaded in Vivado with e.g.
 
   read_xdc -ref asynchronous_fifo /home/lukas/work/repo/hdl-modules/hdl-modules/modules/fifo/scoped_constraints/asynchronous_fifo.tcl
-
-The constraint file being scoped means that it is applied relative to each instance of the entity.
-Using this we do not have to search through the whole design hierarchically to find the signals that
-we are interested in in our constraint file.
 
 .. warning::
   In order for constraints to be applied and actually have an effect there are many
@@ -51,30 +84,33 @@ we are interested in in our constraint file.
   See
   `this article <https://linkedin.com/pulse/reliable-cdc-constraints-4-build-tool-settings-lukas-vik-yknsc/>`__
   for more information.
-
-.. note::
-  When using `tsfpga <https://tsfpga.com>`__, scoped constraint files are loaded automatically
-  to the build project and correct settings are applied.
+  This is done automatically when using `tsfpga <https://tsfpga.com>`__.
 
 
-Unresolved types
-----------------
 
-The modules consistently use unresolved types
-(e.g. ``std_ulogic`` instead of ``std_logic``, ``u_unsigned`` instead of ``unsigned``, etc.).
-This means that accidental multiple drivers of a signal will result in an error when simulating
-or synthesizing the design.
+Register interfaces
+-------------------
 
-Since e.g. ``std_logic`` is a sub-type of ``std_ulogic`` in VHDL-2008, it is no problem if
-hdl-modules components are integrated in a code base that still uses the resolved types.
-E.g. a ``std_logic`` signal can be attached to a hdl-modules port of type ``std_ulogic``
-(both ``in`` and ``out``) without problem.
+Some modules in this project are controlled over a register bus and use
+`hdl-registers <https://hdl-registers.com>`__ to generate register interface code.
+For example :ref:`module_dma_axi_write_simple`.
+When using `tsfpga <https://tsfpga.com>`__, register HDL code is automatically generated
+and kept up to date in both simulation and build flow.
+
+Manual workflow
+_______________
+
+When not using tsfpga, :ref:`VHDL code generation <generator_vhdl>` from
+hdl-registers must be integrated in your simulation and build flow.
+In order to access the registers on a target device,
+:ref:`C <generator_c>` or :ref:`C++ <generator_cpp>`
+code generation must probably be integrated in your FPGA/software build flow.
 
 
 Feedback
 --------
 
-If you find any bugs or inconsistencies, please
+If you find any bugs or inconsistencies in this project, please
 `start a discussion <https://github.com/hdl-modules/hdl-modules/discussions>`__
 or `create an issue <https://github.com/hdl-modules/hdl-modules/issues>`__
 on GitHub.

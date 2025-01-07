@@ -61,6 +61,8 @@ jobs:
       run: |
         git clone --depth 1 --single-branch --branch main \
           https://github.com/tsfpga/tsfpga.git ../../tsfpga/tsfpga
+        git clone --depth 1 --single-branch --branch main \
+          https://github.com/hdl-registers/hdl-registers.git ../../hdl-registers/hdl-registers
 
     - name: Run tests
       run: |

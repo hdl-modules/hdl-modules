@@ -95,6 +95,7 @@ def test_no_checked_in_files_have_too_long_lines():
         REPO_ROOT / "license.txt",
         # Impossible to break RST syntax
         HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
+        HDL_MODULES_DIRECTORY / "dma_axi_write_simple" / "doc" / "dma_axi_write_simple.rst",
         HDL_MODULES_DIRECTORY / "fifo" / "src" / "asynchronous_fifo.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "doc" / "resync.rst",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_counter.vhd",
