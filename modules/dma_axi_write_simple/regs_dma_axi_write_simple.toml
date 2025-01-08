@@ -1,6 +1,8 @@
 ################################################################################
-interrupt_status.mode = "r_wpulse"
-interrupt_status.description = """
+[interrupt_status]
+
+mode = "r_wpulse"
+description = """
 Interrupt status for the different interrupt sources of this module.
 When an interrupt condition occurs, the corresponding bit in this register will read as '1' until
 cleared (see below).
@@ -14,35 +16,37 @@ to check for events.
 Interrupt status is cleared by writing '1' to the target interrupt bit(s) in this register.
 """
 
-interrupt_status.write_done.type = "bit"
-interrupt_status.write_done.description = """
+write_done.type = "bit"
+write_done.description = """
 A streaming packet, as defined by the **packet_length_beats** generic, has been written to memory.
 Compare **buffer_written_address** with **buffer_read_address** to find out
 how many bytes have been written and to which location.
 """
 
-interrupt_status.write_error.type = "bit"
-interrupt_status.write_error.description = "Memory write responded with error (BRESP)."
+write_error.type = "bit"
+write_error.description = "Memory write responded with error (BRESP)."
 
-interrupt_status.start_address_unaligned_error.type = "bit"
-interrupt_status.start_address_unaligned_error.description = """
+start_address_unaligned_error.type = "bit"
+start_address_unaligned_error.description = """
 The provided **buffer_start_address** is not aligned with the packet length.
 """
 
-interrupt_status.end_address_unaligned_error.type = "bit"
-interrupt_status.end_address_unaligned_error.description = """
+end_address_unaligned_error.type = "bit"
+end_address_unaligned_error.description = """
 The provided **buffer_end_address** is not aligned with the packet length.
 """
 
-interrupt_status.read_address_unaligned_error.type = "bit"
-interrupt_status.read_address_unaligned_error.description = """
+read_address_unaligned_error.type = "bit"
+read_address_unaligned_error.description = """
 The provided **buffer_read_address** is not aligned with the packet length.
 """
 
 
 ################################################################################
-interrupt_mask.mode = "r_w"
-interrupt_mask.description = """
+[interrupt_mask]
+
+mode = "r_w"
+description = """
 Interrupt enable mask for the different interrupts of this module.
 The bits of this register correspond to the interrupts in **interrupt_status**.
 
