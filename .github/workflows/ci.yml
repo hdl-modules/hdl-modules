@@ -202,7 +202,7 @@ jobs:
           vunit-hdl@git+https://github.com/VUnit/vunit.git
 
     - name: Setup GHDL
-      uses: paebbels/setup-ghdl@main
+      uses: ghdl/setup-ghdl@v1
 
     - name: Clone dependency repos
       run: |
