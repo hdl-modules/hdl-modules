@@ -88,7 +88,7 @@ jobs:
         cache: pip
 
     - name: Install system packages
-      uses: awalsh128/cache-apt-pkgs-action@v1.2.4
+      uses: awalsh128/cache-apt-pkgs-action@v1.4.3
       with:
         packages: gir1.2-gtk-3.0 graphviz libgirepository1.0-dev libcairo2-dev pkg-config
         version: 1.0
