@@ -37,8 +37,10 @@ package types_pkg is
   type boolean_vec_t is array (integer range <>) of boolean;
 
   function to_sl(value : boolean) return std_ulogic;
+  function to_sl(value : natural range 0 to 1) return std_ulogic;
+
   function to_bool(value : std_ulogic) return boolean;
-  function to_bool(value : natural) return boolean;
+  function to_bool(value : natural range 0 to 1) return boolean;
 
   subtype binary_integer_t is integer range 0 to 1;
   function to_int(value : boolean) return binary_integer_t;
@@ -138,6 +140,14 @@ package body types_pkg is
     return '0';
   end function;
 
+  function to_sl(value : natural range 0 to 1) return std_ulogic is
+  begin
+    if value = 1 then
+      return '1';
+    end if;
+    return '0';
+  end function;
+
   function to_bool(value : std_ulogic) return boolean is
   begin
     if value = '1' then
@@ -149,17 +159,9 @@ package body types_pkg is
     return false;
   end function;
 
-  function to_bool(value : natural) return boolean is
+  function to_bool(value : natural range 0 to 1) return boolean is
   begin
-    if value = 1 then
-      return true;
-    end if;
-    if value = 0 then
-      return false;
-    end if;
-
-    assert false report "Can not convert value: " & natural'image(value);
-    return false;
+    return value = 1;
   end function;
 
   function to_int(value : boolean) return binary_integer_t is
