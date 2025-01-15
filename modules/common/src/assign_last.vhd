@@ -7,7 +7,7 @@
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
 -- Calculate the ``last`` indicator for an AXI-Stream-like handshaking data flow.
--- Can be used the enable packet-based processing from a data source that does not provide
+-- Can be used to enable packet-based processing from a data source that does not provide
 -- a ``last`` signal.
 --
 -- The packet length is specified at compile-time using the ``packet_length_beats`` generic.
