@@ -66,7 +66,6 @@ public:
    *                              taken to pass the virtual address, not the
    *                              physical address.
    *                              When using bare metal, these are the same.
-   * @param dma_axi_write_simple_registers Register interface object pointer.
    * @param buffer Pointer to memory buffer.
    *               Must be allocated by user.
    *               The address must be aligned with the packet length used by
