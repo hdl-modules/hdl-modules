@@ -189,13 +189,12 @@ architecture a of dma_axi_write_simple is
     simple_ring_buffer_manager_status_idle_no_error
   );
 
+  signal axi_ready, axi_valid : std_ulogic := '0';
+  signal axi_data : std_ulogic_vector(axi_data_width - 1 downto 0) := (others => '0');
+
 begin
 
   ------------------------------------------------------------------------------
-  assert stream_data_width = axi_data_width
-    report "Widths must be the same at the moment. Will be changed in the future."
-    severity failure;
-
   assert sanity_check_axi_data_width(data_width=>axi_data_width)
     report "Invalid AXI data width. See above."
     severity failure;
@@ -270,6 +269,37 @@ begin
 
 
   ------------------------------------------------------------------------------
+  width_conversion_gen : if stream_data_width /= axi_data_width generate
+
+    ------------------------------------------------------------------------------
+    dut : entity common.width_conversion
+      generic map (
+        input_width => stream_data'length,
+        output_width => axi_data'length
+      )
+      port map (
+        clk => clk,
+        --
+        input_ready => stream_ready,
+        input_valid => stream_valid,
+        input_data => stream_data,
+        --
+        output_ready => axi_ready,
+        output_valid => axi_valid,
+        output_data => axi_data
+      );
+
+  ------------------------------------------------------------------------------
+  else generate
+
+    stream_ready <= axi_ready;
+    axi_valid <= stream_valid;
+    axi_data <= stream_data;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   axi_block : block
     function get_num_axi_bursts_per_packet return positive is
       constant max_axi_burst_length_beats : positive := get_max_burst_length_beats(
@@ -310,6 +340,8 @@ begin
     ------------------------------------------------------------------------------
     print_things : process
     begin
+      report "packet_length_beats = " & integer'image(packet_length_beats);
+      report "packet_length_axi_beats = " & integer'image(packet_length_axi_beats);
       report "num_axi_bursts_per_packet = " & integer'image(num_axi_bursts_per_packet);
       report "axi_burst_length_beats = " & integer'image(axi_burst_length_beats);
 
@@ -392,7 +424,7 @@ begin
     axi_write_m2s.aw.size <= to_size(data_width_bits=>axi_data_width);
     axi_write_m2s.aw.burst <= axi_a_burst_incr;
 
-    axi_write_m2s.w.data(stream_data'range) <= stream_data;
+    axi_write_m2s.w.data(axi_data'range) <= axi_data;
     axi_write_m2s.w.strb <= to_strb(data_width=>axi_data_width);
 
     axi_write_m2s.b.ready <= '1';
@@ -413,9 +445,9 @@ begin
           clk => clk,
           --
           input_ready(0) => segment_ready,
-          input_ready(1) => stream_ready,
+          input_ready(1) => axi_ready,
           input_valid(0) => segment_valid,
-          input_valid(1) => stream_valid,
+          input_valid(1) => axi_valid,
           --
           result_ready => merged_ready,
           result_valid => merged_valid
@@ -451,7 +483,7 @@ begin
       type state_t is (wait_for_start_condition, let_data_pass);
       signal state : state_t := wait_for_start_condition;
 
-      signal stream_last : std_ulogic := '0';
+      signal axi_last : std_ulogic := '0';
     begin
 
       ------------------------------------------------------------------------------
@@ -476,7 +508,7 @@ begin
             --    Meaning, the user has initiated the ring buffer and it is not full.
             -- 3. The previous AW transaction is done, since we simply assert AWVALID and do
             --    not wait for a transaction before proceeding in the state machine.
-            if stream_valid and segment_valid and not axi_write_m2s.aw.valid then
+            if axi_valid and segment_valid and not axi_write_m2s.aw.valid then
               axi_write_m2s.aw.valid <= '1';
               -- Sample the address since we will pop the 'segment' word straight away, whereas
               -- we don't know when the 'AW' transaction will happen.
@@ -492,7 +524,7 @@ begin
           when let_data_pass =>
             -- Use the 'ready' and 'valid' that are not gated by the 'state'.
             -- Saves a little bit of critical path.
-            if axi_write_s2m.w.ready and stream_valid and stream_last then
+            if axi_write_s2m.w.ready and axi_valid and axi_last then
               state <= wait_for_start_condition;
             end if;
 
@@ -510,15 +542,15 @@ begin
         port map (
           clk => clk,
           --
-          ready => stream_ready,
-          valid => stream_valid,
-          last => stream_last
+          ready => axi_ready,
+          valid => axi_valid,
+          last => axi_last
         );
 
-      axi_write_m2s.w.valid <= stream_valid and to_sl(state = let_data_pass);
-      axi_write_m2s.w.last <= stream_last;
+      axi_write_m2s.w.valid <= axi_valid and to_sl(state = let_data_pass);
+      axi_write_m2s.w.last <= axi_last;
 
-      stream_ready <= axi_write_s2m.w.ready and to_sl(state = let_data_pass);
+      axi_ready <= axi_write_s2m.w.ready and to_sl(state = let_data_pass);
 
     end generate;
 

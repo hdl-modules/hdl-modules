@@ -24,10 +24,7 @@ Roadmap
 The limitations listed above are intrinsic, with no plan for change.
 There are also currently a few limitations that are planned to be fixed in the future:
 
-1. Stream data width must be the same as AXI data width.
-   This will be fixed in the future with the ``stream_data_width``
-   and ``axi_data_width`` generics.
-2. Has no "event aggregator" feature for the ``write_done`` interrupt bit.
+1. Has no "event aggregator" feature for the ``write_done`` interrupt bit.
    Meaning an interrupt will be generated for each burst, which can bog down the software
    if data rates are high.
    This will be fixed in the future with the

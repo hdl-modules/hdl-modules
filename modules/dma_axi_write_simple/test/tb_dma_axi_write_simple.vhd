@@ -54,16 +54,16 @@ architecture tb of tb_dma_axi_write_simple is
   end function;
   constant address_width : positive := initialize_and_get_address_width;
 
-  impure function get_stream_data_width return positive is
+  impure function get_data_width return positive is
   begin
     -- Between 8 and 128 bits.
     return 8 * 2 ** rnd.Uniform(0, 4);
   end function;
-  constant stream_data_width : positive := get_stream_data_width;
+
+  constant stream_data_width : positive := get_data_width;
   constant stream_bytes_per_beat : positive := stream_data_width / 8;
 
-  -- Only same width supported at the moment.
-  constant axi_data_width : positive := stream_data_width;
+  constant axi_data_width : positive := get_data_width;
   constant axi_bytes_per_beat : positive := axi_data_width / 8;
 
   impure function get_enable_axi3 return boolean is
@@ -72,23 +72,32 @@ architecture tb of tb_dma_axi_write_simple is
   end function;
   constant enable_axi3 : boolean := get_enable_axi3;
 
-  impure function get_packet_length_beats return positive is
+  impure function get_packet_length_axi_beats return positive is
     constant max_axi_burst_length_beats : positive := get_max_burst_length_beats(
       enable_axi3=>enable_axi3
     );
   begin
     if rnd.Uniform(1, 5) = 5 then
+      report "Testing with long packet";
+
       -- Test long packets that will trigger burst splitting.
       -- Between 1 and 8 AXI bursts.
       return 2 ** rnd.FavorSmall(0, 3) * max_axi_burst_length_beats;
     else
-      -- Between 1 and 8 beats.
-      return 2 ** rnd.FavorSmall(0, 3);
+      report "Testing with short packet";
+
+      if stream_data_width <= axi_data_width then
+        -- Between 1 and 8 AXI beats.
+        return 2 ** rnd.FavorSmall(0, 3);
+      else
+        -- Between 1 and 8 stream beats.
+        return 2 ** rnd.FavorSmall(0, 3) * (stream_data_width / axi_data_width);
+      end if;
     end if;
   end function;
-  constant packet_length_beats : positive := get_packet_length_beats;
-  constant packet_length_bytes : positive := packet_length_beats * stream_bytes_per_beat;
-  constant packet_length_axi_beats : positive := packet_length_bytes / axi_bytes_per_beat;
+  constant packet_length_axi_beats : positive := get_packet_length_axi_beats;
+  constant packet_length_bytes : positive := packet_length_axi_beats * axi_bytes_per_beat;
+  constant packet_length_beats : positive := packet_length_bytes / stream_bytes_per_beat;
 
   -- ---------------------------------------------------------------------------
   -- DUT connections.
