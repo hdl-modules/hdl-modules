@@ -32,6 +32,15 @@
 -- the core will perform burst splitting internally.
 --
 --
+-- Data width conversion
+-- _____________________
+--
+-- The core supports data width conversion between the input ``stream`` and the AXI bus.
+-- If the ``stream_data_width`` and ``axi_data_width`` are not equal,
+-- :ref:`common.width_conversion` will be instantiated for a lightweight conversion.
+-- Note that ``axi_data_width`` must be the native width of the AXI port.
+--
+--
 -- .. _dma_axi_write_simple_resource_usage:
 --
 -- Resource usage

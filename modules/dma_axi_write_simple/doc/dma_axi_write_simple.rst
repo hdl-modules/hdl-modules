@@ -18,19 +18,6 @@ These limitations and the simplicity of the design are intentional.
 This is what enables the low resource usage and high throughput.
 
 
-Roadmap
--------
-
-The limitations listed above are intrinsic, with no plan for change.
-There are also currently a few limitations that are planned to be fixed in the future:
-
-1. Has no "event aggregator" feature for the ``write_done`` interrupt bit.
-   Meaning an interrupt will be generated for each burst, which can bog down the software
-   if data rates are high.
-   This will be fixed in the future with the
-   ``write_done_aggregate_count`` and ``write_done_aggregate_ticks`` generics.
-
-
 C++ driver
 ----------
 
