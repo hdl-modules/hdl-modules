@@ -272,7 +272,7 @@ begin
   width_conversion_gen : if stream_data_width /= axi_data_width generate
 
     ------------------------------------------------------------------------------
-    dut : entity common.width_conversion
+    width_conversion_inst : entity common.width_conversion
       generic map (
         input_width => stream_data'length,
         output_width => axi_data'length
