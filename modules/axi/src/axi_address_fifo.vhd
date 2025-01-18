@@ -29,7 +29,7 @@ use work.axi_pkg.all;
 entity axi_address_fifo is
   generic (
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t;
+    addr_width : axi_address_width_t;
     asynchronous : boolean;
     depth : natural := 16;
     ram_type : ram_style_t := ram_style_auto

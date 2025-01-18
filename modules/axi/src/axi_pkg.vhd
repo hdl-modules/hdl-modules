@@ -42,7 +42,7 @@ package axi_pkg is
   -- The width value below is a max value, implementation should only take into regard the bits
   -- that are actually used.
   constant axi_a_addr_sz : positive := 64;
-  subtype axi_addr_width_t is positive range 1 to axi_a_addr_sz;
+  subtype axi_address_width_t is positive range 1 to axi_a_addr_sz;
 
   -- Length field (ARLEN or AWLEN)
   -- Number of beats (data transfers) in this burst = AxLEN + 1
@@ -148,19 +148,19 @@ package axi_pkg is
     burst => (others => '-')
   );
   function axi_m2s_a_sz(
-    id_width : axi_id_width_t; addr_width : axi_addr_width_t
+    id_width : axi_id_width_t; addr_width : axi_address_width_t
   ) return positive;
   type axi_m2s_a_vec_t is array (integer range <>) of axi_m2s_a_t;
 
   function to_slv(
     data : axi_m2s_a_t;
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t
+    addr_width : axi_address_width_t
   ) return std_ulogic_vector;
   function to_axi_m2s_a(
     data : std_ulogic_vector;
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t
+    addr_width : axi_address_width_t
   ) return axi_m2s_a_t;
 
   -- Record for the AR/AW signals in the slave-to-master direction.
@@ -437,7 +437,7 @@ package body axi_pkg is
   end function;
 
   function axi_m2s_a_sz(
-    id_width : axi_id_width_t; addr_width : axi_addr_width_t
+    id_width : axi_id_width_t; addr_width : axi_address_width_t
   ) return positive is
   begin
     -- Excluded member: valid
@@ -447,7 +447,7 @@ package body axi_pkg is
   function to_slv(
     data : axi_m2s_a_t;
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t
+    addr_width : axi_address_width_t
   ) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_m2s_a_sz(id_width, addr_width) - 1 downto 0);
     variable lo, hi : natural := 0;
@@ -482,7 +482,7 @@ package body axi_pkg is
   function to_axi_m2s_a(
     data : std_ulogic_vector;
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t
+    addr_width : axi_address_width_t
   ) return axi_m2s_a_t is
     constant offset : natural := data'low;
     variable result : axi_m2s_a_t := axi_m2s_a_init;

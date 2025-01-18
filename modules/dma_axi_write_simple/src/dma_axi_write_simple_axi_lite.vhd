@@ -29,7 +29,7 @@ use work.dma_axi_write_simple_register_record_pkg.all;
 entity dma_axi_write_simple_axi_lite is
   generic (
     -- See 'dma_axi_write_simple_core.vhd' for documentation of the generics.
-    address_width : axi_addr_width_t;
+    address_width : axi_address_width_t;
     stream_data_width : axi_data_width_t;
     axi_data_width : axi_data_width_t;
     packet_length_beats : positive;

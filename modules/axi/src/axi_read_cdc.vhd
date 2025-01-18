@@ -29,7 +29,7 @@ use work.axi_pkg.all;
 entity axi_read_cdc is
   generic (
     id_width : axi_id_width_t;
-    addr_width : axi_addr_width_t;
+    addr_width : axi_address_width_t;
     data_width : axi_data_width_t;
     enable_data_fifo_packet_mode : boolean;
     address_fifo_depth : positive;

@@ -35,7 +35,7 @@ use axi.axi_pkg.all;
 
 entity axi_write_range_checker is
   generic (
-    address_width : axi_addr_width_t := axi_a_addr_sz;
+    address_width : axi_address_width_t := axi_a_addr_sz;
     id_width : axi_id_width_t := axi_id_sz;
     data_width : axi_data_width_t := axi_data_sz;
     enable_axi3 : boolean;

@@ -147,7 +147,7 @@ entity dma_axi_write_simple is
   generic (
     -- The width of the AXI AWADDR field as well as all the ring buffer addresses
     -- handled internally.
-    address_width : axi_addr_width_t;
+    address_width : axi_address_width_t;
     -- The data width of the 'stream' interface.
     stream_data_width : axi_data_width_t;
     -- The width of the AXI WDATA field.

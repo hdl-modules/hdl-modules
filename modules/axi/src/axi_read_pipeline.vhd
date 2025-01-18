@@ -21,7 +21,7 @@ use work.axi_pkg.all;
 
 entity axi_read_pipeline is
   generic (
-    addr_width : axi_addr_width_t;
+    addr_width : axi_address_width_t;
     id_width : axi_id_width_t;
     data_width : axi_data_width_t;
     -- Can be changed from default in order to decrease logic utilization, at the cost of lower

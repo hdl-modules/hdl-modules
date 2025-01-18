@@ -25,7 +25,7 @@ entity tb_axi_pkg is
   generic (
     data_width : axi_data_width_t := 8;
     id_width : axi_id_width_t := 0;
-    addr_width : axi_addr_width_t := 1;
+    addr_width : axi_address_width_t := 1;
     runner_cfg : string
   );
 end entity;

@@ -41,7 +41,7 @@ entity axi_write_slave is
     -- Optionally limit the address width.
     -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
     -- converts the field to an integer.
-    address_width : axi_addr_width_t := axi_a_addr_sz;
+    address_width : axi_address_width_t := axi_a_addr_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
     w_fifo_depth : natural := 0;
