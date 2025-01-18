@@ -137,7 +137,7 @@ library register_file;
 use register_file.register_file_pkg.all;
 
 library ring_buffer;
-use ring_buffer.simple_ring_buffer_manager_pkg.all;
+use ring_buffer.ring_buffer_write_simple_pkg.all;
 
 use work.dma_axi_write_simple_register_record_pkg.all;
 use work.dma_axi_write_simple_regs_pkg.all;
@@ -194,8 +194,8 @@ architecture a of dma_axi_write_simple is
   -- Signals.
   signal interrupt_sources : register_t := (others => '0');
 
-  signal ring_buffer_status : simple_ring_buffer_manager_status_t := (
-    simple_ring_buffer_manager_status_idle_no_error
+  signal ring_buffer_status : ring_buffer_write_simple_status_t := (
+    ring_buffer_write_simple_status_idle_no_error
   );
 
   signal axi_ready, axi_valid : std_ulogic := '0';
@@ -369,7 +369,7 @@ begin
     begin
 
       ------------------------------------------------------------------------------
-      simple_ring_buffer_manager_inst : entity ring_buffer.simple_ring_buffer_manager
+      ring_buffer_write_simple_inst : entity ring_buffer.ring_buffer_write_simple
         generic map (
           address_width => address_width,
           -- We pop one address 'segment' per AXI burst, which might be multiple per packet.
