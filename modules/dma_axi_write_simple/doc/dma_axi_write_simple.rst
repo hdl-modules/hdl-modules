@@ -57,7 +57,7 @@ for simulation and synthesis:
 
 1. :download:`regs_src/dma_axi_write_simple_regs_pkg.vhd <vhdl/dma_axi_write_simple_regs_pkg.vhd>`
 2. :download:`regs_src/dma_axi_write_simple_register_record_pkg.vhd <vhdl/dma_axi_write_simple_register_record_pkg.vhd>`
-3. :download:`regs_src/dma_axi_write_simple_reg_file.vhd <vhdl/dma_axi_write_simple_reg_file.vhd>`
+3. :download:`regs_src/dma_axi_write_simple_register_file_axi_lite.vhd <vhdl/dma_axi_write_simple_register_file_axi_lite.vhd>`
 4. :download:`regs_sim/dma_axi_write_simple_register_read_write_pkg.vhd <vhdl/dma_axi_write_simple_register_read_write_pkg.vhd>`
 
 The first few are source files that shall be included in your simulation as well build project.

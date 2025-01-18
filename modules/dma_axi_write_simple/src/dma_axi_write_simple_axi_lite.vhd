@@ -84,7 +84,8 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dma_axi_write_simple_reg_file_inst : entity work.dma_axi_write_simple_reg_file
+  dma_axi_write_simple_register_file_axi_lite_inst :
+    entity work.dma_axi_write_simple_register_file_axi_lite
     port map (
       clk => clk,
       --
