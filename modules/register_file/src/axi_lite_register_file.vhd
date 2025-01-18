@@ -48,8 +48,8 @@ use work.register_file_pkg.all;
 
 entity axi_lite_register_file is
   generic (
-    regs : register_definition_vec_t;
-    default_values : register_vec_t(regs'range) := (others => (others => '0'))
+    registers : register_definition_vec_t;
+    default_values : register_vec_t(registers'range) := (others => (others => '0'))
   );
   port (
     clk : in std_ulogic;
@@ -59,24 +59,24 @@ entity axi_lite_register_file is
     axi_lite_s2m : out axi_lite_s2m_t := axi_lite_s2m_init;
     --# {{}}
     -- Register values
-    regs_up : in register_vec_t(regs'range) := default_values;
-    regs_down : out register_vec_t(regs'range) := default_values;
+    regs_up : in register_vec_t(registers'range) := default_values;
+    regs_down : out register_vec_t(registers'range) := default_values;
     --# {{}}
     -- Each bit is pulsed for one cycle when the corresponding register is read/written.
     -- For read, the bit is asserted the exact same cycle as the AXI-Lite R transaction occurs.
     -- For write, the bit is asserted the cycle after the AXI-Lite W transaction occurs, so that
     -- 'regs_down' is updated with the new value.
-    reg_was_read : out std_ulogic_vector(regs'range) := (others => '0');
-    reg_was_written : out std_ulogic_vector(regs'range) := (others => '0')
+    reg_was_read : out std_ulogic_vector(registers'range) := (others => '0');
+    reg_was_written : out std_ulogic_vector(registers'range) := (others => '0')
   );
 end entity;
 
 architecture a of axi_lite_register_file is
 
-  constant num_addr_bits : positive := num_bits_needed(get_highest_index(regs));
+  constant num_addr_bits : positive := num_bits_needed(get_highest_index(registers));
   subtype addr_range is natural range num_addr_bits + 2 - 1 downto 2;
 
-  signal reg_values : register_vec_t(regs'range) := default_values;
+  signal reg_values : register_vec_t(registers'range) := default_values;
 
 begin
 
@@ -84,10 +84,10 @@ begin
   assign_down : process(all)
   begin
     -- Assign only the bits that are marked as utilized, so there is no risk of confusion/misuse.
-    for reg_idx in regs'range loop
-      if is_write_mode(regs(reg_idx).mode) then
-        regs_down(reg_idx)(regs(reg_idx).utilized_width - 1 downto 0) <= reg_values(reg_idx)(
-          regs(reg_idx).utilized_width - 1 downto 0
+    for reg_idx in registers'range loop
+      if is_write_mode(registers(reg_idx).mode) then
+        regs_down(reg_idx)(registers(reg_idx).utilized_width - 1 downto 0) <= reg_values(reg_idx)(
+          registers(reg_idx).utilized_width - 1 downto 0
         );
       end if;
     end loop;
@@ -109,15 +109,15 @@ begin
       axi_lite_s2m.read.r.resp <= axi_resp_slverr;
       axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
 
-      for list_idx in regs'range loop
-        if is_read_mode(regs(list_idx).mode) then
+      for list_idx in registers'range loop
+        if is_read_mode(registers(list_idx).mode) then
           if read_index = list_idx then
             axi_lite_s2m.read.r.resp <= axi_resp_okay;
             reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
           end if;
 
-          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
-            if is_application_gives_value_mode(regs(list_idx).mode) then
+          for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
+            if is_application_gives_value_mode(registers(list_idx).mode) then
               if read_index = list_idx then
                 axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
               end if;
@@ -187,9 +187,9 @@ begin
 
       axi_lite_s2m.write.b.resp <= axi_resp_slverr;
 
-      for list_idx in regs'range loop
-        if is_write_pulse_mode(regs(list_idx).mode) then
-          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
+      for list_idx in registers'range loop
+        if is_write_pulse_mode(registers(list_idx).mode) then
+          for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
             -- Set initial default value.
             -- If a write occurs to this register, the value will be asserted for one cycle below.
             reg_values(list_idx)(bit_idx) <= default_values(list_idx)(bit_idx);
@@ -197,14 +197,14 @@ begin
         end if;
       end loop;
 
-      for list_idx in regs'range loop
-        if is_write_mode(regs(list_idx).mode) then
+      for list_idx in registers'range loop
+        if is_write_mode(registers(list_idx).mode) then
           if write_index = list_idx then
             axi_lite_s2m.write.b.resp <= axi_resp_okay;
             reg_was_written(list_idx) <= axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid;
           end if;
 
-          for bit_idx in 0 to regs(list_idx).utilized_width - 1 loop
+          for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
             if write_index = list_idx then
               if axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid then
                 reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);

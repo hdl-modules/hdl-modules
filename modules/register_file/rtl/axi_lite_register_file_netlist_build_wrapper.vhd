@@ -77,7 +77,7 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_register_file_inst : entity work.axi_lite_register_file
     generic map (
-      regs => regs,
+      registers => regs,
       default_values => default_values
     )
     port map (
