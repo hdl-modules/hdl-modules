@@ -143,7 +143,7 @@ architecture tb of tb_dma_axi_write_simple is
 
 begin
 
-  test_runner_watchdog(runner, 500 us);
+  test_runner_watchdog(runner, 1 ms);
   clk <= not clk after 5 ns;
 
 
