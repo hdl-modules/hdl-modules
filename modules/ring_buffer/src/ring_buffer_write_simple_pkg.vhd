@@ -6,23 +6,23 @@
 -- https://hdl-modules.com
 -- https://github.com/hdl-modules/hdl-modules
 -- -------------------------------------------------------------------------------------------------
--- Package with types and constants for :ref:`ring_buffer.simple_ring_buffer_manager`.
+-- Package with types and constants for :ref:`ring_buffer.ring_buffer_write_simple`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 
-package simple_ring_buffer_manager_pkg is
+package ring_buffer_write_simple_pkg is
 
-  type simple_ring_buffer_manager_status_t is record
+  type ring_buffer_write_simple_status_t is record
     idle : std_ulogic;
     start_address_unaligned : std_ulogic;
     end_address_unaligned : std_ulogic;
     read_address_unaligned : std_ulogic;
   end record;
 
-  constant simple_ring_buffer_manager_status_idle_no_error : simple_ring_buffer_manager_status_t
+  constant ring_buffer_write_simple_status_idle_no_error : ring_buffer_write_simple_status_t
     := (
     idle=>'1',
     start_address_unaligned=>'0',
@@ -30,7 +30,7 @@ package simple_ring_buffer_manager_pkg is
     read_address_unaligned=>'0'
   );
 
-  constant simple_ring_buffer_manager_status_busy_no_error : simple_ring_buffer_manager_status_t
+  constant ring_buffer_write_simple_status_busy_no_error : ring_buffer_write_simple_status_t
     := (
     idle=>'0',
     start_address_unaligned=>'0',

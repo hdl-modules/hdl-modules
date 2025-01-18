@@ -17,7 +17,7 @@ class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
         test = (
             vunit_proj.library(self.library_name)
-            .test_bench("tb_simple_ring_buffer_manager")
+            .test_bench("tb_ring_buffer_write_simple")
             .get_tests("test_random_addresses")[0]
         )
 
@@ -31,7 +31,7 @@ class Module(BaseModule):
 
         test = (
             vunit_proj.library(self.library_name)
-            .test_bench("tb_simple_ring_buffer_manager")
+            .test_bench("tb_ring_buffer_write_simple")
             .get_tests("test_invalid_addresses")[0]
         )
         self.add_vunit_config(
@@ -54,12 +54,10 @@ class Module(BaseModule):
 
         return [
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.simple_ring_buffer_manager", generics
-                ),
+                name=self.test_case_name(f"{self.library_name}.ring_buffer_write_simple", generics),
                 modules=modules,
                 part=part,
-                top="simple_ring_buffer_manager",
+                top="ring_buffer_write_simple",
                 generics=generics,
                 build_result_checkers=[
                     TotalLuts(EqualTo(94)),

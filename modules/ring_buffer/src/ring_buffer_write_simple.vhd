@@ -88,10 +88,10 @@ use common.types_pkg.all;
 library math;
 use math.math_pkg.all;
 
-use work.simple_ring_buffer_manager_pkg.all;
+use work.ring_buffer_write_simple_pkg.all;
 
 
-entity simple_ring_buffer_manager is
+entity ring_buffer_write_simple is
   generic (
     address_width : positive;
     segment_length_bytes : positive;
@@ -115,13 +115,13 @@ entity simple_ring_buffer_manager is
     --# {{}}
     write_done : in std_ulogic;
     --# {{}}
-    status : out simple_ring_buffer_manager_status_t := (
-      simple_ring_buffer_manager_status_idle_no_error
+    status : out ring_buffer_write_simple_status_t := (
+      ring_buffer_write_simple_status_idle_no_error
     )
   );
 end entity;
 
-architecture a of simple_ring_buffer_manager is
+architecture a of ring_buffer_write_simple is
 
   -- Lowest bits that are assumed to be zero.
   constant unaligned_segment_address_width : natural := ceil_log2(segment_length_bytes);

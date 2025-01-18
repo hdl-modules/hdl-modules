@@ -27,10 +27,10 @@ use bfm.stall_bfm_pkg.stall_configuration_t;
 library common;
 use common.types_pkg.all;
 
-use work.simple_ring_buffer_manager_pkg.all;
+use work.ring_buffer_write_simple_pkg.all;
 
 
-entity tb_simple_ring_buffer_manager is
+entity tb_ring_buffer_write_simple is
   generic (
     segment_length_bytes : positive;
     buffer_size_segments : positive;
@@ -39,7 +39,7 @@ entity tb_simple_ring_buffer_manager is
   );
 end entity;
 
-architecture tb of tb_simple_ring_buffer_manager is
+architecture tb of tb_ring_buffer_write_simple is
 
   -- Generic constants.
   constant address_width : positive := 32;
@@ -61,8 +61,8 @@ architecture tb of tb_simple_ring_buffer_manager is
 
   signal write_done : std_ulogic := '0';
 
-  signal status : simple_ring_buffer_manager_status_t := (
-    simple_ring_buffer_manager_status_idle_no_error
+  signal status : ring_buffer_write_simple_status_t := (
+    ring_buffer_write_simple_status_idle_no_error
   );
 
   -- Testbench stuff.
@@ -119,11 +119,11 @@ begin
     buffer_end_address <= to_unsigned(start_address + buffer_size_bytes, buffer_end_address'length);
     buffer_read_address <= to_unsigned(start_address, buffer_read_address'length);
 
-    assert status = simple_ring_buffer_manager_status_idle_no_error;
+    assert status = ring_buffer_write_simple_status_idle_no_error;
 
     if run("test_random_addresses") then
       enable <= '1';
-      wait until status = simple_ring_buffer_manager_status_busy_no_error and rising_edge(clk);
+      wait until status = ring_buffer_write_simple_status_busy_no_error and rising_edge(clk);
 
       run_test;
 
@@ -243,7 +243,7 @@ begin
 
 
   ------------------------------------------------------------------------------
-  dut : entity work.simple_ring_buffer_manager
+  dut : entity work.ring_buffer_write_simple
     generic map (
       address_width => address_width,
       segment_length_bytes => segment_length_bytes
