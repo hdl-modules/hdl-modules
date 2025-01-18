@@ -73,8 +73,8 @@ end entity;
 
 architecture a of axi_lite_register_file is
 
-  constant num_addr_bits : positive := num_bits_needed(get_highest_index(registers));
-  subtype addr_range is natural range num_addr_bits + 2 - 1 downto 2;
+  constant num_address_bits : positive := num_bits_needed(get_highest_index(registers));
+  subtype address_range is natural range num_address_bits + 2 - 1 downto 2;
 
   signal reg_values : register_vec_t(registers'range) := default_values;
 
@@ -98,7 +98,7 @@ begin
   read_block : block
     type read_state_t is (ar, r);
     signal read_state : read_state_t := ar;
-    signal read_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
+    signal read_index : u_unsigned(num_address_bits - 1 downto 0) := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ begin
       case read_state is
         when ar =>
           -- Sample always, will only be used if we change state.
-          read_index <= axi_lite_m2s.read.ar.addr(addr_range);
+          read_index <= axi_lite_m2s.read.ar.addr(address_range);
 
           -- Keep high and then lower it after we have a 'valid'.
           -- Will be high at one rising clock edge together with 'valid'.
@@ -174,7 +174,7 @@ begin
   write_block : block
     type write_state_t is (aw, w, b);
     signal write_state : write_state_t := aw;
-    signal write_index : u_unsigned(num_addr_bits - 1 downto 0) := (others => '0');
+    signal write_index : u_unsigned(num_address_bits - 1 downto 0) := (others => '0');
   begin
 
 
@@ -227,7 +227,7 @@ begin
       case write_state is
         when aw =>
           -- Sample always, will only be used if we change state.
-          write_index <= axi_lite_m2s.write.aw.addr(addr_range);
+          write_index <= axi_lite_m2s.write.aw.addr(address_range);
 
           axi_lite_s2m.write.aw.ready <= '1';
 
