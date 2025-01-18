@@ -1,5 +1,6 @@
-This module contains a simple Direct Memory Access (DMA) component for
+This module contains an open-source Direct Memory Access (DMA) component for
 streaming data from FPGA to DDR memory over AXI.
+Sometimes called "S2MM".
 The implementation is optimized for
 
 1. very low :ref:`resource usage <dma_axi_write_simple_resource_usage>`, and
@@ -7,8 +8,8 @@ The implementation is optimized for
 
 Being simplified, however, it has the following limitations:
 
-1. Can only handle writing to continuous ring buffer space in DDR.
-   Has no scatter-gather capability.
+1. Can only write to continuous ring buffer space in DDR.
+   No scatter-gather support.
 2. Does not support data strobing or narrow AXI transfers.
    All addresses must be aligned with the AXI data width.
 3. Uses a static compile-time packet length, with no support for partial packets.
@@ -26,6 +27,7 @@ There is a complete C++ driver available in the
 in the repository.
 The class provides a convenient API for setting up the module and receiving stream data from
 the FPGA.
+It supports an interrupt-based as well as a polling-based workflow.
 See the header file for documentation.
 
 
