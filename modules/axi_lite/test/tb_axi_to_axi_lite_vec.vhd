@@ -48,7 +48,7 @@ architecture tb of tb_axi_to_axi_lite_vec is
     5 => x"0000_5000"
   );
 
-  constant reg_map : register_definition_vec_t(0 to 2 - 1) := (
+  constant register_map : register_definition_vec_t(0 to 2 - 1) := (
     (index => 0, mode => r_w, utilized_width => 32),
     (index => 1, mode => r_w, utilized_width => 32)
   );
@@ -138,7 +138,7 @@ begin
     ------------------------------------------------------------------------------
     axi_lite_register_file_inst : entity register_file.axi_lite_register_file
       generic map (
-        registers => reg_map
+        registers => register_map
       )
       port map (
         clk => clk_axi_lite_vec(slave),
