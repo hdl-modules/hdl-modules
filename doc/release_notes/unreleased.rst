@@ -7,10 +7,16 @@ Added
 * Add :ref:`resync.resync_sticky_level`.
 * Add :ref:`resync.resync_twophase_lutram`.
 
+Fixed
+
+* Fix bug where :ref:`fifo.asynchronous_fifo` constraint would fail on UltraScale+ devices when
+  FIFO mapped to LUTRAM primitives.
+
 Breaking changes
 
 * Rename ``resync_slv_level_coherent`` to :ref:`resync.resync_twophase`.
 * Rename ``resync_slv_handshake`` to :ref:`resync.resync_twophase_handshake`.
+* Rename :ref:`common.common_pkg` function ``ite`` to ``if_then_else``.
 
 * Rename old ``reg_file`` module to :ref:`register_file <module_register_file>` and rework it.
   Note that this change is compatible with `hdl-registers <https://hdl-registers.com>`__ version
