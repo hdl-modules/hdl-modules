@@ -1,6 +1,6 @@
 This module contains an open-source Direct Memory Access (DMA) component for
 streaming data from FPGA to DDR memory over AXI.
-Sometimes called "S2MM".
+Sometimes called "AXI DMA S2MM".
 The implementation is optimized for
 
 1. very low :ref:`resource usage <dma_axi_write_simple_resource_usage>`, and
