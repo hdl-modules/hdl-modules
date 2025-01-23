@@ -12,7 +12,7 @@
 -- timing issues.
 --
 -- Pipelining of a TRAIL response is incredibly resource-efficient due
--- to :ref:`rule 3 <trail_rules>`.
+-- to :ref:`rule 2 and 4 <trail_rules>`.
 -- We only have to pipeline ``enable`` along with any payload fields that have timing issues.
 -- All other fields can be left as a pass-through.
 -- This can save a lot of resources compared to a full pipeline, since it is commonly only a
