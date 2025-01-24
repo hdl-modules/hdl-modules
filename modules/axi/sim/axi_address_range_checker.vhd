@@ -98,14 +98,14 @@ begin
 
     ------------------------------------------------------------------------------
     check_len : process
-      constant arlen_width : positive := get_a_len_width(
+      constant axlen_width : positive := get_a_len_width(
         max_burst_length_beats=>get_max_burst_length_beats(enable_axi3=>enable_axi3)
       );
-      constant unused_arlen_zero : unsigned(axi_a_len_sz - 1 downto arlen_width) := (others => '0');
+      constant unused_axlen_zero : unsigned(axi_a_len_sz - 1 downto axlen_width) := (others => '0');
     begin
       wait until (address_s2m.ready and address_m2s.valid) = '1' and rising_edge(clk);
 
-      assert address_m2s.len(unused_arlen_zero'range) = unused_arlen_zero
+      assert address_m2s.len(unused_axlen_zero'range) = unused_axlen_zero
         report "Unused bits in AxLEN are not zero.";
     end process;
 
