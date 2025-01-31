@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 
 
 class Module(BaseModule):
-    def setup_vunit(  # pylint: disable=arguments-differ, unused-argument
-        self, vunit_proj: Any, inspect: bool, **kwargs: Any
+    def setup_vunit(  # pylint: unused-argument
+        self, vunit_proj: Any, inspect: bool = False, **kwargs: Any
     ) -> None:
         self._setup_lfsr_pkg_tests(vunit_proj=vunit_proj)
         self._setup_lfsr_tests(vunit_proj=vunit_proj, inspect=inspect)
