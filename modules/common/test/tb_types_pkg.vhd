@@ -86,6 +86,14 @@ begin
       check_equal(to_bool(0), false);
       check_equal(to_bool(1), true);
 
+    elsif run("test_to_sl_bool") then
+      check_equal(to_sl(true), '1');
+      check_equal(to_sl(false), '0');
+
+    elsif run("test_to_sl_integer") then
+      check_equal(to_sl(1), '1');
+      check_equal(to_sl(0), '0');
+
     elsif run("test_to_int_std_logic") then
       check_equal(to_int('0'), 0);
       check_equal(to_int('-'), 0);

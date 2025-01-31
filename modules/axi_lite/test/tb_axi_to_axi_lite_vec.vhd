@@ -20,9 +20,9 @@ use axi.axi_pkg.all;
 library common;
 use common.addr_pkg.all;
 
-library reg_file;
-use reg_file.reg_file_pkg.all;
-use reg_file.reg_operations_pkg.all;
+library register_file;
+use register_file.register_file_pkg.all;
+use register_file.register_operations_pkg.all;
 
 library bfm;
 
@@ -48,9 +48,9 @@ architecture tb of tb_axi_to_axi_lite_vec is
     5 => x"0000_5000"
   );
 
-  constant reg_map : reg_definition_vec_t(0 to 2 - 1) := (
-    (idx => 0, reg_type => r_w),
-    (idx => 1, reg_type => r_w)
+  constant register_map : register_definition_vec_t(0 to 2 - 1) := (
+    (index => 0, mode => r_w, utilized_width => 32),
+    (index => 1, mode => r_w, utilized_width => 32)
   );
 
   constant clk_axi_period : time := 7 ns;
@@ -119,14 +119,14 @@ begin
   ------------------------------------------------------------------------------
   axi_master_inst : entity bfm.axi_master
     generic map (
-      bus_handle => regs_bus_master
+      bus_handle => register_bus_master
     )
     port map (
       clk => clk_axi,
-
+      --
       axi_read_m2s => axi_m2s.read,
       axi_read_s2m => axi_s2m.read,
-
+      --
       axi_write_m2s => axi_m2s.write,
       axi_write_s2m => axi_s2m.write
     );
@@ -134,16 +134,19 @@ begin
 
   ------------------------------------------------------------------------------
   register_maps : for slave in base_addresses'range generate
-    axi_lite_reg_file_inst : entity reg_file.axi_lite_reg_file
-    generic map (
-      regs => reg_map
-    )
-    port map (
-      clk => clk_axi_lite_vec(slave),
 
-      axi_lite_m2s => axi_lite_m2s_vec(slave),
-      axi_lite_s2m => axi_lite_s2m_vec(slave)
-    );
+    ------------------------------------------------------------------------------
+    axi_lite_register_file_inst : entity register_file.axi_lite_register_file
+      generic map (
+        registers => register_map
+      )
+      port map (
+        clk => clk_axi_lite_vec(slave),
+        --
+        axi_lite_m2s => axi_lite_m2s_vec(slave),
+        axi_lite_s2m => axi_lite_s2m_vec(slave)
+      );
+
   end generate;
 
 

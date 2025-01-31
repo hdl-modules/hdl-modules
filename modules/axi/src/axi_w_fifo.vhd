@@ -29,11 +29,11 @@ use work.axi_pkg.all;
 entity axi_w_fifo is
   generic (
     asynchronous : boolean;
-    data_width : positive range 8 to axi_data_sz;
+    data_width : axi_data_width_t;
     depth : natural;
     enable_packet_mode : boolean := false;
     -- Only used by AXI3.
-    id_width : natural range 0 to axi_id_sz := 0;
+    id_width : axi_id_width_t := 0;
     ram_type : ram_style_t := ram_style_auto
   );
   port (

@@ -24,9 +24,9 @@ use axi.axi_pkg.all;
 
 entity axi_address_range_checker is
   generic (
-    address_width : positive range 1 to axi_a_addr_sz;
-    id_width : natural range 0 to axi_id_sz;
-    data_width : positive range 8 to axi_data_sz;
+    address_width : axi_address_width_t;
+    id_width : axi_id_width_t;
+    data_width : axi_data_width_t;
     enable_axi3 : boolean;
     supports_narrow_burst : boolean
   );
@@ -98,14 +98,14 @@ begin
 
     ------------------------------------------------------------------------------
     check_len : process
-      constant arlen_width : positive := get_a_len_width(
+      constant axlen_width : positive := get_a_len_width(
         max_burst_length_beats=>get_max_burst_length_beats(enable_axi3=>enable_axi3)
       );
-      constant unused_arlen_zero : unsigned(axi_a_len_sz - 1 downto arlen_width) := (others => '0');
+      constant unused_axlen_zero : unsigned(axi_a_len_sz - 1 downto axlen_width) := (others => '0');
     begin
       wait until (address_s2m.ready and address_m2s.valid) = '1' and rising_edge(clk);
 
-      assert address_m2s.len(unused_arlen_zero'range) = unused_arlen_zero
+      assert address_m2s.len(unused_axlen_zero'range) = unused_axlen_zero
         report "Unused bits in AxLEN are not zero.";
     end process;
 

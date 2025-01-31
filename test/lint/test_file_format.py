@@ -95,13 +95,17 @@ def test_no_checked_in_files_have_too_long_lines():
         REPO_ROOT / "license.txt",
         # Impossible to break RST syntax
         HDL_MODULES_DOC / "sphinx" / "getting_started.rst",
+        HDL_MODULES_DIRECTORY / "dma_axi_write_simple" / "doc" / "dma_axi_write_simple.rst",
         HDL_MODULES_DIRECTORY / "fifo" / "src" / "asynchronous_fifo.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "doc" / "resync.rst",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_counter.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_level_on_signal.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_level.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_pulse.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_rarely_valid_lutram.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_rarely_valid.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase_handshake.vhd",
+        HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase_lutram.vhd",
         HDL_MODULES_DIRECTORY / "resync" / "src" / "resync_twophase.vhd",
         # Impossible to break TCL syntax
         HDL_MODULES_DIRECTORY / "resync" / "scoped_constraints" / "resync_twophase_handshake.tcl",

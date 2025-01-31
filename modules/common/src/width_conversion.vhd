@@ -70,7 +70,7 @@
 -- _______________
 --
 -- By setting the ``user_width`` generic to a non-zero value, the ``input_user`` port can be used
--- to pass auxillary data along the bus.
+-- to pass auxiliary data along the bus.
 --
 -- When downsizing, i.e. when one input beat results in multiple output beats, the
 -- ``output_user`` port will have the same width as the ``input_user`` port.
@@ -124,7 +124,7 @@ entity width_conversion is
     input_strobe : in std_ulogic_vector(input_width / strobe_unit_width - 1 downto 0) := (
       others => '1'
     );
-    -- Optional auxillary user data. Must set 'user_width' generic in order to use this.
+    -- Optional auxiliary user data. Must set 'user_width' generic in order to use this.
     input_user : in std_ulogic_vector(user_width - 1 downto 0) := (others => '-');
     --# {{}}
     output_ready : in std_ulogic;
@@ -136,7 +136,7 @@ entity width_conversion is
     output_strobe : out std_ulogic_vector(output_width / strobe_unit_width - 1 downto 0) := (
       others => '1'
     );
-    -- Optional auxillary user data. Must set 'user_width' generic in order to use this.
+    -- Optional auxiliary user data. Must set 'user_width' generic in order to use this.
     output_user : out std_ulogic_vector(
       width_conversion_output_user_width(
         input_user_width=>user_width, input_data_width=>input_width, output_data_width=>output_width

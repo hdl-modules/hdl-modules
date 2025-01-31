@@ -21,9 +21,9 @@ use work.axi_pkg.all;
 
 entity axi_write_pipeline is
   generic (
-    addr_width : positive range 1 to axi_a_addr_sz;
-    id_width : natural range 0 to axi_id_sz;
-    data_width : positive range 8 to axi_data_sz;
+    addr_width : axi_address_width_t;
+    id_width : axi_id_width_t;
+    data_width : axi_data_width_t;
     -- Can be changed from default in order to decrease logic utilization, at the cost of lower
     -- throughput. See handshake_pipeline for details.
     full_address_throughput : boolean := true;

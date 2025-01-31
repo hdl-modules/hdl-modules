@@ -35,7 +35,7 @@
 -- User signalling
 -- _______________
 --
--- This BFM optionally supports sending auxillary data on the ``user`` port also.
+-- This BFM optionally supports sending auxiliary data on the ``user`` port also.
 -- Enable by setting a non-zero ``user_width`` and a valid ``user_queue``.
 -- User data is pushed as a :doc:`VUnit integer_array <vunit:data_types/integer_array>`
 -- just as for the regular data.
@@ -67,7 +67,7 @@ entity axi_stream_master is
     -- Optionally enable the 'user' port by setting a non-zero width here.
     -- Must also set the 'user_queue' generic to a valid queue.
     user_width : natural := 0;
-    -- Push auxillary user data (integer_array_t with push_ref()) to this queue.
+    -- Push auxiliary user data (integer_array_t with push_ref()) to this queue.
     -- Must also se the 'user_width' generic to a non-zero value.
     -- The integer arrays will be deallocated after this BFM is done with them.
     user_queue : queue_t := null_queue;

@@ -120,7 +120,7 @@ If we reorder the :ref:`sine_frequency_resolution` equation above, we get
   \right\rceil
   - \text{memory_address_width} - 2.
 
-Use this to calculate the ``fractional_phase_width`` generic value needed.
+Use this to calculate the ``phase_fractional_width`` generic value needed.
 
 When in fractional phase mode, the performance is limited mainly by the ``memory_address_width``
 generic value (see :ref:`sine_fractional_phase_mode` for details).

@@ -6,12 +6,18 @@
 # https://hdl-modules.com
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
+# See this article for background and discussion about these constraints:
+# https://www.linkedin.com/pulse/reliable-cdc-constraints-5-asynchronous-fifo-lukas-vik-snlgf/
+# See also the file 'resync_counter.tcl' and this article
+# https://www.linkedin.com/pulse/reliable-cdc-constraints-2-counters-fifos-lukas-vik-ist5c/
+# for details on how the address counters are CDC'd.
+# --------------------------------------------------------------------------------------------------
 
 set clk_write [get_clocks -quiet -of_objects [get_ports "clk_write"]]
 set read_data [
   get_cells \
     -quiet \
-    -filter {PRIMITIVE_GROUP==FLOP_LATCH} \
+    -filter {PRIMITIVE_GROUP==FLOP_LATCH || PRIMITIVE_GROUP==REGISTER} \
     "memory.memory_read_data_reg*"
 ]
 

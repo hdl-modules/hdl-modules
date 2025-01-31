@@ -13,6 +13,8 @@
 -- The implementation is quite optimized with very low resource utilization when extra features
 -- are not enabled.
 --
+-- .. figure:: asynchronous_fifo_circuit.png
+--
 -- For more CDC solutions, please see :ref:`module_resync`.
 --
 -- .. note::
@@ -28,6 +30,12 @@
 --   the exact level on the write side. When there is no word in the output register,
 --   e.g when the FIFO is empty, the ``write_level`` reported will be one higher than the
 --   real level.
+--
+-- See the
+-- `constraint file <https://github.com/hdl-modules/hdl-modules/blob/main/modules/fifo/scoped_constraints/asynchronous_fifo.tcl>`__
+-- and
+-- `this article <https://www.linkedin.com/pulse/reliable-cdc-constraints-5-asynchronous-fifo-lukas-vik-snlgf>`__
+-- for information about timing constraints and how this CDC topology is made reliable.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

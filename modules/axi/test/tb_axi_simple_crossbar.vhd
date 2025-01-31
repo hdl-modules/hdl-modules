@@ -157,7 +157,8 @@ begin
 
     ------------------------------------------------------------------------------
     input_masters_gen : for idx in inputs_read_m2s'range generate
-    begin
+
+      ------------------------------------------------------------------------------
       axi_lite_master_inst : entity bfm.axi_lite_master
         generic map (
           bus_handle => input_masters(idx),
@@ -171,6 +172,7 @@ begin
           axi_lite_s2m.read => inputs_read_s2m(idx),
           axi_lite_s2m.write => inputs_write_s2m(idx)
         );
+
     end generate;
 
 
@@ -239,7 +241,8 @@ begin
 
     ------------------------------------------------------------------------------
     input_masters_gen : for idx in inputs_read_m2s'range generate
-    begin
+
+      ------------------------------------------------------------------------------
       axi_master_inst : entity bfm.axi_master
         generic map (
           bus_handle => input_masters(idx),
@@ -254,6 +257,7 @@ begin
           axi_write_m2s => inputs_write_m2s(idx),
           axi_write_s2m => inputs_write_s2m(idx)
         );
+
     end generate;
 
 

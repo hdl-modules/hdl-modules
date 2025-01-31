@@ -33,7 +33,7 @@ use vunit_lib.axi_slave_pkg.all;
 entity axi_lite_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 1 to axi_lite_data_sz;
+    data_width : axi_lite_data_width_t;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
@@ -47,8 +47,15 @@ end entity;
 
 architecture a of axi_lite_write_slave is
 
+  -- Casting these in the port map raised an error in some GHDL versions.
+  -- Might be related to the ports being unconstrained.
+  -- Using a casted constant solves the issue.
+  -- https://github.com/tsfpga/tsfpga/discussions/121
   constant len : axi_a_len_t := to_len(1);
+  constant len_slv : std_ulogic_vector(len'range) := std_ulogic_vector(len);
+
   constant size : axi_a_size_t := to_size(data_width);
+  constant size_slv : std_ulogic_vector(size'range) := std_ulogic_vector(size);
 
   -- Using "open" not ok in GHDL: unconstrained port "rid" must be connected
   signal bid, aid : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
@@ -78,8 +85,8 @@ begin
       awready => axi_lite_write_s2m.aw.ready,
       awid => aid,
       awaddr => awaddr,
-      awlen => std_ulogic_vector(len),
-      awsize => std_ulogic_vector(size),
+      awlen => len_slv,
+      awsize => size_slv,
       awburst => axi_a_burst_fixed,
       --
       wvalid => axi_lite_write_m2s.w.valid,

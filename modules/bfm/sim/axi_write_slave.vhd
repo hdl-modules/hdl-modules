@@ -34,14 +34,14 @@ use common.types_pkg.all;
 entity axi_write_slave is
   generic (
     axi_slave : axi_slave_t;
-    data_width : positive range 8 to axi_data_sz;
+    data_width : axi_data_width_t;
     -- Note that the VUnit BFM creates and integer_vector_ptr of length 2**id_width, so a large
     -- value for id_width might crash your simulator.
-    id_width : natural range 0 to axi_id_sz;
+    id_width : axi_id_width_t;
     -- Optionally limit the address width.
     -- Is required if unused parts of the address field contains e.g. '-', since the VUnit BFM
     -- converts the field to an integer.
-    address_width : positive range 1 to axi_a_addr_sz := axi_a_addr_sz;
+    address_width : axi_address_width_t := axi_a_addr_sz;
     -- Optionally add a FIFO to the W channel. Makes it possible to perform W transactions
     -- before AW transactions.
     w_fifo_depth : natural := 0;
@@ -66,6 +66,10 @@ end entity;
 
 architecture a of axi_write_slave is
 
+  constant aw_logger_name_suffix : string := " - axi_write_slave - AW" & logger_name_suffix;
+  constant w_logger_name_suffix : string := " - axi_write_slave - W" & logger_name_suffix;
+  constant b_logger_name_suffix : string := " - axi_write_slave - B" & logger_name_suffix;
+
   constant strobe_width : positive := data_width / 8;
 
   -- Is present in AXI3 but not AXI4.
@@ -88,12 +92,29 @@ begin
 
 
   ------------------------------------------------------------------------------
+  check_axi3_gen : if enable_axi3 generate
+
+    ------------------------------------------------------------------------------
+    check_awlen : process
+      constant error_message : string := (
+        aw_logger_name_suffix & ": AWLEN outside AXI3 range"
+      );
+    begin
+      wait until axi_write_m2s.aw.valid and rising_edge(clk);
+
+      check_relation(axi_write_m2s.aw.len < axi3_max_burst_length_beats, error_message);
+    end process;
+
+  end generate;
+
+
+  ------------------------------------------------------------------------------
   check_strobe_zero_outside_of_data : process
     constant expected : std_ulogic_vector(axi_write_m2s.w.strb'high downto strobe_width) := (
       others => '0'
     );
     constant error_message : string := (
-      " - axi_write_slave - B" & logger_name_suffix & ": WSTRB is non-zero outside of data"
+      w_logger_name_suffix & ": WSTRB is non-zero outside of data"
     );
   begin
     wait until axi_write_s2m.w.ready and axi_write_m2s.w.valid and rising_edge(clk);
@@ -184,7 +205,7 @@ begin
     aw_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
-        logger_name_suffix => " - axi_write_slave - AW" & logger_name_suffix
+        logger_name_suffix => aw_logger_name_suffix
       )
       port map (
         clk => clk,
@@ -209,7 +230,7 @@ begin
     w_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
       generic map (
         data_width => packed'length,
-        logger_name_suffix => " - axi_write_slave - W" & logger_name_suffix
+        logger_name_suffix => w_logger_name_suffix
       )
       port map (
         clk => clk,
@@ -243,8 +264,7 @@ begin
     ------------------------------------------------------------------------------
     check_wid : process
       constant error_message : string := (
-        " - axi_write_slave - B"
-        & logger_name_suffix
+        w_logger_name_suffix
         & ": Must receive AW transaction before corresponding W transactions"
       );
       variable reference_wid : u_unsigned(awid'range) := (others => '0');
@@ -267,7 +287,7 @@ begin
   ------------------------------------------------------------------------------
   b_axi_stream_protocol_checker_inst : entity common.axi_stream_protocol_checker
     generic map (
-      logger_name_suffix => " - axi_write_slave - B" & logger_name_suffix
+      logger_name_suffix => b_logger_name_suffix
     )
     port map (
       clk => clk,

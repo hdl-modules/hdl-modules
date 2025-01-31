@@ -26,6 +26,7 @@ from tsfpga.vivado.build_result_checker import (
 
 class Module(BaseModule):
     def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+        self._setup_assign_last_tests(vunit_proj=vunit_proj)
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_debounce_tests(vunit_proj=vunit_proj)
@@ -53,15 +54,19 @@ class Module(BaseModule):
         modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
 
         self._get_clock_counter_build_projects(part, modules, projects)
-        self._get_frequency_conversion_build_projects(part, projects)
         self._get_handshake_pipeline_build_projects(part, projects)
         self._get_handshake_splitter_build_projects(part, projects)
         self._get_keep_remover_build_projects(part, projects)
         self._get_periodic_pulser_build_projects(part, modules, projects)
         self._get_strobe_on_last_build_projects(part, projects)
+        self._get_time_pkg_build_projects(part, projects)
         self._get_width_conversion_build_projects(part, projects)
 
         return projects
+
+    def _setup_assign_last_tests(self, vunit_proj):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_assign_last")
+        self.add_vunit_config(tb, set_random_seed=True)
 
     def _setup_clock_counter_tests(self, vunit_proj):
         tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
@@ -269,17 +274,6 @@ class Module(BaseModule):
                     Srls(EqualTo(2)),
                     Ffs(EqualTo(86)),
                 ],
-            )
-        )
-
-    def _get_frequency_conversion_build_projects(self, part, projects):
-        # No result checkers, but the entity contains a lot of assertions
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.test_frequency_conversion",
-                modules=[self],
-                part=part,
-                top="test_frequency_conversion",
             )
         )
 
@@ -498,6 +492,17 @@ class Module(BaseModule):
                     ],
                 )
             )
+
+    def _get_time_pkg_build_projects(self, part, projects):
+        # No result checkers, but the entity contains a lot of assertions
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.test_time_pkg",
+                modules=[self],
+                part=part,
+                top="test_time_pkg",
+            )
+        )
 
     def _get_width_conversion_build_projects(self, part, projects):
         modules = [self]

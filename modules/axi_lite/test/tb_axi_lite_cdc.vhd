@@ -54,8 +54,8 @@ architecture tb of tb_axi_lite_cdc is
 
   constant axi_lite_master : bus_master_t := new_bus(
     data_length => data_width,
-     address_length => master_m2s.read.ar.addr'length
-    );
+    address_length => master_m2s.read.ar.addr'length
+  );
 
   constant memory : memory_t := new_memory;
   constant axi_lite_read_slave, axi_lite_write_slave : axi_slave_t := new_axi_slave(

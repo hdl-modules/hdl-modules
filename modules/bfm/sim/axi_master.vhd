@@ -26,7 +26,7 @@
 --
 -- It is used by performing VUnit VC calls, such as ``read_bus``,
 -- or, preferably when operating on a register bus, by using the convenience methods
--- in :ref:`reg_file.reg_operations_pkg`.
+-- in :ref:`register_file.register_operations_pkg`.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -49,7 +49,7 @@ entity axi_master is
     bus_handle : bus_master_t;
     -- Width of the ARID/RID/AWID/BID fields.
     -- Only used for protocol checking of the R and B channels.
-    id_width : natural range 0 to axi_id_sz := 0;
+    id_width : axi_id_width_t := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
@@ -107,7 +107,10 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_master_inst : entity vunit_lib.axi_lite_master
     generic map (
-      bus_handle => bus_handle
+      bus_handle => bus_handle,
+      -- To avoid a lot of "NUMERIC_STD."=": meta value detected" warnings that slow down
+      -- simulation immensely.
+      drive_invalid_val => '0'
     )
     port map (
       aclk => clk,
