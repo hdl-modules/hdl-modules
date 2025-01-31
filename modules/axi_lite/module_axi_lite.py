@@ -7,14 +7,21 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+from typing import TYPE_CHECKING
+
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 
+if TYPE_CHECKING:
+    # Third party libraries
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
         for tb_name in ["tb_axi_to_axi_lite", "tb_axi_to_axi_lite_bus_error"]:
             tb = vunit_proj.library(self.library_name).test_bench(tb_name)
             for data_width in [32, 64]:

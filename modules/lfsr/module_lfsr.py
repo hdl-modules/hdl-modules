@@ -22,23 +22,24 @@ from tsfpga.vivado.generics import BitVectorGenericValue
 if TYPE_CHECKING:
     # Third party libraries
     from numpy import ndarray
+    from vunit.ui import VUnit
 
 
 class Module(BaseModule):
     def setup_vunit(  # pylint: disable=unused-argument
-        self, vunit_proj: Any, inspect: bool = False, **kwargs: Any
+        self, vunit_proj: "VUnit", inspect: bool = False, **kwargs: Any
     ) -> None:
         self._setup_lfsr_pkg_tests(vunit_proj=vunit_proj)
         self._setup_lfsr_tests(vunit_proj=vunit_proj, inspect=inspect)
 
-    def _setup_lfsr_pkg_tests(self, vunit_proj: Any) -> None:
+    def _setup_lfsr_pkg_tests(self, vunit_proj: "VUnit") -> None:
         def post_check(output_path: str) -> bool:  # pylint: disable=unused-argument
             return self.post_check_lfsr_pkg()
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_lfsr_pkg")
         self.add_vunit_config(test=tb, post_check=post_check)
 
-    def _setup_lfsr_tests(self, vunit_proj: Any, inspect: bool) -> None:
+    def _setup_lfsr_tests(self, vunit_proj: "VUnit", inspect: bool) -> None:
         def get_post_check(generics: dict[str, Any]):
             return lambda output_path: self.post_check_lfsr(
                 output_path=Path(output_path), generics=generics, inspect=inspect

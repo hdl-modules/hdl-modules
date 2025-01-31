@@ -10,6 +10,7 @@
 # Standard libraries
 import itertools
 from random import randrange
+from typing import TYPE_CHECKING
 
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
@@ -23,9 +24,13 @@ from tsfpga.vivado.build_result_checker import (
     TotalLuts,
 )
 
+if TYPE_CHECKING:
+    # Third party libraries
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
         self._setup_assign_last_tests(vunit_proj=vunit_proj)
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
@@ -64,11 +69,11 @@ class Module(BaseModule):
 
         return projects
 
-    def _setup_assign_last_tests(self, vunit_proj):
+    def _setup_assign_last_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_assign_last")
         self.add_vunit_config(tb, set_random_seed=True)
 
-    def _setup_clock_counter_tests(self, vunit_proj):
+    def _setup_clock_counter_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
         self.add_vunit_config(
             tb, generics=dict(reference_clock_rate_mhz=250, target_clock_rate_mhz=50)
@@ -77,21 +82,21 @@ class Module(BaseModule):
             tb, generics=dict(reference_clock_rate_mhz=50, target_clock_rate_mhz=250)
         )
 
-    def _setup_clean_packet_dropper_tests(self, vunit_proj):
+    def _setup_clean_packet_dropper_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_clean_packet_dropper")
 
         for data_width in [16, 32]:
             generics = dict(data_width=data_width)
             self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
-    def _setup_debounce_tests(self, vunit_proj):
+    def _setup_debounce_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_debounce")
 
         for enable_iob in [False, True]:
             generics = dict(enable_iob=enable_iob)
             self.add_vunit_config(test=tb, generics=generics)
 
-    def _setup_handshake_merger_tests(self, vunit_proj):
+    def _setup_handshake_merger_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_merger")
         for test in tb.get_tests():
             stall_probability_percent = 0 if "test_full_throughput" in test.name else 20
@@ -102,12 +107,12 @@ class Module(BaseModule):
                 set_random_seed=True,
             )
 
-    def _setup_handshake_mux_tests(self, vunit_proj):
+    def _setup_handshake_mux_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_mux")
         for _ in range(2):
             self.add_vunit_config(test=tb, set_random_seed=True)
 
-    def _setup_handshake_pipeline_tests(self, vunit_proj):
+    def _setup_handshake_pipeline_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_pipeline")
         for test in tb.get_tests():
             for (
@@ -135,7 +140,7 @@ class Module(BaseModule):
                 )
                 self.add_vunit_config(test=test, generics=generics)
 
-    def _setup_handshake_splitter_tests(self, vunit_proj):
+    def _setup_handshake_splitter_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_splitter")
         for test in tb.get_tests():
             stall_probability_percent = 0 if "test_full_throughput" in test.name else 20
@@ -145,7 +150,7 @@ class Module(BaseModule):
                 set_random_seed=True,
             )
 
-    def _setup_keep_remover_tests(self, vunit_proj):
+    def _setup_keep_remover_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_keep_remover")
 
         test = tb.test("test_data")
@@ -164,7 +169,7 @@ class Module(BaseModule):
             )
             self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
-    def _setup_periodic_pulser_tests(self, vunit_proj):
+    def _setup_periodic_pulser_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_periodic_pulser")
         for period in [5, 15, 127]:
             self.add_vunit_config(tb, generics=dict(period=period, shift_register_length=8))
@@ -177,7 +182,7 @@ class Module(BaseModule):
                 tb, generics=dict(period=period, shift_register_length=shift_register_length)
             )
 
-    def _setup_strobe_on_last_tests(self, vunit_proj):
+    def _setup_strobe_on_last_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_strobe_on_last")
 
         for data_width in [8, 16, 32]:
@@ -190,7 +195,7 @@ class Module(BaseModule):
                 for _ in range(num_tests):
                     self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
 
-    def _setup_width_conversion_tests(self, vunit_proj):
+    def _setup_width_conversion_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_width_conversion")
 
         test = tb.get_tests("test_data")[0]

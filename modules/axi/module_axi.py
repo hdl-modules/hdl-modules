@@ -7,6 +7,13 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Third party libraries
+    from vunit.ui import VUnit
+
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
@@ -14,7 +21,7 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
         self.setup_axi_pkg_tests(vunit_proj=vunit_proj)
         self.setup_axi_read_throttle_tests(vunit_proj=vunit_proj)
         self.setup_axi_write_throttle_tests(vunit_proj=vunit_proj)
@@ -36,7 +43,7 @@ class Module(BaseModule):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pipeline")
         self.add_vunit_config(test=tb, set_random_seed=True)
 
-    def setup_axi_pkg_tests(self, vunit_proj):
+    def setup_axi_pkg_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
         for test in tb.get_tests("test_slv_conversion"):
             for data_width in [32, 64]:
@@ -47,7 +54,7 @@ class Module(BaseModule):
                         )
                         self.add_vunit_config(test=test, generics=generics)
 
-    def setup_axi_read_throttle_tests(self, vunit_proj):
+    def setup_axi_read_throttle_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_read_throttle")
 
         # Set low in order to keep simulation time down
@@ -61,7 +68,7 @@ class Module(BaseModule):
                 for _ in range(2):
                     self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
 
-    def setup_axi_write_throttle_tests(self, vunit_proj):
+    def setup_axi_write_throttle_tests(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_write_throttle")
 
         for include_slave_w_fifo in [True, False]:

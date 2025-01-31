@@ -7,14 +7,26 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+from typing import TYPE_CHECKING, Optional
+
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, Ramb36, TotalLuts
 
+if TYPE_CHECKING:
+    # Standard libraries
+    from pathlib import Path
+
+    # Third party libraries
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
-    def get_simulation_files(self, files_avoid=None, include_unisim=True, **kwargs):
+    def get_simulation_files(  # pylint: disable=arguments-differ
+        self, files_avoid: Optional[set["Path"]] = None, include_unisim: bool = True, **kwargs
+    ):
         """
         Exclude files that depend on IP cores and/or unisim.
         """
@@ -31,12 +43,12 @@ class Module(BaseModule):
         return super().get_simulation_files(files_avoid=files_avoid, **kwargs)
 
     def setup_vunit(
-        self, vunit_proj, include_unisim=True, **kwargs
+        self, vunit_proj: "VUnit", include_unisim: bool = True, **kwargs
     ):  # pylint: disable=unused-argument
         if include_unisim:
             self._setup_hard_fifo_test(vunit_proj=vunit_proj)
 
-    def _setup_hard_fifo_test(self, vunit_proj):
+    def _setup_hard_fifo_test(self, vunit_proj: "VUnit"):
         tb = vunit_proj.library(self.library_name).test_bench("tb_hard_fifo")
 
         for test in tb.get_tests():

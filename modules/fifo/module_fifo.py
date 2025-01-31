@@ -7,6 +7,9 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
+# Standard libraries
+from typing import TYPE_CHECKING
+
 # Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
@@ -19,9 +22,13 @@ from tsfpga.vivado.build_result_checker import (
     TotalLuts,
 )
 
+if TYPE_CHECKING:
+    # Third party libraries
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
         library = vunit_proj.library(self.library_name)
 
         for test in library.test_bench("tb_asynchronous_fifo").get_tests():

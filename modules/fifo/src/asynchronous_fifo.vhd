@@ -293,8 +293,7 @@ begin
       -- Furthermore, in packet_mode the write_addr_resync value is not used for calculation of
       -- read_valid, which makes the resynchronization of write_addr pointless unless the user would
       -- like to observe read_level.
-      -- But when read_level is not observed there is a bug/limitation in Vivado where the logic
-      -- is not stripped, see https://gitlab.com/hdl_modules/hdl_modules/-/issues/15.
+      -- But even when read_level is not observed Vivado is not able to strip it.
       -- This corresponds to quite a lot of LUT/FF in a large project.
       -- Since few use cases can be imagined for read_level when FIFO is already in packet mode,
       -- we make the decision of not supporting read_level in this mode.

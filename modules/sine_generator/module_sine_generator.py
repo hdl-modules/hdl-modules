@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     # Third party libraries
     from matplotlib.axes import Axes
     from numpy import ndarray
+    from vunit.ui import VUnit
 
 
 # pylint: disable=too-many-lines
@@ -35,12 +36,12 @@ if TYPE_CHECKING:
 
 class Module(BaseModule):
     def setup_vunit(  # pylint: disable=unused-argument
-        self, vunit_proj: Any, inspect: bool = False, **kwargs: Any
+        self, vunit_proj: "VUnit", inspect: bool = False, **kwargs: Any
     ) -> None:
         self._setup_lookup_tests(vunit_proj=vunit_proj, inspect=inspect)
         self._setup_generator_tests(vunit_proj=vunit_proj, inspect=inspect)
 
-    def _setup_lookup_tests(self, vunit_proj: Any, inspect: bool) -> None:
+    def _setup_lookup_tests(self, vunit_proj: "VUnit", inspect: bool) -> None:
         def get_post_check(generics: dict[str, Any]) -> Callable:
             def post_check(output_path: str) -> bool:
                 return self.lookup_post_check(
@@ -60,7 +61,7 @@ class Module(BaseModule):
                 )
 
     def _setup_generator_tests(  # pylint: disable=too-many-statements
-        self, vunit_proj: Any, inspect: bool
+        self, vunit_proj: "VUnit", inspect: bool
     ) -> None:
         # Standard libraries
         # pylint: disable=import-outside-toplevel
