@@ -7,7 +7,6 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
 import argparse
 import sys
 from pathlib import Path
@@ -17,10 +16,9 @@ from shutil import move
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
-# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+# Import before others since it modifies PYTHONPATH.
 import tools.tools_pythonpath  # noqa: F401
 
-# Third party libraries
 from git.repo import Repo
 from packaging.version import parse
 from tsfpga.system_utils import create_file, read_file
@@ -31,7 +29,6 @@ from tsfpga.tools.version_number_handler import (
     make_commit,
 )
 
-# First party libraries
 from hdl_modules import __version__ as current_version
 from tools import tools_env
 

@@ -7,32 +7,33 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 
 if TYPE_CHECKING:
-    # Third party libraries
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         test = vunit_proj.library(self.library_name).test_bench("tb_dma_axi_write_simple")
         for _ in range(8):
             self.add_vunit_config(test=test, set_random_seed=True)
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
         from hdl_modules import get_hdl_modules
 
         modules = get_hdl_modules()
@@ -60,12 +61,21 @@ class Module(BaseModule):
                 )
             )
 
-        add(generics=dict(axi_data_width=64, packet_length_beats=1), lut=156, ff=207, logic=16)
-        add(generics=dict(axi_data_width=64, packet_length_beats=16), lut=157, ff=226, logic=12)
-        add(generics=dict(axi_data_width=64, packet_length_beats=2048), lut=132, ff=218, logic=11)
-        add(generics=dict(axi_data_width=64, packet_length_beats=16384), lut=134, ff=218, logic=10)
+        add(generics={"axi_data_width": 64, "packet_length_beats": 1}, lut=156, ff=207, logic=16)
+        add(generics={"axi_data_width": 64, "packet_length_beats": 16}, lut=157, ff=226, logic=12)
+        add(generics={"axi_data_width": 64, "packet_length_beats": 2048}, lut=132, ff=218, logic=11)
+        add(
+            generics={"axi_data_width": 64, "packet_length_beats": 16384}, lut=134, ff=218, logic=10
+        )
 
-        add(generics=dict(axi_data_width=32, packet_length_beats=16384), lut=171, ff=320, logic=11)
-        add(generics=dict(axi_data_width=128, packet_length_beats=16384), lut=198, ff=410, logic=11)
+        add(
+            generics={"axi_data_width": 32, "packet_length_beats": 16384}, lut=171, ff=320, logic=11
+        )
+        add(
+            generics={"axi_data_width": 128, "packet_length_beats": 16384},
+            lut=198,
+            ff=410,
+            logic=11,
+        )
 
         return projects

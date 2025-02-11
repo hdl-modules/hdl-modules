@@ -7,26 +7,27 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, Ramb36, TotalLuts
 
 if TYPE_CHECKING:
-    # Standard libraries
     from pathlib import Path
 
-    # Third party libraries
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def get_simulation_files(  # pylint: disable=arguments-differ
-        self, files_avoid: Optional[set["Path"]] = None, include_unisim: bool = True, **kwargs
-    ):
+    def get_simulation_files(
+        self,
+        files_avoid: set[Path] | None = None,
+        include_unisim: bool = True,
+        **kwargs: Any,  # noqa: ANN401
+    ) -> None:
         """
         Exclude files that depend on IP cores and/or unisim.
         """
@@ -43,12 +44,15 @@ class Module(BaseModule):
         return super().get_simulation_files(files_avoid=files_avoid, **kwargs)
 
     def setup_vunit(
-        self, vunit_proj: "VUnit", include_unisim: bool = True, **kwargs
-    ):  # pylint: disable=unused-argument
+        self,
+        vunit_proj: VUnit,
+        include_unisim: bool = True,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         if include_unisim:
             self._setup_hard_fifo_test(vunit_proj=vunit_proj)
 
-    def _setup_hard_fifo_test(self, vunit_proj: "VUnit"):
+    def _setup_hard_fifo_test(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_hard_fifo")
 
         for test in tb.get_tests():
@@ -60,13 +64,13 @@ class Module(BaseModule):
                             # Loop over this parameter only for asynchronous test
                             continue
 
-                        generics = dict(
-                            data_width=data_width,
-                            is_asynchronous=is_asynchronous,
-                            read_clock_is_faster=read_clock_is_faster,
+                        generics = {
+                            "data_width": data_width,
+                            "is_asynchronous": is_asynchronous,
+                            "read_clock_is_faster": read_clock_is_faster,
                             # On for a few and off for a few
-                            enable_output_register=(data_width % 2) == 0,
-                        )
+                            "enable_output_register": (data_width % 2) == 0,
+                        }
 
                         if test.name == "test_fifo_full":
                             generics.update(read_stall_probability_percent=95)
@@ -76,7 +80,7 @@ class Module(BaseModule):
 
                         self.add_vunit_config(test, generics=generics)
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         projects = []
         part = "xcku5p-ffva676-2-i"
 
@@ -84,25 +88,26 @@ class Module(BaseModule):
         enable_output_registers = [False, True]
 
         for idx, data_width in enumerate(data_widths):
-            generics = dict(
-                data_width=data_width, enable_output_register=enable_output_registers[idx]
-            )
+            generics = {
+                "data_width": data_width,
+                "enable_output_register": enable_output_registers[idx],
+            }
 
-            for name in ["hard_fifo", "asynchronous_hard_fifo"]:
-                projects.append(
-                    TsfpgaExampleVivadoNetlistProject(
-                        name=self.test_case_name(f"{self.library_name}.{name}", generics),
-                        modules=[self],
-                        part=part,
-                        top=name,
-                        generics=generics,
-                        build_result_checkers=[
-                            TotalLuts(EqualTo(3)),
-                            Ffs(EqualTo(1)),
-                            Ramb36(EqualTo(1)),
-                            MaximumLogicLevel(EqualTo(2)),
-                        ],
-                    )
+            projects.extend(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(f"{self.library_name}.{name}", generics),
+                    modules=[self],
+                    part=part,
+                    top=name,
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(3)),
+                        Ffs(EqualTo(1)),
+                        Ramb36(EqualTo(1)),
+                        MaximumLogicLevel(EqualTo(2)),
+                    ],
                 )
+                for name in ["hard_fifo", "asynchronous_hard_fifo"]
+            )
 
         return projects

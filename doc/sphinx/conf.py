@@ -11,7 +11,6 @@
 Configuration file for the Sphinx documentation builder.
 """
 
-# Standard libraries
 import sys
 from pathlib import Path
 
@@ -19,10 +18,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
-# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+# Import before others since it modifies PYTHONPATH.
 import tools.tools_pythonpath  # noqa: F401
 
-# First party libraries
 from hdl_modules.about import WEBSITE_URL
 
 project = "hdl-modules"

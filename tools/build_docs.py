@@ -7,7 +7,6 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
 import shutil
 import sys
 from pathlib import Path
@@ -17,10 +16,9 @@ from typing import TYPE_CHECKING
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
-# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+# Import before others since it modifies PYTHONPATH.
 import tools.tools_pythonpath  # noqa: F401
 
-# Third party libraries
 from hdl_registers.generator.cpp.header import CppHeaderGenerator
 from hdl_registers.generator.cpp.implementation import CppImplementationGenerator
 from hdl_registers.generator.cpp.interface import CppInterfaceGenerator
@@ -37,13 +35,11 @@ from tsfpga.module_documentation import ModuleDocumentation
 from tsfpga.system_utils import create_directory, create_file, read_file
 from tsfpga.tools.sphinx_doc import build_sphinx, generate_release_notes
 
-# First party libraries
 from hdl_modules import REPO_ROOT, get_hdl_modules
 from hdl_modules.about import REPOSITORY_URL, WEBSITE_URL, get_readme_rst, get_short_slogan
 from tools import tools_env
 
 if TYPE_CHECKING:
-    # Third party libraries
     from tsfpga.module import BaseModule
 
 GENERATED_SPHINX = tools_env.HDL_MODULES_GENERATED / "sphinx_rst"
@@ -202,7 +198,7 @@ def generate_documentation() -> None:
     def sort_key(module: "BaseModule") -> str:
         return module.name
 
-    modules_sorted: list["BaseModule"] = sorted(modules, key=sort_key)
+    modules_sorted: list[BaseModule] = sorted(modules, key=sort_key)
 
     for module in modules_sorted:
         index_rst += f"  modules/{module.name}/{module.name}\n"
@@ -246,9 +242,9 @@ def get_readme() -> str:
     readme_rst = get_readme_rst(include_extra_for_github=True)
     if read_file(tools_env.REPO_ROOT / "readme.rst") != readme_rst:
         file_path = create_file(GENERATED_SPHINX / "readme.txt", readme_rst)
-        assert (
-            False
-        ), f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
+        raise ValueError(
+            f"readme.rst in repo root not correct. Compare to reference in python: {file_path}"
+        )
 
     return get_readme_rst(include_extra_for_website=True)
 

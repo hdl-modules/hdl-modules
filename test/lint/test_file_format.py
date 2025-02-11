@@ -7,8 +7,7 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Third party libraries
-# pylint: disable=wrong-import-order
+
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.file_format_lint import (
     check_file_ends_with_newline,
@@ -19,7 +18,6 @@ from tsfpga.test.lint.file_format_lint import (
     open_file_with_encoding,
 )
 
-# First party libraries
 from tools.tools_env import HDL_MODULES_DIRECTORY, HDL_MODULES_DOC, REPO_ROOT
 
 
@@ -43,7 +41,7 @@ def test_all_checked_in_files_are_properly_encoded():
 
 
 def test_all_checked_in_files_end_with_newline():
-    """
+    r"""
     All checked in files should end with a UNIX style line break (\n).
     Otherwise UNIX doesn't consider them actual text files.
     """
@@ -65,7 +63,7 @@ def test_no_checked_in_files_contain_tabs():
 
 
 def test_no_checked_in_files_contain_carriage_return():
-    """
+    r"""
     All checked in files should use UNIX style line breaks (\n not \r\n). Some Linux editors and
     tools will display or interpret the \r as something other than a line break.
     """

@@ -7,10 +7,10 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
@@ -23,28 +23,31 @@ from tsfpga.vivado.build_result_checker import (
 )
 
 if TYPE_CHECKING:
-    # Third party libraries
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_register_file")
-
-        tb.test("test_read_from_non_existent_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("test_read_from_non_read_type_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("test_write_to_non_existent_register").set_generic("use_axi_lite_bfm", False)
-        tb.test("test_write_to_non_write_type_register").set_generic("use_axi_lite_bfm", False)
+        for name in [
+            "test_read_from_non_existent_register",
+            "test_read_from_non_read_type_register",
+            "test_write_to_non_existent_register",
+            "test_write_to_non_write_type_register",
+        ]:
+            tb.test(name=name).set_generic("use_axi_lite_bfm", False)
 
         self.add_vunit_config(test=tb, set_random_seed=True)
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
         from hdl_modules import get_hdl_modules
 
         projects = []

@@ -7,22 +7,24 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, LutRams, MaximumLogicLevel, TotalLuts
 
 if TYPE_CHECKING:
-    # Third party libraries
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-
-    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         self.setup_resync_counter_tests(vunit_proj=vunit_proj)
         self.setup_resync_cycles_tests(vunit_proj=vunit_proj)
         self.setup_resync_pulse_tests(vunit_proj=vunit_proj)
@@ -30,25 +32,25 @@ class Module(BaseModule):
         self.setup_resync_twophase_tests(vunit_proj=vunit_proj)
         self.setup_resync_twophase_handshake_tests(vunit_proj=vunit_proj)
 
-    def setup_resync_counter_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_counter_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_counter")
         for pipeline_output in [True, False]:
-            generics = dict(pipeline_output=pipeline_output)
+            generics = {"pipeline_output": pipeline_output}
             self.add_vunit_config(tb, generics=generics)
 
-    def setup_resync_cycles_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_cycles_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_cycles")
         for active_high in [True, False]:
-            generics = dict(active_high=active_high, output_clock_is_faster=True)
+            generics = {"active_high": active_high, "output_clock_is_faster": True}
             self.add_vunit_config(tb, generics=generics)
 
-            generics = dict(active_high=active_high)
+            generics = {"active_high": active_high}
             self.add_vunit_config(tb, generics=generics)
 
-            generics = dict(active_high=active_high, output_clock_is_slower=True)
+            generics = {"active_high": active_high, "output_clock_is_slower": True}
             self.add_vunit_config(tb, generics=generics)
 
-    def setup_resync_pulse_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_pulse_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_pulse")
         for enable_feedback in [True, False]:
             for active_level in [True, False]:
@@ -58,25 +60,25 @@ class Module(BaseModule):
                         "output_clock_is_slower",
                         "clocks_are_same",
                     ]:
-                        generics = dict(
-                            enable_feedback=enable_feedback,
-                            input_pulse_overload=input_pulse_overload,
-                            active_level=active_level,
-                        )
+                        generics = {
+                            "enable_feedback": enable_feedback,
+                            "input_pulse_overload": input_pulse_overload,
+                            "active_level": active_level,
+                        }
                         generics[mode] = True
                         self.add_vunit_config(tb, generics=generics)
 
-    def setup_resync_slv_level_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_slv_level_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_slv_level")
         for output_clock_is_faster in [True, False]:
             for enable_input_register in [True, False]:
-                generics = dict(
-                    output_clock_is_faster=output_clock_is_faster,
-                    enable_input_register=enable_input_register,
-                )
+                generics = {
+                    "output_clock_is_faster": output_clock_is_faster,
+                    "enable_input_register": enable_input_register,
+                }
                 self.add_vunit_config(tb, generics=generics)
 
-    def setup_resync_twophase_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_twophase_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase")
         for mode in [
             "output_clock_is_greatly_faster",
@@ -95,7 +97,7 @@ class Module(BaseModule):
                 else:
                     self.add_vunit_config(tb, generics=generics)
 
-    def setup_resync_twophase_handshake_tests(self, vunit_proj: "VUnit"):
+    def setup_resync_twophase_handshake_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_resync_twophase_handshake")
         for mode in [
             "result_clock_is_greatly_faster",
@@ -122,17 +124,13 @@ class Module(BaseModule):
                 else:
                     raise RuntimeError(f"Unknown test: {test.name}")
 
-    def get_build_projects(self):
-        # Standard libraries
-        # pylint: disable=import-outside-toplevel
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         from dataclasses import dataclass
 
-        # First party libraries
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
         from hdl_modules import get_hdl_modules
 
         projects = []
@@ -140,7 +138,7 @@ class Module(BaseModule):
         part = "xc7z020clg400-1"
 
         for enable_feedback in [False, True]:
-            generics = dict(enable_feedback=enable_feedback)
+            generics = {"enable_feedback": enable_feedback}
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(
@@ -163,17 +161,17 @@ class Module(BaseModule):
             lut: int
             ff: int
             logic: int
-            width: Optional[int] = None
-            data_width: Optional[int] = None
-            counter_width: Optional[int] = None
+            width: int | None = None
+            data_width: int | None = None
+            counter_width: int | None = None
 
-        def add_config(config: Config):
+        def add_config(config: Config) -> None:
             if config.width is not None:
-                generics = dict(width=config.width)
+                generics = {"width": config.width}
             elif config.data_width is not None:
-                generics = dict(data_width=config.data_width)
+                generics = {"data_width": config.data_width}
             elif config.counter_width is not None:
-                generics = dict(counter_width=config.counter_width)
+                generics = {"counter_width": config.counter_width}
             else:
                 raise ValueError("Invalid config")
 

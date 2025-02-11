@@ -7,26 +7,27 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
 
-# Local folder libraries
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from .about import get_short_slogan
 
 if TYPE_CHECKING:
-    # Third party libraries
     from tsfpga.module_list import ModuleList
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
 __version__ = "6.0.1-dev"
-__doc__ = get_short_slogan()  # pylint: disable=redefined-builtin
+
+# We have the slogan in one place only, instead of repeating it here in a proper docstring.
+__doc__ = get_short_slogan()  # noqa: A001
 
 
 def get_hdl_modules(
-    names_include: Optional[set[str]] = None, names_avoid: Optional[set[str]] = None
-) -> "ModuleList":
+    names_include: set[str] | None = None, names_avoid: set[str] | None = None
+) -> ModuleList:
     """
     Wrapper of :func:`tsfpga.module.get_modules` which returns the ``hdl-modules`` module objects.
 
@@ -39,8 +40,6 @@ def get_hdl_modules(
     # Hence we can not import at the top of this file.
     # This function however, which highly depends on tsfpga Module objects, must import it.
     # We assume that it is only called by users who have tsfpga available.
-    # pylint: disable=import-outside-toplevel
-    # Third party libraries
     from tsfpga.module import get_modules
 
     return get_modules(
