@@ -171,16 +171,16 @@ package body dma_axi_write_simple_sim_pkg is
       regs_base_address=>regs_base_address
     );
 
-    -- for check_byte_idx in 0 to receive_num_bytes - 1 loop
-    --   check_equal(
-    --     pop_integer(receive_data_queue),
-    --     get(arr=>reference_data, idx=>check_byte_idx),
-    --     "check_byte_idx: "
-    --     & to_string(check_byte_idx)
-    --   );
-    -- end loop;
+    for check_byte_idx in 0 to receive_num_bytes - 1 loop
+      check_equal(
+        pop_integer(receive_data_queue),
+        get(arr=>reference_data, idx=>check_byte_idx),
+        "check_byte_idx: "
+        & to_string(check_byte_idx)
+      );
+    end loop;
 
-    -- check_true(is_empty(receive_data_queue), "Got more data than expected");
+    check_true(is_empty(receive_data_queue), "Got more data than expected");
   end procedure;
 
 end package body;
