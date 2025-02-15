@@ -59,7 +59,7 @@ class Module(BaseModule):
                 modules=all_modules,
                 top="round_signed",
                 part=part,
-                generics = {"input_width": 12, "result_width": 8, "enable_output_register":True},
+                generics = {"input_width": 32, "result_width": 24, "enable_output_register":True},
                 build_result_checkers=[
                     TotalLuts(EqualTo(6)),
                     Ffs(EqualTo(25)),
