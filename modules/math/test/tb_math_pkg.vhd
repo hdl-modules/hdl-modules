@@ -8,12 +8,16 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 library vunit_lib;
 use vunit_lib.check_pkg.all;
 use vunit_lib.run_pkg.all;
+
+library osvvm;
+use osvvm.RandomPkg.RandomPType;
 
 library common;
 use common.types_pkg.all;
@@ -23,8 +27,9 @@ use work.math_pkg.all;
 
 entity tb_math_pkg is
   generic (
+    seed : natural;
     runner_cfg : string
-    );
+  );
 end entity;
 
 architecture tb of tb_math_pkg is
@@ -33,6 +38,8 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
+
+    variable rnd : RandomPType;
 
     ------------------------------------------------------------------------------
     constant clamp_num_bits : positive := 3;
@@ -70,12 +77,22 @@ begin
     ------------------------------------------------------------------------------
     variable value : u_signed(5 - 1 downto 0);
     variable value_slv : u_unsigned(8 - 1 downto 0);
+    ------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------
+    variable integer0, integer1 : integer := 0;
+    variable real_reference : real := 0.0;
+    ------------------------------------------------------------------------------
+
+    ------------------------------------------------------------------------------
     constant some_integer_vector : integer_vector(0 to 3) := (-1, 4, 0, -7);
     variable abs_vector_output : integer_vector(0 to 3);
     ------------------------------------------------------------------------------
 
   begin
     test_runner_setup(runner, runner_cfg);
+
+    rnd.InitSeed(seed);
 
     if run("test_get_min_max_signed_integer") then
       -- Since get_min/max_signed_integer calls get_min/max_signed, only testing like this
@@ -138,6 +155,14 @@ begin
       check_equal(log2(32), 5);
       check_equal(log2(64), 6);
       check_equal(log2(128), 7);
+
+    elsif run("test_is_power_of_two") then
+      check_true(is_power_of_two(2));
+      check_true(is_power_of_two(4));
+      check_true(is_power_of_two(16));
+
+      check_false(is_power_of_two(15));
+      check_false(is_power_of_two(17));
 
     elsif run("test_num_bits_needed_unsigned_integer") then
       check_equal(num_bits_needed(0), 1);
@@ -237,6 +262,40 @@ begin
       value := to_signed(3, value'length);
       check_true(geq_0(value));
 
+    elsif run("test_div_round_negative_hard_coded") then
+      -- Reference from Python, and from reasoning how it would work in a bit vector in hardware.
+      check_equal(div_round_negative(5, 4), 1);
+      check_equal(5 mod 4, 1);
+      check_equal(div_round_negative(4, 4), 1);
+      check_equal(4 mod 4, 0);
+      check_equal(div_round_negative(3, 4), 0);
+      check_equal(3 mod 4, 3);
+      check_equal(div_round_negative(2, 4), 0);
+      check_equal(2 mod 4, 2);
+      check_equal(div_round_negative(1, 4), 0);
+      check_equal(1 mod 4, 1);
+      check_equal(div_round_negative(0, 4), 0);
+      check_equal(0 mod 4, 0);
+      check_equal(div_round_negative(-1, 4), -1);
+      check_equal((-1) mod 4, 3);
+      check_equal(div_round_negative(-2, 4), -1);
+      check_equal((-2) mod 4, 2);
+      check_equal(div_round_negative(-3, 4), -1);
+      check_equal((-3) mod 4, 1);
+      check_equal(div_round_negative(-4, 4), -1);
+      check_equal((-4) mod 4, 0);
+      check_equal(div_round_negative(-5, 4), -2);
+      check_equal((-5) mod 4, 3);
+
+    elsif run("test_div_round_negative_random_value") then
+      for test_idx in 0 to 100 loop
+        integer0 := rnd.Uniform(-100, 100);
+        integer1 := rnd.Uniform(1, 100);
+        real_reference := floor(real(integer0) / real(integer1));
+
+        check_equal(real(div_round_negative(integer0, integer1)), real_reference);
+      end loop;
+
     elsif run("test_to_and_from_gray") then
       for i in 1 to 2 ** value_slv'length - 2 loop
         value_slv := to_unsigned(i, value_slv'length);
@@ -253,14 +312,6 @@ begin
       check_equal(hamming_distance("1110", "0010"), 2);
       check_equal(hamming_distance("0010", "0011"), 1);
       check_equal(hamming_distance("1010", "0011"), 2);
-
-    elsif run("test_is_power_of_two") then
-      check_true(is_power_of_two(2));
-      check_true(is_power_of_two(4));
-      check_true(is_power_of_two(16));
-
-      check_false(is_power_of_two(15));
-      check_false(is_power_of_two(17));
 
     elsif run("test_abs_vector") then
       abs_vector_output := abs_vector(some_integer_vector);

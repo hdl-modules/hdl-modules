@@ -65,14 +65,18 @@ use ieee.std_logic_1164.all;
 entity saturate_signed is
   generic (
     input_width : positive;
-    result_width : positive;
+    result_width : positive range 1 to input_width;
     enable_output_register : boolean := false
   );
   port(
     clk : in std_ulogic;
     --# {{}}
+    input_valid : in std_ulogic := '0';
     input_value : in u_signed(input_width - 1 downto 0);
-    result_value : out u_signed(result_width - 1 downto 0) := (others => '0')
+    --# {{}}
+    result_valid : out std_ulogic := '0';
+    result_value : out u_signed(result_width - 1 downto 0) := (others => '0');
+    result_is_saturated : out std_ulogic := '0'
   );
 end entity;
 
@@ -81,6 +85,7 @@ architecture a of saturate_signed is
   constant num_guard_bits : natural := input_width - result_width;
 
   signal result : u_signed(result_value'range) := (others => '0');
+  signal is_saturated : std_ulogic := '0';
 
 begin
 
@@ -94,9 +99,11 @@ begin
 
     if (or guard_and_sign) = (and guard_and_sign) then
       result <= input_value(input_value'high - num_guard_bits downto 0);
+      is_saturated <= '0';
     else
       result <= (others => not guard_and_sign(guard_and_sign'high));
       result(result_value'high) <= guard_and_sign(guard_and_sign'high);
+      is_saturated <= '1';
     end if;
   end process;
 
@@ -104,13 +111,17 @@ begin
   ------------------------------------------------------------------------------
   output_register_gen : if enable_output_register generate
 
+    result_valid <= input_valid when rising_edge(clk);
     result_value <= result when rising_edge(clk);
+    result_is_saturated <= is_saturated when rising_edge(clk);
 
 
   ------------------------------------------------------------------------------
   else generate
 
+    result_valid <= input_valid;
     result_value <= result;
+    result_is_saturated <= is_saturated;
 
   end generate;
 

@@ -53,7 +53,9 @@ package math_pkg is
   ------------------------------------------------------------------------------
   function ceil_log2(value : positive) return natural;
   function log2(value : positive) return natural;
+
   function is_power_of_two(value : positive) return boolean;
+
   function round_up_to_power_of_two(value : positive) return positive;
   function round_up_to_power_of_two(value : real range 1.0 to real'high) return real;
   ------------------------------------------------------------------------------
@@ -75,6 +77,21 @@ package math_pkg is
   ------------------------------------------------------------------------------
   function lt_0(value  : u_signed) return boolean;
   function geq_0(value : u_signed) return boolean;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
+  -- Divide 'dividend' / 'divisor' and round towards negative infinity.
+  -- The same way a bit shift in hardware would work.
+  -- This is the way it works in most programming languages, including e.g. Python.
+  -- The 'integer' type in VHDL does not do this by default.
+  --
+  -- If considering the remainder in the expression
+  -- 'dividend' / 'divisor' = 'quotient' + 'remainder' / 'divisor',
+  -- and using this function, the 'remainder' can be given by the VHDL function 'mod'.
+  -- This 'remainder' will always be positive.
+  -- The VHDL 'mod' function does not align with how the default integer division works VHDL,
+  -- which is a blatant mismatch.
+  function div_round_negative(dividend : integer; divisor : positive) return integer;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
@@ -294,6 +311,17 @@ package body math_pkg is
       end loop;
     end loop;
     return result;
+  end function;
+  ------------------------------------------------------------------------------
+
+  ------------------------------------------------------------------------------
+  function div_round_negative(dividend : integer; divisor : positive) return integer is
+  begin
+    if dividend >= 0 then
+      return dividend / divisor;
+    end if;
+
+    return (dividend - divisor + 1) / divisor;
   end function;
   ------------------------------------------------------------------------------
 
