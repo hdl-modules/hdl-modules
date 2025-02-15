@@ -13,13 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
-from tsfpga.vivado.build_result_checker import (
-    EqualTo,
-    Ffs,
-    MaximumLogicLevel,
-    TotalLuts
-)
-from tsfpga.module import BaseModule
+from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, TotalLuts
 
 if TYPE_CHECKING:
     from vunit.ui import VUnit
@@ -48,9 +42,7 @@ class Module(BaseModule):
         from hdl_modules import get_hdl_modules
 
         projects = []
-        all_modules = get_hdl_modules(
-            names_include=[self.name,  "common"]
-        )
+        all_modules = get_hdl_modules(names_include=[self.name, "common"])
         part = "xc7z020clg400-1"
 
         projects.append(
@@ -59,7 +51,7 @@ class Module(BaseModule):
                 modules=all_modules,
                 top="round_signed",
                 part=part,
-                generics = {"input_width": 32, "result_width": 24, "enable_output_register":True},
+                generics={"input_width": 32, "result_width": 24, "enable_output_register": True},
                 build_result_checkers=[
                     TotalLuts(EqualTo(6)),
                     Ffs(EqualTo(25)),
