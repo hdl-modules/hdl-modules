@@ -48,13 +48,10 @@ jobs:
     - name: Install Python packages
       run: |
         python3 -m pip install \
-          black \
-          flake8 \
           GitPython \
           pybadges \
-          mypy \
-          pylint \
           pytest \
+          ruff \
           vunit-hdl
 
     - name: Clone dependency repos

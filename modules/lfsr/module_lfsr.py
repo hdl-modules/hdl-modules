@@ -7,12 +7,11 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-# Third party libraries
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.system_utils import read_file
@@ -20,27 +19,29 @@ from tsfpga.vivado.build_result_checker import EqualTo, Ffs, MaximumLogicLevel, 
 from tsfpga.vivado.generics import BitVectorGenericValue
 
 if TYPE_CHECKING:
-    # Third party libraries
     from numpy import ndarray
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def setup_vunit(  # pylint: disable=unused-argument
-        self, vunit_proj: "VUnit", inspect: bool = False, **kwargs: Any
+    def setup_vunit(
+        self,
+        vunit_proj: "VUnit",
+        inspect: bool = False,
+        **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> None:
         self._setup_lfsr_pkg_tests(vunit_proj=vunit_proj)
         self._setup_lfsr_tests(vunit_proj=vunit_proj, inspect=inspect)
 
     def _setup_lfsr_pkg_tests(self, vunit_proj: "VUnit") -> None:
-        def post_check(output_path: str) -> bool:  # pylint: disable=unused-argument
+        def post_check(output_path: str) -> bool:  # noqa: ARG001
             return self.post_check_lfsr_pkg()
 
         tb = vunit_proj.library(self.library_name).test_bench("tb_lfsr_pkg")
         self.add_vunit_config(test=tb, post_check=post_check)
 
     def _setup_lfsr_tests(self, vunit_proj: "VUnit", inspect: bool) -> None:
-        def get_post_check(generics: dict[str, Any]):
+        def get_post_check(generics: dict[str, Any]) -> Callable[[str], bool]:
             return lambda output_path: self.post_check_lfsr(
                 output_path=Path(output_path), generics=generics, inspect=inspect
             )
@@ -53,7 +54,10 @@ class Module(BaseModule):
                 # When in non-single-output-bit mode, the LFSR is at least this.
                 desired_lfsr_length = width
 
-                generics = dict(output_width=output_width, desired_lfsr_length=desired_lfsr_length)
+                generics = {
+                    "output_width": output_width,
+                    "desired_lfsr_length": desired_lfsr_length,
+                }
 
                 self.add_vunit_config(
                     test=tb,
@@ -68,8 +72,6 @@ class Module(BaseModule):
         According to the necessary but not sufficient criteria for a maximal-length LFSR listed on
         Wikipedia: https://en.wikipedia.org/wiki/Linear-feedback_shift_register#Fibonacci_LFSRs
         """
-        # Standard libraries
-        # pylint: disable=import-outside-toplevel
         from math import gcd
 
         vhd = read_file(self.path / "src" / "lfsr_pkg.vhd")
@@ -81,11 +83,7 @@ class Module(BaseModule):
 
         for match in matches:
             match_numbers = [int(number) for number in match]
-            taps = []
-
-            for number in match_numbers:
-                if number != 0:
-                    taps.append(number)
+            taps = [number for number in match_numbers if number != 0]
 
             assert len(taps) > 1, f"Unreasonable number of non-zero taps {taps}"
             assert len(taps) % 2 == 0, f"Unreasonable number of non-zero taps {taps}"
@@ -93,9 +91,7 @@ class Module(BaseModule):
 
         return True
 
-    def post_check_lfsr(  # pylint: disable=too-many-locals
-        self, output_path: Path, generics: dict[str, Any], inspect: bool
-    ) -> None:
+    def post_check_lfsr(self, output_path: Path, generics: dict[str, Any], inspect: bool) -> None:
         """
         Check that the output spectrum has only a DC component and a flat noise floor.
         This is not in itself a particularly strong test for randomness.
@@ -104,11 +100,8 @@ class Module(BaseModule):
         Which this spectrum test does quite well.
         Changing one of the taps to something incorrect makes the test fail spectacularly.
         """
-        # pylint: disable=import-outside-toplevel
-        # Standard libraries
         from math import log2
 
-        # Third party libraries
         from numpy import abs as np_abs
         from numpy import log10, mean, std, var
         from scipy.fft import rfft
@@ -155,15 +148,13 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         # When using multi-bit output, the internal LFSR length is almost always greater than
         # the output width, which yields a slightly lower noise floor.
         upper_limit_enob = expected_enob + 0.6 + 2 * (generics["output_width"] > 1)
-        assert (
-            lower_limit_enob < noise_floor_enob < upper_limit_enob
-        ), f"Unexpected ENOB. Got {noise_floor_enob}, expected at circa {expected_enob}."
+        assert lower_limit_enob < noise_floor_enob < upper_limit_enob, (
+            f"Unexpected ENOB. Got {noise_floor_enob}, expected at circa {expected_enob}."
+        )
 
         return True
 
     def load_simulation_data(self, output_path: Path) -> "ndarray":
-        # pylint: disable=import-outside-toplevel
-        # Third party libraries
         from numpy import float64, fromfile, int32
 
         file_path = output_path / "simulation_data.raw"
@@ -177,8 +168,6 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
     def plot(
         signal: "ndarray", power_spectrum_db: "ndarray", noise_floor_db: float, kpi_text: str
     ) -> None:
-        # pylint: disable=import-outside-toplevel
-        # Third party libraries
         from matplotlib import pyplot as plt
         from numpy import arange
 
@@ -219,20 +208,18 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         """
         return (value_db - 1.76) / 6.02
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
         from hdl_modules import get_hdl_modules
 
         projects = []
         modules = get_hdl_modules(names_include=[self.name, "common"])
         part = "xc7z020clg400-1"
 
-        generics = dict(lfsr_length=52)
+        generics = {"lfsr_length": 52}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_single", generics),
@@ -248,7 +235,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
             )
         )
 
-        generics = dict(lfsr_length=15)
+        generics = {"lfsr_length": 15}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_single", generics),
@@ -284,7 +271,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         # When we read the whole state as output, the shift register can not be implemented as SRL.
         # Instead, FF usage goes up.
         # This one gets implemented as a 13-bit LFSR.
-        generics = dict(output_width=12)
+        generics = {"output_width": 12}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_multi", generics),
@@ -301,7 +288,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         )
 
         # This one gets implemented as a 19-bit LFSR.
-        generics = dict(output_width=16)
+        generics = {"output_width": 16}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_multi", generics),

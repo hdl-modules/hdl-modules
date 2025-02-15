@@ -7,12 +7,10 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Third party libraries
-# pylint: disable=wrong-import-order
+
 from tsfpga.git_utils import find_git_files
 from tsfpga.test.lint.copyright_lint import CopyrightHeader
 
-# First party libraries
 from hdl_modules.about import REPOSITORY_URL, WEBSITE_URL
 from tools.tools_env import REPO_ROOT
 

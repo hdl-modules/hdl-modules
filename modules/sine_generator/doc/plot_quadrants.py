@@ -7,7 +7,10 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Third party libraries
+# ruff: noqa: INP001
+
+from typing import Callable
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -19,7 +22,9 @@ X_AXIS = np.linspace(0, 2 * np.pi, 100)
 FONT_SIZE = 15
 
 
-def plot_unit_circle(ax, original_angles, offset_angles):
+def plot_unit_circle(
+    ax: plt.Axes, original_angles: list[float], offset_angles: list[float]
+) -> None:
     ax.set_xlim(-PLOT_SIZE, PLOT_SIZE)
     ax.set_ylim(-PLOT_SIZE, PLOT_SIZE)
     ax.set_xticks([])
@@ -51,7 +56,7 @@ def plot_unit_circle(ax, original_angles, offset_angles):
     ax.set_aspect("equal")
 
 
-def plot_sinusoid(ax, angles, function, add_text):
+def plot_sinusoid(ax: plt.Axes, angles: list[float], function: Callable, add_text: bool) -> None:
     ax.set_xlim(0, 2 * np.pi)
     ax.set_ylim(-PLOT_SIZE, PLOT_SIZE)
     ax.set_xticks([])
@@ -80,7 +85,7 @@ def plot_sinusoid(ax, angles, function, add_text):
             )
 
 
-def main():
+def main() -> None:
     plt.figure(figsize=(15, 7))
 
     ax_unit_circle = plt.subplot2grid((2, 2), (0, 0), rowspan=2)

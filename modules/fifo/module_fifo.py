@@ -7,10 +7,10 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
@@ -23,21 +23,27 @@ from tsfpga.vivado.build_result_checker import (
 )
 
 if TYPE_CHECKING:
-    # Third party libraries
+    from collections.abc import Iterator
+
+    from tsfpga.module_list import ModuleList
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         library = vunit_proj.library(self.library_name)
 
         for test in library.test_bench("tb_asynchronous_fifo").get_tests():
             for enable_output_register in [False, True]:
                 for read_clock_is_faster in [False, True]:
-                    original_generics = dict(
-                        read_clock_is_faster=read_clock_is_faster,
-                        enable_output_register=enable_output_register,
-                    )
+                    original_generics = {
+                        "read_clock_is_faster": read_clock_is_faster,
+                        "enable_output_register": enable_output_register,
+                    }
 
                     for generics in self.generate_common_fifo_test_generics(
                         test.name, original_generics
@@ -46,7 +52,7 @@ class Module(BaseModule):
 
         for test in library.test_bench("tb_fifo").get_tests():
             for enable_output_register in [False, True]:
-                original_generics = dict(enable_output_register=enable_output_register)
+                original_generics = {"enable_output_register": enable_output_register}
                 for generics in self.generate_common_fifo_test_generics(
                     test.name, original_generics
                 ):
@@ -57,8 +63,10 @@ class Module(BaseModule):
                     self.add_vunit_config(test, generics=generics, set_random_seed=True)
 
     @staticmethod
-    def generate_common_fifo_test_generics(test_name, original_generics=None):
-        generics = original_generics if original_generics is not None else {}
+    def generate_common_fifo_test_generics(
+        test_name: str, original_generics: dict[str, Any]
+    ) -> Iterator[dict[str, Any]]:
+        generics = original_generics
 
         if "write_faster_than_read" in test_name:
             generics.update(read_stall_probability_percent=90)
@@ -101,18 +109,15 @@ class Module(BaseModule):
         else:
             # For most test, generate configuration with two different depths
             for depth in [16, 64]:
-                depth = depth + generics["enable_output_register"]
-                generics.update(depth=depth)
+                generics.update(depth=depth + generics["enable_output_register"])
 
                 yield generics
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
         from hdl_modules import get_hdl_modules
 
         projects = []
@@ -124,12 +129,17 @@ class Module(BaseModule):
 
         return projects
 
-    def _setup_fifo_build_projects(self, projects, modules, part):
+    def _setup_fifo_build_projects(
+        self, projects: list[TsfpgaExampleVivadoNetlistProject], modules: ModuleList, part: str
+    ) -> None:
         # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
         # a minimal FIFO.
-        generics = dict(
-            use_asynchronous_fifo=False, width=32, depth=1024, enable_output_register=False
-        )
+        generics = {
+            "use_asynchronous_fifo": False,
+            "width": 32,
+            "depth": 1024,
+            "enable_output_register": False,
+        }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.minimal", generics),
@@ -171,7 +181,7 @@ class Module(BaseModule):
 
         # A FIFO with level counter port and non-default almost_full_level, which
         # increases resource utilization.
-        generics = dict(width=32, depth=1024, almost_full_level=800)
+        generics = {"width": 32, "depth": 1024, "almost_full_level": 800}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.with_levels", generics),
@@ -294,12 +304,12 @@ class Module(BaseModule):
 
         # Use a wrapper as top level, which only routes the "barebone" ports, resulting in
         # a minimal FIFO.
-        generics = dict(
-            use_asynchronous_fifo=False,
-            width=8,
-            depth=32,
-            enable_output_register=False,
-        )
+        generics = {
+            "use_asynchronous_fifo": False,
+            "width": 8,
+            "depth": 32,
+            "enable_output_register": False,
+        }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(f"{self.library_name}.fifo.lutram_minimal", generics),
@@ -317,9 +327,9 @@ class Module(BaseModule):
             )
         )
 
-    def _setup_asynchronous_fifo_build_projects(self, projects, modules, part):
-        # Standard libraries
-        # pylint: disable=import-outside-toplevel
+    def _setup_asynchronous_fifo_build_projects(
+        self, projects: list[TsfpgaExampleVivadoNetlistProject], modules: ModuleList, part: str
+    ) -> None:
         from dataclasses import dataclass
 
         @dataclass
@@ -329,16 +339,16 @@ class Module(BaseModule):
             ff: int
             logic: int
 
-        def add_resync_config(config: ResyncConfig):
+        def add_resync_config(config: ResyncConfig) -> None:
             # A shallow FIFO, which commonly would be used to resync a coherent bit vector.
             # Note that this uses the minimal top level wrapper so that only the barebone features
             # are available.
-            generics = dict(
-                use_asynchronous_fifo=True,
-                width=config.width,
-                depth=8,
-                enable_output_register=False,
-            )
+            generics = {
+                "use_asynchronous_fifo": True,
+                "width": config.width,
+                "depth": 8,
+                "enable_output_register": False,
+            }
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
@@ -367,9 +377,12 @@ class Module(BaseModule):
 
         # Typical FIFO without levels. Use a wrapper as top level, which only routes the
         # "barebone" ports, resulting in a minimal FIFO.
-        generics = dict(
-            use_asynchronous_fifo=True, width=32, depth=1024, enable_output_register=False
-        )
+        generics = {
+            "use_asynchronous_fifo": True,
+            "width": 32,
+            "depth": 1024,
+            "enable_output_register": False,
+        }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(
@@ -415,7 +428,7 @@ class Module(BaseModule):
 
         # A FIFO with level counter ports and non-default almost_full_level, which
         # increases resource utilization.
-        generics = dict(width=32, depth=1024, almost_full_level=800)
+        generics = {"width": 32, "depth": 1024, "almost_full_level": 800}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=self.test_case_name(

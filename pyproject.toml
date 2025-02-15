@@ -1,28 +1,116 @@
-[tool.black]
+# ------------------------------------------------------------------------------
+[tool.ruff]
+
 line-length = 100
 
 
-[tool.isort]
-# Make base formatting compatible with black settings
-profile = "black"
-line_length = 100
+[tool.ruff.lint]
 
-# Add comments before each import group
-import_heading_future = "Future libraries"
-import_heading_stdlib = "Standard libraries"
-import_heading_tools_pythonpath = """\
-Import before others since it modifies PYTHONPATH. pylint: disable=unused-import"""
-import_heading_firstparty = "First party libraries"
-import_heading_thirdparty = "Third party libraries"
-import_heading_localfolder = "Local folder libraries"
+# Is an auto-generated file with funky naming convention.
+exclude = ["doc/sphinx/conf.py"]
 
-# Change order so that "tools_pythonpath" Python module, which is a "first party" import,
-# is placed before "third party" imports.
-# This is since that import updates PYTHONPATH, which is needed to find e.g. VUnit which is a
-# third party import.
-known_tools_pythonpath = "tools.tools_pythonpath"
-sections = "FUTURE,STDLIB,TOOLS_PYTHONPATH,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+select = [
+    # Use all the standard rules.
+    # https://docs.astral.sh/ruff/settings/#lint_select
+    "ALL",
+    # Our convention: Docstring separators on separate lines.
+    # https://docs.astral.sh/ruff/rules/multi-line-summary-second-line/
+    "D213",
+]
+
+ignore = [
+    # Is not recommended when using the formatter.
+    # https://docs.astral.sh/ruff/rules/missing-trailing-comma/
+    "COM812",
+    # This rule makes a lot of sense actually.
+    # Would be nice if we could specify it for specific exceptions.
+    "TRY003",
+    # Makes one line and one variable, and adds little value.
+    "EM102",
+    "EM101",
+    # Breaks our convention.
+    "D200",
+    "D212",
+    "D413",
+    # Often the docstring is not a title line followed by behavior description,
+    # but simply a description.
+    # Suitable when function name is self-explanatory.
+    "D205",
+    # We are not so stingy about the docstring.
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    "D202",
+    # Not relevant to us.
+    "D400",
+    "D401",
+    "D415",
+    # Does not make any sense to us, since we use only keyword assignment in our calls.
+    "FBT001",
+    "FBT002",
+    # Does not make sense in a general case.
+    "PLR2004",
+    # Printouts are okay.
+    "T201",
+    # We only have assertions in test code, which no one should run with optimization.
+    "S101",
+    # False positives.
+    "ERA001",
+    # Don't see why positional boolean is worse than any other positional.
+    "FBT003"
+]
+
+per-file-ignores."tools/**/*.py" = [
+    # We import "tools_pythonpath" before external imports to set up the PYTHONPATH.
+    "E402",
+    # Tools are run during development and CI, and never with optimization.
+    "PT015",
+    # Are not run with optimization.
+    "S101",
+]
+
+per-file-ignores."**/test_*.py" = [
+    # No reason to waste time typing code that is not public.
+    "ANN",
+    # We can catch as broadly as we want.
+    "PT011",
+    # Allow a little more sloppy code.
+    "PLR0913",
+    # Are not run with optimization.
+    "S101",
+    # Some helper debug code is commented out.
+    "ERA001",
+]
+
+per-file-ignores."modules/**/module_*.py" = [
+    # Is not really a python package namespace.
+    # Don't want to litter the module structure with "__init__.py".
+    "INP001",
+]
 
 
-[tool.mypy]
-strict = true
+[tool.ruff.lint.isort]
+
+sections."tools_pythonpath" = ["tools.tools_pythonpath"]
+
+# No change in order except insertion of our custom section.
+# https://docs.astral.sh/ruff/settings/#lint_isort_sections
+section-order = [
+    "future",
+    "standard-library",
+    "tools_pythonpath",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+
+[tool.ruff.lint.pylint]
+
+# Raise slightly.
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
+max-args = 6

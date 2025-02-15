@@ -7,7 +7,6 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
 import os
 import sys
 from pathlib import Path
@@ -16,10 +15,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(REPO_ROOT))
 
-# Import before others since it modifies PYTHONPATH. pylint: disable=unused-import
+# Import before others since it modifies PYTHONPATH.
 import tools.tools_pythonpath  # noqa: F401
 
-# Third party libraries
 from tsfpga.examples.simulation_utils import (
     NoVcsDiffTestsFound,
     SimulationProject,
@@ -28,7 +26,6 @@ from tsfpga.examples.simulation_utils import (
 )
 from tsfpga.module import get_modules
 
-# First party libraries
 from tools import tools_env
 
 

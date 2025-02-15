@@ -7,24 +7,27 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Standard libraries
-from typing import TYPE_CHECKING
+from __future__ import annotations
 
-# Third party libraries
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.module import BaseModule
 
 if TYPE_CHECKING:
-    # Third party libraries
     from vunit.ui import VUnit
 
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj: "VUnit", **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_unsigned_divider")
         for dividend_width in [4, 7, 8]:
             for divisor_width in [4, 7, 8]:
                 name = f"{dividend_width}_div_{divisor_width}"
                 tb.add_config(
                     name=name,
-                    generics=dict(dividend_width=dividend_width, divisor_width=divisor_width),
+                    generics={"dividend_width": dividend_width, "divisor_width": divisor_width},
                 )

@@ -19,8 +19,7 @@ def get_short_slogan() -> str:
     Note that this slogan should be the same as the one used in the readme and on the website below.
     The difference is capitalization and whether the project name is included.
     """
-    result = "A collection of reusable, high-quality, peer-reviewed VHDL building blocks"
-    return result
+    return "A collection of reusable, high-quality, peer-reviewed VHDL building blocks"
 
 
 def get_readme_rst(
