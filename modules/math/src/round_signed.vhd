@@ -94,19 +94,14 @@ begin
 
     ------------------------------------------------------------------------------
     assign : process(all)
-      variable value_to_add : natural range 0 to 1 := 0;
     begin
-      -- if input_value_truncated = max_result and point_five = 1 then
-      --   -- value_to_add := 0;
-      --   is_saturated <= '1';
-      -- else
-      --   -- value_to_add := point_five;
-      --   is_saturated <= '0';
-      -- end if;
-
-      value_to_add := to_int(input_value(point_five_index) and to_sl(input_value_truncated /= max_result));
-
-      result <= input_value_truncated + value_to_add;
+      if input_value_truncated = max_result and point_five = 1 then
+        result <= max_result;
+        -- is_saturated <= '1';
+      else
+        result <= input_value_truncated + point_five;
+        -- is_saturated <= '0';
+      end if;
     end process;
 
   end generate;
