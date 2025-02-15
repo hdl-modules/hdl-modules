@@ -96,7 +96,7 @@ begin
     assign : process(all)
     begin
       if input_value_truncated = max_result and point_five = 1 then
-        result <= max_result;
+        result <= input_value_truncated;
         is_saturated <= '1';
       else
         result <= input_value_truncated + point_five;
