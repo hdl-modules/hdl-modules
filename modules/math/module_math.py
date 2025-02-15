@@ -47,9 +47,9 @@ class Module(BaseModule):
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.round_signed",
+                name=f"{self.library_name}.truncate_round_signed",
                 modules=all_modules,
-                top="round_signed",
+                top="truncate_round_signed",
                 part=part,
                 generics={"input_width": 32, "result_width": 24, "enable_output_register": True},
                 build_result_checkers=[

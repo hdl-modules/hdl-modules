@@ -26,8 +26,8 @@
 --
 -- One could sign-extend the input value with one guard bit, add the 0.5 unconditionally and
 -- instantiate :ref:`math.saturate_signed` on the result.
--- The :ref:`netlist build <math.round_signed.resource_utilization>` showed, however, that this
--- alternative approach results in more LUTs and longer critical path,
+-- The :ref:`netlist build <math.truncate_round_signed.resource_utilization>` showed,
+-- however, that this alternative approach results in more LUTs and longer critical path,
 -- for both wide and narrow words.
 -- -------------------------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ use common.types_pkg.all;
 use work.math_pkg.all;
 
 
-entity round_signed is
+entity truncate_round_signed is
   generic (
     input_width : positive;
     result_width : positive;
@@ -57,7 +57,7 @@ entity round_signed is
   );
 end entity;
 
-architecture a of round_signed is
+architecture a of truncate_round_signed is
 
   signal result : u_signed(result_value'range) := (others => '0');
   signal is_saturated : std_ulogic := '0';
