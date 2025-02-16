@@ -18,6 +18,12 @@
 -- :ref:`register_file.register_operations_pkg` can be useful.
 -- Note that the default value for ``bus_handle`` is the same as the default bus handle for the
 -- procedures in :ref:`register_file.register_operations_pkg`.
+--
+-- .. note::
+--
+--   This entity is dependent on VHDL components from VUnit version 5.0.0 or greater,
+--   which is currently in a pre-release state.
+--   See :ref:`dependency_vunit` for more information.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

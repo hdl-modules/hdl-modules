@@ -27,6 +27,12 @@
 -- It is used by performing VUnit VC calls, such as ``read_bus``,
 -- or, preferably when operating on a register bus, by using the convenience methods
 -- in :ref:`register_file.register_operations_pkg`.
+--
+-- .. note::
+--
+--   This entity is dependent on VHDL components from VUnit version 5.0.0 or greater,
+--   which is currently in a pre-release state.
+--   See :ref:`dependency_vunit` for more information.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
