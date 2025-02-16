@@ -16,6 +16,19 @@ is highly recommended.
 It is easier, more compact and more portable than handling the source code manually.
 
 
+.. _dependency_vunit:
+
+Dependencies
+------------
+
+The :ref:`module_bfm` as well as all testbenches in this project depend on the VHDL components in
+`VUnit <https://vunit.github.io/>`__ version 5.0.0 or greater.
+This VUnit version is currently in a pre-release state and can be installed with e.g.
+``python -m pip install vunit-hdl==5.0.0.dev5`` or by cloning the
+`repository <https://github.com/VUnit/vunit>`__.
+
+Feel free to exclude to exclude the :ref:`module_bfm` if you do not use VUnit.
+
 
 Source code
 -----------
