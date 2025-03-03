@@ -100,12 +100,12 @@ begin
   dut : entity work.periodic_pulser
     generic map (
       period => period,
-      shift_register_length => shift_register_length)
+      shift_register_length => shift_register_length
+    )
     port map (
       clk => clk,
       count_enable => count_enable,
       pulse => pulse
-      );
-
+    );
 
 end architecture;
