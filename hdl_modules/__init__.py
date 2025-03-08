@@ -22,7 +22,7 @@ REPO_ROOT = Path(__file__).parent.parent.resolve()
 __version__ = "6.0.1-dev"
 
 # We have the slogan in one place only, instead of repeating it here in a proper docstring.
-__doc__ = get_short_slogan()  # noqa: A001
+__doc__ = get_short_slogan()
 
 
 def get_hdl_modules(
