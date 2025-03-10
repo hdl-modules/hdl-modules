@@ -217,18 +217,31 @@ begin
           )
         );
       end if;
-
-      check_equal(
-        unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
-        get(arr=>reference_data, idx=>byte_idx),
-        (
-          base_error_message
-          & ": 'data' check at packet_idx="
-          & to_string(num_packets_checked)
-          & ", byte_idx="
-          & to_string(byte_idx)
-        )
-      );
+      if(is_signed(reference_data)) then
+          check_equal(
+            signed(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+            get(arr=>reference_data, idx=>byte_idx),
+            (
+              base_error_message
+              & ": 'data' check at packet_idx="
+              & to_string(num_packets_checked)
+              & ", byte_idx="
+              & to_string(byte_idx)
+            )
+          );
+        else
+          check_equal(
+            unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+            get(arr=>reference_data, idx=>byte_idx),
+            (
+              base_error_message
+              & ": 'data' check at packet_idx="
+              & to_string(num_packets_checked)
+              & ", byte_idx="
+              & to_string(byte_idx)
+            )
+          );
+        end if;
     end loop;
 
     if enable_strobe then
