@@ -109,6 +109,25 @@ begin
       num_packets_expected := num_packets_expected + 1;
     end procedure;
 
+    procedure test_signed_vs_unsigned is
+      variable data_packet_unsigned : integer_array_t := new_1d(
+        length=>1, bit_width=>8, is_signed=>false
+      );
+      variable data_packet_signed : integer_array_t := new_1d(
+        length=>1, bit_width=>8, is_signed=>true
+      );
+    begin
+      set(arr=>data_packet_unsigned, idx=>0, value=>255);
+      set(arr=>data_packet_signed, idx=>0, value=>-1);
+
+      -- Stream master does not support signed data yet.
+      push_ref(input_data_queue, data_packet_unsigned);
+      -- Slave does though.
+      push_ref(reference_data_queue, data_packet_signed);
+
+      num_packets_expected := num_packets_expected + 1;
+    end procedure;
+
   begin
     test_runner_setup(runner, runner_cfg);
 
@@ -120,6 +139,10 @@ begin
       for idx in 0 to 100 loop
         test_random_packet;
       end loop;
+
+    elsif run("test_signed_vs_unsigned") then
+      test_signed_vs_unsigned;
+
     end if;
 
     wait until num_packets_checked = num_packets_expected and rising_edge(clk);

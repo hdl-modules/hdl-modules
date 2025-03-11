@@ -168,6 +168,7 @@ begin
 
     variable byte_lane_idx : natural range 0 to bytes_per_beat - 1 := 0;
     variable is_last_beat : boolean := false;
+    variable got_byte : std_ulogic_vector(8 - 1 downto 0) := (others => '0');
   begin
     while is_empty(reference_data_queue) or enable /= '1' loop
       wait until rising_edge(clk);
@@ -218,17 +219,32 @@ begin
         );
       end if;
 
-      check_equal(
-        unsigned(data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
-        get(arr=>reference_data, idx=>byte_idx),
-        (
-          base_error_message
-          & ": 'data' check at packet_idx="
-          & to_string(num_packets_checked)
-          & ", byte_idx="
-          & to_string(byte_idx)
-        )
-      );
+      got_byte := data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8);
+      if is_signed(reference_data) then
+        check_equal(
+          signed(got_byte),
+          get(arr=>reference_data, idx=>byte_idx),
+          (
+            base_error_message
+            & ": 'data' check at packet_idx="
+            & to_string(num_packets_checked)
+            & ", byte_idx="
+            & to_string(byte_idx)
+          )
+        );
+      else
+        check_equal(
+          unsigned(got_byte),
+          get(arr=>reference_data, idx=>byte_idx),
+          (
+            base_error_message
+            & ": 'data' check at packet_idx="
+            & to_string(num_packets_checked)
+            & ", byte_idx="
+            & to_string(byte_idx)
+          )
+        );
+      end if;
     end loop;
 
     if enable_strobe then
