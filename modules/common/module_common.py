@@ -61,6 +61,7 @@ class Module(BaseModule):
 
         modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
 
+        self._get_assign_last_build_projects(part, modules, projects)
         self._get_clock_counter_build_projects(part, modules, projects)
         self._get_event_aggregator_build_projects(part, projects)
         self._get_handshake_pipeline_build_projects(part, projects)
@@ -264,6 +265,41 @@ class Module(BaseModule):
             },
             set_random_seed=True,
         )
+
+    def _get_assign_last_build_projects(
+        self, part: str, modules: ModuleList, projects: list[TsfpgaExampleVivadoNetlistProject]
+    ) -> None:
+        def add(
+            packet_length: int,
+            lut: int,
+            ff: int,
+            srl: int = 0,
+            shift_register_length: int | None = None,
+        ) -> None:
+            generics = {"packet_length_beats": packet_length}
+            if shift_register_length is not None:
+                generics["shift_register_length"] = shift_register_length
+
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.assign_last", generics=generics
+                    ),
+                    modules=modules,
+                    part=part,
+                    top="assign_last",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(lut)),
+                        Srls(EqualTo(srl)),
+                        Ffs(EqualTo(ff)),
+                    ],
+                )
+            )
+
+        add(packet_length=259269, lut=4, ff=19)
+        # Why is this so bloaty high?
+        add(packet_length=259269, shift_register_length=33, lut=6, srl=1, ff=19)
 
     def _get_clock_counter_build_projects(
         self, part: str, modules: ModuleList, projects: list[TsfpgaExampleVivadoNetlistProject]

@@ -33,6 +33,7 @@ extensions = [
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.googleanalytics",
+    "sphinxcontrib.wavedrom",
     "sphinxext.opengraph",
     "symbolator_sphinx",
 ]
@@ -42,6 +43,10 @@ intersphinx_mapping = {
     "tsfpga": ("https://tsfpga.com", None),
     "vunit": ("https://vunit.github.io/", None),
 }
+
+# Make an image instead of embedding javascript in HTML.
+wavedrom_html_jsinline = False
+render_using_wavedrompy = True
 
 symbolator_output_format = "png"
 

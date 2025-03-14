@@ -38,7 +38,12 @@ use math.math_pkg.all;
 
 entity assign_last is
   generic (
-    packet_length_beats : in positive
+    packet_length_beats : positive;
+    -- If you are using a device that can cheaply pack shift registers
+    -- (such as the SRLs in AMD/Xilinx FPGAs), setting the shift register length here can
+    -- drastically reduce the resource usage.
+    -- For AMD/Xilinx 7-series and UltraScale(+) devices, it should be set to 33.
+    shift_register_length : positive := 1
   );
   port (
     clk : in std_ulogic;
@@ -46,15 +51,13 @@ entity assign_last is
     ready : in std_ulogic;
     valid : in std_ulogic;
     last : out std_ulogic := '0';
-    first : out std_ulogic := '0'
+    first : out std_ulogic := '1'
   );
 end entity;
 
 architecture a of assign_last is
 
-  constant power_of_two_length : boolean := is_power_of_two(packet_length_beats);
-
-  signal beat_counter : natural range 0 to packet_length_beats - 1 := 0;
+  signal count_enable : std_ulogic := '0';
 
 begin
 
@@ -73,27 +76,27 @@ begin
     begin
       wait until rising_edge(clk);
 
-      if ready and valid then
-        if power_of_two_length then
-          -- Efficient implementation.
-          -- If long packet lengths are used, it would be even more efficient to use
-          -- 'periodic_pulser' instead of a counter.
-          -- It's worth investigating if that use case ever arises.
-          beat_counter <= (beat_counter + 1) mod packet_length_beats;
-
-        else
-          -- Slightly less efficient.
-          if beat_counter = packet_length_beats - 1 then
-            beat_counter <= 0;
-          else
-            beat_counter <= beat_counter + 1;
-          end if;
-        end if;
+      if count_enable then
+        first <= last;
       end if;
     end process;
 
-    last <= to_sl(beat_counter = packet_length_beats - 1);
-    first <= to_sl(beat_counter = 0);
+    count_enable <= ready and valid;
+
+
+    ------------------------------------------------------------------------------
+    periodic_pulser_inst : entity common.periodic_pulser
+      generic map (
+        period => packet_length_beats,
+        shift_register_length => shift_register_length,
+        widen_pulse_before => true
+      )
+      port map (
+        clk => clk,
+        --
+        count_enable => count_enable,
+        pulse => last
+      );
 
   end generate;
 

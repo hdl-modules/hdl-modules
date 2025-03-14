@@ -10,7 +10,7 @@
 --
 -- Shift registers are used as far as possible to create the pulse. This makes the
 -- implementation resource efficient on devices with cheap shift registers
--- (such as SRLs in Xilinx/AMD devices).
+-- (such as SRLs in AMD/Xilinx devices).
 -- In the worst case a single counter is created.
 --
 -- The ``period`` is broken down into factors that are represented using shift
@@ -26,6 +26,7 @@
 --
 -- If ``period`` cannot be factorized into one or more shift registers, recursion ends with
 -- either a simple counter or a longer shift register (depending on the size of the factor).
+--
 --
 -- Example
 -- _______
@@ -44,11 +45,40 @@
 --
 -- The next stage will create a counter, because 17 is a prime larger than the maximum shift
 -- register length.
+--
+--
+-- Pulse widening
+-- ______________
+--
+-- By setting the ``widen_pulse_before`` generic, the pulse can be widened like in the
+-- waveform below.
+--
+-- .. wavedrom::
+--
+--   {
+--     signal: [
+--       { name: "clk", wave: 'p.........' },
+--       {},
+--       { name: "count_enable", wave: '01.010.10.' },
+--       { name: "pulse", wave: '0.10...10.' },
+--       {},
+--       ["widening",
+--         { name: "count_enable", wave: '01.010.10.' },
+--         { name: "pulse", wave: '0.10.1..0.' },
+--       ],
+--       {},
+--     ]
+--   }
+--
+-- This is typically useful when working with AXI-Stream when ``count_enable`` would be
+-- ``ready and valid``.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
+
+use work.types_pkg.all;
 
 library math;
 use math.math_pkg.all;
@@ -59,8 +89,12 @@ entity periodic_pulser is
     -- The period between pulses
     period : positive range 2 to integer'high;
     -- The shift register length is device specific.
-    -- For Xilinx/AMD 7-series and UltraScale(+) devices, it should be set to 33.
-    shift_register_length : positive
+    -- For AMD/Xilinx 7-series and UltraScale(+) devices, it should be set to 33.
+    shift_register_length : positive;
+    -- If true, the pulse will be widened so it is asserted between the period'th 'count_enable'
+    -- and the 'count_enable' before it.
+    -- See header/documentation for a timing diagram.
+    widen_pulse_before : boolean := false
   );
   port (
     clk : in std_ulogic;
@@ -132,9 +166,10 @@ begin
 
       -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
       -- Start at a value where we have 'period' number ticks until an overflow.
-      constant start_value : positive := 2 ** num_counter_bits - period;
-      constant start_value_unsigned : unsigned(num_counter_bits - 1 downto 0) :=
-        to_unsigned(start_value, num_counter_bits);
+      constant start_value : natural := 2 ** num_counter_bits - period;
+      constant start_value_unsigned : unsigned(num_counter_bits - 1 downto 0) := to_unsigned(
+        start_value, num_counter_bits
+      );
 
       signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := start_value_unsigned;
       -- Add one extra bit here, this is used to see if there was an overflow, at which point we
@@ -147,14 +182,14 @@ begin
       begin
         wait until rising_edge(clk);
 
-        -- By default, increment on clock enable
         if count_enable then
+          -- By default, increment on clock enable
           tick_count <= tick_count_next(tick_count'range);
-        end if;
 
-        -- Reset counter when the pulse is output
-        if pulse then
-          tick_count <= start_value_unsigned;
+          -- Reset counter when the pulse is output
+          if pulse then
+            tick_count <= start_value_unsigned;
+          end if;
         end if;
       end process;
 
@@ -162,7 +197,9 @@ begin
 
       -- Send pulse upon counter overflow, which is cheaper than doing numerical comparison
       -- on all bits.
-      pulse <= count_enable and tick_count_next(tick_count_next'high);
+      pulse <= (
+        (count_enable or to_sl(widen_pulse_before)) and tick_count_next(tick_count_next'high)
+      );
 
 
     ------------------------------------------------------------------------------
@@ -181,7 +218,7 @@ begin
         end if;
       end process;
 
-      pulse <= count_enable and shift_reg(shift_reg'high);
+      pulse <= (count_enable or to_sl(widen_pulse_before)) and shift_reg(shift_reg'high);
 
     end generate;
 
@@ -200,8 +237,9 @@ begin
       ------------------------------------------------------------------------------
       gen_only_if_not_0 : if factors.this_stage(idx) /= 0 generate
         -- Create a shift register of the length of the current factor factor
-        signal shift_reg : std_ulogic_vector(0 to factors.this_stage(idx) - 1) :=
-          (0 => '1', others => '0');
+        signal shift_reg : std_ulogic_vector(0 to factors.this_stage(idx) - 1) := (
+          0 => '1', others => '0'
+        );
       begin
 
         ------------------------------------------------------------------------------
