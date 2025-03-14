@@ -15,6 +15,7 @@ library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
+use vunit_lib.check_pkg.all;
 use vunit_lib.integer_array_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.random_pkg.all;
@@ -22,6 +23,8 @@ use vunit_lib.run_pkg.all;
 
 library bfm;
 use bfm.stall_bfm_pkg.stall_configuration_t;
+
+use work.types_pkg.all;
 
 
 entity tb_assign_last is
@@ -50,7 +53,7 @@ architecture tb of tb_assign_last is
   -- DUT connections.
   signal clk : std_ulogic := '0';
 
-  signal ready, valid, last : std_ulogic := '0';
+  signal ready, valid, last, first : std_ulogic := '0';
   signal data : std_ulogic_vector(data_width - 1 downto 0) := (others => '0');
   signal strobe : std_ulogic_vector(data_width / 8 - 1 downto 0) := (others => '0');
 
@@ -149,6 +152,17 @@ begin
 
 
   ------------------------------------------------------------------------------
+  check_first : process
+    variable count : natural := 0;
+  begin
+    wait until ready and valid and rising_edge(clk);
+
+    check_equal(first, count = 0);
+    count := (count + 1) mod packet_length_beats;
+  end process;
+
+
+  ------------------------------------------------------------------------------
   dut : entity work.assign_last
     generic map(
       packet_length_beats => packet_length_beats
@@ -158,7 +172,8 @@ begin
       --
       ready => ready,
       valid => valid,
-      last => last
+      last => last,
+      first => first
     );
 
 end architecture;
