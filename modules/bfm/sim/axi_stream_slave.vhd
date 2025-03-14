@@ -422,7 +422,7 @@ begin
       --
       ready => ready,
       valid => valid,
-      last => last,
+      -- last => last,
       data => data,
       strobe => strobe_byte,
       id => id,
