@@ -37,6 +37,7 @@ class Module(BaseModule):
     ) -> None:
         self._setup_assign_last_tests(vunit_proj=vunit_proj)
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
+        self._setup_event_aggregator_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
         self._setup_debounce_tests(vunit_proj=vunit_proj)
         self._setup_handshake_merger_tests(vunit_proj=vunit_proj)
@@ -61,6 +62,7 @@ class Module(BaseModule):
         modules = get_hdl_modules(names_include=[self.name, "math", "resync"])
 
         self._get_clock_counter_build_projects(part, modules, projects)
+        self._get_event_aggregator_build_projects(part, projects)
         self._get_handshake_pipeline_build_projects(part, projects)
         self._get_handshake_splitter_build_projects(part, projects)
         self._get_keep_remover_build_projects(part, projects)
@@ -83,6 +85,18 @@ class Module(BaseModule):
         self.add_vunit_config(
             tb, generics={"reference_clock_rate_mhz": 50, "target_clock_rate_mhz": 250}
         )
+
+    def _setup_event_aggregator_tests(self, vunit_proj: VUnit) -> None:
+        for test in (
+            vunit_proj.library(self.library_name).test_bench("tb_event_aggregator").get_tests()
+        ):
+            generics = {}
+            if test.name in ["test_tick_count", "test_both"]:
+                generics["tick_count"] = 128
+            if test.name in ["test_event_count", "test_both"]:
+                generics["event_count"] = 16
+
+            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
 
     def _setup_clean_packet_dropper_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_clean_packet_dropper")
@@ -289,6 +303,32 @@ class Module(BaseModule):
                 ],
             )
         )
+
+    def _get_event_aggregator_build_projects(
+        self, part: str, projects: list[TsfpgaExampleVivadoNetlistProject]
+    ) -> None:
+        def add(lut: int, ff: int, logic: int, event_count: int = 1, tick_count: int = 1) -> None:
+            generics = {"event_count": event_count, "tick_count": tick_count}
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.event_aggregator", generics=generics
+                    ),
+                    modules=[self],
+                    part=part,
+                    top="event_aggregator",
+                    generics=generics,
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(lut)),
+                        Ffs(EqualTo(ff)),
+                        MaximumLogicLevel(EqualTo(logic)),
+                    ],
+                )
+            )
+
+        add(event_count=1024, lut=8, ff=11, logic=3)
+        add(tick_count=200_000, lut=10, ff=20, logic=6)
+        add(event_count=700, tick_count=150_000, lut=17, ff=30, logic=6)
 
     def _get_handshake_pipeline_build_projects(
         self, part: str, projects: list[TsfpgaExampleVivadoNetlistProject]
