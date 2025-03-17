@@ -33,7 +33,9 @@ entity dma_axi_write_simple_axi_lite is
     stream_data_width : axi_data_width_t;
     axi_data_width : axi_data_width_t;
     packet_length_beats : positive;
-    enable_axi3 : boolean := false
+    enable_axi3 : boolean := false;
+    write_done_aggregate_count : positive := 1;
+    write_done_aggregate_ticks : positive := 1
   );
   port (
     clk : in std_ulogic;
@@ -65,7 +67,9 @@ begin
       stream_data_width => stream_data_width,
       axi_data_width => axi_data_width,
       packet_length_beats => packet_length_beats,
-      enable_axi3 => enable_axi3
+      enable_axi3 => enable_axi3,
+      write_done_aggregate_count => write_done_aggregate_count,
+      write_done_aggregate_ticks => write_done_aggregate_ticks
     )
     port map (
       clk => clk,
