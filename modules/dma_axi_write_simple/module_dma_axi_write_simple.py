@@ -77,5 +77,16 @@ class Module(BaseModule):
             ff=410,
             logic=11,
         )
+        add(
+            generics={
+                "axi_data_width": 64,
+                "packet_length_beats": 1024,
+                "write_done_aggregate_count": 512,
+                "write_done_aggregate_ticks": 262144,
+            },
+            lut=156,
+            ff=247,
+            logic=12,
+        )
 
         return projects

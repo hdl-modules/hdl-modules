@@ -98,14 +98,15 @@
 -- Related to bullet point 2 above, the core does NOT accumulate a whole burst in order to
 -- guarantee no holes in the data.
 -- Meaning, it is possible that an ``AW`` and a few ``W`` transactions  happen, but then the
--- ``stream`` can stop for a while and block the AXI bus before the burst is finished.
+-- ``stream`` might stop for a while and block the AXI bus before the burst is finished.
 --
 -- This can be problematic if the downstream AXI slave is a crossbar/interconnect that
 -- arbitrates between multiple AXI masters.
 --
 -- It is up to the user to make sure that either,
 --
--- 1. The ``stream`` never stops within a packet, so that optimal AXI performance is reached.
+-- 1. The ``stream`` stopping within a packet is rare enough that sufficient AXI performance
+--    is reached.
 -- 2. Or, the downstream AXI slave can handle holes without impacting performance.
 --    :ref:`axi.axi_write_throttle` is designed to help with this.
 --
@@ -115,6 +116,25 @@
 -- Setting the ``enable_axi3`` generic will make the core compliant with AXI3 instead of AXI4.
 -- The core does not use any of the ID fields (``AWID``, ``WID``, ``BID``) so the only difference
 -- is the burst length limitation.
+--
+--
+-- ``write_done`` interrupt aggregation
+-- ____________________________________
+--
+-- The ``write_done`` interrupt bit is triggered every time a packet has been written to memory
+-- (see :ref:`dma_axi_write_simple.register_interface`).
+-- If an interrupt-based control flow is used, this can lead to a high interrupt rate if
+-- packets are small but data rate is high.
+-- This can be problematic for the CPU.
+--
+-- The generics ``write_done_aggregate_count`` and ``write_done_aggregate_ticks`` can be used to
+-- aggregate the interrupt event so it is triggered more sparsely.
+-- See :ref:`common.event_aggregator` for details.
+-- Commonly, both generics are set to ensure that the interrupt is triggered:
+--
+-- 1. Not too often (too little data per interrupt, too high overhead in interrupt manager).
+-- 2. Not too seldom (too much data per interrupt, buffer might fill up and stream might stall).
+-- 3. Not too delayed (too high latency in data flow).
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -155,14 +175,22 @@ entity dma_axi_write_simple is
     axi_data_width : axi_data_width_t;
     -- The number of beats on the 'stream' interface that are accumulated before
     -- being written to memory.
-    -- Increase this number to improve memory performance.
-    -- Will also decrease the frequency of 'write_done' interrupts.
+    -- Increasing this up to the maximum burst size will improve memory performance.
+    -- It will also decrease the frequency of 'write_done' interrupts.
     -- But note that there is no support for writing partial packets.
     -- If the 'stream' stops in the middle of a packet, there is not way to write or clear the
     -- accumulated data.
     packet_length_beats : positive;
     -- Enable AXI3 instead of AXI4, with the limitations that this implies.
-    enable_axi3 : boolean
+    enable_axi3 : boolean;
+    -- If set, the 'write_done' interrupt bit will be delayed until this many packets have
+    -- been written to memory.
+    -- See header/documentation for details.
+    write_done_aggregate_count : positive;
+    -- If set, the 'write_done' interrupt bit will be delayed and sent out at a periodic interval
+    -- given by this clock tick count.
+    -- See header/documentation for details.
+    write_done_aggregate_ticks : positive
   );
   port (
     clk : in std_ulogic;
@@ -232,6 +260,7 @@ begin
 
   ------------------------------------------------------------------------------
   interrupt_register_block : block
+    signal write_done : std_ulogic := '0';
     signal clear, status : register_t := (others => '0');
   begin
 
@@ -248,9 +277,7 @@ begin
         trigger => interrupt
       );
 
-    interrupt_sources(dma_axi_write_simple_interrupt_status_write_done) <= (
-      axi_write_m2s.b.ready and axi_write_s2m.b.valid
-    );
+    write_done <= axi_write_m2s.b.ready and axi_write_s2m.b.valid;
 
     interrupt_sources(dma_axi_write_simple_interrupt_status_write_error) <= (
       axi_write_m2s.b.ready
@@ -273,6 +300,21 @@ begin
     clear <= to_slv(regs_down.interrupt_status);
 
     regs_up.interrupt_status <= to_dma_axi_write_simple_interrupt_status(status);
+
+
+    ------------------------------------------------------------------------------
+    -- Optionally aggregate, is a passthrough if generics are at default value.
+    event_aggregator_inst : entity common.event_aggregator
+      generic map (
+        event_count => write_done_aggregate_count,
+        tick_count => write_done_aggregate_ticks
+      )
+      port map (
+        clk => clk,
+        --
+        input_event => write_done,
+        aggregated_event => interrupt_sources(dma_axi_write_simple_interrupt_status_write_done)
+      );
 
   end block;
 
