@@ -78,6 +78,14 @@ begin
       positive_vec := (4, 3, 2, 1);
       check_equal(get_maximum(positive_vec), 4);
 
+    elsif run("test_is_integer") then
+      check_true(is_integer(3.0));
+      check_true(is_integer(0.0));
+      check_true(is_integer(-3.0));
+      check_false(is_integer(3.1));
+      check_false(is_integer(0.000001));
+      check_false(is_integer(-3.1));
+
     elsif run("test_to_bool_std_logic") then
       check_equal(to_bool('0'), false);
       check_equal(to_bool('1'), true);

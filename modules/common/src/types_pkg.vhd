@@ -33,7 +33,14 @@ package types_pkg is
   function get_maximum(values : positive_vec_t) return positive;
 
   type time_vec_t is array (integer range <>) of time;
+
+  --------------------------------------------------------------------------------------------------
   type real_vec_t is array (integer range <>) of real;
+
+  -- Return true if the value held in the floating-point variable is an integer.
+  function is_integer(value : real) return boolean;
+  --------------------------------------------------------------------------------------------------
+
   type boolean_vec_t is array (integer range <>) of boolean;
 
   function to_sl(value : boolean) return std_ulogic;
@@ -131,6 +138,13 @@ package body types_pkg is
     end loop;
     return result;
   end function;
+
+  --------------------------------------------------------------------------------------------------
+  function is_integer(value : real) return boolean is
+  begin
+    return value = real(integer(value));
+  end function;
+  --------------------------------------------------------------------------------------------------
 
   function to_sl(value : boolean) return std_ulogic is
   begin
