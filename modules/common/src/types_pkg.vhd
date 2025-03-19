@@ -142,7 +142,7 @@ package body types_pkg is
   --------------------------------------------------------------------------------------------------
   function is_integer(value : real) return boolean is
   begin
-    return value = real(integer(value));
+    return real(integer(value)) = value;
   end function;
   --------------------------------------------------------------------------------------------------
 
