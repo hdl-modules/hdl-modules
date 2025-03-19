@@ -80,7 +80,7 @@ package math_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  -- Divide 'dividend' / 'divisor' and round towards negative infinity.
+  -- Integer division 'dividend' / 'divisor' with round towards negative infinity.
   -- The same way a bit shift in hardware would work.
   -- This is the way it works in most programming languages, including e.g. Python.
   -- The 'integer' type in VHDL does not do this by default.
