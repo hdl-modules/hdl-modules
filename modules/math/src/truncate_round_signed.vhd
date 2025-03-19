@@ -13,18 +13,27 @@
 -- ________________
 --
 -- The truncation can be seen as removing a number of fractional bits from a fixed-point number.
--- If the fractional value is greater than or equal to 0.5, 1 is added to the result.
--- I.e. rounding towards positive infinity.
+-- The result value will be the closest integer value to the fractional input value.
+-- If the value is exactly in the middle between two integers, the result will be
+--
+-- 1. The integer value of the two that is even, if ``convergent_rounding`` is true.
+-- 2. The integer value of the two that is closest to positive infinity,
+--    if ``convergent_rounding`` is false.
+--
+-- Convergent rounding is the default rounding mode used in IEEE 754 and comes with some advantages,
+-- most notably that it yields no bias.
+-- Convergent mode does consume one more LUT and results in a longer critical path.
 --
 -- If the input value is already at the maximum value, and the fractional value is such that the
--- rounding should happen, the result is saturated and the ``result_is_saturated`` signal
--- will read as 1.
+-- rounding should happen, the ``result_overflow`` signal will read as 1.
+-- If the ``enable_saturation`` generic is set to true, the result will be saturated to the
+-- maximum value.
 --
 --
 -- Alternative approach
 -- ____________________
 --
--- One could sign-extend the input value with one guard bit, add the 0.5 unconditionally and
+-- One could sign-extend the input value with one guard bit, add and then
 -- instantiate :ref:`math.saturate_signed` on the result.
 -- The :ref:`netlist build <math.truncate_round_signed.resource_utilization>` showed,
 -- however, that this alternative approach results in more LUTs and longer critical path,
@@ -45,7 +54,10 @@ entity truncate_round_signed is
   generic (
     input_width : positive;
     result_width : positive range 1 to input_width;
-    enable_output_register : boolean := false
+    convergent_rounding : boolean := true;
+    enable_addition_register : boolean := false;
+    enable_saturation : boolean := false;
+    enable_saturation_register : boolean := false
   );
   port(
     clk : in std_ulogic;
@@ -55,75 +67,144 @@ entity truncate_round_signed is
     --# {{}}
     result_valid : out std_ulogic := '0';
     result_value : out u_signed(result_width - 1 downto 0) := (others => '0');
-    result_is_saturated : out std_ulogic := '0'
+    result_overflow : out std_ulogic := '0'
   );
 end entity;
 
 architecture a of truncate_round_signed is
-
-  signal is_saturated : std_ulogic := '0';
-  signal result : u_signed(result_value'range) := (others => '0');
 
 begin
 
   ------------------------------------------------------------------------------
   passthrough_or_not_gen : if input_width = result_width generate
 
-    result <= input_value;
+    result_valid <= input_valid;
+    result_value <= input_value;
+    result_overflow <= '0';
 
 
   ------------------------------------------------------------------------------
   else generate
-    constant max_result : signed(result_value'range) := get_max_signed(num_bits=>result_width);
-
     constant num_lsb_to_remove : positive := input_width - result_width;
-    constant point_five_index : natural := num_lsb_to_remove - 1;
 
-    signal input_value_truncated : signed(result_width - 1 downto 0) := (others => '0');
-    signal point_five : natural range 0 to 1 := 0;
+    constant result_value_max : signed(result_value'range) := get_max_signed(
+      num_bits=>result_value'length
+    );
+
+    signal addition_valid, addition_overflow : std_ulogic := '0';
+    signal addition_result : signed(result_width - 1 downto 0) := (others => '0');
   begin
 
-    input_value_truncated <= input_value(input_value'high downto num_lsb_to_remove);
-    point_five <= to_int(input_value(point_five_index));
+    ------------------------------------------------------------------------------
+    addition_block : block
+      constant one_index : natural := num_lsb_to_remove;
+      constant point_five_index : natural := one_index - 1;
+      signal one_index_value, point_five_index_value : binary_integer_t := 0;
+
+      signal input_value_integer : signed(result_width - 1 downto 0) := (others => '0');
+      signal input_value_integer_is_max : boolean := false;
+
+      signal input_value_fractional : signed(num_lsb_to_remove - 1 downto 0) := (others => '0');
+
+      signal result_int : signed(addition_result'range) := (others => '0');
+      signal overflow_int : std_ulogic := '0';
+    begin
+
+      input_value_integer <= input_value(input_value'high downto num_lsb_to_remove);
+      input_value_integer_is_max <= input_value_integer = result_value_max;
+
+      input_value_fractional <= input_value(input_value_fractional'range);
+
+      one_index_value <= to_int(input_value(one_index));
+      point_five_index_value <= to_int(input_value(point_five_index));
+
+
+      ------------------------------------------------------------------------------
+      calculate : process(all)
+        function get_fractional_point_five_value return signed is
+          variable result : signed(input_value_fractional'range) := (others => '0');
+        begin
+          result(input_value_fractional'high) := '1';
+          return result;
+        end function;
+        constant input_value_fractional_point_five : signed := get_fractional_point_five_value;
+
+        variable value_to_add : binary_integer_t := 0;
+      begin
+        if convergent_rounding then
+          if input_value_fractional = input_value_fractional_point_five then
+            value_to_add := one_index_value;
+          else
+            value_to_add := point_five_index_value;
+          end if;
+        else
+          value_to_add := point_five_index_value;
+        end if;
+
+        result_int <= input_value_integer + value_to_add;
+        overflow_int <= to_sl(input_value_integer_is_max and value_to_add = 1);
+      end process;
+
+
+      ------------------------------------------------------------------------------
+      assign_addition_result : if enable_addition_register generate
+
+        addition_valid <= input_valid when rising_edge(clk);
+        addition_result <= result_int when rising_edge(clk);
+        addition_overflow <= overflow_int when rising_edge(clk);
+
+
+      ------------------------------------------------------------------------------
+      else generate
+
+        addition_valid <= input_valid;
+        addition_result <= result_int;
+        addition_overflow <= overflow_int;
+
+      end generate;
+
+    end block;
+
+
+    assert enable_saturation or not enable_saturation_register
+      report "Invalid generic configuration"
+      severity failure;
 
 
     ------------------------------------------------------------------------------
-    assign : process(all)
+    saturate_gen : if enable_saturation generate
+      signal result_int : signed(addition_result'range) := (others => '0');
     begin
-      if input_value_truncated = max_result and point_five = 1 then
-        result <= max_result;
-        is_saturated <= '1';
-      else
-        result <= input_value_truncated + point_five;
-        is_saturated <= '0';
-      end if;
 
-      -- Alternative formulation of
-      --   value_to_add := to_int(
-      --     input_value(point_five_index) and to_sl(input_value_truncated /= max_result)
-      --   );
-      --   result <= input_value_truncated + value_to_add;
-      -- gave one less LUT but 6->9 critical path.
-      -- But that is if 'is_saturated' is not needed.
-    end process;
-
-  end generate;
+      result_int <= result_value_max when addition_overflow else addition_result;
 
 
-  ------------------------------------------------------------------------------
-  output_register_gen : if enable_output_register generate
+      ------------------------------------------------------------------------------
+      assign_saturation_result : if enable_saturation_register generate
 
-    result_valid <= input_valid when rising_edge(clk);
-    result_value <= result when rising_edge(clk);
-    result_is_saturated <= is_saturated when rising_edge(clk);
+        result_valid <= addition_valid when rising_edge(clk);
+        result_value <= result_int when rising_edge(clk);
+        result_overflow <= addition_overflow when rising_edge(clk);
 
 
-  ------------------------------------------------------------------------------
-  else generate
+      ------------------------------------------------------------------------------
+      else generate
 
-    result_valid <= input_valid;
-    result_value <= result;
-    result_is_saturated <= is_saturated;
+        result_valid <= addition_valid;
+        result_value <= result_int;
+        result_overflow <= addition_overflow;
+
+      end generate;
+
+
+    ------------------------------------------------------------------------------
+    else generate
+
+      result_valid <= addition_valid;
+      result_value <= addition_result;
+      result_overflow <= addition_overflow;
+
+    end generate;
 
   end generate;
 
