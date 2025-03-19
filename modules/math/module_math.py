@@ -46,7 +46,7 @@ class Module(BaseModule):
         for test in (
             vunit_proj.library(self.library_name).test_bench("tb_truncate_round_signed").get_tests()
         ):
-            if test.name == "test_random_data":
+            if test.name == "test_non_convergent":
                 for _ in range(4):
                     self.add_vunit_config(test=test, set_random_seed=True)
             else:
@@ -90,12 +90,6 @@ class Module(BaseModule):
                     set_random_seed=True,
                     pre_config=pre_config,
                 )
-                self.add_vunit_config(
-                    test=test,
-                    generics=generics,
-                    set_random_seed=1237191019,
-                    pre_config=pre_config,
-                )
 
     def _setup_unsigned_divider_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_unsigned_divider")
@@ -119,11 +113,13 @@ class Module(BaseModule):
         part = "xc7z020clg400-1"
 
         def add(
+            convergent_rounding: bool,
             lut: int,
             ff: int,
             logic: int,
         ) -> None:
             generics = {
+                "convergent_rounding": convergent_rounding,
                 "enable_addition_register": True,
                 "enable_saturation": True,
                 "enable_saturation_register": True,
@@ -148,6 +144,7 @@ class Module(BaseModule):
                 )
             )
 
-        add(lut=7, ff=52, logic=8)
+        add(convergent_rounding=False, lut=6, ff=52, logic=6)
+        add(convergent_rounding=True, lut=7, ff=52, logic=8)
 
         return projects

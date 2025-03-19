@@ -143,7 +143,6 @@ begin
         end if;
 
         test_value(value_in=>value_in, value_result=>quotient + 1, overflow=>false);
-        return;
       end procedure;
 
       variable value_in : u_signed(input_width_to_use - 1 downto 0) := (others => '0');
@@ -185,7 +184,7 @@ begin
     report "enable_addition_register = " & to_string(enable_addition_register);
     report "enable_saturation_register = " & to_string(enable_saturation_register);
 
-    if run("test_random_data") then
+    if run("test_non_convergent") then
       run_random_test;
 
     elsif run("test_convergent") then
