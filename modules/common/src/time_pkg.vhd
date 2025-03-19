@@ -71,6 +71,7 @@ package time_pkg is
   -- 1. for symmetry,
   -- 2. for code clarity since it's a named function with a named argument.
   function to_time(value_s : real) return time;
+  function ns_to_time(value_ns : real) return time;
 
   -- Functions for converting between frequency and period values using the 'time' type.
   -- Doing these operations has historically been very risky with Vivado.
@@ -180,6 +181,11 @@ package body time_pkg is
     -- Using 'time' * 'real' -> 'time' function.
     -- Should give maximum precision.
     return value_s * (1 sec);
+  end function;
+
+  function ns_to_time(value_ns : real) return time is
+  begin
+    return to_time(value_s=>value_ns * 1.0e-9);
   end function;
 
   function to_period(frequency_hz : real) return time is
