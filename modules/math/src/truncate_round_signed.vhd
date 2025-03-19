@@ -85,8 +85,6 @@ begin
 
   ------------------------------------------------------------------------------
   else generate
-    constant num_lsb_to_remove : positive := input_width - result_width;
-
     constant result_value_max : signed(result_value'range) := get_max_signed(
       num_bits=>result_value'length
     );
@@ -97,6 +95,8 @@ begin
 
     ------------------------------------------------------------------------------
     addition_block : block
+      constant num_lsb_to_remove : positive := input_width - result_width;
+
       constant one_index : natural := num_lsb_to_remove;
       constant point_five_index : natural := one_index - 1;
       signal one_index_value, point_five_index_value : binary_integer_t := 0;
@@ -132,6 +132,8 @@ begin
         variable value_to_add : binary_integer_t := 0;
       begin
         if convergent_rounding then
+          -- There are other ways of formulating this, but this is method seems to yield
+          -- the lowest resource utilization.
           if input_value_fractional = input_value_fractional_point_five then
             value_to_add := one_index_value;
           else
