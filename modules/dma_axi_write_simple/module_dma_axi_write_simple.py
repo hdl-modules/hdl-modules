@@ -62,19 +62,19 @@ class Module(BaseModule):
             )
 
         add(generics={"axi_data_width": 64, "packet_length_beats": 1}, lut=156, ff=207, logic=16)
-        add(generics={"axi_data_width": 64, "packet_length_beats": 16}, lut=157, ff=226, logic=12)
-        add(generics={"axi_data_width": 64, "packet_length_beats": 2048}, lut=132, ff=218, logic=11)
+        add(generics={"axi_data_width": 64, "packet_length_beats": 16}, lut=158, ff=226, logic=12)
+        add(generics={"axi_data_width": 64, "packet_length_beats": 2048}, lut=139, ff=216, logic=11)
         add(
-            generics={"axi_data_width": 64, "packet_length_beats": 16384}, lut=134, ff=218, logic=10
+            generics={"axi_data_width": 64, "packet_length_beats": 16384}, lut=133, ff=215, logic=10
         )
 
         add(
-            generics={"axi_data_width": 32, "packet_length_beats": 16384}, lut=171, ff=320, logic=11
+            generics={"axi_data_width": 32, "packet_length_beats": 16384}, lut=170, ff=315, logic=11
         )
         add(
             generics={"axi_data_width": 128, "packet_length_beats": 16384},
-            lut=198,
-            ff=410,
+            lut=197,
+            ff=406,
             logic=11,
         )
         add(
