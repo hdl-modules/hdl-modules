@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 
-__version__ = "6.1.0"
+__version__ = "6.1.1-dev"
 
 # We have the slogan in one place only, instead of repeating it here in a proper docstring.
 __doc__ = get_short_slogan()
