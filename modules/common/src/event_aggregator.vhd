@@ -17,15 +17,23 @@
 -- of how many ``input_event`` pulses have been received is lost.
 --
 --
--- Details
--- _______
+-- Event count mechanism details
+-- _____________________________
 --
 -- The ``event_count`` mechanism sends out an ``aggregated_event`` pulse after a certain number of
 -- ``input_event`` pulses have been received.
 --
+--
+-- Event count mechanism details
+-- _____________________________
+--
 -- The ``tick_count`` mechanism periodically sends out an ``aggregated_event`` pulse at a specified
 -- interval, provided that at least one ``input_event`` pulse has been received
 -- during the interval.
+--
+--
+-- Combination
+-- ___________
 --
 -- The two mechanisms can be combined, in which case the ``aggregated_event`` pulse is sent out
 -- after either condition is met.

@@ -24,16 +24,21 @@
 -- most notably that it yields no bias.
 -- Convergent mode does consume one more LUT and results in a longer critical path.
 --
--- If the input value is already at the maximum value, and the fractional value is such that the
--- rounding should happen, the ``result_overflow`` signal will read as 1.
--- If the ``enable_saturation`` generic is set to true, the result will be saturated to the
+--
+-- Overflow and saturation
+-- _______________________
+--
+-- If the input value is already at the maximum value, and the fractional value is such that a
+-- rounding upwards should happen, the addition will overflow and the  ``result_overflow`` signal
+-- will read as 1.
+-- If the ``enable_saturation`` generic is set to true, the result will instead be saturated to the
 -- maximum value.
 --
 --
 -- Alternative approach
 -- ____________________
 --
--- One could sign-extend the input value with one guard bit, add and then
+-- One could sign-extend the input value with one guard bit, add then
 -- instantiate :ref:`math.saturate_signed` on the result.
 -- The :ref:`netlist build <math.truncate_round_signed.resource_utilization>` showed,
 -- however, that this alternative approach results in more LUTs and longer critical path,
