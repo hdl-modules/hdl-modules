@@ -19,8 +19,12 @@ use work.register_file_pkg.all;
 
 
 entity axi_lite_register_file_netlist_build_wrapper is
+  generic (
+    enable_reset : boolean
+  );
   port (
     clk : in std_ulogic;
+    reset : in std_ulogic;
     --
     axi_lite_m2s : in axi_lite_m2s_t;
     axi_lite_s2m : out axi_lite_s2m_t;
@@ -72,7 +76,12 @@ architecture a of axi_lite_register_file_netlist_build_wrapper is
     14 => x"ad1f5653"
   );
 
+  signal reset_actual : std_ulogic := '0';
+
 begin
+
+  reset_actual <= reset when enable_reset else '0';
+
 
   ------------------------------------------------------------------------------
   axi_lite_register_file_inst : entity work.axi_lite_register_file
@@ -82,6 +91,7 @@ begin
     )
     port map (
       clk => clk,
+      reset => reset_actual,
       --
       axi_lite_m2s => axi_lite_m2s,
       axi_lite_s2m => axi_lite_s2m,

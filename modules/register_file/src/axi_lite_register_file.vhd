@@ -53,6 +53,11 @@ entity axi_lite_register_file is
   );
   port (
     clk : in std_ulogic;
+    -- Active-high synchronous reset.
+    -- The code in this entity uses initial values so an initial reset is NOT necessary.
+    -- This port can safely be left unconnected and tied to zero.
+    -- If asserted, it will reset the AXI-Lite handshaking state as well as all register values.
+    reset : in std_ulogic := '0';
     --# {{}}
     --# Register control bus
     axi_lite_m2s : in axi_lite_m2s_t;
@@ -172,7 +177,15 @@ begin
             read_state <= ar;
           end if;
       end case;
+
+      if reset then
+        read_state <= ar;
+
+        axi_lite_s2m.read.ar.ready <= '0';
+        axi_lite_s2m.read.r.valid <= '0';
+      end if;
     end process;
+
   end block;
 
 
@@ -219,6 +232,10 @@ begin
           end loop;
         end if;
       end loop;
+
+      if reset then
+        reg_values <= default_values;
+      end if;
     end process;
 
 
@@ -260,7 +277,16 @@ begin
             write_state <= aw;
           end if;
       end case;
+
+      if reset then
+        write_state <= aw;
+
+        axi_lite_s2m.write.aw.ready <= '0';
+        axi_lite_s2m.write.w.ready <= '0';
+        axi_lite_s2m.write.b.valid <= '0';
+      end if;
     end process;
+
   end block;
 
 end architecture;
