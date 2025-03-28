@@ -14,6 +14,7 @@ use ieee.numeric_std.all;
 library vunit_lib;
 use vunit_lib.bus_master_pkg.all;
 use vunit_lib.check_pkg.all;
+use vunit_lib.queue_pkg.all;
 use vunit_lib.com_pkg.net;
 use vunit_lib.run_pkg.all;
 
@@ -84,7 +85,7 @@ architecture tb of tb_axi_lite_register_file is
 
   -- DUT connections.
   constant clk_period : time := 10 ns;
-  signal clk : std_ulogic := '0';
+  signal clk, reset : std_ulogic := '0';
 
   signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
   signal axi_lite_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
@@ -103,9 +104,11 @@ architecture tb of tb_axi_lite_register_file is
 
   signal regs_down_non_default_count : natural := 0;
 
+  constant read_index_queue, write_index_queue, write_data_queue : queue_t := new_queue;
+
 begin
 
-  test_runner_watchdog(runner, 2 ms);
+  test_runner_watchdog(runner, 200 us);
   clk <= not clk after clk_period / 2;
 
 
@@ -177,40 +180,31 @@ begin
 
     procedure read_hardcoded(reg_index : integer) is
     begin
-      hardcoded_m2s.read.ar.addr <= to_unsigned(4 * reg_index, hardcoded_m2s.read.ar.addr'length);
-      hardcoded_m2s.read.ar.valid <= '1';
-      wait until
-        (axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.read.ar.valid <= '0';
-
-      hardcoded_m2s.read.r.ready <= '1';
-      wait until
-        (axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.read.r.ready <= '0';
+      push(read_index_queue, reg_index);
     end procedure;
 
-    procedure write_hardcoded(reg_index : integer) is
+    procedure read_and_wait_hardcoded(reg_index : integer) is
     begin
-      hardcoded_m2s.write.aw.addr <= to_unsigned(4 * reg_index, hardcoded_m2s.write.aw.addr'length);
-      hardcoded_m2s.write.aw.valid <= '1';
-      wait until
-        (axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.write.aw.valid <= '0';
+      read_hardcoded(reg_index);
 
-      hardcoded_m2s.write.w.valid <= '1';
       wait until
-        (axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) = '1'
+        ((axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) or reset) = '1'
         and rising_edge(clk);
-      hardcoded_m2s.write.w.valid <= '0';
+    end procedure;
 
-      hardcoded_m2s.write.b.ready <= '1';
+    procedure write_hardcoded(reg_index : integer; data : register_t := (others => '0')) is
+    begin
+      push(write_index_queue, reg_index);
+      push(write_data_queue, data);
+    end procedure;
+
+    procedure write_and_wait_hardcoded(reg_index : integer; data : register_t := (others => '0')) is
+    begin
+      write_hardcoded(reg_index, data);
+
       wait until
-        (axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) = '1'
+        ((axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) or reset) = '1'
         and rising_edge(clk);
-      hardcoded_m2s.write.b.ready <= '0';
     end procedure;
 
   begin
@@ -234,36 +228,87 @@ begin
       end loop;
 
     elsif run("test_read_from_non_existent_register") then
-      read_hardcoded(regs(regs'high).index + 1);
+      read_and_wait_hardcoded(regs(regs'high).index + 1);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
 
-      read_hardcoded(regs(regs'high).index);
+      read_and_wait_hardcoded(regs(regs'high).index);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
 
     elsif run("test_write_to_non_existent_register") then
-      write_hardcoded(regs(regs'high).index + 1);
+      write_and_wait_hardcoded(regs(regs'high).index + 1);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
 
-      write_hardcoded(regs(regs'high).index);
+      write_and_wait_hardcoded(regs(regs'high).index);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
 
     elsif run("test_read_from_non_read_type_register") then
       assert regs(3).mode = w;
-      read_hardcoded(3);
+      read_and_wait_hardcoded(3);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
 
-      read_hardcoded(regs(regs'high).index);
+      read_and_wait_hardcoded(regs(regs'high).index);
       check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
 
     elsif run("test_write_to_non_write_type_register") then
       assert regs(0).mode = r;
-      write_hardcoded(0);
+      write_and_wait_hardcoded(0);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
 
-      write_hardcoded(regs(regs'high).index);
+      write_and_wait_hardcoded(regs(regs'high).index);
       check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
-    end if;
 
+    elsif run("test_reset_read") then
+      assert regs(7).mode = r_w;
+      read_and_wait_hardcoded(7);
+      check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(7));
+
+      for wait_cycles in 0 to 20 loop
+        write_and_wait_hardcoded(7, default_values(8));
+
+        read_and_wait_hardcoded(7);
+        check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(8));
+
+        read_hardcoded(7);
+        for wait_cycle_idx in 1 to wait_cycles loop
+          wait until rising_edge(clk);
+        end loop;
+        reset <= '1';
+
+        for reset_cycle in 0 to 10 loop
+          wait until rising_edge(clk);
+        end loop;
+
+        reset <= '0';
+        read_and_wait_hardcoded(7);
+        check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(7));
+      end loop;
+
+    elsif run("test_reset_write") then
+      for reg_index in 6 to 14 loop
+        for wait_cycles in 0 to 20 loop
+          write_and_wait_hardcoded(reg_index, default_values(reg_index - 1));
+
+          write_hardcoded(reg_index);
+          for wait_cycle_idx in 1 to wait_cycles loop
+            wait until rising_edge(clk);
+          end loop;
+          reset <= '1';
+
+          for reset_cycle in 0 to 10 loop
+            wait until rising_edge(clk);
+          end loop;
+
+          reset <= '0';
+          wait until rising_edge(clk);
+          check_equal(
+            regs_down(reg_index),
+            default_values(reg_index),
+            "reg_index=" & to_string(reg_index)
+          );
+        end loop;
+      end loop;
+
+    end if;
 
     test_runner_cleanup(runner);
   end process;
@@ -304,6 +349,77 @@ begin
 
 
   ------------------------------------------------------------------------------
+  hardcoded_read : process
+    procedure perform_read(index : natural) is
+    begin
+      hardcoded_m2s.read.ar.addr <= to_unsigned(4 * index, hardcoded_m2s.read.ar.addr'length);
+      hardcoded_m2s.read.ar.valid <= '1';
+      wait until
+        ((axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) or reset) = '1'
+        and rising_edge(clk);
+      hardcoded_m2s.read.ar.valid <= '0';
+
+      if reset then
+        return;
+      end if;
+
+      hardcoded_m2s.read.r.ready <= '1';
+      wait until
+        ((axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) or reset) = '1'
+        and rising_edge(clk);
+      hardcoded_m2s.read.r.ready <= '0';
+    end procedure;
+  begin
+    while is_empty(read_index_queue) or reset = '1' loop
+      wait until rising_edge(clk);
+    end loop;
+
+    perform_read(index=>pop(read_index_queue));
+  end process;
+
+
+  ------------------------------------------------------------------------------
+  hardcoded_write : process
+    procedure perform_write(index : natural; data : register_t) is
+    begin
+      hardcoded_m2s.write.aw.addr <= to_unsigned(4 * index, hardcoded_m2s.write.aw.addr'length);
+      hardcoded_m2s.write.aw.valid <= '1';
+      wait until
+        ((axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) or reset) = '1'
+        and rising_edge(clk);
+      hardcoded_m2s.write.aw.valid <= '0';
+
+      if reset then
+        return;
+      end if;
+
+      hardcoded_m2s.write.w.data(data'range) <= data;
+      hardcoded_m2s.write.w.valid <= '1';
+      wait until
+        ((axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) or reset) = '1'
+        and rising_edge(clk);
+      hardcoded_m2s.write.w.valid <= '0';
+
+      if reset then
+        return;
+      end if;
+
+      hardcoded_m2s.write.b.ready <= '1';
+      wait until
+        ((axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) or reset) = '1'
+        and rising_edge(clk);
+      hardcoded_m2s.write.b.ready <= '0';
+    end procedure;
+  begin
+    while is_empty(write_index_queue) or reset = '1' loop
+      wait until rising_edge(clk);
+    end loop;
+
+    perform_write(index=>pop(write_index_queue), data=>pop(write_data_queue));
+  end process;
+
+
+  ------------------------------------------------------------------------------
   dut : entity work.axi_lite_register_file
     generic map (
       registers => regs,
@@ -311,6 +427,7 @@ begin
     )
     port map (
       clk => clk,
+      reset => reset,
       --
       axi_lite_m2s => axi_lite_m2s,
       axi_lite_s2m => axi_lite_s2m,

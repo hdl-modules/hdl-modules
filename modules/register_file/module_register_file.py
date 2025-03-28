@@ -38,6 +38,8 @@ class Module(BaseModule):
             "test_read_from_non_read_type_register",
             "test_write_to_non_existent_register",
             "test_write_to_non_write_type_register",
+            "test_reset_read",
+            "test_reset_write",
         ]:
             tb.test(name=name).set_generic("use_axi_lite_bfm", False)
 
@@ -56,21 +58,26 @@ class Module(BaseModule):
         )
         part = "xc7z020clg400-1"
 
-        projects.append(
-            TsfpgaExampleVivadoNetlistProject(
-                name=f"{self.library_name}.axi_lite_register_file",
-                modules=all_modules,
-                part=part,
-                top="axi_lite_register_file_netlist_build_wrapper",
-                build_result_checkers=[
-                    TotalLuts(EqualTo(169)),
-                    Ffs(EqualTo(301)),
-                    Ramb36(EqualTo(0)),
-                    Ramb18(EqualTo(0)),
-                    MaximumLogicLevel(EqualTo(3)),
-                ],
+        for enable_reset in [True, False]:
+            generics = {"enable_reset": enable_reset}
+            projects.append(
+                TsfpgaExampleVivadoNetlistProject(
+                    name=self.test_case_name(
+                        name=f"{self.library_name}.axi_lite_register_file", generics=generics
+                    ),
+                    modules=all_modules,
+                    part=part,
+                    generics=generics,
+                    top="axi_lite_register_file_netlist_build_wrapper",
+                    build_result_checkers=[
+                        TotalLuts(EqualTo(169 + 95 * enable_reset)),
+                        Ffs(EqualTo(301)),
+                        Ramb36(EqualTo(0)),
+                        Ramb18(EqualTo(0)),
+                        MaximumLogicLevel(EqualTo(3)),
+                    ],
+                )
             )
-        )
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
