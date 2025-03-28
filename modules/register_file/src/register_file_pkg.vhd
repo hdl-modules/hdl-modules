@@ -13,12 +13,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library common;
-use common.addr_pkg.all;
-
-library math;
-use math.math_pkg.all;
-
 
 package register_file_pkg is
 
