@@ -126,7 +126,7 @@ begin
 
       ------------------------------------------------------------------------------
       calculate : process(all)
-        function get_fractional_point_five_value return signed is
+        impure function get_fractional_point_five_value return signed is
           variable result : signed(input_value_fractional'range) := (others => '0');
         begin
           result(input_value_fractional'high) := '1';
