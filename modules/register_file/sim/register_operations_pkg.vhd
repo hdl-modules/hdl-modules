@@ -49,7 +49,6 @@ use vunit_lib.logger_pkg.all;
 
 library common;
 use common.addr_pkg.addr_t;
-use common.addr_pkg.addr_width;
 use common.types_pkg.natural_vec_t;
 
 library register_file;
@@ -62,7 +61,7 @@ package register_operations_pkg is
   -- Default bus handle that can be used to simplify calls.
   constant register_bus_master : bus_master_t := new_bus(
     data_length=>register_width,
-    address_length=>addr_width,
+    address_length=>32,
     logger=>get_logger("register_bus_master")
   );
 
