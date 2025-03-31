@@ -34,14 +34,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library axi;
-use axi.axi_pkg.all;
-
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
-
-library math;
-use math.math_pkg.all;
 
 use work.register_file_pkg.all;
 
@@ -78,7 +72,7 @@ end entity;
 
 architecture a of axi_lite_register_file is
 
-  constant num_address_bits : positive := num_bits_needed(get_highest_index(registers));
+  constant num_address_bits : positive := num_address_bits_needed(registers=>registers);
   subtype address_range is natural range num_address_bits + 2 - 1 downto 2;
 
   signal reg_values : register_vec_t(registers'range) := default_values;
@@ -111,7 +105,7 @@ begin
     begin
       reg_was_read <= (others => '0');
 
-      axi_lite_s2m.read.r.resp <= axi_resp_slverr;
+      axi_lite_s2m.read.r.resp <= axi_lite_resp_slverr;
 
       -- Set initial values zero.
       -- Below we will only assign the bits that are actually utilized by the register.
@@ -123,7 +117,7 @@ begin
       for list_idx in registers'range loop
         if is_read_mode(registers(list_idx).mode) then
           if read_index = list_idx then
-            axi_lite_s2m.read.r.resp <= axi_resp_okay;
+            axi_lite_s2m.read.r.resp <= axi_lite_resp_okay;
             reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
           end if;
 
@@ -204,7 +198,7 @@ begin
 
       reg_was_written <= (others => '0');
 
-      axi_lite_s2m.write.b.resp <= axi_resp_slverr;
+      axi_lite_s2m.write.b.resp <= axi_lite_resp_slverr;
 
       for list_idx in registers'range loop
         if is_write_pulse_mode(registers(list_idx).mode) then
@@ -219,7 +213,7 @@ begin
       for list_idx in registers'range loop
         if is_write_mode(registers(list_idx).mode) then
           if write_index = list_idx then
-            axi_lite_s2m.write.b.resp <= axi_resp_okay;
+            axi_lite_s2m.write.b.resp <= axi_lite_resp_okay;
             reg_was_written(list_idx) <= axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid;
           end if;
 

@@ -10,8 +10,9 @@
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 
 package register_file_pkg is
@@ -60,7 +61,11 @@ package register_file_pkg is
   type register_definition_vec_t is array (natural range <>) of register_definition_t;
 
   -- Get the highest register index that is used in the list of registers.
-  function get_highest_index(regs : register_definition_vec_t) return natural;
+  function get_highest_index(registers : register_definition_vec_t) return natural;
+
+  -- Get the number of bits needed to represent the register indices.
+  -- Note that this does not include the lowest two aligned bits.
+  function num_address_bits_needed(registers : register_definition_vec_t) return positive;
 
 end;
 
@@ -86,11 +91,21 @@ package body register_file_pkg is
     return mode = r or mode = r_wpulse;
   end function;
 
-  function get_highest_index(regs : register_definition_vec_t) return natural is
+  function get_highest_index(registers : register_definition_vec_t) return natural is
   begin
-    assert regs(0).index = 0 severity failure;
-    assert regs(regs'high).index = regs'length - 1 severity failure;
-    return regs(regs'high).index;
+    assert registers(0).index = 0 severity failure;
+    assert registers(registers'high).index = registers'length - 1 severity failure;
+    return registers(registers'high).index;
+  end function;
+
+  function num_address_bits_needed(registers : register_definition_vec_t) return positive is
+    constant max_index : natural := get_highest_index(registers);
+  begin
+    if max_index = 0 then
+      return 1;
+    end if;
+
+    return integer(ceil(log2(real(max_index + 1))));
   end function;
 
 end;
