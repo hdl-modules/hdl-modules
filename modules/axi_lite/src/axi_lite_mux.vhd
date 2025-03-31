@@ -32,9 +32,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library axi;
-use axi.axi_pkg.all;
-
 library math;
 use math.math_pkg.all;
 
@@ -93,7 +90,7 @@ begin
       axi_lite_s2m.read.ar <= (ready => read_decode_error_s2m.ar.ready);
       axi_lite_s2m.read.r <= (
         valid => read_decode_error_s2m.r.valid,
-        resp => axi_resp_decerr,
+        resp => axi_lite_resp_decerr,
         data => (others => '-')
       );
 
@@ -119,7 +116,7 @@ begin
       axi_lite_s2m.write.aw <= (ready => write_decode_error_s2m.aw.ready);
       axi_lite_s2m.write.w <= (ready => write_decode_error_s2m.w.ready);
       axi_lite_s2m.write.b <= (
-        valid => write_decode_error_s2m.b.valid, resp => axi_resp_decerr
+        valid => write_decode_error_s2m.b.valid, resp => axi_lite_resp_decerr
       );
 
     else

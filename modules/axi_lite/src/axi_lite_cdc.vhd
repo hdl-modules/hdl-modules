@@ -19,9 +19,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library axi;
-use axi.axi_pkg.all;
-
 library common;
 use common.attribute_pkg.all;
 
@@ -33,7 +30,7 @@ use work.axi_lite_pkg.all;
 entity axi_lite_cdc is
   generic (
     data_width : axi_lite_data_width_t;
-    addr_width : axi_address_width_t;
+    addr_width : axi_lite_address_width_t;
     fifo_depth : positive := 8;
     ram_type : ram_style_t := ram_style_auto
   );
