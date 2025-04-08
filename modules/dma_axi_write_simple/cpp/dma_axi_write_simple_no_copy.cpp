@@ -40,7 +40,7 @@ DmaNoCopy::DmaNoCopy(uintptr_t register_base_address, void *buffer,
       m_buffer_size_bytes(buffer_size_bytes),
       m_assertion_handler(assertion_handler),
       registers(fpga_regs::DmaAxiWriteSimple(register_base_address,
-                                               assertion_handler)) {
+                                             assertion_handler)) {
   uintptr_t start_address = reinterpret_cast<uintptr_t>(m_buffer);
   uintptr_t end_address = start_address + m_buffer_size_bytes;
 
@@ -121,7 +121,7 @@ void DmaNoCopy::done_with_data(size_t num_bytes) {
     m_in_buffer_read_done_address =
         (m_in_buffer_read_done_address + num_bytes) % m_buffer_size_bytes;
     registers.set_buffer_read_address(m_start_address +
-                                        m_in_buffer_read_done_address);
+                                      m_in_buffer_read_done_address);
   }
 }
 
@@ -145,28 +145,38 @@ size_t DmaNoCopy::get_num_bytes_available() {
 }
 
 bool DmaNoCopy::check_status() {
-  const uint32_t register_value = registers.get_interrupt_status();
-  if (register_value) {
-    // Read and then clear status ASAP.
-    registers.set_interrupt_status(register_value);
+  const uint32_t interrupt_status = registers.get_interrupt_status_raw();
 
-    _DMA_ASSERT_TRUE(
-        !registers.get_interrupt_status_write_error_from_value(
-            register_value) &&
-            !registers
-                 .get_interrupt_status_start_address_unaligned_error_from_value(
-                     register_value) &&
-            !registers
-                 .get_interrupt_status_end_address_unaligned_error_from_value(
-                     register_value) &&
-            !registers
-                 .get_interrupt_status_read_address_unaligned_error_from_value(
-                     register_value),
-        "Got error interrupt from the FPGA AXI DMA write module: "
-            << register_value);
+  if (interrupt_status == 0) {
+    // No interrupt, 'write_done' or otherwise. Nothing to do.
+    return false;
   }
 
-  return registers.get_interrupt_status_write_done_from_value(register_value);
+  // Clear active status as soon as possible after reading.
+  registers.set_interrupt_status_raw(interrupt_status);
+
+  {
+    const uint32_t any_error_mask =
+        fpga_regs::dma_axi_write_simple::interrupt_status::write_error::
+            mask_shifted |
+        fpga_regs::dma_axi_write_simple::interrupt_status::
+            start_address_unaligned_error::mask_shifted |
+        fpga_regs::dma_axi_write_simple::interrupt_status::
+            end_address_unaligned_error::mask_shifted |
+        fpga_regs::dma_axi_write_simple::interrupt_status::
+            read_address_unaligned_error::mask_shifted;
+
+    _DMA_ASSERT_TRUE((interrupt_status & any_error_mask) == 0,
+                     "Got error interrupt from the FPGA AXI DMA write module: "
+                         << interrupt_status);
+  }
+
+  {
+    const uint32_t write_done_mask = fpga_regs::dma_axi_write_simple::
+        interrupt_status::write_done::mask_shifted;
+    const bool result = interrupt_status & write_done_mask;
+    return result;
+  }
 }
 
 } // namespace dma_axi_write_simple
