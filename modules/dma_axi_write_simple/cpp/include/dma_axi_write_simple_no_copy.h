@@ -18,6 +18,22 @@ namespace fpga {
 
 namespace dma_axi_write_simple {
 
+const uint32_t write_done_interrupt_mask =
+    fpga_regs::dma_axi_write_simple::interrupt_status::write_done::mask_shifted;
+
+const uint32_t any_error_interrupt_mask =
+    fpga_regs::dma_axi_write_simple::interrupt_status::write_error::
+        mask_shifted |
+    fpga_regs::dma_axi_write_simple::interrupt_status::
+        start_address_unaligned_error::mask_shifted |
+    fpga_regs::dma_axi_write_simple::interrupt_status::
+        end_address_unaligned_error::mask_shifted |
+    fpga_regs::dma_axi_write_simple::interrupt_status::
+        read_address_unaligned_error::mask_shifted;
+
+const uint32_t all_interrupts_mask =
+    write_done_interrupt_mask | any_error_interrupt_mask;
+
 struct Response {
   size_t num_bytes;
   volatile void *data;
