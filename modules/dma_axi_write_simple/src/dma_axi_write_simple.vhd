@@ -453,7 +453,8 @@ begin
       ------------------------------------------------------------------------------
       assign_last_inst : entity common.assign_last
         generic map (
-          packet_length_beats => num_axi_bursts_per_packet
+          packet_length_beats => num_axi_bursts_per_packet,
+          shift_register_length => 33
         )
         port map (
           clk => clk,
