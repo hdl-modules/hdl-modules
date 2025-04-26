@@ -78,15 +78,18 @@ public:
    *               physical and virtual memory address.
    *               Meaning this constructor is only suitable for bare
    *               metal applications.
+   *               If an operating system is used, a different constructor must
+   *               be added.
    * @param buffer_size_bytes The number of bytes in the memory buffer.
    *                          I.e. the number of bytes that have been allocated
    *                          by the user for the 'buffer' argument.
    *                          Must be a multiple of the packet length used by
    *                          the FPGA.
-   * @param assertion_handler Function to call when an assertion fails in
-   *                          this class.
-   *                          Function takes a string pointer as an argument and
-   *                          must return a boolean 'true'.
+   * @param assertion_handler Function to call when an assertion fails.
+   *                          Function takes a string pointer as an argument,
+   *                          where the string will contain an error diagnostic
+   *                          message.
+   *                          Function must return a boolean 'true'.
    */
   DmaNoCopy(uintptr_t register_base_address, void *buffer,
             size_t buffer_size_bytes,
