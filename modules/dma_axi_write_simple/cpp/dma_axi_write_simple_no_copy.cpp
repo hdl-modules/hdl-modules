@@ -20,15 +20,15 @@ namespace dma_axi_write_simple {
 #else // Not NO_DMA_ASSERT.
 
 // This macro is called by the DMA code to check for runtime errors.
-#define _DMA_ASSERT_TRUE(expression, message)                                  \
-  {                                                                            \
-    if (!static_cast<bool>(expression)) {                                      \
-      std::ostringstream diagnostics;                                          \
-      diagnostics << "DMA error occurred in " << __FILE__ << ":" << __LINE__   \
-                  << ", message: " << message << ".";                          \
-      std::string diagnostic_message = diagnostics.str();                      \
-      m_assertion_handler(&diagnostic_message);                                \
-    }                                                                          \
+#define _DMA_ASSERT_TRUE(expression, message)                              \
+  {                                                                        \
+    if (!static_cast<bool>(expression)) {                                  \
+      std::ostringstream diagnostics;                                      \
+      diagnostics << "ERROR:dma_axi_write_simple_no_copy.cpp:" << __LINE__ \
+                  << ": " << message;                                      \
+      std::string diagnostic_message = diagnostics.str();                  \
+      m_assertion_handler(&diagnostic_message);                            \
+    }                                                                      \
   }
 
 #endif // NO_DMA_ASSERT.
@@ -53,7 +53,7 @@ DmaNoCopy::DmaNoCopy(uintptr_t register_base_address, void *buffer,
 
 void DmaNoCopy::setup_and_enable() {
   _DMA_ASSERT_TRUE(!registers.get_config_enable(),
-                   "Tried to enable DMA that is already running");
+                   "Tried to enable DMA that is already running.");
 
   registers.set_buffer_start_address(m_start_address);
   registers.set_buffer_end_address(m_end_address);
@@ -162,13 +162,12 @@ bool DmaNoCopy::check_status() {
             !registers
                  .get_interrupt_status_read_address_unaligned_error_from_value(
                      register_value),
-        "Got error interrupt from the FPGA AXI DMA write module: "
-            << register_value);
+        "Got error interrupt: " << register_value);
   }
 
   return registers.get_interrupt_status_write_done_from_value(register_value);
 }
 
-} // namespace dma_axi_write_simple
+} // namespace 'dma_axi_write_simple'
 
-} // namespace fpga
+} // namespace 'fpga'

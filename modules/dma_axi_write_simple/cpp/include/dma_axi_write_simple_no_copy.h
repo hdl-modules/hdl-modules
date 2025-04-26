@@ -113,22 +113,19 @@ public:
   /**
    * Receive data that has been written to memory by FPGA, given the byte count
    * limits specified in the arguments.
-   * Will return zero if no data is available yet.
-   *
-   * When data is read with this method it is considered outstanding, and the
-   * part of the memory buffer where it resides will not be written by the FPGA
-   * again.
-   * Only once DmaNoCopy::done_with_data is called can there be further writes
-   * there.
-   * At that point, it is not safe to use the data pointer provided by a
-   * previous call to this method.
-   * At that point, the data must have been copied or you must be completely
-   * done with it.
+   * Will return with 'num_bytes' as zero if no data is available yet.
    *
    * Whenever this method is called and it returns non-zero, the data will be
    * considered outstanding.
    * That MUST be handled by the user and DmaNoCopy::done_with_data MUST
    * eventually be called.
+   *
+   * When data is read with this method it will not be written by the FPGA
+   * again until DmaNoCopy::done_with_data is called.
+   * At that point, it is not safe to use the data pointer provided by a
+   * previous call to this method.
+   * At that point, the data must have been copied or you must be completely
+   * done with it.
    *
    * This method will check the current interrupt status, which will trigger an
    * assertion call if any error interrupt has occurred.
@@ -165,13 +162,11 @@ public:
   /**
    * Indicate that we are done with data previously read with
    * DmaNoCopy::receive_data.
-   * Will mark the corresponding buffer segments as free to be written to again
-   * by FPGA.
+   * Will mark the corresponding buffer segments as free to be written again
+   * by the FPGA.
    *
    * Do not call this method with an argument that is greater than the number
    * of bytes that has previously been read with DmaNoCopy::receive_data.
-   *
-   * Do not perform any 'delete' on the data.
    */
   void done_with_data(size_t num_bytes);
 
