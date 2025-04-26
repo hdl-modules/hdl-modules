@@ -85,11 +85,11 @@ begin
     signal got_at_least_one_event_this_tick_period : std_ulogic := '0';
   begin
 
-    assert event_count = 1 or event_count > 2
+    assert event_count > 2 or not should_count_events
       report "Too small values give corner cases that have not been analyzed"
       severity failure;
 
-    assert tick_count = 1 or tick_count > 2
+    assert tick_count > 2 or not should_count_ticks
       report "Too small values give corner cases that have not been analyzed"
       severity failure;
 
