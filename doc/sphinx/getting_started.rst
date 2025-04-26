@@ -27,7 +27,8 @@ This VUnit version is currently in a pre-release state and can be installed with
 ``python -m pip install vunit-hdl==5.0.0.dev5`` or by cloning the
 `repository <https://github.com/VUnit/vunit>`__.
 
-Feel free to exclude to exclude the :ref:`module_bfm` if you do not use VUnit.
+Feel free to exclude the :ref:`module_bfm` if you do not use VUnit.
+If that module as well as the testbenches are excluded, no dependencies are required.
 
 
 Source code
