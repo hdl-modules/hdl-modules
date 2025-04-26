@@ -24,8 +24,8 @@
 -- ``input_event`` pulses have been received.
 --
 --
--- Event count mechanism details
--- _____________________________
+-- Tick count mechanism details
+-- ____________________________
 --
 -- The ``tick_count`` mechanism periodically sends out an ``aggregated_event`` pulse at a specified
 -- interval, provided that at least one ``input_event`` pulse has been received
