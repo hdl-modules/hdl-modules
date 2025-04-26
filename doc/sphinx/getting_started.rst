@@ -35,7 +35,7 @@ Source code
 -----------
 
 When using `tsfpga <https://tsfpga.com>`__, simply call the function
-`get_hdl_modules() <https://github.com/hdl-modules/hdl-modules/blob/main/hdl_modules/__init__.py#L27>`_
+`get_hdl_modules() <https://github.com/hdl-modules/hdl-modules/blob/main/hdl_modules/__init__.py#L28>`_
 and add to your list of modules.
 Note that you must add the hdl-modules repository to your Python path to call this function,
 either by using ``sys.path.append(...)`` or by setting the ``PYTHONPATH`` environment variable.
