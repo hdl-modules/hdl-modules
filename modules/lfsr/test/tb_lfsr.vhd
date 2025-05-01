@@ -27,7 +27,6 @@ entity tb_lfsr is
   generic (
     output_width : positive;
     desired_lfsr_length : positive;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -41,14 +40,13 @@ architecture tb of tb_lfsr is
     shift_count=>output_width, minimum_length=>desired_lfsr_length
   );
 
-  impure function get_lfsr_seed return std_ulogic_vector is
+  impure function init_and_get_lfsr_seed return std_ulogic_vector is
     constant all_zeros : std_ulogic_vector(calculated_lfsr_length downto 1) := (others => '0');
 
     variable result : std_ulogic_vector(all_zeros'range) := all_zeros;
   begin
-    -- This is the first function that is called, so we initialize the random number
-    -- generator here.
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     while result = all_zeros loop
       result := rnd.RandSlv(result'length);
@@ -56,7 +54,7 @@ architecture tb of tb_lfsr is
 
     return result;
   end function;
-  constant lfsr_seed : std_ulogic_vector(calculated_lfsr_length downto 1) := get_lfsr_seed;
+  constant lfsr_seed : std_ulogic_vector(calculated_lfsr_length downto 1) := init_and_get_lfsr_seed;
 
   -- DUT connections.
   signal clk : std_logic := '0';

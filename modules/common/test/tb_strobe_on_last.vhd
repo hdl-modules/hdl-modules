@@ -32,7 +32,6 @@ entity tb_strobe_on_last is
   generic (
     data_width : positive;
     test_full_throughput : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -114,7 +113,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_data") then
       for packet_idx in 0 to 500 loop
@@ -243,9 +242,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_master_inst : entity bfm.handshake_master
       generic map (
-        stall_config => stall_config,
-        seed => seed,
-        logger_name_suffix => " - input"
+        stall_config => stall_config
       )
       port map (
         clk => clk,
@@ -265,7 +262,6 @@ begin
       data_width => output_data'length,
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - output"
     )
     port map (

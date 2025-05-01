@@ -15,16 +15,23 @@
 -- the ``data_queue``.
 -- Each ``AW`` transaction will result in a check that the eventually returned ``BID`` is correct.
 --
--- .. note::
+-- This BFM will also perform protocol checking to verify that the downstream AXI slave is
+-- performing everything correctly.
 --
---   This BFM will inject random handshake jitter/stalling on the AXI channels for good
---   verification coverage.
---   Modify the ``aw_stall_config``, ``w_stall_config`` and ``b_stall_config`` generics to change
---   the behavior.
---   You can also set ``seed`` to something unique in order to vary the randomization in each
---   simulation run.
---   This can be done conveniently with the
---   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+--
+-- Randomization
+-- _____________
+--
+-- This BFM will inject random handshake stall/jitter, for good verification coverage.
+-- Modify the ``aw_stall_config``, ``w_stall_config`` and ``b_stall_config`` generics
+-- to get your desired behavior.
+-- The random seed is provided by a VUnit mechanism
+-- (see the "seed" portion of `this document <https://vunit.github.io/run/user_guide.html>`__).
+-- Use the ``--seed`` command line argument if you need to set a static seed.
+--
+--
+-- Unaligned transaction length
+-- ______________________________________
 --
 -- The byte length of the transactions (as set in the ``job`` as well as by the length of the
 -- ``data_queue`` arrays) does not need to be aligned with the data width of the bus.
@@ -32,12 +39,13 @@
 --
 -- The ``job`` address, however, is assumed to be aligned with bus data width.
 --
+--
+-- Transaction order
+-- _________________
+--
 -- Note that data can be pushed to ``data_queue`` before the corresponding job is pushed.
 -- This data will be pushed to the AXI ``W`` channel straight away, possibly before the ``AW``
 -- transaction (unless in AXI3 mode).
---
--- This BFM will also perform protocol checking to verify that the downstream AXI slave is
--- performing everything correctly.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -79,9 +87,6 @@ entity axi_write_master is
     w_stall_config : stall_configuration_t := default_data_stall_config;
     -- Stall configuration for the B channel slave
     b_stall_config : stall_configuration_t := default_data_stall_config;
-    -- Random seed for handshaking stall/jitter.
-    -- Set to something unique in order to vary the random sequence.
-    seed : natural := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- When this generic is set, 'WID' will be assigned to same ID as corresponding
@@ -162,9 +167,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_master_inst : entity work.handshake_master
       generic map (
-        stall_config => aw_stall_config,
-        seed => seed,
-        logger_name_suffix => " - axi_write_master - AW" & logger_name_suffix
+        stall_config => aw_stall_config
       )
       port map (
         clk => clk,
@@ -251,7 +254,6 @@ begin
         data_width => data_width,
         data_queue => w_data_queue,
         stall_config => w_stall_config,
-        seed => seed,
         logger_name_suffix => " - axi_write_master - W" & logger_name_suffix,
         drive_invalid_value => drive_invalid_value
       )
@@ -292,9 +294,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_slave_inst : entity work.handshake_slave
       generic map (
-        stall_config => b_stall_config,
-        seed => seed,
-        logger_name_suffix => " - axi_write_master - B" & logger_name_suffix
+        stall_config => b_stall_config
       )
       port map (
         clk => clk,

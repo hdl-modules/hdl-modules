@@ -31,7 +31,6 @@ use common.time_pkg.all;
 
 entity tb_resync_twophase_handshake is
   generic (
-    seed : natural;
     data_width : positive := 8;
     stall_probability_percent : natural := 20;
     result_clock_is_greatly_faster : boolean := false;
@@ -137,7 +136,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_init_state") then
       check_equal(input_ready, '1');
@@ -181,7 +180,6 @@ begin
       data_width => input_data'length,
       data_queue => input_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input"
     )
     port map (
@@ -199,7 +197,6 @@ begin
       data_width => result_data'length,
       reference_data_queue => result_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - result",
       disable_last_check => true
     )

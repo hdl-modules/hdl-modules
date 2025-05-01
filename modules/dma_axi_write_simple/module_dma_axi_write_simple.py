@@ -26,8 +26,7 @@ class Module(BaseModule):
         **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> None:
         test = vunit_proj.library(self.library_name).test_bench("tb_dma_axi_write_simple")
-        for _ in range(8):
-            self.add_vunit_config(test=test, set_random_seed=True)
+        self.add_vunit_config(test=test, count=8)
 
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where

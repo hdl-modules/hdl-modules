@@ -35,7 +35,6 @@ class Module(BaseModule):
         vunit_proj: VUnit,
         **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> None:
-        self._setup_assign_last_tests(vunit_proj=vunit_proj)
         self._setup_clock_counter_tests(vunit_proj=vunit_proj)
         self._setup_event_aggregator_tests(vunit_proj=vunit_proj)
         self._setup_clean_packet_dropper_tests(vunit_proj=vunit_proj)
@@ -73,10 +72,6 @@ class Module(BaseModule):
 
         return projects
 
-    def _setup_assign_last_tests(self, vunit_proj: VUnit) -> None:
-        tb = vunit_proj.library(self.library_name).test_bench("tb_assign_last")
-        self.add_vunit_config(tb, set_random_seed=True)
-
     def _setup_clock_counter_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_clock_counter")
         self.add_vunit_config(
@@ -96,14 +91,13 @@ class Module(BaseModule):
             if test.name in ["test_event_count", "test_both"]:
                 generics["event_count"] = 16
 
-            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+            self.add_vunit_config(test=test, generics=generics)
 
     def _setup_clean_packet_dropper_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_clean_packet_dropper")
 
         for data_width in [16, 32]:
-            generics = {"data_width": data_width}
-            self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
+            self.add_vunit_config(test=tb, generics={"data_width": data_width})
 
     def _setup_debounce_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_debounce")
@@ -118,15 +112,12 @@ class Module(BaseModule):
             stall_probability_percent = 0 if "test_full_throughput" in test.name else 20
 
             self.add_vunit_config(
-                test=test,
-                generics={"stall_probability_percent": stall_probability_percent},
-                set_random_seed=True,
+                test=test, generics={"stall_probability_percent": stall_probability_percent}
             )
 
     def _setup_handshake_mux_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_mux")
-        for _ in range(2):
-            self.add_vunit_config(test=tb, set_random_seed=True)
+        self.add_vunit_config(test=tb, count=2)
 
     def _setup_handshake_pipeline_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_handshake_pipeline")
@@ -161,9 +152,7 @@ class Module(BaseModule):
         for test in tb.get_tests():
             stall_probability_percent = 0 if "test_full_throughput" in test.name else 20
             self.add_vunit_config(
-                test=test,
-                generics={"stall_probability_percent": stall_probability_percent},
-                set_random_seed=True,
+                test=test, generics={"stall_probability_percent": stall_probability_percent}
             )
 
     def _setup_keep_remover_tests(self, vunit_proj: VUnit) -> None:
@@ -175,17 +164,21 @@ class Module(BaseModule):
                 if strobe_unit_width > data_width:
                     continue
 
-                generics = {"data_width": data_width, "strobe_unit_width": strobe_unit_width}
-                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+                self.add_vunit_config(
+                    test=test,
+                    generics={"data_width": data_width, "strobe_unit_width": strobe_unit_width},
+                )
 
         test = tb.test("test_full_throughput")
         for data_width, strobe_unit_width in [(16, 8), (32, 16)]:
-            generics = {
-                "data_width": data_width,
-                "strobe_unit_width": strobe_unit_width,
-                "enable_jitter": False,
-            }
-            self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+            self.add_vunit_config(
+                test=test,
+                generics={
+                    "data_width": data_width,
+                    "strobe_unit_width": strobe_unit_width,
+                    "enable_jitter": False,
+                },
+            )
 
     def _setup_periodic_pulser_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_periodic_pulser")
@@ -207,13 +200,16 @@ class Module(BaseModule):
 
         for data_width in [8, 16, 32]:
             for test_full_throughput in [False, True]:
-                generics = {"data_width": data_width, "test_full_throughput": test_full_throughput}
-
-                # The "full throughput" test is very static, so test only with one seed.
-                # The regular test though should be tested more exhaustively.
-                num_tests = 1 if test_full_throughput else 5
-                for _ in range(num_tests):
-                    self.add_vunit_config(test=tb, generics=generics, set_random_seed=True)
+                self.add_vunit_config(
+                    test=tb,
+                    generics={
+                        "data_width": data_width,
+                        "test_full_throughput": test_full_throughput,
+                    },
+                    # The "full throughput" test is very static, so test only with one seed.
+                    # The regular test though should be tested more exhaustively.
+                    count=1 if test_full_throughput else 5,
+                )
 
     def _setup_width_conversion_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_width_conversion")
@@ -235,9 +231,9 @@ class Module(BaseModule):
             if enable_strobe and enable_last:
                 for support_unaligned_packet_length in [True, False]:
                     generics["support_unaligned_packet_length"] = support_unaligned_packet_length
-                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                    self.add_vunit_config(test, generics=generics)
             else:
-                self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                self.add_vunit_config(test, generics=generics)
 
         test = tb.get_tests("test_full_throughput")[0]
         self.add_vunit_config(
@@ -250,7 +246,6 @@ class Module(BaseModule):
                 "enable_last": True,
                 "enable_jitter": False,
             },
-            set_random_seed=True,
         )
         self.add_vunit_config(
             test=test,
@@ -262,7 +257,6 @@ class Module(BaseModule):
                 "enable_last": True,
                 "enable_jitter": False,
             },
-            set_random_seed=True,
         )
 
     def _get_clock_counter_build_projects(

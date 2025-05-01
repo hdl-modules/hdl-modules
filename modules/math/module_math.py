@@ -25,30 +25,22 @@ class Module(BaseModule):
         vunit_proj: VUnit,
         **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> None:
-        self._setup_math_pkg_tests(vunit_proj=vunit_proj)
         self._setup_saturate_signed_tests(vunit_proj=vunit_proj)
         self._setup_truncate_round_signed_tests(vunit_proj=vunit_proj)
         self._setup_unsigned_divider_tests(vunit_proj=vunit_proj)
 
-    def _setup_math_pkg_tests(self, vunit_proj: VUnit) -> None:
-        tb = vunit_proj.library(self.library_name).test_bench("tb_math_pkg")
-        self.add_vunit_config(test=tb, set_random_seed=True)
-
     def _setup_saturate_signed_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_saturate_signed")
-        for _ in range(4):
-            self.add_vunit_config(test=tb, set_random_seed=True)
+        self.add_vunit_config(test=tb, count=4)
 
     def _setup_truncate_round_signed_tests(self, vunit_proj: VUnit) -> None:
         fixed_input_width = 24
         fixed_result_width = 16
 
-        for test in (
-            vunit_proj.library(self.library_name).test_bench("tb_truncate_round_signed").get_tests()
-        ):
+        tb = vunit_proj.library(self.library_name).test_bench("tb_truncate_round_signed")
+        for test in tb.get_tests():
             if test.name == "test_non_convergent":
-                for _ in range(4):
-                    self.add_vunit_config(test=test, set_random_seed=True)
+                self.add_vunit_config(test=test, count=4)
             else:
 
                 def pre_config(output_path: str) -> bool:
@@ -59,35 +51,44 @@ class Module(BaseModule):
 
                     output_path = Path(output_path)
 
-                    min_value = -(2 ** (fixed_input_width - 1))
-                    max_value = 2 ** (fixed_input_width - 1) - 1
+                    min_input_value = -(2 ** (fixed_input_width - 1))
+                    max_input_value = 2 ** (fixed_input_width - 1) - 1
+
                     divider = 2 ** (fixed_input_width - fixed_result_width)
+                    min_result_value = -(2 ** (fixed_result_width - 1))
+                    max_result_value = 2 ** (fixed_result_width - 1) - 1
 
                     input_values = ["" for _ in range(8192)]
                     result_values = ["" for _ in range(len(input_values))]
+                    overflow_values = ["0" for _ in range(len(input_values))]
 
                     for index in range(len(input_values)):
-                        input_value = random.randint(min_value, max_value)  # noqa: S311
+                        input_value = random.randint(min_input_value, max_input_value)  # noqa: S311
                         result_value = round(input_value / divider)
+
+                        if result_value > max_result_value:
+                            overflow_values[index] = "1"
+                            result_value = max_result_value
+                        elif result_value < min_result_value:
+                            overflow_values[index] = "1"
+                            result_value = min_result_value
 
                         input_values[index] = str(input_value)
                         result_values[index] = str(result_value)
 
                     (output_path / "input_values.csv").write_text("\n".join(input_values))
                     (output_path / "result_values.csv").write_text("\n".join(result_values))
+                    (output_path / "overflow_values.csv").write_text("\n".join(overflow_values))
 
                     return True
 
-                generics = {
-                    "input_width": fixed_input_width,
-                    "result_width": fixed_result_width,
-                    "convergent_rounding": True,
-                }
-
                 self.add_vunit_config(
                     test=test,
-                    generics=generics,
-                    set_random_seed=True,
+                    generics={
+                        "input_width": fixed_input_width,
+                        "result_width": fixed_result_width,
+                        "convergent_rounding": True,
+                    },
                     pre_config=pre_config,
                 )
 

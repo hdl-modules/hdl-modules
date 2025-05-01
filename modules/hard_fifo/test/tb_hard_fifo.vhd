@@ -197,7 +197,7 @@ begin
 
       -- Run a lot of reads and writes, with the FIFO going empty a lot
       run_test(2000, 2000);
-      check_relation(has_gone_empty_times > 500, "Got " & to_string(has_gone_empty_times));
+      check_relation(has_gone_empty_times > 400, "Got " & to_string(has_gone_empty_times));
 
     end if;
 

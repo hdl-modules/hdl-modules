@@ -36,7 +36,6 @@ use common.types_pkg.all;
 entity tb_axi_write_throttle is
   generic (
     include_slave_w_fifo : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -127,7 +126,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_random_transactions") then
       for i in 0 to 50 loop
@@ -180,8 +179,7 @@ begin
       id_width => id_width,
       data_width => data_width,
       job_queue => job_queue,
-      data_queue => data_queue,
-      seed => seed
+      data_queue => data_queue
     )
     port map (
       clk => clk,

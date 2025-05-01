@@ -36,7 +36,6 @@ use common.types_pkg.all;
 
 entity tb_axi_pipeline is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -54,13 +53,14 @@ architecture tb of tb_axi_pipeline is
 
   shared variable rnd : RandomPType;
 
-  impure function get_addr_width return positive is
+  impure function initialize_and_get_addr_width return positive is
   begin
-    -- This function sets the init random seed. Must be called first.
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return rnd.RandInt(20, 24);
   end function;
-  constant addr_width : positive := get_addr_width;
+  constant addr_width : positive := initialize_and_get_addr_width;
 
   impure function get_id_width return natural is
   begin
@@ -174,8 +174,7 @@ begin
         id_width => id_width,
         data_width => data_width,
         job_queue => read_job_queue,
-        reference_data_queue => read_data_queue,
-        seed => seed
+        reference_data_queue => read_data_queue
       )
       port map (
         clk => clk,
@@ -244,8 +243,7 @@ begin
         id_width => id_width,
         data_width => data_width,
         job_queue => write_job_queue,
-        data_queue => write_data_queue,
-        seed => seed
+        data_queue => write_data_queue
       )
       port map (
         clk => clk,

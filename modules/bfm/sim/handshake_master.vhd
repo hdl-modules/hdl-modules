@@ -18,10 +18,24 @@
 -- the data can be handled as records in the testbench with no conversion necessary.
 --
 -- See the testbench ``tb_handshake_bfm`` for example usage.
+--
+--
+-- Randomization
+-- _____________
+--
+-- This BFM will inject random handshake stall/jitter, for good verification coverage.
+-- Modify the ``stall_config`` generic to get your desired behavior.
+-- The random seed is provided by a VUnit mechanism
+-- (see the "seed" portion of `this document <https://vunit.github.io/run/user_guide.html>`__).
+-- Use the ``--seed`` command line argument if you need to set a static seed.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
+
+library vunit_lib;
+use vunit_lib.run_pkg.all;
+use vunit_lib.run_types_pkg.all;
 
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
@@ -31,12 +45,7 @@ use work.stall_bfm_pkg.all;
 
 entity handshake_master is
   generic (
-    stall_config : stall_configuration_t;
-    -- Random seed for handshaking stall/jitter.
-    -- Set to something unique in order to vary the random sequence.
-    seed : natural := 0;
-    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
-    logger_name_suffix : string := ""
+    stall_config : stall_configuration_t
   );
   port (
     clk : in std_ulogic;
@@ -63,9 +72,12 @@ begin
 
     ------------------------------------------------------------------------------
     toggle_stall : process
+      variable seed : string_seed_t;
       variable rnd : RandomPType;
     begin
-      rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
+      -- Use salt so that parallel instances of this entity get unique random sequences.
+      get_seed(seed, salt=>handshake_master'path_name);
+      rnd.InitSeed(seed);
 
       loop
         let_data_through <= '0';

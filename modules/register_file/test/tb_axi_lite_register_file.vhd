@@ -38,7 +38,6 @@ use work.register_file_pkg.all;
 
 entity tb_axi_lite_register_file is
   generic (
-    seed : natural;
     use_axi_lite_bfm : boolean := true;
     runner_cfg : string
   );
@@ -209,7 +208,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_default_register_values") then
       wait for 10 * clk_period;

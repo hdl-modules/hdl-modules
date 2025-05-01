@@ -29,7 +29,6 @@ use work.types_pkg.all;
 
 entity tb_assign_last is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -41,7 +40,9 @@ architecture tb of tb_assign_last is
 
   impure function initialize_and_get_packet_length_beats return positive is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return rnd.Uniform(1, 16);
   end function;
   constant packet_length_beats : positive := initialize_and_get_packet_length_beats;
@@ -115,7 +116,6 @@ begin
       data_width => data'length,
       data_queue => input_data_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input"
     )
     port map (
@@ -135,7 +135,6 @@ begin
       data_width => data'length,
       reference_data_queue => result_data_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - result"
     )
     port map (

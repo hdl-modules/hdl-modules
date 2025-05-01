@@ -30,7 +30,6 @@ use common.types_pkg.all;
 
 entity tb_keep_remover is
   generic (
-    seed : natural;
     data_width : positive;
     strobe_unit_width : positive;
     -- Will be set false when testing for full throughput, but should be enabled for other tests
@@ -114,7 +113,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_data") then
       for packet_idx in 0 to 500 loop
@@ -225,9 +224,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_master_inst : entity bfm.handshake_master
       generic map (
-        stall_config => stall_config,
-        logger_name_suffix => " - input",
-        seed => seed
+        stall_config => stall_config
       )
       port map (
         clk => clk,
@@ -259,7 +256,6 @@ begin
       reference_data_queue => reference_data_queue,
       stall_config => stall_config,
       logger_name_suffix => " - output",
-      seed => seed,
       strobe_unit_width => output_data'length / output_strobe'length
     )
     port map (

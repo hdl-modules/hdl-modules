@@ -15,22 +15,23 @@
 -- pushed by the user to the ``reference_data_queue``.
 -- The returned ``RID`` will be checked that it is the same as the corresponding ``ARID``.
 --
--- .. note::
 --
---   This BFM will inject random handshake jitter/stalling on the AXI channels for good
---   verification coverage.
---   Modify the ``ar_stall_config`` and ``r_stall_config`` generics to change the behavior.
---   You can also set ``seed`` to something unique in order to vary the randomization in each
---   simulation run.
---   This can be done conveniently with the
---   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+-- Randomization
+-- _____________
+--
+-- This BFM will inject random handshake stall/jitter, for good verification coverage.
+-- Modify the ``ar_stall_config`` and ``r_stall_config`` generics
+-- to get your desired behavior.
+-- The random seed is provided by a VUnit mechanism
+-- (see the "seed" portion of `this document <https://vunit.github.io/run/user_guide.html>`__).
+-- Use the ``--seed`` command line argument if you need to set a static seed.
+--
+--
+-- Protocol checking
+-- _________________
 --
 -- This BFM will also perform AXI-Stream protocol checking on the ``R`` channels to verify that the
 -- downstream AXI slave is performing everything correctly.
---
--- The byte length of the transactions (as set in the ``job`` as well as by the length of the
--- ``reference_data`` arrays) does not need to be aligned with the data width of the bus.
--- If unaligned, the last AXI beat will not have all byte lanes checked against reference data.
 --
 -- .. warning::
 --
@@ -38,6 +39,14 @@
 --   order as ``AR`` transactions are sent.
 --
 --   Also the ``job`` address is assumed to be aligned with the bus data width.
+--
+--
+-- Unaligned transaction length
+-- ____________________________
+--
+-- The byte length of the transactions (as set in the ``job`` as well as by the length of the
+-- ``reference_data`` arrays) does not need to be aligned with the data width of the bus.
+-- If unaligned, the last AXI beat will not have all byte lanes checked against reference data.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
@@ -77,9 +86,6 @@ entity axi_read_master is
     ar_stall_config : stall_configuration_t := default_address_stall_config;
     -- Stall configuration for the R channel slave
     r_stall_config : stall_configuration_t := default_data_stall_config;
-    -- Random seed for handshaking stall/jitter.
-    -- Set to something unique in order to vary the random sequence.
-    seed : natural := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- When 'ARVALID' is zero, the associated output ports will be driven with this value.
@@ -151,9 +157,7 @@ begin
     ------------------------------------------------------------------------------
     handshake_master_inst : entity work.handshake_master
       generic map (
-        stall_config => ar_stall_config,
-        seed => seed,
-        logger_name_suffix => " - axi_read_master - AR" & logger_name_suffix
+        stall_config => ar_stall_config
       )
       port map (
         clk => clk,
@@ -212,7 +216,6 @@ begin
         id_width => id_width,
         reference_id_queue => r_id_queue,
         stall_config => r_stall_config,
-        seed => seed,
         logger_name_suffix => " - axi_read_master - R" & logger_name_suffix,
         enable_strobe => false
       )

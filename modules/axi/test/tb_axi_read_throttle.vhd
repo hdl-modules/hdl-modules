@@ -34,7 +34,6 @@ entity tb_axi_read_throttle is
   generic (
     max_burst_length_beats : positive;
     full_ar_throughput : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -145,7 +144,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_random_transactions") then
       for i in 0 to 50 loop
@@ -181,8 +180,7 @@ begin
         stall_probability => 0.5,
         min_stall_cycles => 4,
         max_stall_cycles => 20
-      ),
-      seed => seed
+      )
     )
     port map (
       clk => clk,

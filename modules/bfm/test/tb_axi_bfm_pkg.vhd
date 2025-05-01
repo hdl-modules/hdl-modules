@@ -22,7 +22,6 @@ use work.axi_bfm_pkg.all;
 
 entity tb_axi_bfm_pkg is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -41,7 +40,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_axi_master_bfm_job_conversion") then
       job.address := rnd.RandInt(natural'high);

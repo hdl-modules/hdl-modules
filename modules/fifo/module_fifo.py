@@ -48,7 +48,7 @@ class Module(BaseModule):
                     for generics in self.generate_common_fifo_test_generics(
                         test.name, original_generics
                     ):
-                        self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                        self.add_vunit_config(test, generics=generics)
 
         for test in library.test_bench("tb_fifo").get_tests():
             for enable_output_register in [False, True]:
@@ -60,7 +60,7 @@ class Module(BaseModule):
                     if enable_output_register and "peek_mode" in test.name:
                         continue
 
-                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                    self.add_vunit_config(test, generics=generics)
 
     @staticmethod
     def generate_common_fifo_test_generics(

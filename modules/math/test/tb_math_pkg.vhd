@@ -27,7 +27,6 @@ use work.math_pkg.all;
 
 entity tb_math_pkg is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -91,8 +90,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_get_min_max_signed_integer") then
       -- Since get_min/max_signed_integer calls get_min/max_signed, only testing like this

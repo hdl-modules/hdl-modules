@@ -31,7 +31,6 @@ use work.types_pkg.all;
 entity tb_handshake_splitter is
   generic (
     stall_probability_percent : natural;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -97,7 +96,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_random_data") then
       run_test(num_words => 2000);
@@ -122,7 +121,6 @@ begin
       data_width => input_data'length,
       data_queue => input_data_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input"
     )
     port map(
@@ -143,7 +141,6 @@ begin
         data_width => input_data'length,
         reference_data_queue => output_data_queue(output_index),
         stall_config => stall_config,
-        seed => seed,
         logger_name_suffix => " - output #" & to_string(output_index),
         disable_last_check => true
       )

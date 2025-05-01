@@ -31,7 +31,6 @@ entity tb_truncate_round_signed is
     input_width : natural := 0;
     result_width : natural := 0;
     convergent_rounding : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -44,7 +43,8 @@ architecture tb of tb_truncate_round_signed is
 
   impure function initialize_and_get_input_width return positive is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if input_width /= 0 then
       return input_width;
@@ -160,6 +160,9 @@ begin
       constant result_values : integer_array_t := load_csv(
         output_path(runner_cfg) & "result_values.csv"
       );
+      constant overflow_values : integer_array_t := load_csv(
+        output_path(runner_cfg) & "overflow_values.csv"
+      );
     begin
       report "Testing with " & to_string(length(input_values)) & " values";
 
@@ -167,10 +170,7 @@ begin
         test_value(
           value_in=>get(arr=>input_values, idx=>value_index),
           value_result=>get(arr=>result_values, idx=>value_index),
-          -- Overflow is not tested in this mode.
-          -- But the overflow mechanism is exactly the same as in the other mode,
-          -- so it should be fine.
-          overflow=>false
+          overflow=>to_bool(get(arr=>overflow_values, idx=>value_index))
         );
       end loop;
     end procedure;
