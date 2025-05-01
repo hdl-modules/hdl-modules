@@ -19,6 +19,8 @@ These limitations and the simplicity of the design are intentional.
 This is what enables the low resource usage and high throughput.
 
 
+.. _dma_axi_write_simple_cpp:
+
 C++ driver
 ----------
 
