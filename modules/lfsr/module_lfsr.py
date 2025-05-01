@@ -60,10 +60,7 @@ class Module(BaseModule):
                 }
 
                 self.add_vunit_config(
-                    test=tb,
-                    generics=generics,
-                    set_random_seed=True,
-                    post_check=get_post_check(generics=generics),
+                    test=tb, generics=generics, post_check=get_post_check(generics=generics)
                 )
 
     def post_check_lfsr_pkg(self) -> bool:

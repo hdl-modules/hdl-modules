@@ -34,7 +34,6 @@ entity tb_ring_buffer_write_simple is
   generic (
     segment_length_bytes : positive;
     buffer_size_segments : positive;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -111,7 +110,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     start_address := rnd.Uniform(0, 10) * segment_length_bytes;
 
@@ -215,9 +214,7 @@ begin
         stall_probability => 0.3,
         min_stall_cycles => 1,
         max_stall_cycles => 20
-      ),
-      seed => seed,
-      logger_name_suffix => " - segment"
+      )
     )
     port map(
       clk => clk,

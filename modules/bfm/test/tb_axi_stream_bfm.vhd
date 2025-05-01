@@ -19,6 +19,7 @@ use vunit_lib.integer_array_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
+use vunit_lib.run_types_pkg.all;
 
 library bfm;
 use bfm.stall_bfm_pkg.stall_configuration_t;
@@ -29,7 +30,6 @@ library common;
 entity tb_axi_stream_bfm is
   generic (
     data_width : positive;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -55,14 +55,14 @@ architecture tb of tb_axi_stream_bfm is
     return rnd.Uniform(0, 90);
   end function;
 
-  impure function get_master_stall_probability_percent return natural is
+  impure function init_and_get_stall_probability_percent return natural is
   begin
     -- This is the first function that is called, so we initialize the random number generator here.
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     return get_stall_probability_percent;
   end function;
-  constant master_stall_probability_percent : natural := get_master_stall_probability_percent;
+  constant master_stall_probability_percent : natural := init_and_get_stall_probability_percent;
   constant slave_stall_probability_percent : natural := get_stall_probability_percent;
 
   constant master_stall_config : stall_configuration_t := (
@@ -157,7 +157,6 @@ begin
       data_width => data'length,
       data_queue => input_data_queue,
       stall_config => master_stall_config,
-      seed => seed,
       logger_name_suffix => " - input"
     )
     port map (
@@ -177,7 +176,6 @@ begin
       data_width => data'length,
       reference_data_queue => reference_data_queue,
       stall_config => slave_stall_config,
-      seed => seed,
       logger_name_suffix => " - result"
     )
     port map (

@@ -25,27 +25,22 @@ class Module(BaseModule):
         vunit_proj: VUnit,
         **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> None:
-        test = (
-            vunit_proj.library(self.library_name)
-            .test_bench("tb_ring_buffer_write_simple")
-            .get_tests("test_random_addresses")[0]
-        )
+        tb = vunit_proj.library(self.library_name).test_bench("tb_ring_buffer_write_simple")
 
+        test = tb.get_tests("test_random_addresses")[0]
         for segment_length_bytes in [1, 4, 8]:
             for buffer_size_segments in [2, 4, 16]:
-                generics = {
-                    "segment_length_bytes": segment_length_bytes,
-                    "buffer_size_segments": buffer_size_segments,
-                }
-                self.add_vunit_config(test=test, generics=generics, set_random_seed=True)
+                self.add_vunit_config(
+                    test=test,
+                    generics={
+                        "segment_length_bytes": segment_length_bytes,
+                        "buffer_size_segments": buffer_size_segments,
+                    },
+                )
 
-        test = (
-            vunit_proj.library(self.library_name)
-            .test_bench("tb_ring_buffer_write_simple")
-            .get_tests("test_invalid_addresses")[0]
-        )
+        test = tb.get_tests("test_invalid_addresses")[0]
         self.add_vunit_config(
-            test=test, generics={"segment_length_bytes": 4, "buffer_size_segments": 4, "seed": 0}
+            test=test, generics={"segment_length_bytes": 4, "buffer_size_segments": 4}
         )
 
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:

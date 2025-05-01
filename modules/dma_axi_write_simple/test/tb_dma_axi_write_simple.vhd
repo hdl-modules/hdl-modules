@@ -37,7 +37,6 @@ use work.dma_axi_write_simple_sim_pkg.all;
 
 entity tb_dma_axi_write_simple is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -47,9 +46,12 @@ architecture tb of tb_dma_axi_write_simple is
   -- ---------------------------------------------------------------------------
   -- Generic constants.
   shared variable rnd : RandomPType;
+
   impure function initialize_and_get_address_width return positive is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return rnd.Uniform(25, 32);
   end function;
   constant address_width : positive := initialize_and_get_address_width;
@@ -205,7 +207,6 @@ begin
       data_width => stream_data'length,
       data_queue => stream_data_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - stream"
     )
     port map (

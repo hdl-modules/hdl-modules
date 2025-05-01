@@ -24,7 +24,6 @@ use work.integer_array_bfm_pkg.concatenate_integer_arrays;
 
 entity tb_integer_array_bfm_pkg is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -41,7 +40,7 @@ begin
       null_integer_array;
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_concatenate_integer_array") then
       random_integer_array(

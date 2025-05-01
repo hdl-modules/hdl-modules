@@ -30,7 +30,6 @@ use work.types_pkg.all;
 
 entity tb_handshake_mux is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -108,7 +107,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_random_data") then
       for test_idx in 0 to 50 loop
@@ -137,7 +136,6 @@ begin
           data_width => input_data(input_idx)'length,
           data_queue => input_data_queues(input_idx),
           stall_config => stall_config,
-          seed => seed,
           logger_name_suffix => " - input #" & to_string(input_idx)
         )
         port map (
@@ -157,7 +155,6 @@ begin
           data_width => result_data'length,
           reference_data_queue => data_reference_queues(input_idx),
           stall_config => stall_config,
-          seed => seed,
           logger_name_suffix => " - result"
         )
         port map (

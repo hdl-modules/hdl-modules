@@ -30,7 +30,6 @@ use common.types_pkg.all;
 
 entity tb_asynchronous_fifo is
   generic (
-    seed : natural;
     depth : positive;
     read_clock_is_faster : boolean;
     almost_empty_level : natural := 0;
@@ -170,7 +169,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_init_state") then
       check_equal(read_valid, '0');
@@ -416,7 +415,6 @@ begin
       data_width => write_data'length,
       data_queue => write_queue,
       stall_config => write_stall_config,
-      seed => seed,
       logger_name_suffix => " - write"
     )
     port map (
@@ -437,7 +435,6 @@ begin
       data_width => read_data'length,
       reference_data_queue => read_queue,
       stall_config => read_stall_config,
-      seed => seed,
       logger_name_suffix => " - read",
       disable_last_check => not enable_last
     )

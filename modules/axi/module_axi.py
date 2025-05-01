@@ -43,9 +43,6 @@ class Module(BaseModule):
         tb.add_config(name="axi_lite", generics={"test_axi_lite": True})
         tb.add_config(name="axi", generics={"test_axi_lite": False})
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pipeline")
-        self.add_vunit_config(test=tb, set_random_seed=True)
-
     def setup_axi_pkg_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
         for test in tb.get_tests("test_slv_conversion"):
@@ -65,22 +62,22 @@ class Module(BaseModule):
         # Set low in order to keep simulation time down
         for max_burst_length_beats in [16, 32]:
             for full_ar_throughput in [True, False]:
-                generics = {
-                    "max_burst_length_beats": max_burst_length_beats,
-                    "full_ar_throughput": full_ar_throughput,
-                }
-
-                for _ in range(2):
-                    self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
+                self.add_vunit_config(
+                    test=tb,
+                    generics={
+                        "max_burst_length_beats": max_burst_length_beats,
+                        "full_ar_throughput": full_ar_throughput,
+                    },
+                    count=2,
+                )
 
     def setup_axi_write_throttle_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_write_throttle")
 
         for include_slave_w_fifo in [True, False]:
-            generics = {"include_slave_w_fifo": include_slave_w_fifo}
-
-            for _ in range(4):
-                self.add_vunit_config(test=tb, set_random_seed=True, generics=generics)
+            self.add_vunit_config(
+                test=tb, generics={"include_slave_w_fifo": include_slave_w_fifo}, count=4
+            )
 
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where

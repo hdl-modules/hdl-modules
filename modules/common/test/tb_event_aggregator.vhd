@@ -25,7 +25,6 @@ entity tb_event_aggregator is
   generic (
     event_count : positive := 1;
     tick_count : positive := 1;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -62,7 +61,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     wait until rising_edge(clk);
     start_time := now;

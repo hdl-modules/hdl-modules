@@ -43,8 +43,6 @@ class Module(BaseModule):
         ]:
             tb.test(name=name).set_generic("use_axi_lite_bfm", False)
 
-        self.add_vunit_config(test=tb, set_random_seed=True)
-
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.

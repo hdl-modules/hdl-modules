@@ -27,7 +27,6 @@ use work.math_pkg.all;
 
 entity tb_saturate_signed is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -40,7 +39,9 @@ architecture tb of tb_saturate_signed is
 
   impure function initialize_and_get_input_width return positive is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return rnd.Uniform(2, 24);
   end function;
   constant input_width : positive := initialize_and_get_input_width;

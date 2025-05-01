@@ -13,14 +13,15 @@
 -- Each element in the integer array should be an unsigned byte.
 -- Little endian byte order is assumed.
 --
--- .. note::
 --
---   This BFM will inject random handshake jitter/stalling for good verification coverage.
---   Modify the ``stall_config`` generic to change the behavior.
---   You can also set ``seed`` to something unique in order to vary the randomization in each
---   simulation run.
---   This can be done conveniently with the
---   :meth:`add_vunit_config() <tsfpga.module.BaseModule.add_vunit_config>` method if using tsfpga.
+-- Randomization
+-- _____________
+--
+-- This BFM can inject random handshake stall/jitter, for good verification coverage.
+-- Modify the ``stall_config`` generic to get your desired behavior.
+-- The random seed is provided by a VUnit mechanism
+-- (see the "seed" portion of `this document <https://vunit.github.io/run/user_guide.html>`__).
+-- Use the ``--seed`` command line argument if you need to set a static seed.
 --
 --
 -- Unaligned packet length
@@ -73,9 +74,6 @@ entity axi_stream_master is
     user_queue : queue_t := null_queue;
     -- Assign non-zero to randomly insert jitter/stalling in the data stream.
     stall_config : stall_configuration_t := zero_stall_configuration;
-    -- Random seed for handshaking stall/jitter.
-    -- Set to something unique in order to vary the random sequence.
-    seed : natural := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := "";
     -- The 'strobe' is usually a "byte strobe", but the strobe unit width can be modified for cases
@@ -194,9 +192,7 @@ begin
   ------------------------------------------------------------------------------
   handshake_master_inst : entity work.handshake_master
     generic map(
-      stall_config => stall_config,
-      seed => seed,
-      logger_name_suffix => base_error_message
+      stall_config => stall_config
     )
     port map(
       clk => clk,

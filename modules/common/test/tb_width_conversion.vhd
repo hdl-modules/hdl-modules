@@ -36,7 +36,6 @@ entity tb_width_conversion is
     enable_last : boolean;
     support_unaligned_packet_length : boolean := false;
     enable_jitter : boolean := true;
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -52,14 +51,14 @@ architecture tb of tb_width_conversion is
 
   shared variable rnd : RandomPType;
 
-  impure function get_user_width return natural is
+  impure function initialize_and_get_user_width return natural is
   begin
     -- This is the first function that is called, so we initialize the random number generator here.
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     return 8 * rnd.Uniform(0, 2);
   end function;
-  constant user_width : natural := get_user_width;
+  constant user_width : natural := initialize_and_get_user_width;
   constant input_user_width_bytes : natural := user_width / 8;
 
   constant output_user_width : natural := width_conversion_output_user_width(
@@ -288,7 +287,6 @@ begin
       user_width => input_user'length,
       user_queue => input_user_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input",
       strobe_unit_width => input_data'length / input_strobe'length
     )
@@ -320,7 +318,6 @@ begin
         user_width => output_user'length,
         reference_user_queue => output_user_queue,
         stall_config => stall_config,
-        seed => seed,
         logger_name_suffix => " - output",
         disable_last_check => not enable_last
       )

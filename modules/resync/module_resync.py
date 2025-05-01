@@ -112,14 +112,14 @@ class Module(BaseModule):
                 if test.name == "test_random_data":
                     for data_width in [8, 16]:
                         generics["data_width"] = data_width
-                        self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                        self.add_vunit_config(test, generics=generics)
 
                 elif test.name == "test_count_sampling_period":
                     generics["stall_probability_percent"] = 0
-                    self.add_vunit_config(test, generics=generics, set_random_seed=True)
+                    self.add_vunit_config(test, generics=generics)
 
                 elif test.name == "test_init_state":
-                    self.add_vunit_config(test, generics=generics, set_random_seed=0)
+                    self.add_vunit_config(test, generics=generics)
 
                 else:
                     raise RuntimeError(f"Unknown test: {test.name}")
