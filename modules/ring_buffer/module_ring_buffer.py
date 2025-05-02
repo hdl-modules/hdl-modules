@@ -27,7 +27,7 @@ class Module(BaseModule):
     ) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_ring_buffer_write_simple")
 
-        test = tb.get_tests("test_random_addresses")[0]
+        test = tb.test("test_random_addresses")
         for segment_length_bytes in [1, 4, 8]:
             for buffer_size_segments in [2, 4, 16]:
                 self.add_vunit_config(
@@ -38,7 +38,7 @@ class Module(BaseModule):
                     },
                 )
 
-        test = tb.get_tests("test_invalid_addresses")[0]
+        test = tb.test("test_invalid_addresses")
         self.add_vunit_config(
             test=test, generics={"segment_length_bytes": 4, "buffer_size_segments": 4}
         )

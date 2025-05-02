@@ -214,7 +214,7 @@ class Module(BaseModule):
     def _setup_width_conversion_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_width_conversion")
 
-        test = tb.get_tests("test_data")[0]
+        test = tb.test("test_data")
         for input_width, output_width, enable_strobe, enable_last in itertools.product(
             [8, 16, 32], [8, 16, 32], [True, False], [True, False]
         ):
@@ -235,7 +235,7 @@ class Module(BaseModule):
             else:
                 self.add_vunit_config(test, generics=generics)
 
-        test = tb.get_tests("test_full_throughput")[0]
+        test = tb.test("test_full_throughput")
         self.add_vunit_config(
             test=test,
             name="input_16.output_8",

@@ -45,16 +45,17 @@ class Module(BaseModule):
 
     def setup_axi_pkg_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
-        for test in tb.get_tests("test_slv_conversion"):
-            for data_width in [32, 64]:
-                for id_width in [0, 5]:
-                    for addr_width in [32, 40]:
-                        generics = {
-                            "data_width": data_width,
-                            "id_width": id_width,
-                            "addr_width": addr_width,
-                        }
-                        self.add_vunit_config(test=test, generics=generics)
+        test = tb.test("test_slv_conversion")
+
+        for data_width in [32, 64]:
+            for id_width in [0, 5]:
+                for addr_width in [32, 40]:
+                    generics = {
+                        "data_width": data_width,
+                        "id_width": id_width,
+                        "addr_width": addr_width,
+                    }
+                    self.add_vunit_config(test=test, generics=generics)
 
     def setup_axi_read_throttle_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_read_throttle")
