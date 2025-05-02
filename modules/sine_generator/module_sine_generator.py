@@ -121,7 +121,9 @@ class Module(BaseModule):
 
                     # It is technically enough to run one coherent section, but we run two
                     # to show that there is no faulty state.
-                    num_samples = 2 * coherent_sampling_count
+                    # In the case of dithering, the SFDR target is sometimes missed if we do not
+                    # run through a longer LFSR sequence.
+                    num_samples = (2 + enable_phase_dithering) * coherent_sampling_count
 
                     generics = {
                         "clk_frequency_hz": clk_frequency_hz,
@@ -891,7 +893,6 @@ class SineGeneratorResult:
 
         self.peak_frequency_hz = peak_frequency_hz
         self.sndr_db = sndr_db
-        self.sfdr_db = sfdr_db
 
         expected_sndr_db, expected_sfdr_db = self.get_expected_kpi(
             generics=generics, is_fractional_phase=is_fractional_phase
@@ -932,8 +933,8 @@ class SineGeneratorResult:
         from math import isinf
 
         # Upper range is huge, especially when dithering is enabled.
-        assert self.expected_sfdr_db <= self.sfdr_db, (
-            f"Unexpected SFDR. Got {self.sfdr_db}, expected {self.expected_sfdr_db}"
+        assert self.sfdr_db >= self.expected_sfdr_db, (
+            f"Unexpected SFDR. Got {self.sfdr_db}, expected at least {self.expected_sfdr_db}"
         )
 
         if not isinf(self.sndr_db):
