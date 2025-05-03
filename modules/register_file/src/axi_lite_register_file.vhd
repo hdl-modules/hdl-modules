@@ -256,7 +256,7 @@ begin
 
           axi_lite_s2m.write.aw.ready <= '1';
 
-          if axi_lite_m2s.write.aw.valid and axi_lite_s2m.write.aw.ready then
+          if axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid then
             axi_lite_s2m.write.aw.ready <= '0';
             axi_lite_s2m.write.w.ready <= '1';
 
@@ -264,7 +264,7 @@ begin
           end if;
 
         when w =>
-          if axi_lite_m2s.write.w.valid and axi_lite_s2m.write.w.ready then
+          if axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid then
             axi_lite_s2m.write.w.ready <= '0';
             axi_lite_s2m.write.b.valid <= '1';
 
