@@ -1,3 +1,7 @@
+Fixes
+
+* Fix ``ARREADY`` handshaking bug in :ref:`register_file.axi_lite_register_file`.
+
 Breaking changes
 
 * Use more-compact VUnit mechanism for getting random seed in BFMs.

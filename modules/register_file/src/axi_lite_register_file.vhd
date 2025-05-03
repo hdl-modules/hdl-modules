@@ -156,23 +156,16 @@ begin
     begin
       wait until rising_edge(clk);
 
-      -- Default assignments.
-      axi_lite_s2m.read.ar.ready <= '0';
-      axi_lite_s2m.read.r.valid <= '0';
-
       case read_state is
         when ar =>
           -- Sample always, will only be used if we change state.
           read_index <= axi_lite_m2s.read.ar.addr(address_range);
 
-          -- Keep high and then lower it after we have a 'valid'.
-          -- Will be high at one rising clock edge together with 'valid'.
-          -- Note that we will spend at least one clock cycle in the 'r' state,
-          -- so we can look at 'valid' straight away when we return to this state, knowing that
-          -- the previous AR word has been popped.
           axi_lite_s2m.read.ar.ready <= '1';
 
-          if axi_lite_m2s.read.ar.valid then
+          if axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid then
+            axi_lite_s2m.read.ar.ready <= '0';
+
             read_state <= r;
           end if;
 
@@ -181,6 +174,7 @@ begin
 
           if axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid then
             axi_lite_s2m.read.r.valid <= '0';
+            axi_lite_s2m.read.ar.ready <= '1';
 
             read_state <= ar;
           end if;
