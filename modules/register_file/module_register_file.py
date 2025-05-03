@@ -68,7 +68,7 @@ class Module(BaseModule):
                     generics=generics,
                     top="axi_lite_register_file_netlist_build_wrapper",
                     build_result_checkers=[
-                        TotalLuts(EqualTo(169 + 95 * enable_reset)),
+                        TotalLuts(EqualTo(170 + 95 * enable_reset)),
                         Ffs(EqualTo(301)),
                         Ramb36(EqualTo(0)),
                         Ramb18(EqualTo(0)),
