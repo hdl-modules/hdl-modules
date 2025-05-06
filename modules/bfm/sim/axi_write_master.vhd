@@ -81,9 +81,9 @@ entity axi_write_master is
     -- Push data (integer_array_t with push_ref()) to this queue. Each element should be an
     -- unsigned byte. Little endian byte order is assumed.
     data_queue : queue_t;
-    -- Stall configuration for the AW channel master
+    -- Stall configuration for the AW channel master.
     aw_stall_config : stall_configuration_t := default_address_stall_config;
-    -- Stall configuration for the W channel master
+    -- Stall configuration for the W channel master.
     w_stall_config : stall_configuration_t := default_data_stall_config;
     -- Stall configuration for the B channel slave
     b_stall_config : stall_configuration_t := default_data_stall_config;
@@ -92,7 +92,7 @@ entity axi_write_master is
     -- When this generic is set, 'WID' will be assigned to same ID as corresponding
     -- 'AW' transaction.
     -- It also changes the transaction behavior, so that 'W' data will never be sent before
-    -- the 'AW' transaction
+    -- the 'AW' transaction.
     enable_axi3 : boolean := false;
     -- When 'AWVALID' or 'WVALID' is zero, the associated output ports will be driven with
     -- this value.
@@ -309,7 +309,7 @@ begin
       generic map (
         id_width => id_width,
         user_width => axi_write_s2m.b.resp'length,
-        logger_name_suffix => " - axi_write_master - B"
+        logger_name_suffix => " - axi_write_master - B" & logger_name_suffix
       )
       port map (
         clk => clk,
