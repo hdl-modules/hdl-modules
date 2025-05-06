@@ -64,6 +64,7 @@ entity axi_stream_protocol_checker is
   );
   port (
     clk : in std_ulogic;
+    reset : in std_ulogic := '0';
     --# {{}}
     ready : in std_ulogic := '1';
     valid : in std_ulogic := '0';
@@ -140,7 +141,7 @@ begin
       wait until rising_edge(clk);
 
       if valid = '0' and valid_p1 = '1' then
-        assert ready_p1 report error_message;
+        assert ready_p1 or reset report error_message;
       end if;
 
       ready_p1 <= ready;
