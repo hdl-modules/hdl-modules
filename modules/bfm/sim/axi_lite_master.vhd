@@ -54,7 +54,7 @@ entity axi_lite_master is
     clk : in std_ulogic;
     --# {{}}
     axi_lite_m2s : out axi_lite_m2s_t := axi_lite_m2s_init;
-    axi_lite_s2m : in axi_lite_s2m_t := axi_lite_s2m_init
+    axi_lite_s2m : in axi_lite_s2m_t
   );
 end entity;
 
