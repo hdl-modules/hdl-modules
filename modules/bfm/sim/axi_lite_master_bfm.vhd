@@ -74,15 +74,15 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library vunit_lib;
-use vunit_lib.bus_master_pkg.address_length;
-use vunit_lib.bus_master_pkg.data_length;
+use vunit_lib.bus_master_pkg.all;
 use vunit_lib.check_pkg.all;
-use vunit_lib.com_pkg.net;
-use vunit_lib.com_pkg.receive;
-use vunit_lib.com_pkg.reply;
+use vunit_lib.com_pkg.all;
 use vunit_lib.com_types_pkg.all;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.sync_pkg.all;
+
+library register_file;
+use register_file.register_operations_pkg.register_bus_master;
 
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
@@ -90,12 +90,22 @@ use axi_lite.axi_lite_pkg.all;
 library common;
 use common.types_pkg.all;
 
+use work.axi_bfm_pkg.all;
 use work.axi_lite_bfm_pkg.all;
+use work.stall_bfm_pkg.all;
 
 
 entity axi_lite_master_bfm is
   generic (
-    bfm_master : bfm_master_t := default_bfm_master;
+    bus_handle : bus_master_t := register_bus_master;
+    -- Stall configuration for the AW/AR/W channel masters and the R/B channel slaves.
+    ar_stall_config : stall_configuration_t := default_address_stall_config;
+    r_stall_config : stall_configuration_t := default_data_stall_config;
+    aw_stall_config : stall_configuration_t := default_address_stall_config;
+    w_stall_config : stall_configuration_t := default_data_stall_config;
+    b_stall_config : stall_configuration_t := default_data_stall_config;
+    -- Suffix for error log messages. Can be used to differentiate between multiple instances.
+    logger_name_suffix : string := "";
     -- When 'ARVALID'/'AWVALID'/'WVALID' is zero, the associated output ports will be driven with
     -- this value.
     -- This is to avoid a DUT sampling the values in the wrong clock cycle.
@@ -112,8 +122,8 @@ end entity;
 
 architecture a of axi_lite_master_bfm is
 
-  subtype address_range is natural range address_length(bfm_master.p_bus_handle) - 1 downto 0;
-  subtype data_range is natural range data_length(bfm_master.p_bus_handle) - 1 downto 0;
+  subtype address_range is natural range address_length(bus_handle) - 1 downto 0;
+  subtype data_range is natural range data_length(bus_handle) - 1 downto 0;
 
   type queues_t is record
     address : queue_t;
@@ -150,7 +160,7 @@ begin
     variable request_msg : msg_t := null_msg;
     variable msg_type : msg_type_t := null_msg_type;
   begin
-    receive(net, bfm_master.p_bus_handle.p_actor, request_msg);
+    receive(net, bus_handle.p_actor, request_msg);
     msg_type := message_type(request_msg);
 
     if msg_type = bfm_check_msg then
@@ -208,7 +218,7 @@ begin
       ------------------------------------------------------------------------------
       handshake_master_inst : entity work.handshake_master
         generic map (
-          stall_config => bfm_master.p_ar_stall_config
+          stall_config => ar_stall_config
         )
         port map (
           clk => clk,
@@ -227,7 +237,7 @@ begin
       ------------------------------------------------------------------------------
       ar_protocol_checker_inst : entity common.axi_stream_protocol_checker
         generic map (
-          logger_name_suffix => " - axi_lite_read_master - AR" & bfm_master.p_logger_name_suffix
+          logger_name_suffix => " - axi_lite_read_master - AR" & logger_name_suffix
         )
         port map (
           clk => clk,
@@ -240,7 +250,7 @@ begin
 
     ------------------------------------------------------------------------------
     r_block : block
-      constant data_width : positive := data_length(bfm_master.p_bus_handle);
+      constant data_width : positive := data_length(bus_handle);
       alias got_data is axi_lite_s2m.read.r.data(data_width - 1 downto 0);
     begin
 
@@ -250,7 +260,7 @@ begin
         begin
           return (
             "axi_lite_read_master"
-            & bfm_master.p_logger_name_suffix
+            & logger_name_suffix
             & " - R - '"
             & name
             & "' mismatch when reading address "
@@ -302,7 +312,7 @@ begin
       ------------------------------------------------------------------------------
       handshake_slave_inst : entity work.handshake_slave
         generic map (
-          stall_config => bfm_master.p_r_stall_config
+          stall_config => r_stall_config
         )
         port map (
           clk => clk,
@@ -317,7 +327,7 @@ begin
         generic map (
           data_width => got_data'length,
           user_width => axi_lite_s2m.read.r.resp'length,
-          logger_name_suffix => " - axi_lite_read_master - R" & bfm_master.p_logger_name_suffix
+          logger_name_suffix => " - axi_lite_read_master - R" & logger_name_suffix
         )
         port map (
           clk => clk,
@@ -372,7 +382,7 @@ begin
       ------------------------------------------------------------------------------
       handshake_master_inst : entity work.handshake_master
         generic map (
-          stall_config => bfm_master.p_aw_stall_config
+          stall_config => aw_stall_config
         )
         port map (
           clk => clk,
@@ -391,7 +401,7 @@ begin
       ------------------------------------------------------------------------------
       aw_protocol_checker_inst : entity common.axi_stream_protocol_checker
         generic map (
-          logger_name_suffix => " - axi_lite_write_master - AW" & bfm_master.p_logger_name_suffix
+          logger_name_suffix => " - axi_lite_write_master - AW" & logger_name_suffix
         )
         port map (
           clk => clk,
@@ -439,7 +449,7 @@ begin
       ------------------------------------------------------------------------------
       handshake_master_inst : entity work.handshake_master
         generic map (
-          stall_config => bfm_master.p_w_stall_config
+          stall_config => w_stall_config
         )
         port map (
           clk => clk,
@@ -461,7 +471,7 @@ begin
       ------------------------------------------------------------------------------
       w_protocol_checker_inst : entity common.axi_stream_protocol_checker
         generic map (
-          logger_name_suffix => " - axi_lite_write_master - W" & bfm_master.p_logger_name_suffix
+          logger_name_suffix => " - axi_lite_write_master - W" & logger_name_suffix
         )
         port map (
           clk => clk,
@@ -480,7 +490,7 @@ begin
       check_b : process
         constant resp_message : string := (
           "axi_lite_read_master"
-          & bfm_master.p_logger_name_suffix
+          & logger_name_suffix
           & " - B - 'resp' mismatch when writing address "
         );
 
@@ -516,7 +526,7 @@ begin
       ------------------------------------------------------------------------------
       handshake_slave_inst : entity work.handshake_slave
         generic map (
-          stall_config => bfm_master.p_b_stall_config
+          stall_config => b_stall_config
         )
         port map (
           clk => clk,
@@ -530,7 +540,7 @@ begin
       b_protocol_checker_inst : entity common.axi_stream_protocol_checker
         generic map (
           data_width => axi_lite_s2m.write.b.resp'length,
-          logger_name_suffix => " - axi_lite_write_master - B" & bfm_master.p_logger_name_suffix
+          logger_name_suffix => " - axi_lite_write_master - B" & logger_name_suffix
         )
         port map (
           clk => clk,
