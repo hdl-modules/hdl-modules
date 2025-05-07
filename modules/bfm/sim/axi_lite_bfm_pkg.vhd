@@ -37,10 +37,10 @@ use work.stall_bfm_pkg.all;
 
 package axi_lite_bfm_pkg is
 
-  -- Wait until all previously queued operations have been completed.
+  -- Wait until all previous operations have been fully completed.
   procedure wait_until_bfm_idle(
     signal net : inout network_t;
-    constant bus_handle : bus_master_t := register_bus_master
+    bus_handle : bus_master_t := register_bus_master
   );
 
   -- Read and check a value on the bus.
@@ -48,10 +48,17 @@ package axi_lite_bfm_pkg is
   -- return immediately.
   procedure check_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  );
+  procedure check_bfm(
+    signal net : inout network_t;
+    address : u_unsigned;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   );
 
   -- Read and check a value on the bus.
@@ -59,10 +66,10 @@ package axi_lite_bfm_pkg is
   -- is fully finished.
   procedure check_await_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   );
 
   -- Write a value on the bus.
@@ -70,10 +77,17 @@ package axi_lite_bfm_pkg is
   -- return immediately.
   procedure write_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    address : u_unsigned;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  );
+  procedure write_bfm(
+    signal net : inout network_t;
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   );
 
   -- Write a value on the bus.
@@ -81,10 +95,10 @@ package axi_lite_bfm_pkg is
   -- is fully finished.
   procedure write_await_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   );
 
   constant bfm_check_msg : msg_type_t := new_msg_type("check bfm");
@@ -98,7 +112,7 @@ package body axi_lite_bfm_pkg is
 
   procedure wait_until_bfm_idle(
     signal net : inout network_t;
-    constant bus_handle : bus_master_t := register_bus_master
+    bus_handle : bus_master_t := register_bus_master
   ) is
   begin
     wait_until_idle(net=>net, bus_handle=>bus_handle);
@@ -107,17 +121,13 @@ package body axi_lite_bfm_pkg is
   -- Internal procedure.
   procedure push_to_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t;
-    constant bus_handle : bus_master_t;
-    constant msg_type : msg_type_t;
-    variable reference : inout bus_reference_t
+    address : std_logic_vector;
+    data : register_t;
+    response : axi_lite_resp_t;
+    bus_handle : bus_master_t;
+    msg_type : msg_type_t;
+    reference : inout bus_reference_t
   ) is
-    constant data_length_bytes : positive := data_length(bus_handle) / 8;
-    constant address : std_logic_vector := to_address(
-      bus_handle=>bus_handle, address=>data_length_bytes * index
-    );
     alias request_msg : msg_t is reference;
   begin
     request_msg := new_msg(msg_type);
@@ -129,12 +139,58 @@ package body axi_lite_bfm_pkg is
     send(net, bus_handle.p_actor, request_msg);
   end procedure;
 
+  -- Internal procedure.
+  procedure push_to_bfm(
+    signal net : inout network_t;
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t;
+    bus_handle : bus_master_t;
+    msg_type : msg_type_t;
+    reference : inout bus_reference_t
+  ) is
+    constant data_length_bytes : positive := data_length(bus_handle) / 8;
+    constant address : std_logic_vector := to_address(
+      bus_handle=>bus_handle, address=>data_length_bytes * index
+    );
+  begin
+    push_to_bfm(
+      net=>net,
+      address=>address,
+      data=>data,
+      response=>response,
+      bus_handle=>bus_handle,
+      msg_type=>msg_type,
+      reference=>reference
+    );
+  end procedure;
+
   procedure check_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    address : u_unsigned;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  ) is
+    variable unused_reference : bus_reference_t := null_msg;
+  begin
+    push_to_bfm(
+      net=>net,
+      address=>std_ulogic_vector(address),
+      data=>data,
+      response=>response,
+      bus_handle=>bus_handle,
+      reference=>unused_reference,
+      msg_type=>bfm_check_msg
+    );
+  end procedure;
+
+  procedure check_bfm(
+    signal net : inout network_t;
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   ) is
     variable unused_reference : bus_reference_t := null_msg;
   begin
@@ -151,10 +207,10 @@ package body axi_lite_bfm_pkg is
 
   procedure check_await_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   ) is
     variable reference : bus_reference_t := null_msg;
     variable unused_reply_data : std_ulogic_vector(data_length(bus_handle) - 1 downto 0) := (
@@ -175,10 +231,30 @@ package body axi_lite_bfm_pkg is
 
   procedure write_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    address : u_unsigned;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  ) is
+    variable unused_reference : bus_reference_t := null_msg;
+  begin
+    push_to_bfm(
+      net=>net,
+      address=>std_logic_vector(address),
+      data=>data,
+      response=>response,
+      bus_handle=>bus_handle,
+      reference=>unused_reference,
+      msg_type=>bfm_write_msg
+    );
+  end procedure;
+
+  procedure write_bfm(
+    signal net : inout network_t;
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   ) is
     variable unused_reference : bus_reference_t := null_msg;
   begin
@@ -195,10 +271,10 @@ package body axi_lite_bfm_pkg is
 
   procedure write_await_bfm(
     signal net : inout network_t;
-    constant index : natural;
-    constant data : register_t;
-    constant response : axi_lite_resp_t := axi_lite_resp_okay;
-    constant bus_handle : bus_master_t := register_bus_master
+    index : natural;
+    data : register_t;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
   ) is
     variable reference : bus_reference_t := null_msg;
 
