@@ -98,4 +98,34 @@ class Module(BaseModule):
             )
         )
 
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_lite_simple_read_crossbar",
+                modules=modules,
+                part=part,
+                top="axi_lite_simple_read_crossbar",
+                generics={"num_inputs": 4},
+                build_result_checkers=[
+                    TotalLuts(EqualTo(78)),
+                    Ffs(EqualTo(5)),
+                    MaximumLogicLevel(EqualTo(3)),
+                ],
+            )
+        )
+
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_lite_simple_write_crossbar",
+                modules=modules,
+                part=part,
+                top="axi_lite_simple_write_crossbar",
+                generics={"num_inputs": 4},
+                build_result_checkers=[
+                    TotalLuts(EqualTo(153)),
+                    Ffs(EqualTo(4)),
+                    MaximumLogicLevel(EqualTo(4)),
+                ],
+            )
+        )
+
         return projects

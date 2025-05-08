@@ -62,6 +62,8 @@ begin
     input_ports_s2m(input_idx).aw.ready <= input_ports_axi_s2m(input_idx).aw.ready;
 
     input_ports_axi_m2s(input_idx).w.valid <= input_ports_m2s(input_idx).w.valid;
+  -- AXI-Lite always burst length 1.
+    input_ports_axi_m2s(input_idx).w.last <= '1';
     input_ports_axi_m2s(input_idx).w.data(
       input_ports_m2s(0).w.data'range
     ) <= input_ports_m2s(input_idx).w.data;
