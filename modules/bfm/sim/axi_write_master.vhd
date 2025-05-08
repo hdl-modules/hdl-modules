@@ -243,7 +243,7 @@ begin
       -- Set the WID only when bus is valid
       axi_write_m2s.w.id(id_width - 1 downto 0) <=
         to_unsigned(current_w_id, id_width) when axi_write_m2s.w.valid
-        else (others => 'X');
+        else (others => drive_invalid_value);
 
     end generate;
 
