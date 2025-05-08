@@ -50,100 +50,79 @@ end entity;
 
 architecture a of axi_simple_write_crossbar is
 
-  constant no_input_selected : positive := input_ports_m2s'high + 1;
+  signal input_select : natural range input_ports_m2s'range := 0;
 
-  -- Max num outstanding address transactions
-  constant max_addr_fifo_depth : positive := 128;
+  type state_t is (idle, wait_for_aw_done, wait_for_w_done, wait_for_b_done);
+  signal state : state_t := idle;
 
-  signal input_select : natural range 0 to no_input_selected := no_input_selected;
-  signal input_select_turn_counter : natural range input_ports_s2m'range := 0;
-
-  type state_t is (wait_for_aw_valid, wait_for_aw_done, wait_for_b_done);
-  signal state : state_t := wait_for_aw_valid;
+  signal let_aw_through, let_w_through, let_b_through : std_ulogic := '0';
 
 begin
 
   ----------------------------------------------------------------------------
   select_input : process
-    variable aw_done, b_done : std_ulogic;
-    variable num_outstanding_addr_transactions : natural range 0 to max_addr_fifo_depth := 0;
   begin
     wait until rising_edge(clk);
 
-    aw_done := output_s2m.aw.ready and output_m2s.aw.valid;
-    b_done := output_m2s.b.ready and output_s2m.b.valid;
-
-    num_outstanding_addr_transactions := num_outstanding_addr_transactions
-      + to_int(aw_done) - to_int(b_done);
-
     case state is
-      when wait_for_aw_valid =>
-        -- Rotate around to find an input that requests a transaction
-        if input_ports_m2s(input_select_turn_counter).aw.valid then
-          input_select <= input_select_turn_counter;
-          state <= wait_for_aw_done;
-        end if;
-
-        if input_select_turn_counter = input_ports_m2s'high then
-          input_select_turn_counter <= 0;
-        else
-          input_select_turn_counter <= input_select_turn_counter + 1;
-        end if;
+      when idle =>
+        for input_select_next in input_ports_m2s'range loop
+          if input_ports_m2s(input_select_next).aw.valid then
+            input_select <= input_select_next;
+            state <= wait_for_aw_done;
+          end if;
+        end loop;
 
       when wait_for_aw_done =>
-        -- Wait for address transaction so that num_outstanding_addr_transactions
-        -- is updated and this input actually gets to do a transaction
-        if aw_done then
+        -- We know that 'valid' is high, otherwise we would not have gone to this state, so we
+        -- don't have to include it in the condition.
+        if output_s2m.aw.ready then
+          state <= wait_for_w_done;
+        end if;
+
+      when wait_for_w_done =>
+        if output_s2m.w.ready and output_m2s.w.valid and output_m2s.w.last then
           state <= wait_for_b_done;
         end if;
 
       when wait_for_b_done =>
-        -- Wait until all of this input's negotiated bursts are done, and then
-        -- go back to choose a new input
-        if num_outstanding_addr_transactions = 0 then
-          input_select <= no_input_selected;
-          state <= wait_for_aw_valid;
+        if output_m2s.b.ready and output_s2m.b.valid then
+          state <= idle;
         end if;
 
     end case;
   end process;
 
+  -- If these were registers set in the process above instead, it would save a little bit of
+  -- logical depth in the combinatorial assignment below.
+  -- Since it would be one LUT input rather than two.
+  let_aw_through <= to_sl(state = wait_for_aw_done);
+  let_w_through <= to_sl(state = wait_for_w_done);
+  let_b_through <= to_sl(state = wait_for_b_done);
+
 
   ----------------------------------------------------------------------------
   assign_bus : process(all)
   begin
-    output_m2s.aw <= (
-      valid => '0',
-      id => (others => '-'),
-      addr => (others => '-'),
-      len => (others => '-'),
-      size => (others => '-'),
-      burst => (others => '-')
-    );
-    output_m2s.w <= (
-      valid => '0',
-      data => (others => '-'),
-      strb => (others => '-'),
-      last => '-',
-      id => (others => '-')
-    );
-    output_m2s.b <= (ready => '0');
+    for input_idx in input_ports_s2m'range loop
+      input_ports_s2m(input_idx) <= output_s2m;
 
-    for idx in input_ports_s2m'range loop
-      -- Default assignment of all members. Non-selected inputs will be zero'd out below.
-      input_ports_s2m(idx) <= output_s2m;
-
-      if idx = input_select then
-        -- Assign whole M2S bus from the selected input
-        output_m2s <= input_ports_m2s(idx);
-      else
-        -- Non-selected inputs shall have their control signal zero'd out.
-        -- Other members of the bus (b.resp, etc.) can still be assigned.
-        input_ports_s2m(idx).aw.ready <= '0';
-        input_ports_s2m(idx).w.ready <= '0';
-        input_ports_s2m(idx).b.valid <= '0';
-      end if;
+      input_ports_s2m(input_idx).aw.ready <= (
+        output_s2m.aw.ready and to_sl(input_select = input_idx) and let_aw_through
+      );
+      input_ports_s2m(input_idx).w.ready <= (
+        output_s2m.w.ready and to_sl(input_select = input_idx) and let_w_through
+      );
+      input_ports_s2m(input_idx).b.valid <= (
+        output_s2m.b.valid and to_sl(input_select = input_idx) and let_b_through
+      );
     end loop;
+
+    output_m2s <= input_ports_m2s(input_select);
+
+    output_m2s.aw.valid <= input_ports_m2s(input_select).aw.valid and let_aw_through;
+    output_m2s.w.valid <= input_ports_m2s(input_select).w.valid and let_w_through;
+    output_m2s.b.ready <= input_ports_m2s(input_select).b.ready and let_b_through;
   end process;
 
 end architecture;

@@ -16,301 +16,279 @@ use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 use vunit_lib.axi_slave_pkg.all;
-use vunit_lib.bus_master_pkg.all;
-use vunit_lib.check_pkg.all;
-use vunit_lib.com_pkg.net;
-use vunit_lib.com_types_pkg.all;
+use vunit_lib.integer_array_pkg.all;
 use vunit_lib.logger_pkg.all;
 use vunit_lib.memory_pkg.all;
+use vunit_lib.memory_utils_pkg.all;
 use vunit_lib.queue_pkg.all;
+use vunit_lib.random_pkg.all;
 use vunit_lib.run_pkg.all;
 
-library axi_lite;
-use axi_lite.axi_lite_pkg.all;
-
 library bfm;
+use bfm.axi_bfm_pkg.all;
+use bfm.queue_bfm_pkg.all;
+
+library common;
+use common.types_pkg.all;
 
 use work.axi_pkg.all;
 
 
 entity tb_axi_simple_crossbar is
   generic(
-    runner_cfg : string;
-    test_axi_lite : boolean
+    runner_cfg : string
   );
 end entity;
 
 architecture tb of tb_axi_simple_crossbar is
 
-  constant num_inputs : integer := 4;
-  constant clk_period : time := 5 ns;
+  -- Generic constants.
+  constant num_inputs : positive := 4;
+  constant id_width : positive := 8;
+  constant data_width : positive := 32;
 
+  -- DUT connections.
+  constant clk_period : time := 5 ns;
   signal clk : std_ulogic := '0';
 
-  constant axi_port_data_width : integer := 32;
-  type bus_master_vec_t is array (integer range <>) of bus_master_t;
-  constant input_masters : bus_master_vec_t(0 to 4 - 1) := (
-    0 => new_bus(data_length => axi_port_data_width, address_length => axi_a_addr_sz),
-    1 => new_bus(data_length => axi_port_data_width, address_length => axi_a_addr_sz),
-    2 => new_bus(data_length => axi_port_data_width, address_length => axi_a_addr_sz),
-    3 => new_bus(data_length => axi_port_data_width, address_length => axi_a_addr_sz)
+  signal inputs_read_m2s : axi_read_m2s_vec_t(num_inputs - 1 downto 0) := (
+    others => axi_read_m2s_init
+  );
+  signal inputs_read_s2m : axi_read_s2m_vec_t(inputs_read_m2s'range) := (
+    others => axi_read_s2m_init
   );
 
+  signal inputs_write_m2s : axi_write_m2s_vec_t(inputs_read_m2s'range) := (
+    others => axi_write_m2s_init
+  );
+  signal inputs_write_s2m : axi_write_s2m_vec_t(inputs_read_m2s'range) := (
+    others => axi_write_s2m_init
+  );
+
+  signal output_write_m2s : axi_write_m2s_t := axi_write_m2s_init;
+  signal output_write_s2m : axi_write_s2m_t := axi_write_s2m_init;
+
+  signal output_read_m2s : axi_read_m2s_t := axi_read_m2s_init;
+  signal output_read_s2m : axi_read_s2m_t := axi_read_s2m_init;
+
+  -- Testbench stuff.
   constant memory : memory_t := new_memory;
-  constant axi_read_slave, axi_write_slave : axi_slave_t := new_axi_slave(
-    memory => memory,
-    address_fifo_depth => 8,
-    write_response_fifo_depth => 8,
-    address_stall_probability => 0.3,
-    data_stall_probability => 0.3,
-    write_response_stall_probability => 0.3,
-    min_response_latency => 12 * clk_period,
-    max_response_latency => 20 * clk_period,
-    logger => get_logger("axi_rd_slave")
+
+  constant read_job_queues, read_data_queues, write_job_queues, write_data_queues : queue_vec_t(
+    inputs_read_m2s'range
+  ) := get_new_queues(inputs_read_m2s'length);
+
+  signal num_read_bursts_checked, num_write_bursts_done : natural_vec_t(inputs_read_m2s'range) := (
+    others => 0
   );
 
 begin
 
   clk <= not clk after clk_period / 2;
-  test_runner_watchdog(runner, 1 ms);
+  test_runner_watchdog(runner, 100 us);
 
 
   ------------------------------------------------------------------------------
   main : process
-    constant num_words : integer := 1000;
-    constant bytes_per_word : integer := axi_port_data_width / 8;
-    variable got, expected : std_ulogic_vector(axi_port_data_width - 1 downto 0);
-    variable address : integer;
-    variable buf : buffer_t;
     variable rnd : RandomPType;
 
-    variable input_select : integer;
-    variable bus_reference : bus_reference_t;
+    constant num_bursts : positive := 4 * num_inputs;
+    variable num_reads_expected, num_writes_expected : natural_vec_t(inputs_read_m2s'range) := (
+      others => 0
+    );
 
-    variable bus_reference_queue : queue_t := new_queue;
+    procedure send_bursts(read_not_write : boolean) is
+      constant bytes_per_beat : positive := data_width / 8;
+
+      variable burst_length_bytes : positive := 1;
+      variable input_select : natural := 0;
+
+      variable buf : buffer_t := null_buffer;
+      variable job : axi_master_bfm_job_t := axi_master_bfm_job_init;
+      variable random_data : integer_array_t := null_integer_array;
+    begin
+      for burst_index in 0 to num_bursts - 1 loop
+        -- The DUT does nothing with the burst length, so testing all the way up to the maximum
+        -- length does not add any value.
+        -- It only increases the simulation time.
+        -- Run short bursts instead to increase the input switching.
+        burst_length_bytes := bytes_per_beat * rnd.FavorSmall(1, 16);
+        input_select := rnd.RandInt(inputs_read_m2s'high);
+
+        random_integer_array(
+          rnd=>rnd,
+          integer_array=>random_data,
+          width=>burst_length_bytes,
+          bits_per_word=>8
+        );
+
+        if read_not_write then
+          buf := write_integer_array(
+            memory=>memory,
+            integer_array=>random_data,
+            name=>"read buffer #" & to_string(burst_index),
+            alignment=>4096
+          );
+        else
+          buf := set_expected_integer_array(
+            memory=>memory,
+            integer_array=>random_data,
+            name=>"write buffer #" & to_string(burst_index),
+            alignment=>4096
+          );
+        end if;
+
+        job.address := base_address(buf);
+        job.length_bytes := burst_length_bytes;
+        job.id := rnd.RandInt(2 ** id_width - 1);
+
+        report "address " & to_string(job.address) & ", length_bytes " &
+          to_string(job.length_bytes) & ", id " & to_string(job.id);
+
+        if read_not_write then
+          push(read_job_queues(input_select), to_slv(job));
+          push_ref(read_data_queues(input_select), random_data);
+          num_reads_expected(input_select) := num_reads_expected(input_select) + 1;
+        else
+          push(write_job_queues(input_select), to_slv(job));
+          push_ref(write_data_queues(input_select), random_data);
+          num_writes_expected(input_select) := num_writes_expected(input_select) + 1;
+        end if;
+      end loop;
+    end procedure;
+
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
-    buf := allocate(memory, num_words * bytes_per_word);
+    if run("test_random_read") then
+      send_bursts(read_not_write=>true);
 
-    if run("read_random_data_from_random_input_master") then
-      -- Set random data in read memory
-      for idx in 0 to num_words - 1 loop
-        address := idx * bytes_per_word;
-        expected := rnd.RandSlv(expected'length);
-        write_word(memory, address, expected);
-      end loop;
+    elsif run("test_random_write") then
+      send_bursts(read_not_write=>false);
 
-      -- Queue up reads from random input master
-      for idx in 0 to num_words - 1 loop
-        input_select := rnd.RandInt(0, input_masters'high);
-        read_bus(net, input_masters(input_select), address, bus_reference);
-        push(bus_reference_queue, bus_reference);
-      end loop;
-
-      -- Verify read data
-      for idx in 0 to num_words - 1 loop
-        expected := read_word(memory, address, bytes_per_word);
-        bus_reference := pop(bus_reference_queue);
-        await_read_bus_reply(net, bus_reference, got);
-        check_equal(got, expected, "idx=" & to_string(idx));
-      end loop;
-
-      assert is_empty(bus_reference_queue);
-
-    elsif run("write_random_data_from_random_input_master") then
-      -- Set expected random data and queue up write
-      for idx in 0 to num_words - 1 loop
-        address := idx * bytes_per_word;
-        expected := rnd.RandSlv(expected'length);
-        set_expected_word(memory, address, expected);
-
-        input_select := rnd.RandInt(0, input_masters'high);
-        write_bus(net, input_masters(input_select), address, expected);
-      end loop;
-
-      -- Wait until all writes are completed
-      wait for 300 us;
-      check_expected_was_written(memory);
     end if;
+
+    wait until (
+      num_read_bursts_checked = num_reads_expected
+      and num_write_bursts_done = num_writes_expected
+      and rising_edge(clk)
+    );
+
+    check_expected_was_written(memory);
 
     test_runner_cleanup(runner);
   end process;
 
 
   ------------------------------------------------------------------------------
-  bfm_generate : if test_axi_lite generate
-    signal inputs_read_m2s : axi_lite_read_m2s_vec_t(0 to num_inputs - 1)
-      := (others => axi_lite_read_m2s_init);
-    signal inputs_read_s2m : axi_lite_read_s2m_vec_t(inputs_read_m2s'range)
-      := (others => axi_lite_read_s2m_init);
-
-    signal inputs_write_m2s : axi_lite_write_m2s_vec_t(0 to num_inputs - 1)
-      := (others => axi_lite_write_m2s_init);
-    signal inputs_write_s2m : axi_lite_write_s2m_vec_t(inputs_read_m2s'range)
-      := (others => axi_lite_write_s2m_init);
-
-    signal output_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
-    signal output_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
-  begin
+  input_masters_gen : for index in inputs_read_m2s'range generate
 
     ------------------------------------------------------------------------------
-    input_masters_gen : for idx in inputs_read_m2s'range generate
-
-      ------------------------------------------------------------------------------
-      axi_lite_master_inst : entity bfm.axi_lite_master
-        generic map (
-          bus_handle => input_masters(idx),
-          logger_name_suffix => " - input " & to_string(idx)
-        )
-        port map (
-          clk => clk,
-          --
-          axi_lite_m2s.read => inputs_read_m2s(idx),
-          axi_lite_m2s.write => inputs_write_m2s(idx),
-          axi_lite_s2m.read => inputs_read_s2m(idx),
-          axi_lite_s2m.write => inputs_write_s2m(idx)
-        );
-
-    end generate;
-
-
-    ------------------------------------------------------------------------------
-    axi_lite_slave_inst : entity bfm.axi_lite_slave
+    axi_read_master_inst : entity bfm.axi_read_master
       generic map (
-        axi_read_slave => axi_read_slave,
-        axi_write_slave => axi_write_slave,
-        data_width => axi_port_data_width
+        id_width => id_width,
+        data_width => data_width,
+        job_queue => read_job_queues(index),
+        reference_data_queue => read_data_queues(index),
+        logger_name_suffix => " - input #" & to_string(index)
       )
       port map (
         clk => clk,
         --
-        axi_lite_write_m2s => output_m2s.write,
-        axi_lite_write_s2m => output_s2m.write,
+        axi_read_m2s => inputs_read_m2s(index),
+        axi_read_s2m => inputs_read_s2m(index),
         --
-        axi_lite_read_m2s => output_m2s.read,
-        axi_lite_read_s2m => output_s2m.read
+        num_bursts_checked => num_read_bursts_checked(index)
       );
 
 
     ------------------------------------------------------------------------------
-    dut_read : entity axi_lite.axi_lite_simple_read_crossbar
-      generic map(
-        num_inputs => num_inputs
+    axi_write_master_inst : entity bfm.axi_write_master
+      generic map (
+        id_width => id_width,
+        data_width => data_width,
+        job_queue => write_job_queues(index),
+        data_queue => write_data_queues(index),
+        logger_name_suffix => " - input #" & to_string(index)
       )
-      port map(
+      port map (
         clk => clk,
         --
-        input_ports_m2s => inputs_read_m2s,
-        input_ports_s2m => inputs_read_s2m,
+        axi_write_m2s => inputs_write_m2s(index),
+        axi_write_s2m => inputs_write_s2m(index),
         --
-        output_m2s => output_m2s.read,
-        output_s2m => output_s2m.read
+        num_bursts_done => num_write_bursts_done(index)
       );
 
-    ------------------------------------------------------------------------------
-    dut_write : entity axi_lite.axi_lite_simple_write_crossbar
-      generic map(
-        num_inputs => num_inputs
-      )
-      port map(
-        clk => clk,
-        --
-        input_ports_m2s => inputs_write_m2s,
-        input_ports_s2m => inputs_write_s2m,
-        --
-        output_m2s => output_m2s.write,
-        output_s2m => output_s2m.write
-      );
+  end generate;
 
-  else generate
-    signal inputs_read_m2s : axi_read_m2s_vec_t(0 to num_inputs - 1)
-      := (others => axi_read_m2s_init);
-    signal inputs_read_s2m : axi_read_s2m_vec_t(inputs_read_m2s'range)
-      := (others => axi_read_s2m_init);
 
-    signal inputs_write_m2s : axi_write_m2s_vec_t(0 to num_inputs - 1)
-      := (others => axi_write_m2s_init);
-    signal inputs_write_s2m : axi_write_s2m_vec_t(inputs_read_m2s'range)
-      := (others => axi_write_s2m_init);
-
-    signal output_m2s : axi_m2s_t := axi_m2s_init;
-    signal output_s2m : axi_s2m_t := axi_s2m_init;
+  ------------------------------------------------------------------------------
+  axi_slave_block : block
+    constant axi_read_slave, axi_write_slave : axi_slave_t := new_axi_slave(
+      memory => memory,
+      address_fifo_depth => 8,
+      write_response_fifo_depth => 8,
+      address_stall_probability => 0.3,
+      data_stall_probability => 0.3,
+      write_response_stall_probability => 0.3,
+      min_response_latency => 12 * clk_period,
+      max_response_latency => 20 * clk_period,
+      logger => get_logger("axi_slave")
+    );
   begin
-
-    ------------------------------------------------------------------------------
-    input_masters_gen : for idx in inputs_read_m2s'range generate
-
-      ------------------------------------------------------------------------------
-      axi_master_inst : entity bfm.axi_master
-        generic map (
-          bus_handle => input_masters(idx),
-          logger_name_suffix => " - input " & to_string(idx)
-        )
-        port map (
-          clk => clk,
-          --
-          axi_read_m2s => inputs_read_m2s(idx),
-          axi_read_s2m => inputs_read_s2m(idx),
-          --
-          axi_write_m2s => inputs_write_m2s(idx),
-          axi_write_s2m => inputs_write_s2m(idx)
-        );
-
-    end generate;
-
 
     ------------------------------------------------------------------------------
     axi_slave_inst : entity bfm.axi_slave
       generic map (
         axi_read_slave => axi_read_slave,
         axi_write_slave => axi_write_slave,
-        data_width => axi_port_data_width,
-        id_width => 0
+        data_width => data_width,
+        id_width => id_width
       )
       port map (
         clk => clk,
         --
-        axi_read_m2s => output_m2s.read,
-        axi_read_s2m => output_s2m.read,
+        axi_read_m2s => output_read_m2s,
+        axi_read_s2m => output_read_s2m,
         --
-        axi_write_m2s => output_m2s.write,
-        axi_write_s2m => output_s2m.write
+        axi_write_m2s => output_write_m2s,
+        axi_write_s2m => output_write_s2m
       );
 
-
-    ------------------------------------------------------------------------------
-    dut_read : entity work.axi_simple_read_crossbar
-      generic map(
-        num_inputs => num_inputs
-      )
-      port map(
-        clk => clk,
-        --
-        input_ports_m2s => inputs_read_m2s,
-        input_ports_s2m => inputs_read_s2m,
-        --
-        output_m2s => output_m2s.read,
-        output_s2m => output_s2m.read
-      );
+  end block;
 
 
-    ------------------------------------------------------------------------------
-    dut_write : entity work.axi_simple_write_crossbar
-      generic map(
-        num_inputs => num_inputs
-      )
-      port map(
-        clk => clk,
-        --
-        input_ports_m2s => inputs_write_m2s,
-        input_ports_s2m => inputs_write_s2m,
-        --
-        output_m2s => output_m2s.write,
-        output_s2m => output_s2m.write
-      );
+  ------------------------------------------------------------------------------
+  dut_read : entity work.axi_simple_read_crossbar
+    generic map(
+      num_inputs => num_inputs
+    )
+    port map(
+      clk => clk,
+      --
+      input_ports_m2s => inputs_read_m2s,
+      input_ports_s2m => inputs_read_s2m,
+      --
+      output_m2s => output_read_m2s,
+      output_s2m => output_read_s2m
+    );
 
-  end generate;
+
+  ------------------------------------------------------------------------------
+  dut_write : entity work.axi_simple_write_crossbar
+    generic map(
+      num_inputs => num_inputs
+    )
+    port map(
+      clk => clk,
+      --
+      input_ports_m2s => inputs_write_m2s,
+      input_ports_s2m => inputs_write_s2m,
+      --
+      output_m2s => output_write_m2s,
+      output_s2m => output_write_s2m
+    );
 
 end architecture;

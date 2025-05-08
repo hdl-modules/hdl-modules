@@ -26,10 +26,12 @@ entity axi_lite_simple_read_crossbar is
   port(
     clk : in std_ulogic;
     --# {{}}
-    input_ports_m2s : in axi_lite_read_m2s_vec_t(0 to num_inputs - 1) :=
-      (others => axi_lite_read_m2s_init);
-    input_ports_s2m : out axi_lite_read_s2m_vec_t(0 to num_inputs - 1) :=
-      (others => axi_lite_read_s2m_init);
+    input_ports_m2s : in axi_lite_read_m2s_vec_t(0 to num_inputs - 1) := (
+      others => axi_lite_read_m2s_init
+    );
+    input_ports_s2m : out axi_lite_read_s2m_vec_t(0 to num_inputs - 1) := (
+      others => axi_lite_read_s2m_init
+    );
     --# {{}}
     output_m2s : out axi_lite_read_m2s_t := axi_lite_read_m2s_init;
     output_s2m : in axi_lite_read_s2m_t := axi_lite_read_s2m_init
@@ -78,7 +80,7 @@ begin
   output_axi_s2m.r.valid <= output_s2m.r.valid;
   output_axi_s2m.r.data(output_s2m.r.data'range) <= output_s2m.r.data;
   output_axi_s2m.r.resp <= output_s2m.r.resp;
-  -- AXI-Lite always burst length 1. Need to set last for the logic in axi_interconnect.
+  -- AXI-Lite always burst length 1.
   output_axi_s2m.r.last <= '1';
 
 

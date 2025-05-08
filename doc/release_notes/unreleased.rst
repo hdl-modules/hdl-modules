@@ -1,6 +1,8 @@
 Fixes
 
 * Fix ``ARREADY`` handshaking bug in :ref:`register_file.axi_lite_register_file`.
+* Fix bug in :ref:`axi.axi_simple_read_crossbar`, :ref:`axi.axi_simple_write_crossbar`,
+  :ref:`axi_lite.axi_lite_simple_read_crossbar` and :ref:`axi_lite.axi_lite_simple_write_crossbar`.
 
 Breaking changes
 

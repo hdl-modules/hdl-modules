@@ -39,10 +39,6 @@ class Module(BaseModule):
         tb.add_config(name="synchronous", generics={"depth": 16, "asynchronous": False})
         tb.add_config(name="asynchronous", generics={"depth": 16, "asynchronous": True})
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_simple_crossbar")
-        tb.add_config(name="axi_lite", generics={"test_axi_lite": True})
-        tb.add_config(name="axi", generics={"test_axi_lite": False})
-
     def setup_axi_pkg_tests(self, vunit_proj: VUnit) -> None:
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_pkg")
         test = tb.test("test_slv_conversion")
@@ -112,7 +108,6 @@ class Module(BaseModule):
             "addr_width": 32,
             "full_ar_throughput": False,
         }
-
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
                 name=f"{self.library_name}.axi_read_throttle",
@@ -124,6 +119,36 @@ class Module(BaseModule):
                     TotalLuts(EqualTo(41)),
                     Ffs(EqualTo(76)),
                     MaximumLogicLevel(EqualTo(8)),
+                ],
+            )
+        )
+
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_simple_read_crossbar",
+                modules=modules,
+                part=part,
+                top="axi_simple_read_crossbar",
+                generics={"num_inputs": 4},
+                build_result_checkers=[
+                    TotalLuts(EqualTo(120)),
+                    Ffs(EqualTo(5)),
+                    MaximumLogicLevel(EqualTo(4)),
+                ],
+            )
+        )
+
+        projects.append(
+            TsfpgaExampleVivadoNetlistProject(
+                name=f"{self.library_name}.axi_simple_write_crossbar",
+                modules=modules,
+                part=part,
+                top="axi_simple_write_crossbar",
+                generics={"num_inputs": 4},
+                build_result_checkers=[
+                    TotalLuts(EqualTo(298)),
+                    Ffs(EqualTo(5)),
+                    MaximumLogicLevel(EqualTo(4)),
                 ],
             )
         )
