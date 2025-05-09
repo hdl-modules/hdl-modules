@@ -61,7 +61,7 @@ begin
     variable user : std_ulogic_vector(user_width - 1 downto 0);
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_single_transaction") then
       data := rnd.RandSlv(data'length);

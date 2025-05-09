@@ -177,7 +177,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     for slave_idx in memory'range loop
       buf := allocate(memory=>memory(slave_idx), num_bytes=>bank_address(slave_idx, num_words));
