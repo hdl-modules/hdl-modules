@@ -67,7 +67,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_slv_conversion") then
       -- Loop a couple of times to get good random coverage

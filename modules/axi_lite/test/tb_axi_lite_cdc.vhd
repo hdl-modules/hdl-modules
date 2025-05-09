@@ -95,7 +95,7 @@ begin
     variable buf : buffer_t;
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(rnd'instance_name);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     buf := allocate(memory, 4 * num_words);
 
