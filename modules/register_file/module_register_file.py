@@ -9,8 +9,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
-
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
@@ -22,27 +20,8 @@ from tsfpga.vivado.build_result_checker import (
     TotalLuts,
 )
 
-if TYPE_CHECKING:
-    from vunit.ui import VUnit
-
 
 class Module(BaseModule):
-    def setup_vunit(
-        self,
-        vunit_proj: VUnit,
-        **kwargs: Any,  # noqa: ANN401, ARG002
-    ) -> None:
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_register_file")
-        for name in [
-            "test_read_from_non_existent_register",
-            "test_read_from_non_read_type_register",
-            "test_write_to_non_existent_register",
-            "test_write_to_non_write_type_register",
-            "test_reset_read",
-            "test_reset_write",
-        ]:
-            tb.test(name=name).set_generic("use_axi_lite_bfm", False)
-
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
