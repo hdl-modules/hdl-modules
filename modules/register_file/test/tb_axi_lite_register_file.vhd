@@ -12,9 +12,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library vunit_lib;
-use vunit_lib.bus_master_pkg.all;
 use vunit_lib.check_pkg.all;
-use vunit_lib.queue_pkg.all;
 use vunit_lib.com_pkg.net;
 use vunit_lib.run_pkg.all;
 
@@ -22,13 +20,10 @@ library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 library bfm;
+use bfm.axi_lite_bfm_pkg.all;
 
 library common;
-use common.addr_pkg.all;
 use common.types_pkg.all;
-
-library axi;
-use axi.axi_pkg.all;
 
 library axi_lite;
 use axi_lite.axi_lite_pkg.all;
@@ -38,7 +33,6 @@ use work.register_file_pkg.all;
 
 entity tb_axi_lite_register_file is
   generic (
-    use_axi_lite_bfm : boolean := true;
     runner_cfg : string
   );
 end entity;
@@ -46,92 +40,99 @@ end entity;
 architecture tb of tb_axi_lite_register_file is
 
   -- Generic constants.
-  constant regs : register_definition_vec_t(0 to 15 - 1) := (
-    (index => 0, mode => r, utilized_width=>32),
-    (index => 1, mode => r, utilized_width=>32),
-    (index => 2, mode => r, utilized_width=>32),
-    (index => 3, mode => w, utilized_width=>32),
-    (index => 4, mode => w, utilized_width=>32),
-    (index => 5, mode => w, utilized_width=>32),
-    (index => 6, mode => r_w, utilized_width=>32),
-    (index => 7, mode => r_w, utilized_width=>32),
-    (index => 8, mode => r_w, utilized_width=>32),
-    (index => 9, mode => wpulse, utilized_width=>32),
-    (index => 10, mode => wpulse, utilized_width=>32),
-    (index => 11, mode => wpulse, utilized_width=>32),
-    (index => 12, mode => r_wpulse, utilized_width=>32),
-    (index => 13, mode => r_wpulse, utilized_width=>32),
-    (index => 14, mode => r_wpulse, utilized_width=>32)
-  );
+  shared variable rnd : RandomPType;
 
-  constant default_values : register_vec_t(regs'range) := (
-    0 => x"dcd3e0e6",
-    1 => x"323e4bfd",
-    2 => x"7ddd475b",
-    3 => x"0c4c3891",
-    4 => x"cb40a113",
-    5 => x"f8c6f339",
-    6 => x"a17f0a63",
-    7 => x"333665c6",
-    8 => x"136f6857",
-    9 => x"9901a7d0",
-    10 => x"45974c0b",
-    11 => x"067b0394",
-    12 => x"c5b5d0fc",
-    13 => x"86130210",
-    14 => x"ad1f5653"
-  );
+  impure function initialize_and_get_regs return register_definition_vec_t is
+    impure function initialize_and_get_num_registers return positive is
+    begin
+      -- This is the first function that is called, so we initialize the random number
+      -- generator here.
+      rnd.InitSeed(get_string_seed(runner_cfg));
+
+      -- We do some 'num_bits_needed' calculations in the DUT, so it is important that we test
+      -- just below and above a power-of-two boundary.
+      return rnd.Uniform(6, 34);
+    end function;
+    constant num_registers : positive := initialize_and_get_num_registers;
+
+    variable result : register_definition_vec_t(0 to num_registers - 1);
+
+    procedure set(index: natural; mode : register_mode_t) is
+    begin
+      result(index) := (index=>index, mode=>mode, utilized_width=>32);
+    end procedure;
+  begin
+    for index in 0 to num_registers - 1 loop
+      -- A few indexes are hardcoded in some tests below.
+      if index < 2 then
+        set(index=>index, mode=>r);
+      elsif index < 4 then
+        set(index=>index, mode=>w);
+      elsif index < 6 then
+        set(index=>index, mode=>r_w);
+      else
+        set(
+          index=>index,
+          mode=>register_mode_t'val(rnd.RandInt(register_mode_t'pos(register_mode_t'high)))
+        );
+      end if;
+    end loop;
+
+    return result;
+  end function;
+  constant regs : register_definition_vec_t := initialize_and_get_regs;
+
+  impure function get_default_values return register_vec_t is
+    variable result : register_vec_t(regs'range) := (others => (others => '0'));
+  begin
+    for index in regs'range loop
+      result(index) := rnd.RandSlv(result(0)'length);
+    end loop;
+
+    return result;
+  end function;
+  constant default_values : register_vec_t := get_default_values;
 
   -- DUT connections.
   constant clk_period : time := 10 ns;
   signal clk, reset : std_ulogic := '0';
 
-  signal hardcoded_m2s, axi_lite_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
+  signal axi_lite_m2s : axi_lite_m2s_t := axi_lite_m2s_init;
   signal axi_lite_s2m : axi_lite_s2m_t := axi_lite_s2m_init;
 
-  signal regs_up : register_vec_t(regs'range) := (others => (others => '0'));
-  signal regs_down : register_vec_t(regs'range);
+  signal regs_down, regs_up : register_vec_t(regs'range) := default_values;
   signal reg_was_read, reg_was_written : std_ulogic_vector(regs'range);
 
   -- Testbench stuff.
-  constant axi_master : bus_master_t := new_bus(
-    data_length => register_width,
-    address_length => axi_lite_m2s.read.ar.addr'length
-  );
-
   constant reg_was_accessed_zero : std_ulogic_vector(reg_was_written'range) := (others => '0');
 
   signal regs_down_non_default_count : natural := 0;
 
-  constant read_index_queue, write_index_queue, write_data_queue : queue_t := new_queue;
-
 begin
 
-  test_runner_watchdog(runner, 200 us);
+  test_runner_watchdog(runner, 100 us);
   clk <= not clk after clk_period / 2;
 
 
   ------------------------------------------------------------------------------
   main : process
-    variable rnd : RandomPType;
-    variable fabric_data, bus_data : register_vec_t(0 to regs'length - 1);
+    variable fabric_values, bus_values : register_vec_t(0 to regs'length - 1);
 
     procedure reg_stimuli(reg : register_definition_t) is
     begin
       if is_write_mode(reg.mode) then
-        write_bus(net, axi_master, 4 * reg.index, bus_data(reg.index));
+        write_bfm(net=>net, index=>reg.index, data=>bus_values(reg.index));
       end if;
 
       if is_application_gives_value_mode(reg.mode) then
-        regs_up(reg.index) <= fabric_data(reg.index);
+        regs_up(reg.index) <= fabric_values(reg.index);
       end if;
     end procedure;
 
     procedure reg_data_check(reg : register_definition_t) is
-      variable reg_was_accessed_expected : std_ulogic_vector(reg_was_written'range)
-        := (others => '0');
-      variable read_bus_reference : bus_reference_t;
-      variable read_bus_data : register_t;
+      variable reg_was_accessed_expected : std_ulogic_vector(reg_was_written'range) := (
+        others => '0'
+      );
     begin
       reg_was_accessed_expected(reg.index) := '1';
 
@@ -150,7 +151,7 @@ begin
           end if;
         end loop;
 
-        check_equal(regs_down(reg.index), bus_data(reg.index));
+        check_equal(regs_down(reg.index), bus_values(reg.index), "index = " & to_string(reg.index));
       end if;
 
       if is_write_pulse_mode(reg.mode) then
@@ -161,133 +162,111 @@ begin
       end if;
 
       if is_read_mode(reg.mode) then
-        -- Initiate a non-blocking read
-        read_bus(net, axi_master, 4 * reg.index, read_bus_reference);
+        if is_application_gives_value_mode(reg.mode) then
+          check_bfm(net=>net, index=>reg.index, data=>fabric_values(reg.index));
+        else
+          check_bfm(net=>net, index=>reg.index, data=>bus_values(reg.index));
+        end if;
 
         wait until reg_was_read /= reg_was_accessed_zero and rising_edge(clk);
         check_equal(reg_was_read, reg_was_accessed_expected);
-
-        await_read_bus_reply(net, read_bus_reference, read_bus_data);
-
-        if is_application_gives_value_mode(reg.mode) then
-          check_equal(read_bus_data, fabric_data(reg.index));
-        else
-          check_equal(read_bus_data, bus_data(reg.index));
-        end if;
       end if;
-    end procedure;
-
-    procedure read_hardcoded(reg_index : integer) is
-    begin
-      push(read_index_queue, reg_index);
-    end procedure;
-
-    procedure read_and_wait_hardcoded(reg_index : integer) is
-    begin
-      read_hardcoded(reg_index);
-
-      wait until
-        ((axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) or reset) = '1'
-        and rising_edge(clk);
-    end procedure;
-
-    procedure write_hardcoded(reg_index : integer; data : register_t := (others => '0')) is
-    begin
-      push(write_index_queue, reg_index);
-      push(write_data_queue, data);
-    end procedure;
-
-    procedure write_and_wait_hardcoded(reg_index : integer; data : register_t := (others => '0')) is
-    begin
-      write_hardcoded(reg_index, data);
-
-      wait until
-        ((axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) or reset) = '1'
-        and rising_edge(clk);
     end procedure;
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(get_string_seed(runner_cfg));
+
+    for list_index in regs'range loop
+      fabric_values(list_index) := rnd.RandSLV(fabric_values(0)'length);
+      bus_values(list_index) := rnd.RandSLV(bus_values(0)'length);
+    end loop;
+    regs_up <= fabric_values;
 
     if run("test_default_register_values") then
       wait for 10 * clk_period;
 
       check_equal(regs_down_non_default_count, 0);
 
-    elsif run("test_random_read_and_write") then
-      for list_index in regs'range loop
-        fabric_data(list_index) := rnd.RandSLV(fabric_data(0)'length);
-        bus_data(list_index) := rnd.RandSLV(bus_data(0)'length);
-      end loop;
-
+    elsif run("test_random_write_then_read") then
       for list_index in regs'range loop
         reg_stimuli(regs(list_index));
         reg_data_check(regs(list_index));
       end loop;
 
-    elsif run("test_read_from_non_existent_register") then
-      read_and_wait_hardcoded(regs(regs'high).index + 1);
-      check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
+    elsif run("test_read_back_to_back") then
+      for index in regs'range loop
+        if regs(index).mode = r or regs(index).mode = r_wpulse then
+          check_bfm(net=>net, index=>index, data=>fabric_values(index));
+        elsif regs(index).mode = r_w then
+          check_bfm(net=>net, index=>index, data=>default_values(index));
+        end if;
+      end loop;
 
-      read_and_wait_hardcoded(regs(regs'high).index);
-      check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
+    elsif run("test_write_back_to_back") then
+      for index in regs'range loop
+        if is_write_mode(regs(index).mode) then
+          write_bfm(net=>net, index=>index, data=>bus_values(index));
+        end if;
+      end loop;
+
+    elsif run("test_read_from_non_existent_register") then
+      check_bfm(
+        net=>net, index=>regs'high + 1, data=>fabric_values(0), response=>axi_lite_resp_slverr
+      );
+      check_bfm(net=>net, index=>0, data=>fabric_values(0));
 
     elsif run("test_write_to_non_existent_register") then
-      write_and_wait_hardcoded(regs(regs'high).index + 1);
-      check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
-
-      write_and_wait_hardcoded(regs(regs'high).index);
-      check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
+      write_bfm(
+        net=>net, index=>regs'length, data=>bus_values(regs'high), response=>axi_lite_resp_slverr
+      );
+      write_bfm(net=>net, index=>3, data=>bus_values(regs'high));
 
     elsif run("test_read_from_non_read_type_register") then
-      assert regs(3).mode = w;
-      read_and_wait_hardcoded(3);
-      check_equal(axi_lite_s2m.read.r.resp, axi_resp_slverr);
-
-      read_and_wait_hardcoded(regs(regs'high).index);
-      check_equal(axi_lite_s2m.read.r.resp, axi_resp_okay);
+      assert regs(2).mode = w;
+      check_bfm(net=>net, index=>2, data=>default_values(2), response=>axi_lite_resp_slverr);
+      check_bfm(net=>net, index=>0, data=>fabric_values(0));
 
     elsif run("test_write_to_non_write_type_register") then
       assert regs(0).mode = r;
-      write_and_wait_hardcoded(0);
-      check_equal(axi_lite_s2m.write.b.resp, axi_resp_slverr);
-
-      write_and_wait_hardcoded(regs(regs'high).index);
-      check_equal(axi_lite_s2m.write.b.resp, axi_resp_okay);
+      write_bfm(net=>net, index=>0, data=>default_values(0), response=>axi_lite_resp_slverr);
+      write_bfm(net=>net, index=>2, data=>default_values(2));
 
     elsif run("test_reset_read") then
-      assert regs(7).mode = r_w;
-      read_and_wait_hardcoded(7);
-      check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(7));
+      for index in 4 to 5 loop
+        assert regs(index).mode = r_w;
+        check_await_bfm(net=>net, index=>index, data=>default_values(index));
 
-      for wait_cycles in 0 to 20 loop
-        write_and_wait_hardcoded(7, default_values(8));
+        for wait_cycles in 0 to 20 loop
+          write_await_bfm(net=>net, index=>index, data=>bus_values(index + 1));
+          check_await_bfm(net=>net, index=>index, data=>bus_values(index + 1));
 
-        read_and_wait_hardcoded(7);
-        check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(8));
+          check_bfm(net=>net, index=>index, data=>bus_values(index + 1));
+          for wait_cycle_idx in 1 to wait_cycles loop
+            wait until rising_edge(clk);
+          end loop;
+          reset <= '1';
 
-        read_hardcoded(7);
-        for wait_cycle_idx in 1 to wait_cycles loop
+          for reset_cycle in 0 to 10 loop
+            wait until rising_edge(clk);
+          end loop;
+
+          reset <= '0';
           wait until rising_edge(clk);
+          check_await_bfm(net=>net, index=>index, data=>default_values(index));
         end loop;
-        reset <= '1';
-
-        for reset_cycle in 0 to 10 loop
-          wait until rising_edge(clk);
-        end loop;
-
-        reset <= '0';
-        read_and_wait_hardcoded(7);
-        check_equal(axi_lite_s2m.read.r.data(default_values(0)'range), default_values(7));
       end loop;
 
     elsif run("test_reset_write") then
-      for reg_index in 6 to 14 loop
-        for wait_cycles in 0 to 20 loop
-          write_and_wait_hardcoded(reg_index, default_values(reg_index - 1));
+      for index in 2 to 3 loop
+        assert regs(index).mode = w;
 
-          write_hardcoded(reg_index);
+        for wait_cycles in 0 to 20 loop
+          check_equal(regs_down(index), default_values(index));
+
+          write_await_bfm(net=>net, index=>index, data=>default_values(index + 1));
+          check_equal(regs_down(index), default_values(index + 1));
+
+          write_bfm(net=>net, index=>index, data=>default_values(index + 1));
           for wait_cycle_idx in 1 to wait_cycles loop
             wait until rising_edge(clk);
           end loop;
@@ -300,14 +279,16 @@ begin
           reset <= '0';
           wait until rising_edge(clk);
           check_equal(
-            regs_down(reg_index),
-            default_values(reg_index),
-            "reg_index=" & to_string(reg_index)
+            regs_down(index),
+            default_values(index),
+            "index=" & to_string(index) & " wait_cycles=" & to_string(wait_cycles)
           );
         end loop;
       end loop;
 
     end if;
+
+    wait_until_bfm_idle(net=>net);
 
     test_runner_cleanup(runner);
   end process;
@@ -325,97 +306,17 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_lite_master_generate : if use_axi_lite_bfm generate
-
-    ------------------------------------------------------------------------------
-    axi_lite_master_inst : entity bfm.axi_lite_master
-      generic map (
-        bus_handle => axi_master
-      )
-      port map (
-        clk => clk,
-        --
-        axi_lite_m2s => axi_lite_m2s,
-        axi_lite_s2m => axi_lite_s2m
-      );
-
-  ------------------------------------------------------------------------------
-  else generate
-
-    axi_lite_m2s <= hardcoded_m2s;
-
-  end generate;
-
-
-  ------------------------------------------------------------------------------
-  hardcoded_read : process
-    procedure perform_read(index : natural) is
-    begin
-      hardcoded_m2s.read.ar.addr <= to_unsigned(4 * index, hardcoded_m2s.read.ar.addr'length);
-      hardcoded_m2s.read.ar.valid <= '1';
-      wait until
-        ((axi_lite_s2m.read.ar.ready and axi_lite_m2s.read.ar.valid) or reset) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.read.ar.valid <= '0';
-
-      if reset then
-        return;
-      end if;
-
-      hardcoded_m2s.read.r.ready <= '1';
-      wait until
-        ((axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid) or reset) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.read.r.ready <= '0';
-    end procedure;
-  begin
-    while is_empty(read_index_queue) or reset = '1' loop
-      wait until rising_edge(clk);
-    end loop;
-
-    perform_read(index=>pop(read_index_queue));
-  end process;
-
-
-  ------------------------------------------------------------------------------
-  hardcoded_write : process
-    procedure perform_write(index : natural; data : register_t) is
-    begin
-      hardcoded_m2s.write.aw.addr <= to_unsigned(4 * index, hardcoded_m2s.write.aw.addr'length);
-      hardcoded_m2s.write.aw.valid <= '1';
-      wait until
-        ((axi_lite_s2m.write.aw.ready and axi_lite_m2s.write.aw.valid) or reset) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.write.aw.valid <= '0';
-
-      if reset then
-        return;
-      end if;
-
-      hardcoded_m2s.write.w.data(data'range) <= data;
-      hardcoded_m2s.write.w.valid <= '1';
-      wait until
-        ((axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid) or reset) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.write.w.valid <= '0';
-
-      if reset then
-        return;
-      end if;
-
-      hardcoded_m2s.write.b.ready <= '1';
-      wait until
-        ((axi_lite_m2s.write.b.ready and axi_lite_s2m.write.b.valid) or reset) = '1'
-        and rising_edge(clk);
-      hardcoded_m2s.write.b.ready <= '0';
-    end procedure;
-  begin
-    while is_empty(write_index_queue) or reset = '1' loop
-      wait until rising_edge(clk);
-    end loop;
-
-    perform_write(index=>pop(write_index_queue), data=>pop(write_data_queue));
-  end process;
+  axi_lite_master_bfm_inst : entity bfm.axi_lite_master_bfm
+    generic map (
+      drive_invalid_value => '0'
+    )
+    port map (
+      clk => clk,
+      reset => reset,
+      --
+      axi_lite_m2s => axi_lite_m2s,
+      axi_lite_s2m => axi_lite_s2m
+    );
 
 
   ------------------------------------------------------------------------------
