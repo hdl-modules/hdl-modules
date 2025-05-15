@@ -445,7 +445,7 @@ begin
       buffer_end_address <= u_unsigned(regs_down.buffer_end_address(buffer_end_address'range));
       buffer_read_address <= u_unsigned(regs_down.buffer_read_address(buffer_read_address'range));
 
-      regs_up.buffer_written_address(buffer_written_address'range) <= std_logic_vector(
+      regs_up.buffer_written_address(buffer_written_address'range) <= std_ulogic_vector(
         buffer_written_address
       );
 

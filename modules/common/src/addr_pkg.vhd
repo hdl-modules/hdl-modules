@@ -105,7 +105,7 @@ package body addr_pkg is
             & ", bit index "
             & integer'image(bit_idx)
             & ": "
-            & std_logic'image(addrs(addr_idx)(bit_idx))
+            & std_ulogic'image(addrs(addr_idx)(bit_idx))
             severity warning;
 
           return false;

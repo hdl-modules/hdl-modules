@@ -90,12 +90,12 @@ begin
 
   ------------------------------------------------------------------------------
   else generate
-    constant result_value_max : signed(result_value'range) := get_max_signed(
+    constant result_value_max : u_signed(result_value'range) := get_max_signed(
       num_bits=>result_value'length
     );
 
     signal addition_valid, addition_overflow : std_ulogic := '0';
-    signal addition_result : signed(result_width - 1 downto 0) := (others => '0');
+    signal addition_result : u_signed(result_width - 1 downto 0) := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -106,12 +106,12 @@ begin
       constant point_five_index : natural := one_index - 1;
       signal one_index_value, point_five_index_value : binary_integer_t := 0;
 
-      signal input_value_integer : signed(result_width - 1 downto 0) := (others => '0');
+      signal input_value_integer : u_signed(result_width - 1 downto 0) := (others => '0');
       signal input_value_integer_is_max : boolean := false;
 
-      signal input_value_fractional : signed(num_lsb_to_remove - 1 downto 0) := (others => '0');
+      signal input_value_fractional : u_signed(num_lsb_to_remove - 1 downto 0) := (others => '0');
 
-      signal result_int : signed(addition_result'range) := (others => '0');
+      signal result_int : u_signed(addition_result'range) := (others => '0');
       signal overflow_int : std_ulogic := '0';
     begin
 
@@ -126,13 +126,13 @@ begin
 
       ------------------------------------------------------------------------------
       calculate : process(all)
-        impure function get_fractional_point_five_value return signed is
-          variable result : signed(input_value_fractional'range) := (others => '0');
+        impure function get_fractional_point_five_value return u_signed is
+          variable result : u_signed(input_value_fractional'range) := (others => '0');
         begin
           result(input_value_fractional'high) := '1';
           return result;
         end function;
-        constant input_value_fractional_point_five : signed := get_fractional_point_five_value;
+        constant input_value_fractional_point_five : u_signed := get_fractional_point_five_value;
 
         variable value_to_add : binary_integer_t := 0;
       begin
@@ -180,7 +180,7 @@ begin
 
     ------------------------------------------------------------------------------
     saturate_gen : if enable_saturation generate
-      signal result_int : signed(addition_result'range) := (others => '0');
+      signal result_int : u_signed(addition_result'range) := (others => '0');
     begin
 
       result_int <= result_value_max when addition_overflow else addition_result;

@@ -77,11 +77,11 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_lite_m2s.read.ar.addr(araddr'range) <= unsigned(araddr);
+  axi_lite_m2s.read.ar.addr(araddr'range) <= u_unsigned(araddr);
 
   rdata <= axi_lite_s2m.read.r.data(rdata'range);
 
-  axi_lite_m2s.write.aw.addr(awaddr'range) <= unsigned(awaddr);
+  axi_lite_m2s.write.aw.addr(awaddr'range) <= u_unsigned(awaddr);
 
   axi_lite_m2s.write.w.data(wdata'range) <= wdata;
   axi_lite_m2s.write.w.strb(wstrb'range) <= wstrb;

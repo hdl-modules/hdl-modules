@@ -35,7 +35,7 @@ architecture tb of tb_sine_lookup is
   constant result_width : positive := memory_data_width + 1;
 
   -- DUT connections.
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal input_valid, result_valid : std_ulogic := '0';
   signal input_phase : u_unsigned(phase_width - 1 downto 0) := (others => '0');

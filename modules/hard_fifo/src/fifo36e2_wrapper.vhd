@@ -221,8 +221,8 @@ begin
 
 
   ------------------------------------------------------------------------------
-  read_level <= to_integer(unsigned(rdcount));
+  read_level <= to_integer(u_unsigned(rdcount));
 
-  write_level <= to_integer(unsigned(wrcount));
+  write_level <= to_integer(u_unsigned(wrcount));
 
 end architecture;

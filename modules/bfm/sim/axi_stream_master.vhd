@@ -161,7 +161,8 @@ begin
 
       data_value := get(arr=>data_packet, idx=>byte_idx);
       data_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <=
-        std_logic_vector(to_unsigned(data_value, 8));
+        std_ulogic_vector(to_unsigned(data_value, 8)
+      );
 
       strobe_byte(byte_lane_idx) <= '1';
 
@@ -276,7 +277,7 @@ begin
         byte_lane_idx := byte_idx mod user_bytes_per_beat;
 
         user_value := get(arr=>user_packet, idx=>byte_idx);
-        user_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <= std_logic_vector(
+        user_int((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8) <= std_ulogic_vector(
           to_unsigned(user_value, 8)
         );
 

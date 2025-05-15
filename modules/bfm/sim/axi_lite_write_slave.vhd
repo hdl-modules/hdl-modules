@@ -101,7 +101,7 @@ begin
       bresp => axi_lite_write_s2m.b.resp
     );
 
-  awaddr <= std_logic_vector(axi_lite_write_m2s.aw.addr);
+  awaddr <= std_ulogic_vector(axi_lite_write_m2s.aw.addr);
 
   wdata <= axi_lite_write_m2s.w.data(wdata'range);
   wstrb <= axi_lite_write_m2s.w.strb(wstrb'range);

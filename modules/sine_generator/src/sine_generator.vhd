@@ -252,7 +252,7 @@ begin
         output => phase_dithering_slv
       );
 
-    phase_dithering <= unsigned(phase_dithering_slv);
+    phase_dithering <= u_unsigned(phase_dithering_slv);
 
 
     ------------------------------------------------------------------------------

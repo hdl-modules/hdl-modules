@@ -57,7 +57,7 @@ architecture tb of tb_lfsr is
   constant lfsr_seed : std_ulogic_vector(calculated_lfsr_length downto 1) := init_and_get_lfsr_seed;
 
   -- DUT connections.
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   -- Change the bit indexes here, but does not really matter.
   -- We are testing for the randomness and uniqueness of words, so the bit indexes themselves
@@ -100,7 +100,7 @@ begin
 
     for sample_idx in 0 to num_samples - 1 loop
       wait until rising_edge(clk);
-      write(f=>file_handle, value=>to_integer(unsigned(output)));
+      write(f=>file_handle, value=>to_integer(u_unsigned(output)));
     end loop;
 
     file_close(f=>file_handle);

@@ -94,7 +94,7 @@ begin
       rlast => open
     );
 
-  araddr <= std_logic_vector(axi_lite_read_m2s.ar.addr);
+  araddr <= std_ulogic_vector(axi_lite_read_m2s.ar.addr);
 
 
   ------------------------------------------------------------------------------

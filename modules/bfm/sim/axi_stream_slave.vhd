@@ -220,7 +220,7 @@ begin
       got_byte := data((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8);
       if is_signed(reference_data) then
         check_equal(
-          signed(got_byte),
+          u_signed(got_byte),
           get(arr=>reference_data, idx=>byte_idx),
           (
             base_error_message
@@ -232,7 +232,7 @@ begin
         );
       else
         check_equal(
-          unsigned(got_byte),
+          u_unsigned(got_byte),
           get(arr=>reference_data, idx=>byte_idx),
           (
             base_error_message
@@ -322,7 +322,7 @@ begin
         end if;
 
         check_equal(
-          unsigned(id),
+          u_unsigned(id),
           reference_id,
           base_error_message & ": 'id' check in packet_idx=" & to_string(num_packets_checked)
         );
@@ -368,7 +368,7 @@ begin
         end if;
 
         check_equal(
-          unsigned(user((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
+          u_unsigned(user((byte_lane_idx + 1) * 8 - 1 downto byte_lane_idx * 8)),
           get(arr=>user_packet, idx=>byte_idx),
           base_error_message & ": 'user' check at packet_idx=" & to_string(num_packets_checked)
         );
