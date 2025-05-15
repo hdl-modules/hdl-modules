@@ -59,9 +59,9 @@ package body axi_bfm_pkg is
   function to_slv(job : axi_master_bfm_job_t) return std_ulogic_vector is
     variable result : std_ulogic_vector(axi_master_bfm_job_size - 1 downto 0) := (others => '0');
   begin
-    result(31 downto 0) := std_logic_vector(to_unsigned(job.address, 32));
-    result(63 downto 32) := std_logic_vector(to_unsigned(job.length_bytes, 32));
-    result(95 downto 64) := std_logic_vector(to_unsigned(job.id, 32));
+    result(31 downto 0) := std_ulogic_vector(to_unsigned(job.address, 32));
+    result(63 downto 32) := std_ulogic_vector(to_unsigned(job.length_bytes, 32));
+    result(95 downto 64) := std_ulogic_vector(to_unsigned(job.id, 32));
     return result;
   end function;
 
@@ -70,9 +70,9 @@ package body axi_bfm_pkg is
   ) return axi_master_bfm_job_t is
     variable result : axi_master_bfm_job_t := axi_master_bfm_job_init;
   begin
-    result.address := to_integer(unsigned(data(31 downto 0)));
-    result.length_bytes := to_integer(unsigned(data(63 downto 32)));
-    result.id := to_integer(unsigned(data(95 downto 64)));
+    result.address := to_integer(u_unsigned(data(31 downto 0)));
+    result.length_bytes := to_integer(u_unsigned(data(63 downto 32)));
+    result.id := to_integer(u_unsigned(data(95 downto 64)));
     return result;
   end function;
 

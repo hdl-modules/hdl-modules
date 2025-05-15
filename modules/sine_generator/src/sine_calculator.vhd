@@ -262,7 +262,7 @@ begin
     constant scale_factor_real : real := MATH_PI_OVER_2 * 2.0 ** scale_factor_fractional_width;
     constant scale_factor_int : positive := integer(round(scale_factor_real));
     constant scale_factor_width : positive := num_bits_needed(scale_factor_int);
-    constant scale_factor : unsigned(scale_factor_width - 1 downto 0) := to_unsigned(
+    constant scale_factor : u_unsigned(scale_factor_width - 1 downto 0) := to_unsigned(
       scale_factor_int, scale_factor_width
     );
 
@@ -408,7 +408,7 @@ begin
         error_factor_unsigned <= phase_error24 * scale_factor;
       end process;
 
-      error_factor <= '0' & signed(error_factor_unsigned);
+      error_factor <= '0' & u_signed(error_factor_unsigned);
       first_stage_error_factor25 <= error_factor(error_factor'high downto error_factor25_trim);
 
     end block;

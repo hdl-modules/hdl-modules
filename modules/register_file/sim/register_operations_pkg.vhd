@@ -266,7 +266,7 @@ package body register_operations_pkg is
     variable address : addr_t;
   begin
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    read_bus(net=>net, bus_handle=>bus_handle, address=>std_logic_vector(address), data=>value);
+    read_bus(net=>net, bus_handle=>bus_handle, address=>std_ulogic_vector(address), data=>value);
   end procedure;
 
   procedure read_reg(
@@ -279,7 +279,7 @@ package body register_operations_pkg is
     variable slv_value : register_t := (others => '0');
   begin
     read_reg(net, reg_index, slv_value, base_address, bus_handle);
-    value := to_integer(signed(slv_value));
+    value := to_integer(u_signed(slv_value));
   end procedure;
 
   procedure check_reg_equal(
@@ -505,7 +505,7 @@ package body register_operations_pkg is
     -- Note that this call is non-blocking.
 
     address := base_address or to_unsigned(4 * reg_index, address'length);
-    write_bus(net=>net, bus_handle=>bus_handle, address=>std_logic_vector(address), data=>value);
+    write_bus(net=>net, bus_handle=>bus_handle, address=>std_ulogic_vector(address), data=>value);
   end procedure;
 
   procedure write_reg(
@@ -521,7 +521,7 @@ package body register_operations_pkg is
     write_reg(
       net=>net,
       reg_index=>reg_index,
-      value=>std_logic_vector(to_signed(value, register_width)),
+      value=>std_ulogic_vector(to_signed(value, register_width)),
       base_address=>base_address,
       bus_handle=>bus_handle
     );
@@ -540,7 +540,7 @@ package body register_operations_pkg is
     write_reg(
       net=>net,
       reg_index=>reg_index,
-      value=>std_logic_vector(value),
+      value=>std_ulogic_vector(value),
       base_address=>base_address,
       bus_handle=>bus_handle
     );

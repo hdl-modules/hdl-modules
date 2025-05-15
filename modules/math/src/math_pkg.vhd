@@ -23,18 +23,18 @@ package math_pkg is
   ------------------------------------------------------------------------------
   -- The smallest/greatest value that can be expressed in a signed bit vector of the
   -- supplied length.
-  function get_min_signed(num_bits : positive) return signed;
-  function get_max_signed(num_bits : positive) return signed;
+  function get_min_signed(num_bits : positive) return u_signed;
+  function get_max_signed(num_bits : positive) return u_signed;
 
   -- Same as above but result value given as an integer.
   -- Note that this limits the number of bits to 32.
   function get_min_signed_integer(num_bits : positive range 1 to 32) return integer;
   function get_max_signed_integer(num_bits : positive range 1 to 32) return natural;
 
-  -- The smallest/greatest value that can be expressed in an unsigned bit vector of the
+  -- The smallest/greatest value that can be expressed in an u_unsigned bit vector of the
   -- supplied length.
-  function get_min_unsigned(num_bits : positive) return unsigned;
-  function get_max_unsigned(num_bits : positive) return unsigned;
+  function get_min_unsigned(num_bits : positive) return u_unsigned;
+  function get_max_unsigned(num_bits : positive) return u_unsigned;
 
   -- Same as above but result value given as an integer.
   -- Note that this limits the number of bits to 32.
@@ -47,7 +47,7 @@ package math_pkg is
   function clamp(value, min, max : integer) return integer;
   -- Note that 'value' may be wider than 'min' and/or 'max' but not the other way around.
   -- Width of result value is the same width as 'value'.
-  function clamp(value, min, max : signed) return signed;
+  function clamp(value, min, max : u_signed) return u_signed;
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
@@ -61,9 +61,9 @@ package math_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
-  -- The minimum number of bits needed to express the given value as an unsigned vector.
+  -- The minimum number of bits needed to express the given value as an u_unsigned vector.
   function num_bits_needed(value : u_unsigned) return positive;
-  -- The number of bits needed to express the given value as an unsigned vector.
+  -- The number of bits needed to express the given value as an u_unsigned vector.
   function num_bits_needed(value : natural) return positive;
 
   -- The number of bits needed to express the value as a signed vector.
@@ -117,48 +117,50 @@ end package;
 package body math_pkg is
 
   ------------------------------------------------------------------------------
-  function get_min_signed(num_bits : positive) return signed is
-    variable result : signed(num_bits - 1 downto 0) := (others => '0');
+  function get_min_signed(num_bits : positive) return u_signed is
+    variable result : u_signed(num_bits - 1 downto 0) := (others => '0');
   begin
     result(result'high) := '1';
     return result;
   end function;
 
-  function get_max_signed(num_bits : positive) return signed is
-    variable result : signed(num_bits - 1 downto 0) := (others => '1');
+  function get_max_signed(num_bits : positive) return u_signed is
+    variable result : u_signed(num_bits - 1 downto 0) := (others => '1');
   begin
     result(result'high) := '0';
     return result;
   end function;
 
   function get_min_signed_integer(num_bits : positive range 1 to 32) return integer is
-    constant min_signed : signed(num_bits - 1 downto 0) := get_min_signed(num_bits=>num_bits);
+    constant min_signed : u_signed(num_bits - 1 downto 0) := get_min_signed(num_bits=>num_bits);
     constant result : integer := to_integer(min_signed);
   begin
     return result;
   end function;
 
   function get_max_signed_integer(num_bits : positive range 1 to 32) return natural is
-    constant max_signed : signed(num_bits - 1 downto 0) := get_max_signed(num_bits=>num_bits);
+    constant max_signed : u_signed(num_bits - 1 downto 0) := get_max_signed(num_bits=>num_bits);
     constant result : natural := to_integer(max_signed);
   begin
     return result;
   end function;
 
-  function get_min_unsigned(num_bits : positive) return unsigned is
-    constant result : unsigned(num_bits - 1 downto 0) := (others => '0');
+  function get_min_unsigned(num_bits : positive) return u_unsigned is
+    constant result : u_unsigned(num_bits - 1 downto 0) := (others => '0');
   begin
     return result;
   end function;
 
-  function get_max_unsigned(num_bits : positive) return unsigned is
-    constant result : unsigned(num_bits - 1 downto 0) := (others => '1');
+  function get_max_unsigned(num_bits : positive) return u_unsigned is
+    constant result : u_unsigned(num_bits - 1 downto 0) := (others => '1');
   begin
     return result;
   end function;
 
   function get_max_unsigned_integer(num_bits : positive range 1 to 32) return positive is
-    constant max_unsigned : unsigned(num_bits - 1 downto 0) := get_max_unsigned(num_bits=>num_bits);
+    constant max_unsigned : u_unsigned(num_bits - 1 downto 0) := get_max_unsigned(
+      num_bits=>num_bits
+    );
     constant result : positive := to_integer(max_unsigned);
   begin
     return result;
@@ -179,7 +181,7 @@ package body math_pkg is
     return value;
   end function;
 
-  function clamp(value, min, max : signed) return signed is
+  function clamp(value, min, max : u_signed) return u_signed is
   begin
     assert min'length <= value'length report "Min value can not be assigned";
     assert max'length <= value'length report "Max value can not be assigned";
@@ -329,7 +331,7 @@ package body math_pkg is
   function to_gray(value : u_unsigned) return std_ulogic_vector is
     variable value_slv, result : std_ulogic_vector(value'range) := (others => '0');
   begin
-    value_slv := std_logic_vector(value);
+    value_slv := std_ulogic_vector(value);
     result := value_slv xor "0" & value_slv(value_slv'high downto 1);
     return result;
   end function;

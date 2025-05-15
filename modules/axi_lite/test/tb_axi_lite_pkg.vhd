@@ -62,7 +62,7 @@ begin
         to_axi_lite_strb(data_width);
       constant expected : positive := 2 ** (data_width / 8) - 1;
     begin
-      check_equal(unsigned(got), expected);
+      check_equal(u_unsigned(got), expected);
     end procedure;
 
   begin

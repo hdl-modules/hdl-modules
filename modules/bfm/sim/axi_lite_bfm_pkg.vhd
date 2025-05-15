@@ -121,7 +121,7 @@ package body axi_lite_bfm_pkg is
   -- Internal procedure.
   procedure push_to_bfm(
     signal net : inout network_t;
-    address : std_logic_vector;
+    address : std_ulogic_vector;
     data : register_t;
     response : axi_lite_resp_t;
     bus_handle : bus_master_t;
@@ -150,7 +150,7 @@ package body axi_lite_bfm_pkg is
     reference : inout bus_reference_t
   ) is
     constant data_length_bytes : positive := data_length(bus_handle) / 8;
-    constant address : std_logic_vector := to_address(
+    constant address : std_ulogic_vector := to_address(
       bus_handle=>bus_handle, address=>data_length_bytes * index
     );
   begin
@@ -240,7 +240,7 @@ package body axi_lite_bfm_pkg is
   begin
     push_to_bfm(
       net=>net,
-      address=>std_logic_vector(address),
+      address=>std_ulogic_vector(address),
       data=>data,
       response=>response,
       bus_handle=>bus_handle,

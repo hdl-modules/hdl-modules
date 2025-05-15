@@ -133,8 +133,9 @@ begin
       -- Use an unsigned instead of integer for this counter, so that we can let it wrap.
       -- Start at a value where we have 'period' number ticks until an overflow.
       constant start_value : positive := 2 ** num_counter_bits - period;
-      constant start_value_unsigned : unsigned(num_counter_bits - 1 downto 0) :=
-        to_unsigned(start_value, num_counter_bits);
+      constant start_value_unsigned : u_unsigned(num_counter_bits - 1 downto 0) := to_unsigned(
+        start_value, num_counter_bits
+      );
 
       signal tick_count : u_unsigned(num_counter_bits - 1 downto 0) := start_value_unsigned;
       -- Add one extra bit here, this is used to see if there was an overflow, at which point we

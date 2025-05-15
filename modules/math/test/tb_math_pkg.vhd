@@ -50,18 +50,18 @@ begin
       return clamp(value=>value, min=>clamp_min_value, max=>clamp_max_value);
     end function;
 
-    function clamp_signed(value : integer) return signed is
+    function clamp_signed(value : integer) return u_signed is
       -- +1 since input 'value' will sometimes be outside of the clamp range.
-      constant value_signed : signed(clamp_num_bits + 1 - 1 downto 0) := to_signed(
+      constant value_signed : u_signed(clamp_num_bits + 1 - 1 downto 0) := to_signed(
         value, clamp_num_bits + 1
       );
-      constant min_value_signed : signed(clamp_num_bits - 1 downto 0) := to_signed(
+      constant min_value_signed : u_signed(clamp_num_bits - 1 downto 0) := to_signed(
         clamp_min_value, clamp_num_bits
       );
-      constant max_value_signed : signed(clamp_num_bits - 1 downto 0) := to_signed(
+      constant max_value_signed : u_signed(clamp_num_bits - 1 downto 0) := to_signed(
         clamp_max_value, clamp_num_bits
       );
-      variable result : signed(value_signed'range) := (others => '0');
+      variable result : u_signed(value_signed'range) := (others => '0');
     begin
       result := clamp(value=>value_signed, min=>min_value_signed, max=>max_value_signed);
       return result;

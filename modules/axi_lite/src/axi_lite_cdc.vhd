@@ -55,9 +55,9 @@ begin
     signal write_data, read_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
-    write_data <= std_logic_vector(master_m2s.write.aw.addr(write_data'range));
+    write_data <= std_ulogic_vector(master_m2s.write.aw.addr(write_data'range));
 
-    slave_m2s.write.aw.addr(read_data'range) <= unsigned(read_data);
+    slave_m2s.write.aw.addr(read_data'range) <= u_unsigned(read_data);
 
 
     ------------------------------------------------------------------------------
@@ -144,9 +144,9 @@ begin
     signal write_data, read_data : std_ulogic_vector(a_width - 1 downto 0) := (others => '0');
   begin
 
-    write_data <= std_logic_vector(master_m2s.read.ar.addr(write_data'range));
+    write_data <= std_ulogic_vector(master_m2s.read.ar.addr(write_data'range));
 
-    slave_m2s.read.ar.addr(read_data'range) <= unsigned(read_data);
+    slave_m2s.read.ar.addr(read_data'range) <= u_unsigned(read_data);
 
 
     ------------------------------------------------------------------------------

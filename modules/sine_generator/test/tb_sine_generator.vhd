@@ -44,7 +44,7 @@ architecture tb of tb_sine_generator is
   constant memory_data_width : positive := 18 + 13 * to_int(enable_first_order_taylor) ;
 
   -- DUT connections.
-  signal clk : std_logic := '0';
+  signal clk : std_ulogic := '0';
 
   signal input_valid, result_valid : std_ulogic := '0';
 

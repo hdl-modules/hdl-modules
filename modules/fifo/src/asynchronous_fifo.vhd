@@ -142,7 +142,7 @@ architecture a of asynchronous_fifo is
   signal read_data_ram : std_ulogic_vector(width - 1 downto 0) := (others => '0');
   signal word_in_output_register : natural range 0 to 1 := 0;
 
-  signal unsure_if_we_have_full_packet, unsure_if_we_have_full_packet_p1 : std_logic := '0';
+  signal unsure_if_we_have_full_packet, unsure_if_we_have_full_packet_p1 : std_ulogic := '0';
 
 begin
 

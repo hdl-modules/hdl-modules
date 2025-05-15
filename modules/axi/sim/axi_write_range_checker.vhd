@@ -73,7 +73,7 @@ begin
   ------------------------------------------------------------------------------
   check_strobe : process
     constant strobe_width : positive := data_width / 8;
-    constant unused_strobe_zero : std_logic_vector(write_m2s.w.strb'high downto strobe_width) := (
+    constant unused_strobe_zero : std_ulogic_vector(write_m2s.w.strb'high downto strobe_width) := (
       others => '0'
     );
   begin

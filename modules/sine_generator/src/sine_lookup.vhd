@@ -195,7 +195,7 @@ begin
 
   ------------------------------------------------------------------------------
   memory_block : block
-    type sine_table_t is array (memory_address_t) of unsigned(memory_data_width - 1 downto 0);
+    type sine_table_t is array (memory_address_t) of u_unsigned(memory_data_width - 1 downto 0);
 
     function calculate_sine_quadrant_table return sine_table_t is
       -- We aim to fill the memory with sine samples for a phase range of [0, pi/2[.

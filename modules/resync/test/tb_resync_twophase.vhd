@@ -207,15 +207,15 @@ begin
     dut : entity work.resync_twophase_lutram
       generic map (
         width => data_in'length,
-        default_value => std_logic_vector(data_init),
+        default_value => std_ulogic_vector(data_init),
         enable_output_register => enable_output_register
       )
       port map (
         clk_in => clk_in,
-        data_in => std_logic_vector(data_in),
+        data_in => std_ulogic_vector(data_in),
 
         clk_out => clk_out,
-        unsigned(data_out) => data_out
+        u_unsigned(data_out) => data_out
       );
 
   else generate
@@ -224,14 +224,14 @@ begin
     dut : entity work.resync_twophase
       generic map (
         width => data_in'length,
-        default_value => std_logic_vector(data_init)
+        default_value => std_ulogic_vector(data_init)
       )
       port map (
         clk_in => clk_in,
-        data_in => std_logic_vector(data_in),
+        data_in => std_ulogic_vector(data_in),
 
         clk_out => clk_out,
-        unsigned(data_out) => data_out
+        u_unsigned(data_out) => data_out
       );
 
     assert not enable_output_register;

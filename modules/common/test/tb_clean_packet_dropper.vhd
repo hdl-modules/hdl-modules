@@ -227,7 +227,7 @@ begin
 
     ------------------------------------------------------------------------------
     set_drop : process(all)
-      variable drop_int : std_logic := '0';
+      variable drop_int : std_ulogic := '0';
     begin
       case drop_behavior is
         when no_drop =>

@@ -93,14 +93,14 @@ begin
 
 
   ------------------------------------------------------------------------------
-  axi_read_m2s.ar.addr(araddr'range) <= unsigned(araddr);
+  axi_read_m2s.ar.addr(araddr'range) <= u_unsigned(araddr);
   axi_read_m2s.ar.len <= len;
   axi_read_m2s.ar.size <= size;
   axi_read_m2s.ar.burst <= axi_a_burst_incr;
 
   rdata <= axi_read_s2m.r.data(rdata'range);
 
-  axi_write_m2s.aw.addr(awaddr'range) <= unsigned(awaddr);
+  axi_write_m2s.aw.addr(awaddr'range) <= u_unsigned(awaddr);
   axi_write_m2s.aw.len <= len;
   axi_write_m2s.aw.size <= size;
   axi_write_m2s.aw.burst <= axi_a_burst_incr;

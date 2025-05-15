@@ -158,7 +158,7 @@ architecture a of lfsr_fibonacci_multi is
 
 begin
 
-  assert unsigned(seed) /= 0 report "Seed all zeros is an invalid state" severity failure;
+  assert u_unsigned(seed) /= 0 report "Seed all zeros is an invalid state" severity failure;
 
   -- Slice the output bits (the high indexes when using a Fibonacci structure).
   output <= state(state'high downto state'high - output'length + 1);
