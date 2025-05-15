@@ -152,8 +152,8 @@ begin
 
     if axi_s2m.write.aw.ready and axi_m2s.write.aw.valid then
       if (
-        to_integer(u_unsigned(axi_m2s.write.aw.len)) /= expected_len
-        or to_integer(u_unsigned(axi_m2s.write.aw.size)) /= expected_size
+        to_integer(axi_m2s.write.aw.len) /= expected_len
+        or to_integer(axi_m2s.write.aw.size) /= expected_size
       ) then
         write_error <= true;
       else
@@ -163,8 +163,8 @@ begin
 
     if axi_s2m.read.ar.ready and axi_m2s.read.ar.valid then
       if (
-        to_integer(u_unsigned(axi_m2s.read.ar.len)) /= expected_len
-        or to_integer(u_unsigned(axi_m2s.read.ar.size)) /= expected_size
+        to_integer(axi_m2s.read.ar.len) /= expected_len
+        or to_integer(axi_m2s.read.ar.size) /= expected_size
       ) then
         read_error <= true;
       else
