@@ -198,7 +198,6 @@ begin
     signal write_index : u_unsigned(num_address_bits - 1 downto 0) := (others => '0');
   begin
 
-
     ------------------------------------------------------------------------------
     set_status : process
     begin
