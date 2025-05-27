@@ -123,7 +123,7 @@ class Module(BaseModule):
                     # to show that there is no faulty state.
                     # In the case of dithering, the SFDR target is sometimes missed if we do not
                     # run through a longer LFSR sequence.
-                    num_samples = (2 + enable_phase_dithering) * coherent_sampling_count
+                    num_samples = 2 * (1 + enable_phase_dithering) * coherent_sampling_count
 
                     generics = {
                         "clk_frequency_hz": clk_frequency_hz,
