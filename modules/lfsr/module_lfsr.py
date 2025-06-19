@@ -22,6 +22,10 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from vunit.ui import VUnit
 
+# Import locally, for performance in the typical use case.
+# Especially important here since we import some huge packages (numpy, scipy, etc).
+# ruff: noqa: PLC0415
+
 
 class Module(BaseModule):
     def setup_vunit(

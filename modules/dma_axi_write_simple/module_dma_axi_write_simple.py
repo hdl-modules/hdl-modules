@@ -33,7 +33,7 @@ class Module(BaseModule):
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        from hdl_modules import get_hdl_modules
+        from hdl_modules import get_hdl_modules  # noqa: PLC0415
 
         modules = get_hdl_modules()
         part = "xc7z020clg400-1"

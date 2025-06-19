@@ -40,7 +40,7 @@ def get_hdl_modules(
     # Hence we can not import at the top of this file.
     # This function however, which highly depends on tsfpga Module objects, must import it.
     # We assume that it is only called by users who have tsfpga available.
-    from tsfpga.module import get_modules
+    from tsfpga.module import get_modules  # noqa: PLC0415
 
     return get_modules(
         modules_folders=[REPO_ROOT / "modules"],
