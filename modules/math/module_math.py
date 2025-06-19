@@ -44,8 +44,9 @@ class Module(BaseModule):
             else:
 
                 def pre_config(output_path: str) -> bool:
-                    import random
-                    from pathlib import Path
+                    # Import locally, for performance in the typical use case.
+                    import random  # noqa: PLC0415
+                    from pathlib import Path  # noqa: PLC0415
 
                     # Can set random.seed here to get a deterministic random sequence.
 
@@ -107,7 +108,7 @@ class Module(BaseModule):
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        from hdl_modules import get_hdl_modules
+        from hdl_modules import get_hdl_modules  # noqa: PLC0415
 
         projects = []
         all_modules = get_hdl_modules(names_include=[self.name, "common"])

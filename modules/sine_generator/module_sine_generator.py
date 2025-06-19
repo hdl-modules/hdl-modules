@@ -29,6 +29,10 @@ if TYPE_CHECKING:
     from numpy import ndarray
     from vunit.ui import VUnit
 
+# Import locally, for performance in the typical use case.
+# Especially important here since we import some huge packages (numpy, scipy, etc).
+# ruff: noqa: PLC0415
+
 
 class Module(BaseModule):
     def setup_vunit(
@@ -162,7 +166,6 @@ class Module(BaseModule):
                     add_config(config=config)
 
         # Performance plots in documentation are made from these two test cases.
-        # ruff: noqa: ERA001
         # add_config(Config(integer_increment="000111111", fractional_increment="000000"))
         # add_config(Config(integer_increment="000111111", fractional_increment="000010"))
 
