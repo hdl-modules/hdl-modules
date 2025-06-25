@@ -8,8 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Simple N-to-1 crossbar for connecting multiple AXI read masters to one port.
 --
--- Uses round-robin scheduling for the ``input_ports``. It is simple in the sense that
--- there is no separation of AXI ``AR`` and ``R`` channels with separate queues.
+-- It is simple in the sense that there is no separation of AXI ``AR`` and ``R`` channels
+-- with separate queues.
 -- After a port has been selected for address transaction, the crossbar is
 -- locked on that port until it has finished it's read response transactions.
 -- After that, the crossbar moves on to do a new address transaction on, possibly,
@@ -18,6 +18,9 @@
 -- Due to this it has a very small logic footprint but will never reach full
 -- utilization of the data channels. In order to get higher throughput, further address transactions
 -- should be queued up to the slave while a read response burst is running.
+--
+-- Arbitration is done in simplest most resource-efficient manner possible, which
+-- means that one input port can block others if it continuously sends transactions.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;

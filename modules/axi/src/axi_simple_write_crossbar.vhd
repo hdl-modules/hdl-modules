@@ -8,8 +8,8 @@
 -- -------------------------------------------------------------------------------------------------
 -- Simple N-to-1 crossbar for connecting multiple AXI write masters to one port.
 --
--- Uses round-robin scheduling for the ``input_ports``. It is simple in the sense that
--- there is no separation of AXI ``AW``/``W``/``B`` channels with separate queues.
+-- It is simple in the sense that there is no separation of AXI ``AW``/``W``/``B`` channels
+-- with separate queues.
 -- After a port has been selected for address transaction, the crossbar is
 -- locked on that port until it has finished it's write (``W``) transactions and write
 -- response (``B``) transaction. After that, the crossbar moves on to do a new address transaction
@@ -20,6 +20,9 @@
 -- In order to reach higher throughput there needs to be separation of the channels so that further
 -- ``AW`` transactions are queued up while other ``W`` and ``B`` transactions are running,
 -- and further ``W`` transactions are performed while waiting for other ``B`` transactions.
+--
+-- Arbitration is done in simplest most resource-efficient manner possible, which
+-- means that one input port can block others if it continuously sends transactions.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
