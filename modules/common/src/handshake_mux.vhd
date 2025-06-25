@@ -19,8 +19,8 @@
 --   It is up to the user to make sure that this does not occur, using e.g. a :ref:`fifo.fifo`
 --   in packet mode, or calculate that the system throughput is still sufficient.
 --
---   The arbitration is done in the most resource-efficient round-robin manner possible, which
---   means that one ``input`` can starve out the others if it continuously sends data.
+--   The arbitration is done in the simplest most resource-efficient manner possible, which
+--   means that one ``input`` can block others if it continuously sends data.
 -- -------------------------------------------------------------------------------------------------
 
 library ieee;
