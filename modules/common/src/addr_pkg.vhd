@@ -285,10 +285,10 @@ package body addr_pkg is
 
     for addr_idx in addrs'range loop
       mask := mask or addrs(addr_idx);
-      result(addr_idx).addr := addrs(addr_idx);
     end loop;
 
     for addr_idx in result'range loop
+      result(addr_idx).addr := addrs(addr_idx);
       result(addr_idx).mask := mask;
     end loop;
 

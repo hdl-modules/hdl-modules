@@ -129,10 +129,16 @@ package body axi_lite_bfm_pkg is
     reference : inout bus_reference_t
   ) is
     alias request_msg : msg_t is reference;
+
+    variable full_address : std_logic_vector(address_length(bus_handle) - 1 downto 0) := (
+      others => '0'
+    );
   begin
     request_msg := new_msg(msg_type);
 
-    push_std_ulogic_vector(request_msg, address);
+    full_address(address'range) := address;
+
+    push_std_ulogic_vector(request_msg, full_address);
     push_std_ulogic_vector(request_msg, data);
     push_std_ulogic_vector(request_msg, response);
 

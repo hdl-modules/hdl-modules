@@ -45,10 +45,6 @@ class Module(BaseModule):
         tb.add_config(name="slave_clk_fast", generics={"slave_clk_fast": True})
         tb.add_config(name="same_clocks")
 
-        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_mux")
-        tb.test("read_from_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
-        tb.test("write_to_non_existent_slave_base_address").set_generic("use_axi_lite_bfm", False)
-
         tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_pkg")
         for test in tb.get_tests():
             if test.name in ["test_slv_conversion", "test_axi_lite_strb"]:
@@ -91,8 +87,8 @@ class Module(BaseModule):
                 part=part,
                 top="axi_lite_mux_netlist_build_wrapper",
                 build_result_checkers=[
-                    TotalLuts(EqualTo(516)),
-                    Ffs(EqualTo(28)),
+                    TotalLuts(EqualTo(521)),
+                    Ffs(EqualTo(23)),
                     MaximumLogicLevel(EqualTo(5)),
                 ],
             )
