@@ -165,13 +165,13 @@ class Module(BaseModule):
         add(
             name="trail_cdc",
             generics={"address_width": 24, "data_width": 32, "use_lutram": True},
-            luts=92,
+            luts=66,
             ffs=8,
         )
         add(
             name="trail_cdc",
             generics={"address_width": 35, "data_width": 64, "use_lutram": True},
-            luts=166,
+            luts=114,
             ffs=8,
         )
         add(
@@ -182,7 +182,7 @@ class Module(BaseModule):
                 "use_lutram": True,
                 "use_lutram_output_register": True,
             },
-            luts=92,
+            luts=66,
             ffs=98,
         )
         add(
@@ -193,7 +193,7 @@ class Module(BaseModule):
                 "use_lutram": True,
                 "use_lutram_output_register": True,
             },
-            luts=166,
+            luts=114,
             ffs=172,
         )
 

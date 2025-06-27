@@ -46,7 +46,7 @@ class Module(BaseModule):
         ) -> None:
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=f"{self.library_name}.{name}_register_file",
+                    name=self.netlist_build_name(name=f"{name}_register_file", generics=generics),
                     modules=all_modules,
                     part=part,
                     top=f"{name}_register_file_netlist_build_wrapper",
@@ -62,16 +62,15 @@ class Module(BaseModule):
             )
 
         for enable_reset in [True, False]:
-            generics = {"enable_reset": enable_reset}
             add_register_file(
                 name="axi_lite",
                 luts=170 + 95 * enable_reset,
                 ffs=301,
-                logic_level=4,
-                generics=generics,
+                logic_level=3,
+                generics={"enable_reset": enable_reset},
             )
 
-        add_register_file(name="trail", luts=116, ffs=312, logic_level=3)
+        add_register_file(name="trail", luts=116, ffs=312, logic_level=4)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
