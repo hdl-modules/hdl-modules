@@ -122,9 +122,7 @@ begin
       variable axi_byte : integer := 0;
       -- Use signed and one more byte so we can send the 'dont care' value.
       variable axi_data : integer_array_t := new_1d(
-        length=>bytes_per_beat,
-        bit_width=>9,
-        is_signed=>true
+        length=>bytes_per_beat, bit_width=>9, is_signed=>false
       );
     begin
       get_random_trail_address(
