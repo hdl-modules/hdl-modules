@@ -45,7 +45,9 @@ architecture tb of tb_trail_pipeline is
 
   impure function initialize_and_get_random_bool return boolean is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return get_random_bool;
   end function;
 
