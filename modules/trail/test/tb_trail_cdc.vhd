@@ -35,7 +35,6 @@ entity tb_trail_cdc is
     use_lutram : boolean;
     -- TODO remove
     use_lutram_output_register : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;

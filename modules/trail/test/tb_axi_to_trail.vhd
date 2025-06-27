@@ -47,7 +47,6 @@ entity tb_axi_to_trail is
     address_width : trail_address_width_t;
     data_width : trail_data_width_t;
     test_axi_lite : boolean;
-    seed : natural;
     runner_cfg : string
   );
 end entity;

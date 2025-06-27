@@ -44,8 +44,11 @@ package trail_pkg is
   constant trail_max_data_width : positive := 64;
   subtype trail_data_width_t is positive range 1 to trail_max_data_width;
 
-  -- Check that a provided data width is valid to be used with trail.
+  -- Check that provided widths are valid to be used with TRAIL.
   -- Return 'true' if everything is okay, otherwise 'false'.
+  function sanity_check_trail_widths(address_width, data_width : integer) return boolean;
+  -- Internal functions. In 99% of cases you should use the above function instead.
+  function sanity_check_trail_address_width(address_width : integer) return boolean;
   function sanity_check_trail_data_width(data_width : integer) return boolean;
 
 
@@ -148,17 +151,64 @@ package body trail_pkg is
   ------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------
+  function sanity_check_trail_widths(address_width, data_width : integer) return boolean is
+    constant num_unaligned_address_bits : natural := trail_num_unaligned_address_bits(
+        data_width=>data_width
+    );
+  begin
+    if not sanity_check_trail_address_width(address_width=>address_width) then
+      return false;
+    end if;
+
+    if not sanity_check_trail_data_width(data_width=>data_width) then
+      return false;
+    end if;
+
+    if address_width <= num_unaligned_address_bits then
+      report (
+        "TRAIL address must have at least one aligned bit. Got address_width="
+        & integer'image(address_width)
+        & ", data_width="
+        & integer'image(data_width)
+        & "."
+      );
+      return false;
+    end if;
+
+    return true;
+  end function;
+
+  function sanity_check_trail_address_width(address_width : integer) return boolean is
+    constant message : string := ". Got address_width=" & integer'image(address_width) & ".";
+  begin
+    if address_width <= 0 then
+      report "TRAIL address width must be greater than zero" & message;
+      return false;
+    end if;
+
+    if address_width > trail_max_address_width then
+      report (
+        "TRAIL address width must not be greater than max value "
+        & integer'image(trail_max_address_width)
+        & message
+      );
+      return false;
+    end if;
+
+    return true;
+  end function;
+
   function sanity_check_trail_data_width(data_width : integer) return boolean is
     constant message : string := ". Got data_width=" & integer'image(data_width) & ".";
   begin
     if data_width <= 0 then
-      report "trail data width must be greater than zero" & message;
+      report "TRAIL data width must be greater than zero" & message;
       return false;
     end if;
 
     if data_width > trail_max_data_width then
       report (
-        "trail data width must not be greater than max value "
+        "TRAIL data width must not be greater than max value "
         & integer'image(trail_max_data_width)
         & message
       );
@@ -166,12 +216,12 @@ package body trail_pkg is
     end if;
 
     if data_width mod 8 /= 0 then
-      report "trail data width must be a whole number of bytes" & message;
+      report "TRAIL data width must be a whole number of bytes" & message;
       return false;
     end if;
 
     if not is_power_of_two(data_width / 8) then
-      report "trail data byte width must be a power of two" & message;
+      report "TRAIL data byte-width must be a power of two" & message;
       return false;
     end if;
 

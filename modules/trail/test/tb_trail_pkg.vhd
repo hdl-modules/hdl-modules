@@ -23,9 +23,8 @@ use work.trail_pkg.all;
 
 entity tb_trail_pkg is
   generic (
-    address_width : trail_address_width_t;
-    data_width : trail_data_width_t;
-    seed : natural;
+    address_width : trail_address_width_t := 16;
+    data_width : trail_data_width_t := 16;
     runner_cfg : string
   );
 end entity;
@@ -100,6 +99,16 @@ begin
       assert not sanity_check_trail_data_width(data_width=>33);
 
       assert not sanity_check_trail_data_width(data_width=>256);
+
+    elsif run("test_check_trail_address_width") then
+      assert sanity_check_trail_address_width(address_width=>8);
+      assert not sanity_check_trail_address_width(address_width=>0);
+      assert not sanity_check_trail_address_width(address_width=>-8);
+      assert not sanity_check_trail_address_width(address_width=>800);
+
+    elsif run("test_check_trail_widths") then
+      assert sanity_check_trail_widths(address_width=>8, data_width=>16);
+      assert not sanity_check_trail_widths(address_width=>2, data_width=>64);
 
     elsif run("test_slv_conversion") then
       for i in 0 to 100 loop

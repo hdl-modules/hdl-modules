@@ -29,7 +29,6 @@ entity tb_trail_pipeline is
   generic (
     address_width : trail_address_width_t;
     data_width : trail_data_width_t;
-    seed : natural;
     runner_cfg : string
   );
 end entity;

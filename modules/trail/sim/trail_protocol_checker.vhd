@@ -49,18 +49,9 @@ architecture a of trail_protocol_checker is
 begin
 
   ------------------------------------------------------------------------------
-  data_width_block : block
-    constant data_width_error_message : string := (
-      base_error_message & "Invalid trail data width, see printout above."
-    );
-  begin
-
-    ------------------------------------------------------------------------------
-    assert sanity_check_trail_data_width(data_width=>data_width)
-      report data_width_error_message
-      severity failure;
-
-  end block;
+  assert sanity_check_trail_widths(address_width=>address_width, data_width=>data_width)
+    report base_error_message & "Invalid TRAIL bus width(s), see printout above."
+    severity failure;
 
 
   ------------------------------------------------------------------------------

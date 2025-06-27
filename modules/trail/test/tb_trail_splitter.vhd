@@ -31,7 +31,6 @@ use work.trail_sim_pkg.all;
 
 entity tb_trail_splitter is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;

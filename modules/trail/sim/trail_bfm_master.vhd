@@ -34,9 +34,6 @@ entity trail_bfm_master is
     command_queue : queue_t;
     -- Assign non-zero to randomly insert a delay before the 'operation' is sent.
     stall_config : stall_configuration_t := zero_stall_configuration;
-    -- Random seed for 'operation' delay.
-    -- Set to something unique in order to vary the random sequence.
-    seed : natural := 0;
     -- Suffix for error log messages. Can be used to differentiate between multiple instances.
     logger_name_suffix : string := ""
   );
