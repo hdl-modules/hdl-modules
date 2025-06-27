@@ -33,7 +33,6 @@ use work.register_operations_pkg.all;
 
 entity tb_trail_register_file is
   generic (
-    seed : natural;
     runner_cfg : string
   );
 end entity;
@@ -173,7 +172,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_default_values") then
       wait until regs_down /= default_values or trail_response.enable = '1' for 100 * clk_period;
