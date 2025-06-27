@@ -7,7 +7,7 @@ Compared to other options (AXI-Lite, Avalon-MM, Wishbone), TRAIL offers
 2. lower latency,
 3. lower complexity (fewer bugs),
 4. no vendor lock-in,
-5. :ref:`reference designs <trail_bus_layout>` for all components.
+5. :ref:`reference designs <trail_bus_layout>` for all necessary components.
 
 
 
@@ -149,13 +149,13 @@ In order to work effectively with TRAIL we need good testbench support component
   trail_bfm_master -> dut [label="response"];
 
   dut [label="DUT" shape="box" width=1 height=1.5];
-  dut -> trail_slave_bfm [label="operation" dir="back"];
-  dut -> trail_slave_bfm [label="response"];
+  dut -> trail_bfm_slave [label="operation" dir="back"];
+  dut -> trail_bfm_slave [label="response"];
 
-  trail_slave_bfm [label="trail_slave_bfm\n+\ntrail_protocol_checker" shape="box" height=1.5];
+  trail_bfm_slave [label="trail_bfm_slave\n+\ntrail_protocol_checker" shape="box" height=1.5];
 
 The following is provided in this library:
 
 * Create stimuli operations and verify responses: :ref:`trail.trail_bfm_master`
-* Provide responses to operations: :ref:`trail.trail_bfm_master`
+* Provide responses to operations: :ref:`trail.trail_bfm_slave`
 * Verify that all TRAIL rules are followed: :ref:`trail.trail_protocol_checker`
