@@ -32,12 +32,8 @@ class Module(BaseModule):
             for address_width in [7, 24, 40]:
                 generics = dict(address_width=address_width, data_width=data_width)
 
-                self.add_vunit_config(
-                    test=test_slv_conversion, generics=generics, set_random_seed=True
-                )
-                self.add_vunit_config(
-                    test=tb_trail_pipeline, generics=generics, set_random_seed=True
-                )
+                self.add_vunit_config(test=test_slv_conversion, generics=generics)
+                self.add_vunit_config(test=tb_trail_pipeline, generics=generics)
 
                 # FIX!!! Does not need to be run for all combinations of address and data width.
                 for use_lutram in [True, False]:
@@ -51,7 +47,6 @@ class Module(BaseModule):
                                 use_lutram_output_register=use_lutram_output_register,
                                 **generics,
                             ),
-                            set_random_seed=True,
                         )
 
                 if data_width in [32, 64] and address_width < 32:
@@ -59,17 +54,13 @@ class Module(BaseModule):
                         generics["test_axi_lite"] = test_axi_lite
 
                         self.add_vunit_config(
-                            test=tb_axi_to_trail, generics=generics, set_random_seed=711
-                        )
-
-                        # for _ in range(4):
-                        self.add_vunit_config(
-                            test=tb_axi_to_trail, generics=generics, set_random_seed=True
+                            test=tb_axi_to_trail,
+                            generics=generics,
+                            # , count=4
                         )
 
         tb_trail_splitter = vunit_proj.library(self.library_name).test_bench("tb_trail_splitter")
-        for _ in range(4):
-            self.add_vunit_config(test=tb_trail_splitter, set_random_seed=True)
+        self.add_vunit_config(test=tb_trail_splitter, count=4)
 
     def get_build_projects(self):
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
