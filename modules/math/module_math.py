@@ -40,7 +40,11 @@ class Module(BaseModule):
         tb = vunit_proj.library(self.library_name).test_bench("tb_truncate_round_signed")
         for test in tb.get_tests():
             if test.name == "test_non_convergent":
-                self.add_vunit_config(test=test, count=4)
+                self.add_vunit_config(
+                    test=test,
+                    generics={"convergent_rounding": False},
+                    count=4,
+                )
             else:
 
                 def pre_config(output_path: str) -> bool:
