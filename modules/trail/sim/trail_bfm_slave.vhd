@@ -19,6 +19,7 @@ use osvvm.RandomPkg.RandomPType;
 library vunit_lib;
 use vunit_lib.queue_pkg.all;
 use vunit_lib.run_pkg.all;
+use vunit_lib.run_types_pkg.all;
 
 library bfm;
 use bfm.stall_bfm_pkg.all;
@@ -83,6 +84,7 @@ begin
       trail_response.read_data <= (others => 'X');
     end procedure;
 
+    variable seed : string_seed_t;
     variable rnd : RandomPType;
 
     variable command_slv : std_logic_vector(trail_bfm_command_width - 1 downto 0) := (
