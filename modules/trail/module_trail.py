@@ -7,17 +7,27 @@
 # https://github.com/hdl-modules/hdl-modules
 # --------------------------------------------------------------------------------------------------
 
-# Third party libraries
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import EqualTo, Ffs, TotalLuts
 
+if TYPE_CHECKING:
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
-    def setup_vunit(self, vunit_proj, **kwargs):  # pylint: disable=unused-argument
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
         self.setup_trail_pkg_tests(vunit_proj=vunit_proj)
 
-    def setup_trail_pkg_tests(self, vunit_proj):
+    def setup_trail_pkg_tests(self, vunit_proj: VUnit) -> None:
         tb_trail_cdc = vunit_proj.library(self.library_name).test_bench("tb_trail_cdc")
 
         tb_trail_pkg = vunit_proj.library(self.library_name).test_bench("tb_trail_pkg")
@@ -30,7 +40,7 @@ class Module(BaseModule):
 
         for data_width in [8, 16, 32, 64]:
             for address_width in [7, 24, 40]:
-                generics = dict(address_width=address_width, data_width=data_width)
+                generics = {"address_width": address_width, "data_width": data_width}
 
                 self.add_vunit_config(test=test_slv_conversion, generics=generics)
                 self.add_vunit_config(test=tb_trail_pipeline, generics=generics)
@@ -62,14 +72,12 @@ class Module(BaseModule):
         tb_trail_splitter = vunit_proj.library(self.library_name).test_bench("tb_trail_splitter")
         self.add_vunit_config(test=tb_trail_splitter, count=4)
 
-    def get_build_projects(self):
+    def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
         # This method is only called when running netlist builds in the hdl-modules repo from the
         # bundled tools/build_fpga.py, where PYTHONPATH is correctly set up.
-        # pylint: disable=import-outside-toplevel
-        # First party libraries
-        from hdl_modules import get_hdl_modules
+        from hdl_modules import get_hdl_modules  # noqa: PLC0415
 
         projects = []
         all_modules = get_hdl_modules(
@@ -77,7 +85,7 @@ class Module(BaseModule):
         )
         part = "xc7z020clg400-1"
 
-        def add(name: str, generics: dict, luts: int, ffs: int, top: str = ""):
+        def add(name: str, generics: dict, luts: int, ffs: int, top: str = "") -> None:
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
                     name=self.test_case_name(name=f"{self.library_name}.{name}", generics=generics),
@@ -89,10 +97,10 @@ class Module(BaseModule):
                 )
             )
 
-        def add_trail_pipeline(generics: dict[str, bool], ffs: int):
+        def add_trail_pipeline(generics: dict[str, bool], ffs: int) -> None:
             add(name="trail_pipeline", generics=generics, luts=0, ffs=ffs)
 
-        def add_trail_splitter(generics: dict[str, bool], luts: int):
+        def add_trail_splitter(generics: dict[str, bool], luts: int) -> None:
             add(
                 name="trail_splitter",
                 generics=generics,
@@ -101,84 +109,90 @@ class Module(BaseModule):
                 top="trail_splitter_netlist_build_wrapper",
             )
 
-        add_trail_pipeline(generics=dict(address_width=38, data_width=64), ffs=0)
+        add_trail_pipeline(generics={"address_width": 38, "data_width": 64}, ffs=0)
         add_trail_pipeline(
-            generics=dict(address_width=40, data_width=32, pipeline_operation_address=True),
+            generics={"address_width": 40, "data_width": 32, "pipeline_operation_address": True},
             ffs=(40 - 2) + 1,
         )
         add_trail_pipeline(
-            generics=dict(
-                address_width=24,
-                data_width=16,
-                pipeline_operation_write_data=True,
-                pipeline_response_read_data=True,
-            ),
+            generics={
+                "address_width": 24,
+                "data_width": 16,
+                "pipeline_operation_write_data": True,
+                "pipeline_response_read_data": True,
+            },
             ffs=2 * (16 + 1),
         )
         add_trail_pipeline(
-            generics=dict(
-                address_width=20,
-                data_width=32,
-                pipeline_operation_address=True,
-                pipeline_operation_write_enable=True,
-                pipeline_response_read_data=True,
-            ),
+            generics={
+                "address_width": 20,
+                "data_width": 32,
+                "pipeline_operation_address": True,
+                "pipeline_operation_write_enable": True,
+                "pipeline_response_read_data": True,
+            },
             ffs=53,
         )
 
         add(
             name="axi_lite_to_trail",
-            generics=dict(address_width=24, data_width=32),
+            generics={"address_width": 24, "data_width": 32},
             luts=29,
             ffs=64,
         )
         add(
             name="axi_lite_to_trail",
-            generics=dict(address_width=35, data_width=64),
+            generics={"address_width": 35, "data_width": 64},
             luts=34,
             ffs=106,
         )
 
-        add_trail_splitter(generics=dict(address_width=32, data_width=64), luts=355)
-        add_trail_splitter(generics=dict(address_width=24, data_width=32), luts=195)
+        add_trail_splitter(generics={"address_width": 32, "data_width": 64}, luts=355)
+        add_trail_splitter(generics={"address_width": 24, "data_width": 32}, luts=195)
 
         add(
             name="trail_cdc",
-            generics=dict(address_width=24, data_width=32, use_lutram=False),
+            generics={"address_width": 24, "data_width": 32, "use_lutram": False},
             luts=4,
             ffs=186,
         )
         add(
             name="trail_cdc",
-            generics=dict(address_width=35, data_width=64, use_lutram=False),
+            generics={"address_width": 35, "data_width": 64, "use_lutram": False},
             luts=4,
             ffs=334,
         )
         add(
             name="trail_cdc",
-            generics=dict(address_width=24, data_width=32, use_lutram=True),
+            generics={"address_width": 24, "data_width": 32, "use_lutram": True},
             luts=92,
             ffs=8,
         )
         add(
             name="trail_cdc",
-            generics=dict(address_width=35, data_width=64, use_lutram=True),
+            generics={"address_width": 35, "data_width": 64, "use_lutram": True},
             luts=166,
             ffs=8,
         )
         add(
             name="trail_cdc",
-            generics=dict(
-                address_width=24, data_width=32, use_lutram=True, use_lutram_output_register=True
-            ),
+            generics={
+                "address_width": 24,
+                "data_width": 32,
+                "use_lutram": True,
+                "use_lutram_output_register": True,
+            },
             luts=92,
             ffs=98,
         )
         add(
             name="trail_cdc",
-            generics=dict(
-                address_width=35, data_width=64, use_lutram=True, use_lutram_output_register=True
-            ),
+            generics={
+                "address_width": 35,
+                "data_width": 64,
+                "use_lutram": True,
+                "use_lutram_output_register": True,
+            },
             luts=166,
             ffs=172,
         )
