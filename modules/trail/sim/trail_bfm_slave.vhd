@@ -18,6 +18,7 @@ use osvvm.RandomPkg.RandomPType;
 
 library vunit_lib;
 use vunit_lib.queue_pkg.all;
+use vunit_lib.run_pkg.all;
 
 library bfm;
 use bfm.stall_bfm_pkg.all;
@@ -97,7 +98,9 @@ begin
       others => '0'
     );
   begin
-    rnd.InitSeed(rnd'instance_name & "_" & to_string(seed) & logger_name_suffix);
+    -- Use salt so that parallel instances of this entity get unique random sequences.
+    get_seed(seed, salt=>trail_bfm_slave'path_name);
+    rnd.InitSeed(seed);
 
     drive_response_payload_invalid;
 
