@@ -126,7 +126,6 @@ begin
       data_width => data_width,
       command_queue => master_command_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input side"
     )
     port map (
@@ -146,7 +145,6 @@ begin
       data_width => data_width,
       command_queue => slave_command_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - result side"
     )
     port map (

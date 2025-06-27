@@ -232,8 +232,7 @@ begin
       address_width => address_width,
       data_width => data_width,
       command_queue => trail_command_queue,
-      stall_config => stall_config,
-      seed => seed
+      stall_config => stall_config
     )
     port map (
       clk => clk,
@@ -292,8 +291,7 @@ begin
         job_queue => axi_read_job_queue,
         reference_data_queue => axi_read_data_queue,
         ar_stall_config => stall_config,
-        r_stall_config => stall_config,
-        seed => seed
+        r_stall_config => stall_config
       )
       port map (
         clk => clk,
@@ -312,8 +310,7 @@ begin
         data_queue => axi_write_data_queue,
         aw_stall_config => stall_config,
         w_stall_config => stall_config,
-        b_stall_config => stall_config,
-        seed => seed
+        b_stall_config => stall_config
       )
       port map (
         clk => clk,
