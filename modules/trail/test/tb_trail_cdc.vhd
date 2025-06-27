@@ -51,7 +51,9 @@ architecture tb of tb_trail_cdc is
 
   impure function initialize_and_get_random_frequency_mhz return real is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return get_random_frequency_mhz;
   end function;
 
@@ -125,7 +127,6 @@ begin
       data_width => data_width,
       command_queue => master_command_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input side"
     )
     port map (
@@ -145,7 +146,6 @@ begin
       data_width => data_width,
       command_queue => slave_command_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - result side"
     )
     port map (

@@ -75,7 +75,7 @@ begin
 
   begin
     test_runner_setup(runner, runner_cfg);
-    rnd.InitSeed(seed);
+    rnd.InitSeed(get_string_seed(runner_cfg));
 
     if run("test_num_unaligned_address_bits") then
       check_equal(trail_num_unaligned_address_bits(data_width=>8), 0);

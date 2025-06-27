@@ -47,7 +47,9 @@ architecture tb of tb_trail_splitter is
   constant max_num_ports : positive := 32;
   impure function initialize_and_get_num_ports return positive is
   begin
-    rnd.InitSeed(seed);
+    -- This is the first function that is called, so we initialize the random number generator here.
+    rnd.InitSeed(get_string_seed(runner_cfg));
+
     return rnd.Uniform(1, max_num_ports);
   end function;
 
@@ -172,7 +174,6 @@ begin
       data_width => data_width,
       command_queue => input_command_queue,
       stall_config => stall_config,
-      seed => seed,
       logger_name_suffix => " - input"
     )
     port map (
@@ -195,7 +196,6 @@ begin
         data_width => data_width,
         command_queue => result_command_queue(port_idx),
         stall_config => stall_config,
-        seed => seed,
         logger_name_suffix => " - result port " & to_string(port_idx)
       )
       port map (
