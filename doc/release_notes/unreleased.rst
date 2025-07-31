@@ -1,3 +1,7 @@
+Added
+
+* Add support for ``wmasked`` register mode in :ref:`register_file.axi_lite_register_file`.
+
 Fixes
 
 * Fix ``ARREADY`` handshaking bug in :ref:`register_file.axi_lite_register_file`.

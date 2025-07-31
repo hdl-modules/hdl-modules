@@ -103,8 +103,6 @@ package axi_lite_bfm_pkg is
 
   constant bfm_check_msg : msg_type_t := new_msg_type("check bfm");
   constant bfm_write_msg : msg_type_t := new_msg_type("write bfm");
-  constant bfm_read_count_msg : msg_type_t := new_msg_type("read count bfm");
-  constant bfm_write_count_msg : msg_type_t := new_msg_type("write count bfm");
 
 end package;
 
