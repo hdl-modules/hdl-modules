@@ -44,9 +44,8 @@ class Module(BaseModule):
             all_generics = dict(address_width=29, stream_data_width=64, **generics)
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.dma_axi_write_simple_axi_lite",
-                        generics=all_generics,
+                    name=self.netlist_build_name(
+                        "dma_axi_write_simple_axi_lite", generics=all_generics
                     ),
                     modules=modules,
                     part=part,

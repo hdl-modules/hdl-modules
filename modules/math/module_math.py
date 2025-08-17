@@ -135,9 +135,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.truncate_round_signed", generics=generics
-                    ),
+                    name=self.netlist_build_name("truncate_round_signed", generics=generics),
                     modules=all_modules,
                     top="truncate_round_signed",
                     part=part,

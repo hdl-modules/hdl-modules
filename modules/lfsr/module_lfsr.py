@@ -223,7 +223,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         generics = {"lfsr_length": 52}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_single", generics),
+                name=self.netlist_build_name("lfsr_fibonacci_single", generics),
                 modules=modules,
                 part=part,
                 top="lfsr_fibonacci_single",
@@ -239,7 +239,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         generics = {"lfsr_length": 15}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_single", generics),
+                name=self.netlist_build_name("lfsr_fibonacci_single", generics),
                 modules=modules,
                 part=part,
                 top="lfsr_fibonacci_single",
@@ -256,7 +256,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         generics.update(seed=BitVectorGenericValue("010101010101010"))
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_single", generics),
+                name=self.netlist_build_name("lfsr_fibonacci_single", generics),
                 modules=modules,
                 part=part,
                 top="lfsr_fibonacci_single",
@@ -275,7 +275,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         generics = {"output_width": 12}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_multi", generics),
+                name=self.netlist_build_name("lfsr_fibonacci_multi", generics),
                 modules=modules,
                 part=part,
                 top="lfsr_fibonacci_multi",
@@ -292,7 +292,7 @@ Noise floor (ENOB): {noise_floor_enob:.2f}\
         generics = {"output_width": 16}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.lfsr_fibonacci_multi", generics),
+                name=self.netlist_build_name("lfsr_fibonacci_multi", generics),
                 modules=modules,
                 part=part,
                 top="lfsr_fibonacci_multi",

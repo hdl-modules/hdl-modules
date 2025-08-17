@@ -142,7 +142,7 @@ class Module(BaseModule):
         }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.minimal", generics),
+                name=self.netlist_build_name("fifo.minimal", generics),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -162,9 +162,7 @@ class Module(BaseModule):
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.fifo.minimal_with_output_register", generics
-                ),
+                name=self.netlist_build_name("fifo.minimal_with_output_register", generics),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -184,7 +182,7 @@ class Module(BaseModule):
         generics = {"width": 32, "depth": 1024, "almost_full_level": 800}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.with_levels", generics),
+                name=self.netlist_build_name("fifo.with_levels", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -203,7 +201,7 @@ class Module(BaseModule):
         generics.update(enable_last=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.with_last", generics),
+                name=self.netlist_build_name("fifo.with_last", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -223,7 +221,7 @@ class Module(BaseModule):
         generics.update(enable_packet_mode=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.with_packet_mode", generics),
+                name=self.netlist_build_name("fifo.with_packet_mode", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -243,9 +241,7 @@ class Module(BaseModule):
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.fifo.with_packet_mode_and_output_register", generics
-                ),
+                name=self.netlist_build_name("fifo.with_packet_mode_and_output_register", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -267,7 +263,7 @@ class Module(BaseModule):
         )
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.with_drop_packet", generics),
+                name=self.netlist_build_name("fifo.with_drop_packet", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -287,7 +283,7 @@ class Module(BaseModule):
         generics.update(enable_drop_packet=False, enable_peek_mode=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.with_peek_mode", generics),
+                name=self.netlist_build_name("fifo.with_peek_mode", generics),
                 modules=modules,
                 part=part,
                 top="fifo",
@@ -312,7 +308,7 @@ class Module(BaseModule):
         }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.fifo.lutram_minimal", generics),
+                name=self.netlist_build_name("fifo.lutram_minimal", generics),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -353,9 +349,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        f"{self.library_name}.asynchronous_fifo.resync_fifo", generics
-                    ),
+                    name=self.netlist_build_name("asynchronous_fifo.resync_fifo", generics),
                     modules=modules,
                     part=part,
                     top="fifo_netlist_build_wrapper",
@@ -386,9 +380,7 @@ class Module(BaseModule):
         }
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.minimal", generics
-                ),
+                name=self.netlist_build_name("asynchronous_fifo.minimal", generics),
                 modules=modules,
                 part=part,
                 top="fifo_netlist_build_wrapper",
@@ -410,8 +402,8 @@ class Module(BaseModule):
         )
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.minimal_with_output_register", generics
+                name=self.netlist_build_name(
+                    "asynchronous_fifo.minimal_with_output_register", generics
                 ),
                 modules=modules,
                 part=part,
@@ -432,9 +424,7 @@ class Module(BaseModule):
         generics = {"width": 32, "depth": 1024, "almost_full_level": 800}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.with_levels", generics
-                ),
+                name=self.netlist_build_name("asynchronous_fifo.with_levels", generics),
                 modules=modules,
                 part=part,
                 top="asynchronous_fifo",
@@ -453,9 +443,7 @@ class Module(BaseModule):
         generics.update(enable_last=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.with_last", generics
-                ),
+                name=self.netlist_build_name("asynchronous_fifo.with_last", generics),
                 modules=modules,
                 part=part,
                 top="asynchronous_fifo",
@@ -475,9 +463,7 @@ class Module(BaseModule):
         generics.update(enable_packet_mode=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.with_packet_mode", generics
-                ),
+                name=self.netlist_build_name("asynchronous_fifo.with_packet_mode", generics),
                 modules=modules,
                 part=part,
                 top="asynchronous_fifo",
@@ -497,8 +483,8 @@ class Module(BaseModule):
         generics.update(depth=generics["depth"] + 1, enable_output_register=True)
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.with_packet_mode_and_output_register",
+                name=self.netlist_build_name(
+                    "asynchronous_fifo.with_packet_mode_and_output_register",
                     generics,
                 ),
                 modules=modules,
@@ -523,9 +509,7 @@ class Module(BaseModule):
         )
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    f"{self.library_name}.asynchronous_fifo.with_drop_packet", generics
-                ),
+                name=self.netlist_build_name("asynchronous_fifo.with_drop_packet", generics),
                 modules=modules,
                 part=part,
                 top="asynchronous_fifo",

@@ -265,9 +265,7 @@ class Module(BaseModule):
         generics = {"resolution_bits": 24, "max_relation_bits": 6}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    name=f"{self.library_name}.clock_counter", generics=generics
-                ),
+                name=self.netlist_build_name("clock_counter", generics=generics),
                 modules=modules,
                 part=part,
                 top="clock_counter",
@@ -283,9 +281,7 @@ class Module(BaseModule):
         generics = {"resolution_bits": 10, "max_relation_bits": 4}
         projects.append(
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(
-                    name=f"{self.library_name}.clock_counter", generics=generics
-                ),
+                name=self.netlist_build_name("clock_counter", generics=generics),
                 modules=modules,
                 part=part,
                 top="clock_counter",
@@ -305,9 +301,7 @@ class Module(BaseModule):
             generics = {"event_count": event_count, "tick_count": tick_count}
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.event_aggregator", generics=generics
-                    ),
+                    name=self.netlist_build_name("event_aggregator", generics=generics),
                     modules=[self],
                     part=part,
                     top="event_aggregator",
@@ -347,9 +341,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.handshake_pipeline", generics=generics
-                    ),
+                    name=self.netlist_build_name("handshake_pipeline", generics=generics),
                     modules=[self],
                     part=part,
                     top="handshake_pipeline",
@@ -372,9 +364,7 @@ class Module(BaseModule):
         for generics, build_result_checkers in get_build_configurations():
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.handshake_splitter", generics=generics
-                    ),
+                    name=self.netlist_build_name("handshake_splitter", generics=generics),
                     modules=[self],
                     part=part,
                     top="handshake_splitter",
@@ -399,9 +389,7 @@ class Module(BaseModule):
         for idx, generics in enumerate(generic_configurations):
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.keep_remover", generics=generics
-                    ),
+                    name=self.netlist_build_name("keep_remover", generics=generics),
                     modules=modules,
                     part=part,
                     top="keep_remover",
@@ -552,7 +540,7 @@ class Module(BaseModule):
         for generics, checkers in generate_netlist_configurations():
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(f"{self.library_name}.periodic_pulser", generics),
+                    name=self.netlist_build_name("periodic_pulser", generics),
                     modules=modules,
                     part=part,
                     top="periodic_pulser",
@@ -577,9 +565,7 @@ class Module(BaseModule):
         for idx, generics in enumerate(generic_configurations):
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.strobe_on_last", generics=generics
-                    ),
+                    name=self.netlist_build_name("strobe_on_last", generics=generics),
                     modules=modules,
                     part=part,
                     top="strobe_on_last",
@@ -636,9 +622,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.width_conversion", generics=generics
-                    ),
+                    name=self.netlist_build_name("width_conversion", generics=generics),
                     modules=modules,
                     part=part,
                     top="width_conversion",

@@ -57,7 +57,7 @@ class Module(BaseModule):
 
         return [
             TsfpgaExampleVivadoNetlistProject(
-                name=self.test_case_name(f"{self.library_name}.ring_buffer_write_simple", generics),
+                name=self.netlist_build_name("ring_buffer_write_simple", generics),
                 modules=modules,
                 part=part,
                 top="ring_buffer_write_simple",

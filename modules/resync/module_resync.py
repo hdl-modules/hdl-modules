@@ -142,9 +142,7 @@ class Module(BaseModule):
             generics = {"enable_feedback": enable_feedback}
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        f"{self.library_name}.resync_pulse", generics=generics
-                    ),
+                    name=self.netlist_build_name("resync_pulse", generics=generics),
                     modules=modules,
                     part=part,
                     top="resync_pulse",
@@ -193,7 +191,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(f"{self.library_name}.{config.name}", generics),
+                    name=self.netlist_build_name(config.name, generics),
                     modules=modules,
                     part=part,
                     top=config.name,
