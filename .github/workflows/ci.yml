@@ -110,6 +110,7 @@ jobs:
           sphinx-rtd-theme \
           sphinxcontrib-googleanalytics \
           sphinxcontrib-wavedrom \
+          sphinxcontrib-wavedrom \
           sphinxext-opengraph \
           tomli_w \
           vunit-hdl

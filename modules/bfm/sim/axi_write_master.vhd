@@ -113,7 +113,7 @@ architecture a of axi_write_master is
 
   constant bytes_per_beat : positive := data_width / 8;
 
-  constant b_id_queue, w_id_queue : queue_t := new_queue;
+  constant w_id_queue, b_id_queue, b_resp_queue : queue_t := new_queue;
 
 begin
 
@@ -151,6 +151,7 @@ begin
       end if;
 
       push(b_id_queue, job.id);
+      push(b_resp_queue, job.expected_response);
 
       id_target <= to_unsigned(job.id, id_target'length);
       addr_target <= to_unsigned(job.address, addr_target'length);
@@ -276,16 +277,18 @@ begin
 
     ------------------------------------------------------------------------------
     check_b : process
-      variable id_reference : natural := 0;
+      variable expected_id : natural := 0;
+      variable expected_response : axi_resp_t := axi_resp_okay;
     begin
       wait until axi_write_m2s.b.ready and axi_write_s2m.b.valid and rising_edge(clk);
 
-      check_equal(axi_write_s2m.b.resp, axi_resp_okay);
-
-      id_reference := pop(b_id_queue);
+      expected_id := pop(b_id_queue);
       if id_width > 0 then
-        check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), id_reference);
+        check_equal(axi_write_s2m.b.id(id_width - 1 downto 0), expected_id);
       end if;
+
+      expected_response := pop(b_resp_queue);
+      check_equal(axi_write_s2m.b.resp, expected_response);
 
       num_bursts_done <= num_bursts_done + 1;
     end process;
