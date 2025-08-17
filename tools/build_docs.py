@@ -192,7 +192,7 @@ def generate_documentation() -> None:
 
 """
 
-    modules = get_modules(modules_folders=[tools_env.HDL_MODULES_DIRECTORY])
+    modules = get_modules(modules_folder=tools_env.HDL_MODULES_DIRECTORY)
 
     # Sort by module name
     def sort_key(module: "BaseModule") -> str:
