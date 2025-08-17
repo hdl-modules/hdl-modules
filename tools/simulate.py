@@ -19,10 +19,9 @@ sys.path.insert(0, str(REPO_ROOT))
 import tools.tools_pythonpath  # noqa: F401
 
 from tsfpga.examples.simulation_utils import (
-    NoVcsDiffTestsFound,
     SimulationProject,
-    find_git_test_filter,
     get_arguments_cli,
+    set_git_test_pattern,
 )
 from tsfpga.module import get_modules
 
@@ -35,21 +34,23 @@ def main() -> None:
 
     modules = get_modules(modules_folder=tools_env.HDL_MODULES_DIRECTORY)
 
-    if args.vcs_minimal:
-        try:
-            args = find_git_test_filter(args=args, repo_root=tools_env.REPO_ROOT, modules=modules)
-        except NoVcsDiffTestsFound:
-            print("Nothing to run. Appears to be no VHDL-related git diff.")
-            return
+    simulation_project = SimulationProject(args=args, enable_preprocessing=True)
+    simulation_project.add_modules(modules=modules)
+    simulation_project.add_vivado_simlib()
+
+    if args.vcs_minimal and not set_git_test_pattern(
+        args=args,
+        repo_root=REPO_ROOT,
+        vunit_proj=simulation_project.vunit_proj,
+        modules=modules,
+    ):
+        # No git diff. Don't run anything.
+        return
 
     # Some of our test names get really long (tb_asynchronous_fifo specifically),
     # resulting in too long paths: "OSError: [Errno 36] File name too long".
     # Hence let VUnit shorten the paths in vunit_out folder.
     os.environ["VUNIT_SHORT_TEST_OUTPUT_PATHS"] = "true"
-
-    simulation_project = SimulationProject(args=args, enable_preprocessing=True)
-    simulation_project.add_modules(modules=modules)
-    simulation_project.add_vivado_simlib()
 
     simulation_project.vunit_proj.main()
 
