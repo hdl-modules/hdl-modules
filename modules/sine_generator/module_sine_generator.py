@@ -414,9 +414,7 @@ class Module(BaseModule):
 
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.sine_generator", generics=generics
-                    ),
+                    name=self.netlist_build_name("sine_generator", generics=generics),
                     modules=modules,
                     part=part,
                     top="sine_generator",

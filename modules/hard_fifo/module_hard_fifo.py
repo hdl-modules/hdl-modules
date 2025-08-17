@@ -95,7 +95,7 @@ class Module(BaseModule):
 
             projects.extend(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(f"{self.library_name}.{name}", generics),
+                    name=self.netlist_build_name(name, generics),
                     modules=[self],
                     part=part,
                     top=name,
