@@ -17,7 +17,7 @@ sys.path.insert(0, str(REPO_ROOT))
 # Import before others since it modifies PYTHONPATH.
 import tools.tools_pythonpath  # noqa: F401
 
-from tsfpga.build_project_list import BuildProjectList
+from tsfpga.build_project_list import BuildProjectList, get_build_projects
 from tsfpga.examples.build_fpga_utils import arguments, setup_and_run
 from tsfpga.module import get_modules
 
@@ -26,17 +26,19 @@ from tools import tools_env
 
 def main() -> None:
     args = arguments(default_temp_dir=tools_env.HDL_MODULES_GENERATED)
+
     modules = get_modules(modules_folder=tools_env.HDL_MODULES_DIRECTORY)
-    projects = BuildProjectList(
-        modules=modules,
-        project_filters=args.project_filters,
-        include_netlist_not_top_builds=args.netlist_builds,
-        no_color=args.no_color,
+    project_list = BuildProjectList(
+        projects=get_build_projects(
+            modules=modules,
+            project_filters=args.project_filters,
+            include_netlist_not_full_builds=args.netlist_builds,
+        )
     )
 
     sys.exit(
         setup_and_run(
-            modules=modules, projects=projects, args=args, collect_artifacts_function=None
+            modules=modules, project_list=project_list, args=args, collect_artifacts_function=None
         )
     )
 
