@@ -162,7 +162,8 @@ def parse_generics(
     # All combinations of generics and values. For example:
     # [{"a": True, "b": 16}, {"a": True, "b": 32}, {"a": False, "b": 16}, {"a": False, "b": 32}]
     return [
-        dict(zip(result_raw.keys(), combination)) for combination in product(*result_raw.values())
+        dict(zip(result_raw.keys(), combination, strict=False))
+        for combination in product(*result_raw.values())
     ]
 
 
