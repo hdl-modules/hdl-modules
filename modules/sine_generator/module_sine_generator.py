@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
@@ -25,6 +25,8 @@ from tsfpga.vivado.build_result_checker import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from matplotlib.axes import Axes
     from numpy import ndarray
     from vunit.ui import VUnit
