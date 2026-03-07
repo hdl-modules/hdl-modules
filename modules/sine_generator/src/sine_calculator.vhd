@@ -73,7 +73,7 @@
 --
 -- .. math::
 --
---   B \equiv \frac{\pi / 2}{2^\text{memory_address_width}}.
+--   B \equiv \frac{\pi / 2}{2^\text{memory\_address\_width}}.
 --
 -- The calculation is partitioned like this, using DSP48 blocks:
 --
