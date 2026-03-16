@@ -199,7 +199,7 @@ jobs:
           vunit-hdl@git+https://github.com/VUnit/vunit.git
 
     - name: Setup GHDL
-      uses: ghdl/setup-ghdl@09e61b6db92fe2766a0b0a4b82505a47d67570be # v1.2.1
+      uses: ghdl/setup-ghdl@cd27f618fa44ee579660e3a20f98dd806c3f04ca # v1.4.0
 
     - name: Clone dependency repos
       run: |
