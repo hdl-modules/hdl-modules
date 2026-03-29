@@ -42,14 +42,14 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
-        python-version: '3.12'
+        python-version: '3.14'
         cache: pip
 
     - name: Install Python packages
       run: |
         python3 -m pip install \
           GitPython \
-          pybadges \
+          git+https://github.com/ProsePal/py-badge@6e137cf13d8453ff085aab90cf1535fb58a1785a \
           pytest \
           ruff \
           vunit-hdl
@@ -81,7 +81,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
-        python-version: '3.11'
+        python-version: '3.14'
         cache: pip
 
     - name: Install system packages
@@ -100,12 +100,12 @@ jobs:
           git+https://github.com/hdl/pyHDLParser@354dc73a231677f277709633b9bcd0110f1816d0 \
           git+https://github.com/hdl/symbolator \
           GitPython \
-          pybadges \
+          git+https://github.com/ProsePal/py-badge@6e137cf13d8453ff085aab90cf1535fb58a1785a \
           pycairo \
           PyGObject \
           rtoml \
           setuptools \
-          sphinx \
+          "sphinx<9" \
           sphinx_sitemap \
           sphinx-rtd-theme \
           sphinxcontrib-googleanalytics \
@@ -184,7 +184,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
-        python-version: '3.12'
+        python-version: '3.14'
         cache: pip
 
     - name: Install Python packages
