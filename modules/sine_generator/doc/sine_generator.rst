@@ -56,9 +56,9 @@ It is given by
 
 .. math::
 
-  \text{frequency\_resolution\_hz} \equiv \frac{\text{clk\_frequency\_hz}}{2^\text{phase\_width}}
-    = \frac{\text{clk\_frequency\_hz}}{
-      2^{\text{memory\_address\_width} + 2 + \text{phase\_fractional\_width}}
+  \text{frequency_resolution_hz} \equiv \frac{\text{clk_frequency_hz}}{2^\text{phase_width}}
+    = \frac{\text{clk_frequency_hz}}{
+      2^{\text{memory_address_width} + 2 + \text{phase_fractional_width}}
     }.
 
 Where ``clk_frequency_hz`` is the frequency of the system clock that is clocking this module,
@@ -80,7 +80,7 @@ Note that the module will always use a memory that is
 
 .. math::
 
-  2^\text{memory\_address\_width} \times \text{memory\_data\_width}
+  2^\text{memory_address_width} \times \text{memory_data_width}
 
 large, and you must hence choose a maximum memory size that your design can afford.
 The  ``memory_data_width`` is typically  18 and ``memory_address_width`` between 9 and 12, since
@@ -99,7 +99,7 @@ The SFDR of the output signal is at least
 
 .. math::
 
-  \text{SFDR} = 6 \times (\text{memory\_data\_width} + 1) \text{ dB}.
+  \text{SFDR} = 6 \times (\text{memory_data_width} + 1) \text{ dB}.
 
 Use this equation to determine the ``memory_data_width`` generic value you need, given your
 SFDR requirement.
@@ -115,10 +115,10 @@ If we reorder the :ref:`sine_frequency_resolution` equation above, we get
 
 .. math::
 
-  \text{phase\_fractional\_width} = \left\lceil
-    \log_2 \left( \frac{\text{clk\_frequency\_hz}}{\text{frequency\_resolution\_hz}} \right)
+  \text{phase_fractional_width} = \left\lceil
+    \log_2 \left( \frac{\text{clk_frequency_hz}}{\text{frequency_resolution_hz}} \right)
   \right\rceil
-  - \text{memory\_address\_width} - 2.
+  - \text{memory_address_width} - 2.
 
 Use this to calculate the ``phase_fractional_width`` generic value needed.
 
@@ -149,7 +149,7 @@ If neither dithering nor Taylor expansion is enabled, the SFDR of the output sig
 
 .. math::
 
-  \text{SFDR} = 6 \times (\text{memory\_address\_width} + 1) \text{ dB}.
+  \text{SFDR} = 6 \times (\text{memory_address_width} + 1) \text{ dB}.
 
 Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.
@@ -165,7 +165,7 @@ to at least
 
 .. math::
 
-  \text{SFDR} = 6 \times (\text{memory\_address\_width} + 4) \text{ dB}.
+  \text{SFDR} = 6 \times (\text{memory_address_width} + 4) \text{ dB}.
 
 Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.
@@ -181,7 +181,7 @@ to at least
 
 .. math::
 
-  \text{SFDR} = 12 \times (\text{memory\_address\_width} + 1) \text{ dB}.
+  \text{SFDR} = 12 \times (\text{memory_address_width} + 1) \text{ dB}.
 
 Use this equation to determine the ``memory_address_width`` generic value you need, given your
 SFDR requirement.

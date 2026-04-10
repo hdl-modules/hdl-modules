@@ -7,7 +7,7 @@ The maximum-length LFSR has the attractive property that it cycles through
 
 .. math::
 
-    2^\text{lfsr\_length} - 1
+    2^\text{lfsr_length} - 1
 
 unique states before repeating.
 While the order of the states is completely deterministic, the output bit of the LFSR

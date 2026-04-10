@@ -79,38 +79,38 @@
 -- Fixed-point representation
 -- __________________________
 --
--- When we want to distribute :math:`2^\text{memory\_address\_width}` number of points over the
--- phase range :math:`[0, \pi / 2[`, we use
+-- When we want to distribute :math:`2^\text{memory_address_width}` number of points over the phase
+-- range :math:`[0, \pi / 2[`, we use
 --
 -- .. math::
 --
---   \text{phase\_increment} \equiv \frac{\pi / 2}{2^\text{memory\_address\_width}}.
+--   \text{phase_increment} \equiv \frac{\pi / 2}{2^\text{memory_address_width}}.
 --
 -- To achieve the symmetry we aim for in the discussion above, we offset the phase by half an LSB:
 --
 -- .. math::
 --
---   \phi \equiv \frac{\text{phase\_increment}}{2}.
+--   \phi \equiv \frac{\text{phase_increment}}{2}.
 --
 -- This gives a total phase of
 --
 -- .. math::
 --
---   \theta(i) \equiv i \times \text{phase\_increment} + \phi.
+--   \theta(i) \equiv i \times \text{phase_increment} + \phi.
 --
 -- We also have an amplitude-quantization given by the ``memory_data_width`` generic.
 -- This gives a maximum amplitude of
 --
 -- .. math::
 --
---   A \equiv 2^\text{memory\_data\_width} - 1.
+--   A \equiv 2^\text{memory_data_width} - 1.
 --
 -- With this established, we can calculate the memory values as
 --
 -- .. math::
 --
 --   \text{mem} (i) = \text{int} \left(  A \times \sin(\theta(i)) \right),
---     \forall i \in [0, 2^\text{memory\_address\_width} - 1].
+--     \forall i \in [0, 2^\text{memory_address_width} - 1].
 --
 -- As can be seen in the trigonometric identities above, the resulting output sine value from this
 -- entity is negated in some some quadrants.

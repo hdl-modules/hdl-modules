@@ -29,7 +29,7 @@
 --
 -- .. math::
 --
---   \text{phase\_width} = \text{memory\_address\_width} + 2 + \text{phase\_fractional\_width}
+--   \text{phase_width} = \text{memory_address_width} + 2 + \text{phase_fractional_width}
 --
 -- In VHDL you are recommended to utilize the ``get_phase_width`` function in
 -- :ref:`sine_generator.sine_generator_pkg`.
@@ -38,8 +38,8 @@
 --
 -- .. math::
 --
---   \text{phase\_increment} = \text{int} \left(
---     \frac{\text{sine\_frequency\_hz}}{\text{clk\_frequency\_hz}} \times 2^\text{phase\_width}
+--   \text{phase_increment} = \text{int} \left(
+--     \frac{\text{sine_frequency_hz}}{\text{clk_frequency_hz}} \times 2^\text{phase_width}
 --    \right).
 --
 -- Where ``sine_frequency_hz`` is the target sinus output frequency, and ``clk_frequency_hz`` is
