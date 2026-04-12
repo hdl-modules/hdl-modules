@@ -45,7 +45,7 @@ struct Response {
  * the user.
  * This makes it very efficient but it also means that the user must keep track
  * of what they are doing with the data.
- * See the methods DmaNoCopy::received_data and DmaNoCopy::done_with_data for
+ * See the methods DmaNoCopy::receive_data and DmaNoCopy::done_with_data for
  * details.
  */
 class DmaNoCopy {
@@ -85,9 +85,9 @@ public:
    *                              physical address.
    *                              When using bare metal, these are the same.
    * @param buffer Pointer to memory buffer.
-   *               Must be allocated by user.
    *               The address must be aligned with the packet length used by
    *               the FPGA.
+   *               Must be allocated by user.
    *               Will not be deleted by this class in any destructor, etc.
    *
    *               Note that this constructor will use this buffer for both the
