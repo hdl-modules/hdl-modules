@@ -69,7 +69,7 @@ Assuming you have just performed a CI run, as instructed above, you can now push
 
     git push origin vX.Y.Z
 
-**WARNING:** Avoid the "git push --tags" command, which is dangerous since it pushes all your
+**WARNING:** Avoid the ``git push --tags`` command, which is dangerous since it pushes all your
 local tags.
 
 This next step is unnecessarily crude due to the fact that GitHub does not allow a fast-forward
