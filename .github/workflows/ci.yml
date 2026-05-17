@@ -197,7 +197,8 @@ jobs:
           rtoml \
           scipy \
           tomli_w \
-          vunit-hdl@git+https://github.com/VUnit/vunit.git
+          vunit-hdl@git+https://github.com/VUnit/vunit.git \
+          vunit-vivado
 
     - name: Setup GHDL
       uses: ghdl/setup-ghdl@cd27f618fa44ee579660e3a20f98dd806c3f04ca # v1.4.0
