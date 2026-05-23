@@ -17,6 +17,9 @@ use ieee.std_logic_1164.all;
 
 package types_pkg is
 
+  alias sl is std_ulogic;
+  alias slv is std_ulogic_vector;
+
   type slv_vec_t is array (integer range <>) of std_ulogic_vector;
   type unsigned_vec_t is array (integer range <>) of u_unsigned;
   type signed_vec_t is array (integer range <>) of u_signed;
