@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
@@ -31,30 +33,44 @@ class Module(BaseModule):
 
         projects = []
         all_modules = get_hdl_modules(
-            names_include=[self.name, "axi", "axi_lite", "common", "math"]
+            names_include=[self.name, "axi", "axi_lite", "common", "trail", "math"]
         )
         part = "xc7z020clg400-1"
 
-        for enable_reset in [True, False]:
-            generics = {"enable_reset": enable_reset}
+        def add_register_file(
+            name: str,
+            luts: int,
+            ffs: int,
+            logic_level: int,
+            generics: dict[str, Any] | None = None,
+        ) -> None:
             projects.append(
                 TsfpgaExampleVivadoNetlistProject(
-                    name=self.test_case_name(
-                        name=f"{self.library_name}.axi_lite_register_file", generics=generics
-                    ),
+                    name=self.netlist_build_name(name=f"{name}_register_file", generics=generics),
                     modules=all_modules,
                     part=part,
+                    top=f"{name}_register_file_netlist_build_wrapper",
                     generics=generics,
-                    top="axi_lite_register_file_netlist_build_wrapper",
                     build_result_checkers=[
-                        TotalLuts(EqualTo(170 + 95 * enable_reset)),
-                        Ffs(EqualTo(301)),
+                        TotalLuts(EqualTo(luts)),
+                        Ffs(EqualTo(ffs)),
                         Ramb36(EqualTo(0)),
                         Ramb18(EqualTo(0)),
-                        MaximumLogicLevel(EqualTo(3)),
+                        MaximumLogicLevel(EqualTo(logic_level)),
                     ],
                 )
             )
+
+        for enable_reset in [True, False]:
+            add_register_file(
+                name="axi_lite",
+                luts=170 + 95 * enable_reset,
+                ffs=301,
+                logic_level=3,
+                generics={"enable_reset": enable_reset},
+            )
+
+        add_register_file(name="trail", luts=116, ffs=312, logic_level=4)
 
         projects.append(
             TsfpgaExampleVivadoNetlistProject(

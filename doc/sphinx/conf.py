@@ -33,6 +33,7 @@ extensions = [
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.googleanalytics",
+    "sphinxcontrib.wavedrom",
     "sphinxext.opengraph",
     "symbolator_sphinx",
 ]
@@ -44,6 +45,10 @@ intersphinx_mapping = {
 }
 
 symbolator_output_format = "png"
+
+# Make an image instead of embedding javascript in HTML
+wavedrom_html_jsinline = False
+render_using_wavedrompy = True
 
 # Base URL for generated sitemap.xml.
 # Note that this must end with a trailing slash, otherwise the sitemap.xml will be incorrect.

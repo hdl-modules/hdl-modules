@@ -12,53 +12,43 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library axi_lite;
-use axi_lite.axi_lite_pkg.all;
+library trail;
+use trail.trail_pkg.all;
 
 use work.register_file_pkg.all;
 use work.register_file_netlist_pkg.all;
 
 
-entity axi_lite_register_file_netlist_build_wrapper is
-  generic (
-    enable_reset : boolean
-  );
+entity trail_register_file_netlist_build_wrapper is
   port (
     clk : in std_ulogic;
-    reset : in std_ulogic;
     --
-    axi_lite_m2s : in axi_lite_m2s_t;
-    axi_lite_s2m : out axi_lite_s2m_t;
+    trail_operation : in trail_operation_t;
+    trail_response : out trail_response_t := trail_response_init;
     --
-    regs_up : in register_vec_t(regs'range);
-    regs_down : out register_vec_t(regs'range);
+    regs_up : in register_vec_t(0 to 15 - 1);
+    regs_down : out register_vec_t(0 to 15 - 1);
     --
-    reg_was_read : out std_ulogic_vector(regs'range);
-    reg_was_written : out std_ulogic_vector(regs'range)
+    reg_was_read : out std_ulogic_vector(0 to 15 - 1);
+    reg_was_written : out std_ulogic_vector(0 to 15 - 1)
   );
 end entity;
 
-architecture a of axi_lite_register_file_netlist_build_wrapper is
-
-  signal reset_actual : std_ulogic := '0';
+architecture a of trail_register_file_netlist_build_wrapper is
 
 begin
 
-  reset_actual <= reset when enable_reset else '0';
-
-
   ------------------------------------------------------------------------------
-  axi_lite_register_file_inst : entity work.axi_lite_register_file
+  trail_register_file_inst : entity work.trail_register_file
     generic map (
       registers => regs,
       default_values => default_values
     )
     port map (
       clk => clk,
-      reset => reset_actual,
       --
-      axi_lite_m2s => axi_lite_m2s,
-      axi_lite_s2m => axi_lite_s2m,
+      trail_operation => trail_operation,
+      trail_response => trail_response,
       --
       regs_up => regs_up,
       regs_down => regs_down,

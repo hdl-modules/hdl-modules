@@ -13,6 +13,9 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
+library axi;
+use axi.axi_pkg.all;
+
 use work.stall_bfm_pkg.stall_configuration_t;
 
 
@@ -22,10 +25,13 @@ package axi_bfm_pkg is
     address : natural;
     length_bytes : positive;
     id : natural;
+    expected_response : axi_resp_t;
   end record;
-  constant axi_master_bfm_job_init : axi_master_bfm_job_t := (length_bytes => 1, others => 0);
+  constant axi_master_bfm_job_init : axi_master_bfm_job_t := (
+    length_bytes => 1, expected_response=>axi_resp_okay, others => 0
+  );
 
-  constant axi_master_bfm_job_size : positive := 3 * 32;
+  constant axi_master_bfm_job_size : positive := 3 * 32 + axi_resp_sz;
 
   function to_slv(job : axi_master_bfm_job_t) return std_ulogic_vector;
   function to_axi_bfm_job(
@@ -62,6 +68,7 @@ package body axi_bfm_pkg is
     result(31 downto 0) := std_ulogic_vector(to_unsigned(job.address, 32));
     result(63 downto 32) := std_ulogic_vector(to_unsigned(job.length_bytes, 32));
     result(95 downto 64) := std_ulogic_vector(to_unsigned(job.id, 32));
+    result(97 downto 96) := job.expected_response;
     return result;
   end function;
 
@@ -73,6 +80,7 @@ package body axi_bfm_pkg is
     result.address := to_integer(u_unsigned(data(31 downto 0)));
     result.length_bytes := to_integer(u_unsigned(data(63 downto 32)));
     result.id := to_integer(u_unsigned(data(95 downto 64)));
+    result.expected_response := data(97 downto 96);
     return result;
   end function;
 
