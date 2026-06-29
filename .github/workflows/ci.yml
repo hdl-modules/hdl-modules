@@ -201,7 +201,7 @@ jobs:
           vunit-vivado
 
     - name: Setup GHDL
-      uses: ghdl/setup-ghdl@cd27f618fa44ee579660e3a20f98dd806c3f04ca # v1.4.0
+      uses: ghdl/setup-ghdl@75eff367dadc0cd06454a118db0b458d44fdc3c3 # v1.5.1
 
     - name: Clone dependency repos
       run: |
