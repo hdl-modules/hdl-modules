@@ -61,7 +61,9 @@ ignore = [
     # False positives.
     "ERA001",
     # Don't see why positional boolean is worse than any other positional.
-    "FBT003"
+    "FBT003",
+    # We handle copyright header with our own lint tests.
+    "CPY001",
 ]
 
 per-file-ignores."tools/**/*.py" = [
