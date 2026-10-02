@@ -34,7 +34,11 @@ package register_file_pkg is
     wpulse,
     -- Software can read a value that hardware provides.
     -- Software can write a value that is asserted for one cycle in hardware.
-    r_wpulse
+    r_wpulse,
+    -- Software can write a value that is available for hardware usage.
+    -- The upper half (MSB) of the write value is a mask while the lower half is the payload.
+    -- Only the bits whose mask is asserted will have its payload value set in hardware.
+    wmasked
   );
 
   -- If it is a mode where software can read the register.
@@ -56,6 +60,7 @@ package register_file_pkg is
     mode : register_mode_t;
     -- The number of data bits that are utilized in this register.
     -- Implementations can ignore other bits.
+    -- When 'mode' is a masked mode, this value shall be the utilized payload width (mask excluded).
     utilized_width : natural range 0 to register_width;
   end record;
   type register_definition_vec_t is array (natural range <>) of register_definition_t;
@@ -66,6 +71,18 @@ package register_file_pkg is
   -- Get the number of bits needed to represent the register indices.
   -- Note that this does not include the lowest two aligned bits.
   function num_address_bits_needed(registers : register_definition_vec_t) return positive;
+
+  --------------------------------------------------------------------------------------------------
+  -- Note that the ecosystem for 'masked' registers is in an early stage of development.
+  -- There might be API-breaking changes in the future.
+  --------------------------------------------------------------------------------------------------
+  -- The width of the 'mask' and 'payload' values in the 'masked' register modes.
+  constant masked_register_value_width : natural := register_width / 2;
+  -- The range of the two fields in this type of register.
+  subtype masked_payload_range is natural range masked_register_value_width - 1 downto 0;
+  subtype masked_mask_range is natural range register_t'high downto masked_payload_range'high + 1;
+  -- Get the index of the mask bit that corresponds to the given payload bit.
+  function masked_mask_index(payload_index : masked_payload_range) return masked_mask_range;
 
 end;
 
@@ -78,7 +95,7 @@ package body register_file_pkg is
 
   function is_write_mode(mode : register_mode_t) return boolean is
   begin
-    return mode = w or mode = r_w or mode = wpulse or mode = r_wpulse;
+    return mode = w or mode = r_w or mode = wpulse or mode = r_wpulse or mode = wmasked;
   end function;
 
   function is_write_pulse_mode(mode : register_mode_t) return boolean is
@@ -106,6 +123,12 @@ package body register_file_pkg is
     end if;
 
     return integer(ceil(log2(real(max_index + 1))));
+  end function;
+
+  function masked_mask_index(payload_index : masked_payload_range) return masked_mask_range is
+    constant result : masked_mask_range := payload_index + masked_register_value_width;
+  begin
+    return result;
   end function;
 
 end;

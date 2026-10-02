@@ -78,7 +78,7 @@ entity axi_lite_register_file is
     -- Each bit is pulsed for one cycle when the corresponding register is read/written.
     -- For read, the bit is asserted the exact same cycle as the AXI-Lite R transaction occurs.
     -- For write, the bit is asserted the cycle after the AXI-Lite W transaction occurs, so that
-    -- 'regs_down' is updated with the new value.
+    -- 'regs_down' holds the new value when the pulse triggers.
     reg_was_read : out std_ulogic_vector(registers'range) := (others => '0');
     reg_was_written : out std_ulogic_vector(registers'range) := (others => '0')
   );
@@ -92,6 +92,33 @@ architecture a of axi_lite_register_file is
   signal reg_values : register_vec_t(registers'range) := default_values;
 
 begin
+
+  ------------------------------------------------------------------------------
+  assertions : process
+  begin
+    for register_index in registers'range loop
+      if registers(register_index).mode = wmasked then
+        assert registers(register_index).utilized_width <= masked_register_value_width
+          report "Utilized width of register " & integer'image(register_index) & " is too great."
+          severity failure;
+      end if;
+
+      for bit_index in default_values(0)'high downto registers(register_index).utilized_width loop
+        assert default_values(register_index)(bit_index) = '0'
+          report (
+            "Register "
+            & integer'image(register_index)
+            & " bit "
+            & integer'image(bit_index)
+            & " non-zero default value outside of utilized width."
+          )
+          severity failure;
+      end loop;
+    end loop;
+
+    wait;
+  end process;
+
 
   ------------------------------------------------------------------------------
   assign_down : process(all)
@@ -122,7 +149,7 @@ begin
       axi_lite_s2m.read.r.resp <= axi_lite_resp_slverr;
 
       -- Set initial values zero.
-      -- Below we will only assign the bits that are actually utilized by the register.
+      -- Below we will only assign the bits that are actually in use.
       -- Hopefully, software should not look at any bits outside of the utilized width,
       -- but set zero just in case and to avoid confusion.
       -- Does not impact netlist build size.
@@ -200,6 +227,7 @@ begin
 
     ------------------------------------------------------------------------------
     set_status : process
+      variable mask_index : masked_mask_range := masked_mask_range'low;
     begin
       wait until rising_edge(clk);
 
@@ -227,7 +255,17 @@ begin
           for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
             if write_index = list_idx then
               if axi_lite_s2m.write.w.ready and axi_lite_m2s.write.w.valid then
-                reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);
+                if registers(list_idx).mode = wmasked then
+                  mask_index := masked_mask_index(payload_index=>bit_idx);
+                  if axi_lite_m2s.write.w.data(mask_index) then
+                    reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);
+                  end if;
+
+                else
+                  -- Regular write type, e.g. "w", no masking.
+                  reg_values(list_idx)(bit_idx) <= axi_lite_m2s.write.w.data(bit_idx);
+
+                end if;
               end if;
             end if;
           end loop;
