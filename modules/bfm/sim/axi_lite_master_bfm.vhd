@@ -137,6 +137,7 @@ architecture a of axi_lite_master_bfm is
     reply : queue_t;
   end record;
   constant read_queues, write_queues : queues_t := (others => new_queue);
+  constant should_check_read_data_queue : queue_t := new_queue;
 
 begin
 
@@ -170,6 +171,11 @@ begin
 
     if msg_type = bfm_check_msg then
       push_operation(queues=>read_queues, request_msg=>request_msg);
+      push(should_check_read_data_queue, true);
+
+    elsif msg_type = bfm_read_msg then
+      push_operation(queues=>read_queues, request_msg=>request_msg);
+      push(should_check_read_data_queue, false);
 
     elsif msg_type = bfm_write_msg then
       push_operation(queues=>write_queues, request_msg=>request_msg);
@@ -283,6 +289,7 @@ begin
           );
         end function;
 
+        variable should_check_data : boolean := true;
         variable expected_data : std_ulogic_vector(data_range) := (others => '0');
 
         variable request_msg, reply_msg : msg_t := null_msg;
@@ -297,6 +304,7 @@ begin
           flush(read_queues.response_code);
           flush(read_queues.response_address);
           flush(read_queues.reply);
+          flush(should_check_read_data_queue);
         else
           read_address := pop(read_queues.response_address);
 
@@ -306,8 +314,9 @@ begin
             get_message(name=>"resp")
           );
 
+          should_check_data := pop(should_check_read_data_queue);
           expected_data := pop(read_queues.data);
-          if axi_lite_s2m.read.r.resp = axi_lite_resp_okay then
+          if axi_lite_s2m.read.r.resp = axi_lite_resp_okay and should_check_data then
             check_equal(got_data, expected_data, get_message(name=>"data"));
           end if;
 
