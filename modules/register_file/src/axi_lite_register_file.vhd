@@ -112,6 +112,7 @@ begin
     type read_state_t is (ar, r);
     signal read_state : read_state_t := ar;
     signal read_index : u_unsigned(num_address_bits - 1 downto 0) := (others => '0');
+    signal read_data : register_t := (others => '0');
   begin
 
     ------------------------------------------------------------------------------
@@ -125,8 +126,8 @@ begin
       -- Below we will only assign the bits that are actually utilized by the register.
       -- Hopefully, software should not look at any bits outside of the utilized width,
       -- but set zero just in case and to avoid confusion.
-      -- Does not impact netlist build size.
-      axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
+      -- Impacts netlist build size minimally (+10 LUTs, but -1 logic level).
+      read_data <= (others => '0');
 
       for list_idx in registers'range loop
         if is_read_mode(registers(list_idx).mode) then
@@ -138,11 +139,11 @@ begin
           for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
             if is_application_gives_value_mode(registers(list_idx).mode) then
               if read_index = list_idx then
-                axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
+                read_data(bit_idx) <= regs_up(list_idx)(bit_idx);
               end if;
             else
               if read_index = list_idx then
-                axi_lite_s2m.read.r.data(bit_idx) <= reg_values(list_idx)(bit_idx);
+                read_data(bit_idx) <= reg_values(list_idx)(bit_idx);
               end if;
             end if;
           end loop;
@@ -170,6 +171,11 @@ begin
           end if;
 
         when r =>
+          -- Capture the response once, and keep it stable until the R transaction occurs.
+          if not axi_lite_s2m.read.r.valid then
+            axi_lite_s2m.read.r.data(read_data'range) <= read_data;
+          end if;
+
           axi_lite_s2m.read.r.valid <= '1';
 
           if axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid then

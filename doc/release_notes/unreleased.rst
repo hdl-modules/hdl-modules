@@ -4,6 +4,7 @@ Fixes
 * Fix bug in :ref:`axi.axi_simple_read_crossbar`, :ref:`axi.axi_simple_write_crossbar`,
   :ref:`axi_lite.axi_lite_simple_read_crossbar` and :ref:`axi_lite.axi_lite_simple_write_crossbar`.
 * Fix limitation/bug in :ref:`axi_lite.axi_lite_mux`.
+* Fix bug in :ref:`register_file.axi_lite_register_file`.
 
 Breaking changes
 
@@ -16,3 +17,5 @@ Breaking changes
   * :ref:`bfm.axi_stream_slave`
   * :ref:`bfm.axi_read_master`
   * :ref:`bfm.axi_write_master`
+
+Requires VUnit version 5.0.0.dev11 or later.

@@ -72,6 +72,16 @@ package axi_lite_bfm_pkg is
     bus_handle : bus_master_t := register_bus_master
   );
 
+  -- Perform a read on the bus, but do NOT check the value.
+  -- This procedure is non-blocking, meaning it will queue up the operation and then
+  -- return immediately.
+  procedure read_bfm(
+    signal net : inout network_t;
+    index : natural;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  );
+
   -- Write a value on the bus.
   -- This procedure is non-blocking, meaning it will queue up the operation and then
   -- return immediately.
@@ -102,9 +112,8 @@ package axi_lite_bfm_pkg is
   );
 
   constant bfm_check_msg : msg_type_t := new_msg_type("check bfm");
+  constant bfm_read_msg : msg_type_t := new_msg_type("read bfm");
   constant bfm_write_msg : msg_type_t := new_msg_type("write bfm");
-  constant bfm_read_count_msg : msg_type_t := new_msg_type("read count bfm");
-  constant bfm_write_count_msg : msg_type_t := new_msg_type("write count bfm");
 
 end package;
 
@@ -208,6 +217,26 @@ package body axi_lite_bfm_pkg is
       bus_handle=>bus_handle,
       reference=>unused_reference,
       msg_type=>bfm_check_msg
+    );
+  end procedure;
+
+  procedure read_bfm(
+    signal net : inout network_t;
+    index : natural;
+    response : axi_lite_resp_t := axi_lite_resp_okay;
+    bus_handle : bus_master_t := register_bus_master
+  ) is
+    variable unused_data : register_t := (others => '0');
+    variable unused_reference : bus_reference_t := null_msg;
+  begin
+    push_to_bfm(
+      net=>net,
+      index=>index,
+      data=>unused_data,
+      response=>response,
+      bus_handle=>bus_handle,
+      reference=>unused_reference,
+      msg_type=>bfm_read_msg
     );
   end procedure;
 

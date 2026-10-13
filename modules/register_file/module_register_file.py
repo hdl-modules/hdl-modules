@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from tsfpga.examples.vivado.project import TsfpgaExampleVivadoNetlistProject
 from tsfpga.module import BaseModule
 from tsfpga.vivado.build_result_checker import (
@@ -20,8 +22,24 @@ from tsfpga.vivado.build_result_checker import (
     TotalLuts,
 )
 
+if TYPE_CHECKING:
+    from vunit.ui import VUnit
+
 
 class Module(BaseModule):
+    def setup_vunit(
+        self,
+        vunit_proj: VUnit,
+        **kwargs: Any,  # noqa: ANN401, ARG002
+    ) -> None:
+        tb = vunit_proj.library(self.library_name).test_bench("tb_axi_lite_register_file")
+        for enable_ar_stall in [True, False]:
+            self.add_vunit_config(
+                test=tb,
+                generics={"enable_ar_stall": enable_ar_stall},
+                count=1 + 4 * int(enable_ar_stall),
+            )
+
     def get_build_projects(self) -> list[TsfpgaExampleVivadoNetlistProject]:
         # The 'hdl_modules' Python package is probably not on the PYTHONPATH in most scenarios where
         # this module is used. Hence we can not import at the top of this file.
@@ -47,8 +65,8 @@ class Module(BaseModule):
                     generics=generics,
                     top="axi_lite_register_file_netlist_build_wrapper",
                     build_result_checkers=[
-                        TotalLuts(EqualTo(170 + 95 * enable_reset)),
-                        Ffs(EqualTo(301)),
+                        TotalLuts(EqualTo(175 + 95 * enable_reset)),
+                        Ffs(EqualTo(328)),
                         Ramb36(EqualTo(0)),
                         Ramb18(EqualTo(0)),
                         MaximumLogicLevel(EqualTo(3)),
