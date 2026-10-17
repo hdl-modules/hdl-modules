@@ -145,7 +145,8 @@ architecture a of lfsr_fibonacci_multi is
 
   -- This is reverse order compared to how it's drawn on wikipedia, but it's more convenient
   -- like this.
-  signal state : std_ulogic_vector(lfsr_length downto 1) := seed;
+  subtype state_t is std_ulogic_vector(lfsr_length downto 1);
+  signal state : state_t := seed;
 
   -- Encourage Vivado to infer SRLs as much as possible.
   attribute shreg_extract of state : signal is "yes";
@@ -168,6 +169,7 @@ begin
   print : process
   begin
     report "Output width: " & integer'image(output_width);
+    report "Minimum LFSR length: " & integer'image(minimum_lfsr_length);
     report "LFSR length: " & integer'image(lfsr_length);
     for tap_idx in taps'range loop
       report "Taps[" & integer'image(tap_idx) & "]: " & integer'image(taps(tap_idx));
@@ -179,33 +181,36 @@ begin
 
   ------------------------------------------------------------------------------
   main : process
-    variable next_state : std_ulogic := '0';
-    variable tap_offset : natural := 0;
+    function shift_once(current_state : state_t) return state_t is
+      variable next_state : state_t := (others => '0');
+    begin
+      next_state(next_state'high downto 2) := current_state(current_state'high - 1 downto 1);
+
+      next_state(1) := '0';
+      for tap_idx in taps'range loop
+        if taps(tap_idx) /= 0 then
+          -- Note that both XOR and XNOR seem to work here.
+          -- Wikipedia uses XOR, Xilinx application note uses XNOR.
+          -- Both have been simulated with very similar result.
+          next_state(1) := next_state(1) xnor current_state(taps(tap_idx));
+        end if;
+      end loop;
+
+      return next_state;
+    end;
+
+    variable next_state : state_t := (others => '0');
   begin
     wait until rising_edge(clk);
 
-    for state_idx in state'range loop
-      if state_idx > shift_count then
-        next_state := state(state_idx - shift_count);
-      else
-
-        tap_offset := shift_count - state_idx;
-        next_state := '0';
-
-        for tap_idx in taps'range loop
-          if taps(tap_idx) /= 0 then
-            -- Note that both XOR and XNOR seem to work here.
-            -- Wikipedia uses XOR, Xilinx application note uses XNOR.
-            -- Both have been simulated with very similar result.
-            next_state := next_state xnor state(taps(tap_idx) - tap_offset);
-          end if;
-        end loop;
-      end if;
-
-      if enable then
-        state(state_idx) <= next_state;
-      end if;
+    next_state := state;
+    for shift_idx in 0 to shift_count - 1 loop
+      next_state := shift_once(next_state);
     end loop;
+
+    if enable then
+      state <= next_state;
+    end if;
   end process;
 
 end architecture;
