@@ -20,7 +20,9 @@ library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
 library bfm;
+use bfm.axi_bfm_pkg.all;
 use bfm.axi_lite_bfm_pkg.all;
+use bfm.stall_bfm_pkg.all;
 
 library common;
 use common.types_pkg.all;
@@ -33,6 +35,7 @@ use work.register_file_pkg.all;
 
 entity tb_axi_lite_register_file is
   generic (
+    enable_ar_stall : boolean := true;
     runner_cfg : string
   );
 end entity;
@@ -92,6 +95,16 @@ architecture tb of tb_axi_lite_register_file is
     return result;
   end function;
   constant default_values : register_vec_t := get_default_values;
+
+  impure function get_ar_stall_config return stall_configuration_t is
+  begin
+    if enable_ar_stall then
+      return default_address_stall_config;
+    end if;
+
+    return zero_stall_configuration;
+  end;
+  constant ar_stall_config : stall_configuration_t := get_ar_stall_config;
 
   -- DUT connections.
   constant clk_period : time := 10 ns;
@@ -209,6 +222,32 @@ begin
         end if;
       end loop;
 
+    elsif run("test_read_as_regs_up_changes_value") then
+      for num_wait_cycles in 0 to 5 loop
+        regs_up(0) <= fabric_values(0);
+        wait until rising_edge(clk);
+
+        report "wait cycles = " & to_string(num_wait_cycles);
+        if ar_stall_config = zero_stall_configuration then
+          -- If we know the timing deterministically, we can check which value it ends up being.
+          if num_wait_cycles < 2 then
+            check_bfm(net=>net, index=>0, data=>fabric_values(1));
+          else
+            check_bfm(net=>net, index=>0, data=>fabric_values(0));
+          end if;
+        else
+          -- We don't know which value we will read, since ARVALID might stall, but perform the read
+          -- anyway and have the protocol checker pass.
+          read_bfm(net=>net, index=>0);
+        end if;
+
+        for wait_idx in 0 to num_wait_cycles - 1 loop
+          wait until rising_edge(clk);
+        end loop;
+        regs_up(0) <= fabric_values(1);
+        wait_until_bfm_idle(net=>net);
+      end loop;
+
     elsif run("test_read_from_non_existent_register") then
       check_bfm(
         net=>net, index=>regs'high + 1, data=>fabric_values(0), response=>axi_lite_resp_slverr
@@ -308,6 +347,7 @@ begin
   ------------------------------------------------------------------------------
   axi_lite_master_bfm_inst : entity bfm.axi_lite_master_bfm
     generic map (
+      ar_stall_config => ar_stall_config,
       drive_invalid_value => '0'
     )
     port map (

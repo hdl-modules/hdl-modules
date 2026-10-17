@@ -111,7 +111,9 @@ begin
   read_block : block
     type read_state_t is (ar, r);
     signal read_state : read_state_t := ar;
-    signal read_index : u_unsigned(num_address_bits - 1 downto 0) := (others => '0');
+    signal read_index, read_index_next : u_unsigned(num_address_bits - 1 downto 0) := (
+      others => '0'
+    );
   begin
 
     ------------------------------------------------------------------------------
@@ -121,12 +123,7 @@ begin
 
       axi_lite_s2m.read.r.resp <= axi_lite_resp_slverr;
 
-      -- Set initial values zero.
-      -- Below we will only assign the bits that are actually utilized by the register.
-      -- Hopefully, software should not look at any bits outside of the utilized width,
-      -- but set zero just in case and to avoid confusion.
-      -- Does not impact netlist build size.
-      axi_lite_s2m.read.r.data(reg_values(0)'range) <= (others => '0');
+      read_index_next <= axi_lite_m2s.read.ar.addr(address_range);
 
       for list_idx in registers'range loop
         if is_read_mode(registers(list_idx).mode) then
@@ -134,18 +131,6 @@ begin
             axi_lite_s2m.read.r.resp <= axi_lite_resp_okay;
             reg_was_read(list_idx) <= axi_lite_m2s.read.r.ready and axi_lite_s2m.read.r.valid;
           end if;
-
-          for bit_idx in 0 to registers(list_idx).utilized_width - 1 loop
-            if is_application_gives_value_mode(registers(list_idx).mode) then
-              if read_index = list_idx then
-                axi_lite_s2m.read.r.data(bit_idx) <= regs_up(list_idx)(bit_idx);
-              end if;
-            else
-              if read_index = list_idx then
-                axi_lite_s2m.read.r.data(bit_idx) <= reg_values(list_idx)(bit_idx);
-              end if;
-            end if;
-          end loop;
         end if;
       end loop;
     end process;
@@ -153,13 +138,37 @@ begin
 
     ------------------------------------------------------------------------------
     read_process : process
+      variable read_value : register_t := (others => '0');
     begin
       wait until rising_edge(clk);
+
+      -- Set initial values zero.
+      -- Below we will only assign the bits that are actually utilized by the register.
+      -- Hopefully, software should not look at any bits outside of the utilized width,
+      -- but set zero just in case and to avoid confusion.
+      -- Does not impact netlist build size.
+      read_value := (others => '0');
+      for list_idx in registers'range loop
+        if is_read_mode(registers(list_idx).mode) then
+          if read_index_next = list_idx then
+            if is_application_gives_value_mode(registers(list_idx).mode) then
+              read_value(registers(list_idx).utilized_width - 1 downto 0) := (
+                regs_up(list_idx)(registers(list_idx).utilized_width - 1 downto 0)
+                );
+            else
+              read_value(registers(list_idx).utilized_width - 1 downto 0) := (
+                reg_values(list_idx)(registers(list_idx).utilized_width - 1 downto 0)
+              );
+            end if;
+          end if;
+        end if;
+      end loop;
 
       case read_state is
         when ar =>
           -- Sample always, will only be used if we change state.
-          read_index <= axi_lite_m2s.read.ar.addr(address_range);
+          read_index <= read_index_next;
+          axi_lite_s2m.read.r.data(read_value'range) <= read_value;
 
           axi_lite_s2m.read.ar.ready <= '1';
 
