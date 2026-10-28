@@ -19,6 +19,9 @@ use vunit_lib.run_pkg.all;
 library osvvm;
 use osvvm.RandomPkg.RandomPType;
 
+library axi_lite;
+use axi_lite.axi_lite_pkg.all;
+
 library bfm;
 use bfm.axi_bfm_pkg.all;
 use bfm.axi_lite_bfm_pkg.all;
@@ -27,8 +30,8 @@ use bfm.stall_bfm_pkg.all;
 library common;
 use common.types_pkg.all;
 
-library axi_lite;
-use axi_lite.axi_lite_pkg.all;
+library math;
+use math.math_pkg.is_power_of_two;
 
 use work.register_file_pkg.all;
 
@@ -251,16 +254,20 @@ begin
       end loop;
 
     elsif run("test_read_from_non_existent_register") then
-      check_bfm(
-        net=>net, index=>regs'high + 1, data=>fabric_values(0), response=>axi_lite_resp_slverr
-      );
-      check_bfm(net=>net, index=>0, data=>fabric_values(0));
+      if not is_power_of_two(regs'length) then
+        check_bfm(
+          net=>net, index=>regs'high + 1, data=>fabric_values(0), response=>axi_lite_resp_slverr
+        );
+        check_bfm(net=>net, index=>0, data=>fabric_values(0));
+      end if;
 
     elsif run("test_write_to_non_existent_register") then
-      write_bfm(
-        net=>net, index=>regs'length, data=>bus_values(regs'high), response=>axi_lite_resp_slverr
-      );
-      write_bfm(net=>net, index=>3, data=>bus_values(regs'high));
+      if not is_power_of_two(regs'length) then
+        write_bfm(
+          net=>net, index=>regs'length, data=>bus_values(regs'high), response=>axi_lite_resp_slverr
+        );
+        write_bfm(net=>net, index=>3, data=>bus_values(regs'high));
+      end if;
 
     elsif run("test_read_from_non_read_type_register") then
       assert regs(2).mode = w;
